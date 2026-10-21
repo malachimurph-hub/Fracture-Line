@@ -1,0 +1,121 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://view/wrappers/entity_view.gd" id="1_7b75k"]
+[ext_resource type="Material" path="res://view/materials/gunmetal.tres" id="2_rmty7"]
+[ext_resource type="Material" path="res://view/materials/team.tres" id="3_if5x4"]
+[ext_resource type="Material" path="res://view/materials/gold.tres" id="4_xwsdd"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_q5aw7"]
+radius = 0.11
+height = 0.5
+radial_segments = 8
+rings = 2
+
+[sub_resource type="SphereMesh" id="SphereMesh_uui38"]
+radius = 0.1
+height = 0.2
+radial_segments = 12
+rings = 6
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_o8qwj"]
+top_radius = 0.05
+bottom_radius = 0.05
+height = 0.5
+radial_segments = 8
+rings = 1
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_g25eu"]
+radius = 0.11
+height = 0.5
+radial_segments = 8
+rings = 2
+
+[sub_resource type="SphereMesh" id="SphereMesh_agxdg"]
+radius = 0.1
+height = 0.2
+radial_segments = 12
+rings = 6
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_1utyx"]
+top_radius = 0.05
+bottom_radius = 0.05
+height = 0.5
+radial_segments = 8
+rings = 1
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_iklpi"]
+radius = 0.11
+height = 0.5
+radial_segments = 8
+rings = 2
+
+[sub_resource type="SphereMesh" id="SphereMesh_yoqpp"]
+radius = 0.1
+height = 0.2
+radial_segments = 12
+rings = 6
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_p3ynx"]
+top_radius = 0.05
+bottom_radius = 0.05
+height = 0.5
+radial_segments = 8
+rings = 1
+
+[node name="View" type="Node3D" unique_id=927958615]
+script = ExtResource("1_7b75k")
+selection_radius = 0.8
+bar_height = 1.0
+
+[node name="Model" type="Node3D" parent="." unique_id=436202425]
+
+[node name="@MeshInstance3D@30" type="MeshInstance3D" parent="Model" unique_id=981762425]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 0.27, -0.18)
+material_override = ExtResource("2_rmty7")
+mesh = SubResource("CapsuleMesh_q5aw7")
+
+[node name="@MeshInstance3D@31" type="MeshInstance3D" parent="Model" unique_id=1999591063]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 0.56, -0.18)
+material_override = ExtResource("3_if5x4")
+mesh = SubResource("SphereMesh_uui38")
+metadata/team = true
+
+[node name="@MeshInstance3D@32" type="MeshInstance3D" parent="Model" unique_id=1994771777]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -0.1, 0.5, -0.18)
+material_override = ExtResource("4_xwsdd")
+mesh = SubResource("CylinderMesh_o8qwj")
+
+[node name="@MeshInstance3D@33" type="MeshInstance3D" parent="Model" unique_id=1040247236]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 0.27, -0.18)
+material_override = ExtResource("2_rmty7")
+mesh = SubResource("CapsuleMesh_g25eu")
+
+[node name="@MeshInstance3D@34" type="MeshInstance3D" parent="Model" unique_id=461232751]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 0.56, -0.18)
+material_override = ExtResource("3_if5x4")
+mesh = SubResource("SphereMesh_agxdg")
+metadata/team = true
+
+[node name="@MeshInstance3D@35" type="MeshInstance3D" parent="Model" unique_id=566198389]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0.3, 0.5, -0.18)
+material_override = ExtResource("4_xwsdd")
+mesh = SubResource("CylinderMesh_1utyx")
+
+[node name="@MeshInstance3D@36" type="MeshInstance3D" parent="Model" unique_id=2039429259]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 0.27, 0.2)
+material_override = ExtResource("2_rmty7")
+mesh = SubResource("CapsuleMesh_iklpi")
+
+[node name="@MeshInstance3D@37" type="MeshInstance3D" parent="Model" unique_id=1019615014]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 0.56, 0.2)
+material_override = ExtResource("3_if5x4")
+mesh = SubResource("SphereMesh_yoqpp")
+metadata/team = true
+
+[node name="@MeshInstance3D@38" type="MeshInstance3D" parent="Model" unique_id=960211269]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -0.1, 0.5, 0.2)
+material_override = ExtResource("4_xwsdd")
+mesh = SubResource("CylinderMesh_p3ynx")
+
+[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=1180079295]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)

@@ -1,0 +1,97 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://view/wrappers/entity_view.gd" id="1_6amo0"]
+[ext_resource type="Material" path="res://view/materials/tread.tres" id="2_2vetn"]
+[ext_resource type="Material" path="res://view/materials/gunmetal.tres" id="3_l0gw1"]
+[ext_resource type="Material" path="res://view/materials/gunmetal_dark.tres" id="4_o3jml"]
+[ext_resource type="Material" path="res://view/materials/team.tres" id="5_qyfnc"]
+[ext_resource type="Material" path="res://view/materials/gold.tres" id="6_7suqy"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_smaw8"]
+size = Vector3(0.3, 0.32, 1.45)
+
+[sub_resource type="BoxMesh" id="BoxMesh_2l235"]
+size = Vector3(0.3, 0.32, 1.45)
+
+[sub_resource type="BoxMesh" id="BoxMesh_a33vx"]
+size = Vector3(0.78, 0.32, 1.32)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ljm3r"]
+size = Vector3(0.62, 0.26, 0.62)
+
+[sub_resource type="BoxMesh" id="BoxMesh_jtfeq"]
+size = Vector3(0.64, 0.08, 0.3)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_2m2hq"]
+top_radius = 0.065
+bottom_radius = 0.065
+height = 1.05
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_8fxor"]
+top_radius = 0.1
+bottom_radius = 0.1
+height = 0.14
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_j6hu2"]
+top_radius = 0.09
+bottom_radius = 0.09
+height = 0.08
+radial_segments = 8
+rings = 1
+
+[node name="View" type="Node3D" unique_id=2072085869]
+script = ExtResource("1_6amo0")
+selection_radius = 0.8
+bar_height = 1.4749999642372131
+
+[node name="Model" type="Node3D" parent="." unique_id=1325017946]
+
+[node name="@MeshInstance3D@50" type="MeshInstance3D" parent="Model" unique_id=682322376]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.46, 0.16, 0)
+material_override = ExtResource("2_2vetn")
+mesh = SubResource("BoxMesh_smaw8")
+
+[node name="@MeshInstance3D@51" type="MeshInstance3D" parent="Model" unique_id=1556905456]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.46, 0.16, 0)
+material_override = ExtResource("2_2vetn")
+mesh = SubResource("BoxMesh_2l235")
+
+[node name="@MeshInstance3D@52" type="MeshInstance3D" parent="Model" unique_id=73618296]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+material_override = ExtResource("3_l0gw1")
+mesh = SubResource("BoxMesh_a33vx")
+
+[node name="TurretPivot" type="Node3D" parent="Model" unique_id=1218302006]
+
+[node name="@MeshInstance3D@53" type="MeshInstance3D" parent="Model/TurretPivot" unique_id=1325478977]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.68, -0.08)
+material_override = ExtResource("4_o3jml")
+mesh = SubResource("BoxMesh_ljm3r")
+
+[node name="@MeshInstance3D@54" type="MeshInstance3D" parent="Model/TurretPivot" unique_id=15415377]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.84, -0.2)
+material_override = ExtResource("5_qyfnc")
+mesh = SubResource("BoxMesh_jtfeq")
+metadata/team = true
+
+[node name="@MeshInstance3D@55" type="MeshInstance3D" parent="Model/TurretPivot" unique_id=2035749614]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0.7, 0.68)
+material_override = ExtResource("3_l0gw1")
+mesh = SubResource("CylinderMesh_2m2hq")
+
+[node name="@MeshInstance3D@56" type="MeshInstance3D" parent="Model/TurretPivot" unique_id=709667602]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0.7, 1.18)
+material_override = ExtResource("6_7suqy")
+mesh = SubResource("CylinderMesh_8fxor")
+
+[node name="@MeshInstance3D@57" type="MeshInstance3D" parent="Model/TurretPivot" unique_id=6705358]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.14, 0.86, -0.2)
+material_override = ExtResource("6_7suqy")
+mesh = SubResource("CylinderMesh_j6hu2")
+
+[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=409497675]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4749999, 0)

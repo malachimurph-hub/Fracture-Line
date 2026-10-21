@@ -1,0 +1,102 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://view/wrappers/entity_view.gd" id="1_xwj0y"]
+[ext_resource type="Material" path="res://view/materials/tread.tres" id="2_wp6bd"]
+[ext_resource type="Material" path="res://view/materials/gunmetal.tres" id="3_l72cg"]
+[ext_resource type="Material" path="res://view/materials/gold.tres" id="4_36vvj"]
+[ext_resource type="Material" path="res://view/materials/crystal.tres" id="5_tsws2"]
+[ext_resource type="Material" path="res://view/materials/gunmetal_dark.tres" id="6_465qw"]
+[ext_resource type="Material" path="res://view/materials/team.tres" id="7_tsxdp"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_lhw0b"]
+size = Vector3(0.26, 0.3, 1.35)
+
+[sub_resource type="BoxMesh" id="BoxMesh_kub2o"]
+size = Vector3(0.26, 0.3, 1.35)
+
+[sub_resource type="BoxMesh" id="BoxMesh_88vjj"]
+size = Vector3(0.74, 0.42, 1.25)
+
+[sub_resource type="BoxMesh" id="BoxMesh_urhei"]
+size = Vector3(0.7, 0.42, 0.62)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ysp6n"]
+size = Vector3(0.5, 0.1, 0.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_8uey6"]
+size = Vector3(0.42, 0.3, 0.3)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_gsce0"]
+top_radius = 0.11
+bottom_radius = 0.11
+height = 0.14
+radial_segments = 8
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_qb5ft"]
+top_radius = 0.03
+bottom_radius = 0.03
+height = 0.35
+radial_segments = 6
+rings = 1
+
+[sub_resource type="BoxMesh" id="BoxMesh_tnktc"]
+size = Vector3(0.76, 0.08, 0.2)
+
+[node name="View" type="Node3D" unique_id=1488924119]
+script = ExtResource("1_xwj0y")
+selection_radius = 0.8
+bar_height = 1.4449999779462814
+
+[node name="Model" type="Node3D" parent="." unique_id=150990689]
+
+[node name="@MeshInstance3D@9" type="MeshInstance3D" parent="Model" unique_id=1648166913]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.44, 0.15, 0)
+material_override = ExtResource("2_wp6bd")
+mesh = SubResource("BoxMesh_lhw0b")
+
+[node name="@MeshInstance3D@10" type="MeshInstance3D" parent="Model" unique_id=1083706368]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.44, 0.15, 0)
+material_override = ExtResource("2_wp6bd")
+mesh = SubResource("BoxMesh_kub2o")
+
+[node name="@MeshInstance3D@11" type="MeshInstance3D" parent="Model" unique_id=307238372]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.42, 0)
+material_override = ExtResource("3_l72cg")
+mesh = SubResource("BoxMesh_88vjj")
+
+[node name="@MeshInstance3D@12" type="MeshInstance3D" parent="Model" unique_id=150202724]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.82, -0.25)
+material_override = ExtResource("4_36vvj")
+mesh = SubResource("BoxMesh_urhei")
+
+[node name="@MeshInstance3D@13" type="MeshInstance3D" parent="Model" unique_id=2054145054]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.08, -0.25)
+material_override = ExtResource("5_tsws2")
+mesh = SubResource("BoxMesh_ysp6n")
+
+[node name="@MeshInstance3D@14" type="MeshInstance3D" parent="Model" unique_id=321203613]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.78, 0.38)
+material_override = ExtResource("6_465qw")
+mesh = SubResource("BoxMesh_8uey6")
+
+[node name="TurretPivot" type="Node3D" parent="Model" unique_id=1579850399]
+
+[node name="@MeshInstance3D@15" type="MeshInstance3D" parent="Model/TurretPivot" unique_id=883654899]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0.38)
+material_override = ExtResource("3_l72cg")
+mesh = SubResource("CylinderMesh_gsce0")
+
+[node name="@MeshInstance3D@16" type="MeshInstance3D" parent="Model/TurretPivot" unique_id=469596810]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 1.02, 0.56)
+material_override = ExtResource("2_wp6bd")
+mesh = SubResource("CylinderMesh_qb5ft")
+
+[node name="@MeshInstance3D@17" type="MeshInstance3D" parent="Model" unique_id=1344400035]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.66, 0.1)
+material_override = ExtResource("7_tsxdp")
+mesh = SubResource("BoxMesh_tnktc")
+metadata/team = true
+
+[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=2106331728]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4449999, 0)

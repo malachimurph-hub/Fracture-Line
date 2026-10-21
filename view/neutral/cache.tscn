@@ -1,0 +1,47 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://view/wrappers/entity_view.gd" id="1_45u7j"]
+[ext_resource type="Material" path="res://view/materials/crate.tres" id="2_21ie8"]
+[ext_resource type="Material" path="res://view/materials/crystal.tres" id="3_anhgx"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_40u7n"]
+size = Vector3(0.5, 0.4, 0.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_4eum1"]
+size = Vector3(0.5, 0.4, 0.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_olk27"]
+size = Vector3(0.5, 0.4, 0.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_4n7kj"]
+size = Vector3(0.3, 0.1, 0.3)
+
+[node name="View" type="Node3D" unique_id=1247675832]
+script = ExtResource("1_45u7j")
+selection_radius = 0.55
+bar_height = 1.150000024586916
+
+[node name="Model" type="Node3D" parent="." unique_id=614532491]
+
+[node name="@MeshInstance3D@148" type="MeshInstance3D" parent="Model" unique_id=1439899664]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.3, 0.2, 0)
+material_override = ExtResource("2_21ie8")
+mesh = SubResource("BoxMesh_40u7n")
+
+[node name="@MeshInstance3D@149" type="MeshInstance3D" parent="Model" unique_id=1162663646]
+transform = Transform3D(0.9659258, 0, 0.25881904, 0, 1, 0, -0.25881904, 0, 0.9659258, 0.3, 0.2, 0.1)
+material_override = ExtResource("2_21ie8")
+mesh = SubResource("BoxMesh_4eum1")
+
+[node name="@MeshInstance3D@150" type="MeshInstance3D" parent="Model" unique_id=698310307]
+transform = Transform3D(0.9848077, 0, -0.17364818, 0, 1, 0, 0.17364818, 0, 0.9848077, 0, 0.6, 0.05)
+material_override = ExtResource("2_21ie8")
+mesh = SubResource("BoxMesh_olk27")
+
+[node name="@MeshInstance3D@151" type="MeshInstance3D" parent="Model" unique_id=459576753]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0.05)
+material_override = ExtResource("3_anhgx")
+mesh = SubResource("BoxMesh_4n7kj")
+
+[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=1214538682]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.15, 0)

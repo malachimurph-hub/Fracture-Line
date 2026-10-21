@@ -1,0 +1,67 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://view/wrappers/entity_view.gd" id="1_i8gjc"]
+[ext_resource type="Material" path="res://view/materials/gunmetal_dark.tres" id="2_31kct"]
+[ext_resource type="Material" path="res://view/materials/gunmetal.tres" id="3_a1s57"]
+[ext_resource type="Material" path="res://view/materials/gold.tres" id="4_v2ohs"]
+[ext_resource type="Material" path="res://view/materials/cyan.tres" id="5_u8i8d"]
+[ext_resource type="Material" path="res://view/materials/team.tres" id="6_nheys"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_c81l3"]
+size = Vector3(0.8, 0.14, 0.8)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_3qwch"]
+top_radius = 0.08
+bottom_radius = 0.08
+height = 1.9
+radial_segments = 6
+rings = 1
+
+[sub_resource type="BoxMesh" id="BoxMesh_ke438"]
+size = Vector3(0.8, 0.06, 0.06)
+
+[sub_resource type="SphereMesh" id="SphereMesh_qc10r"]
+radius = 0.2
+height = 0.4
+radial_segments = 12
+rings = 6
+
+[sub_resource type="BoxMesh" id="BoxMesh_737qy"]
+size = Vector3(0.3, 0.2, 0.04)
+
+[node name="View" type="Node3D" unique_id=1257052655]
+script = ExtResource("1_i8gjc")
+selection_radius = 0.5
+bar_height = 2.5499999076128006
+is_structure = true
+
+[node name="Model" type="Node3D" parent="." unique_id=1438277940]
+
+[node name="@MeshInstance3D@88" type="MeshInstance3D" parent="Model" unique_id=1496023364]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.07, 0)
+material_override = ExtResource("2_31kct")
+mesh = SubResource("BoxMesh_c81l3")
+
+[node name="@MeshInstance3D@89" type="MeshInstance3D" parent="Model" unique_id=754416466]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05, 0)
+material_override = ExtResource("3_a1s57")
+mesh = SubResource("CylinderMesh_3qwch")
+
+[node name="@MeshInstance3D@90" type="MeshInstance3D" parent="Model" unique_id=1442256394]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+material_override = ExtResource("4_v2ohs")
+mesh = SubResource("BoxMesh_ke438")
+
+[node name="@MeshInstance3D@91" type="MeshInstance3D" parent="Model" unique_id=1842562922]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, 0)
+material_override = ExtResource("5_u8i8d")
+mesh = SubResource("SphereMesh_qc10r")
+
+[node name="@MeshInstance3D@92" type="MeshInstance3D" parent="Model" unique_id=2099114770]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0.1)
+material_override = ExtResource("6_nheys")
+mesh = SubResource("BoxMesh_737qy")
+metadata/team = true
+
+[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=938652057]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.55, 0)
