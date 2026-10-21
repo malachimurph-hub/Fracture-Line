@@ -1,2 +1,238 @@
 keys,en
 APP_TITLE,FRACTURE LINE
+MENU_SUBTITLE,Skirmish command — EU Alliance
+MENU_BUILD,"Milestone %s · original game, not affiliated with any other RTS"
+MENU_SKIRMISH,Skirmish
+MENU_CONTINUE,Continue suspended match
+MENU_SETTINGS,Settings
+MENU_CREDITS,Credits / About
+MENU_QUIT,Quit
+BACK,Back
+ON,On
+OFF,Off
+LOBBY_TITLE,Skirmish setup
+LOBBY_PLAYER,Player
+LOBBY_FACTION,Faction
+LOBBY_COLOR,Color
+LOBBY_TEAM,Team
+LOBBY_START,Start
+LOBBY_YOU,You
+LOBBY_KIND_OPEN,Open
+LOBBY_KIND_CLOSED,Closed
+LOBBY_KIND_AI_EASY,AI — Easy
+LOBBY_KIND_AI_MEDIUM,AI — Medium
+LOBBY_KIND_AI_HARD,AI — Hard
+LOBBY_COMING_LATER,coming later
+LOBBY_RANDOM,Random
+LOBBY_MONEY,Starting cash $%d
+LOBBY_FOG,Fog of war + shroud
+LOBBY_SUPERWEAPONS,Superweapons
+LOBBY_START_GAME,Start battle
+LOBBY_READY,Ready: %d players.
+LOBBY_ERR_PLAYERS,Need at least 2 players (set a slot to AI).
+LOBBY_ERR_ONE_TEAM,All players are on the same team — put at least one player on a different team.
+LOBBY_ERR_COLOR,Two players have the same color — pick different colors.
+LOBBY_ERR_SPAWN,Two players have the same start position.
+LOBBY_ERR_MAP,Map missing.
+MAP_VARNO_CROSSING,Varno Crossing
+FACTION_EU,EU Alliance
+FACTION_PACT,Iron Pact
+FACTION_COALITION,Free Coalition
+COLOR_BLUE,Blue
+COLOR_RED,Red
+COLOR_YELLOW,Yellow
+COLOR_PURPLE,Purple
+COLOR_GREEN,Green
+COLOR_ORANGE,Orange
+STUB_SUPERWEAPONS,[STUB] No superweapon structures exist in M1; this toggle is saved but has no effect yet.
+STUB_TRANSPORT,[STUB] Wolfhound transport (carry infantry) is not implemented in M1.
+DIFF_EASY,Easy
+DIFF_MEDIUM,Medium
+DIFF_HARD,Hard
+DIFF_,
+OPT_ATTACK_MOVE,Attack-move
+OPT_MOVE,Move
+SET_UI_SCALE,UI scale
+SET_HOLD_MS,Hold time (ms)
+SET_DOUBLE_TAP,Double-tap window (ms)
+SET_DEADZONE,Drag dead-zone (dp)
+SET_GHOST_OFFSET,Finger offset for ghosts/box (mm)
+SET_RENDER_SCALE,3D render scale
+SET_FPS,Frame-rate cap
+SET_HOLD_ACTION,Hold + release does
+SET_HAPTICS,Haptics
+SET_INERTIA,Camera inertia
+SET_EDGE_PAN,Edge panning (mouse)
+PAUSE_TITLE,Paused
+PAUSE_RESUME,Resume
+PAUSE_SPEED,Game speed
+PAUSE_HEALTHBARS,Always show health bars
+PAUSE_PERF,Performance overlay
+PAUSE_RESTART,Restart match
+PAUSE_SURRENDER,Surrender
+PAUSE_QUIT,Save & quit to menu
+HUD_GENERAL,General
+HUD_BUILD,Build
+HUD_ARMY,Army
+HUD_IDLE_CRAWLER,Crawler
+HUD_BACK,Back
+HUD_ROTATE,Rotate
+HUD_CANCEL,Cancel
+HUD_CONFIRM,Confirm
+HUD_PAUSED,PAUSED
+HUD_OBSERVER,Observer
+HUD_POWER,Power %d / %d
+HUD_LOW_POWER,LOW
+HUD_POP,Units %d / %d
+HUD_RANK,Rank %d
+HUD_GROUP_SET,Group %d set
+HUD_GROUP_HINT,Empty group — long-press (Ctrl+1–5) to assign
+HUD_NOTHING_SELECTED,Tap a unit or building.
+HUD_N_SELECTED,%d units
+HUD_SUPPLY_LEFT,Supply left: %d
+HUD_SHIELD,Shield %d
+HUD_OWNER,Player %d
+HUD_CARRY,Cargo %d / %d
+HUD_CONSTRUCTING,Under construction %d%%
+HUD_UNPOWERED,No power — offline
+HUD_BLD_POWER,Power %+d
+HUD_GARRISON,Garrison %d / %d
+HUD_PUMP_INCOME,+$%d / s when captured
+HUD_TAP_CANCEL,Tap to cancel
+HUD_LONGPRESS_CANCEL,long-press / right-click: cancel one
+HUD_NEEDS,needs %s
+STATE_IDLE,Idle
+STATE_MOVE,Moving
+STATE_AMOVE,Attack-moving
+STATE_ATTACK,Attacking
+STATE_GUARD,Guarding
+STATE_HARVEST,Harvesting
+STATE_BUILD,Constructing
+STATE_GARRISON,Entering building
+STATE_CAPTURE,Capturing
+VET_1,Veteran
+VET_2,Elite
+VET_3,Heroic
+CMD_AMOVE,"Attack
+move"
+CMD_AMOVE_TIP,"Move, engaging enemies on the way"
+CMD_MOVE,Move
+CMD_STOP,Stop
+CMD_GUARD,Guard
+CMD_SCATTER,Scatter
+CMD_HARVEST,Harvest
+CMD_LOAD,Load
+CMD_UNLOAD,Evacuate
+CMD_CANCEL_BUILD,"Cancel
+build"
+CMD_CANCEL_BUILD_TIP,Cancel construction (full refund)
+CMD_RALLY,Rally
+CMD_REPEAT_TIP,Repeat build: re-queue each unit when it finishes
+CMD_CANCEL_LAST,"Cancel
+last"
+TARGET_AMOVE,Tap where to attack-move
+TARGET_MOVE,Tap where to move
+TARGET_GUARD,Tap the area to guard
+TARGET_RALLY,Tap to set the rally point
+TARGET_POWER,Tap the target for the General power
+TRAY_TITLE,"General — rank %d, %d point(s)"
+TRAY_BUY,"Buy (rank %d, %d pt)"
+TRAY_FIRE,Use
+TRAY_COOLDOWN,Ready in %ds
+TRAY_COMING,[STUB] later
+ALERT_BASE_ATTACK,Our base is under attack
+ALERT_UNITS_ATTACK,Units under attack
+ALERT_BUILT,%s complete
+ALERT_UNIT_READY,%s ready
+ALERT_LOW_POWER,Low power! Build a Reactor
+ALERT_RANK,Promoted to General rank %d — point available
+ALERT_ELIMINATED,Player %d eliminated
+ALERT_YOU_ELIMINATED,You have been eliminated
+ALERT_CAPTURED,Pump captured
+ALERT_PROMOTED,%s promoted: %s
+ALERT_ENEMY_POWER,Enemy General power detected
+RESULT_VICTORY,VICTORY
+RESULT_DEFEAT,DEFEAT
+RESULT_TEAM_WINS,Team %d wins
+RESULT_DURATION,Battle length %02d:%02d
+RESULT_BACK_SETUP,Back to skirmish setup
+RESULT_MENU,Main menu
+RES_COL_PLAYER,Player
+RES_COL_TEAM,Team
+RES_COL_RANK,Rank
+RES_COL_BUILT,Built
+RES_COL_LOST,Lost
+RES_COL_KILLS,Kills
+RES_COL_STRUCT,Bldg. kills
+RES_COL_HARVEST,Harvested
+RES_AI,AI %d (%s)
+RES_SEAM,Veridite seam
+RES_CACHE,Supply cache
+REASON_BLOCKED,Blocked
+REASON_ENEMY,Too close to enemies
+REASON_FUNDS,Not enough money
+REASON_GRID,Outside the EU Grid — build near a Reactor or Pylon
+REASON_INVALID,Can't do that
+REASON_LOW_POWER,Low power: production at half speed
+REASON_NO_BUILDER,Select a Crawler to build
+REASON_NO_POWER,Offline: no power
+REASON_OWNED,Already owned
+REASON_POINTS,Not enough General points
+REASON_POP_CAP,Unit limit reached
+REASON_PREREQ,Requirements not met
+REASON_RANK,Needs a higher General rank
+REASON_RESOURCE,Too close to a supply seam
+REASON_STUB,[STUB] Not available in M1
+REASON_TERRAIN,Can't build on that ground
+UNIT_EU_CRAWLER,Crawler (builder)
+UNIT_EU_HARVESTER,Hauler (supply truck)
+UNIT_EU_GRENADIER,Grenadier squad
+UNIT_EU_LANCER,Lancer squad (anti-tank)
+UNIT_EU_WOLFHOUND,Wolfhound IFV
+UNIT_EU_LEOPOLD,Leopold battle tank
+UNIT_EU_AEGIS,Aegis shield carrier
+UNIT_EU_FLAKWERK,Flakwerk AA
+BLD_EU_HQ,Command HQ
+BLD_EU_REACTOR,Fusion Reactor
+BLD_EU_PYLON,Grid Pylon
+BLD_EU_HUB,Supply Hub
+BLD_EU_BARRACKS,Barracks
+BLD_EU_MOTOR_POOL,Motor Pool
+BLD_EU_HEAVY_FACTORY,Heavy Factory
+BLD_EU_GUN_BUNKER,Gun Bunker
+BLD_CIV_BLOCK,Civilian block
+BLD_PUMP,Veridite pump
+SHORT_EU_CRAWLER,CRW
+SHORT_EU_HARVESTER,HAUL
+SHORT_EU_GRENADIER,GREN
+SHORT_EU_LANCER,LANC
+SHORT_EU_WOLFHOUND,WOLF
+SHORT_EU_LEOPOLD,LEO
+SHORT_EU_AEGIS,AEG
+SHORT_EU_FLAKWERK,FLAK
+SHORT_EU_HQ,HQ
+SHORT_EU_REACTOR,REACT
+SHORT_EU_PYLON,PYLON
+SHORT_EU_HUB,HUB
+SHORT_EU_BARRACKS,BARR
+SHORT_EU_MOTOR_POOL,MOTOR
+SHORT_EU_HEAVY_FACTORY,HEAVY
+SHORT_EU_GUN_BUNKER,BUNK
+SHORT_NEUTRAL_CIV_BLOCK,CIV
+SHORT_NEUTRAL_PUMP,PUMP
+SHORT_SEAM,$
+SHORT_CACHE,$
+POWER_RECON,Recon Sweep
+POWER_RECON_DESC,Reveals a 12-tile area for 20 s.
+POWER_LOGISTICS,Emergency Logistics
+POWER_LOGISTICS_DESC,Instant supply drop.
+POWER_OVERCHARGE,Shield Overcharge
+POWER_OVERCHARGE_DESC,Your units in the area gain a strong temporary shield.
+POWER_BLACKOUT,Grid Blackout
+POWER_BLACKOUT_DESC,[STUB] Not implemented in M1.
+CREDITS_BODY,"FRACTURE LINE — Milestone 1 (skirmish).
+Design, code, models (procedural primitives), UI and text: original work made for Malachi Murphy with Grok Bot.
+Inspired by the classic base-building RTS genre; no names, art, audio or text from any other game are used.
+No audio in M1.
+UI font: Godot's built-in default font."
+CREDITS_ENGINE,"Built with Godot Engine %s (MIT license, see below)."

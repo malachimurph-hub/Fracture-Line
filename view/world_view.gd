@@ -201,7 +201,7 @@ func _on_death(ev: Dictionary) -> void:
 	var pos := FX.to_world(ev["pos"])
 	var seen := _visible_pos(ev["pos"]) or int(ev.get("owner", -1)) >= 0 and sim.player_team(int(ev["owner"])) == local_team
 	if seen and not ev.get("silent", false):
-		var big := ev["kind"] != SimEntity.Kind.UNIT
+		var big: bool = ev["kind"] != SimEntity.Kind.UNIT
 		vfx.explosion(pos, 1.8 if big else 0.7)
 	if shield_domes.has(id):
 		shield_domes[id].queue_free()
@@ -318,3 +318,121 @@ func _update_rings() -> void:
 
 func marker(p: Vector2i, col: Color) -> void:
 	vfx.ring(FX.to_world(p), 0.9, col, 0.5, true)
+
+# ---------------------------------------------------------------- placement ghost
+var ghost_root: Node3D
+var ghost_model: EntityView
+var ghost_def: StringName = &""
+var ghost_pad: MeshInstance3D
+var ghost_rings: Array = []
+var ghost_ok_mat: StandardMaterial3D
+var ghost_bad_mat: StandardMaterial3D
+var ghost_overlay_ok: StandardMaterial3D
+var ghost_overlay_bad: StandardMaterial3D
+
+func show_ghost(def_id: StringName, tile: Vector2i, rot: int, ok: bool, pid: int) -> void:
+	if ghost_root == null:
+		ghost_root = Node3D.new()
+		add_child(ghost_root)
+		ghost_pad = MeshInstance3D.new()
+		var pm := PlaneMesh.new()
+		pm.size = Vector2.ONE
+		ghost_pad.mesh = pm
+		ghost_pad.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		ghost_root.add_child(ghost_pad)
+		ghost_ok_mat = Palette.flat(Color(0.3, 1.0, 0.45), 0.45)
+		ghost_bad_mat = Palette.flat(Color(1.0, 0.25, 0.2), 0.5)
+		ghost_overlay_ok = Palette.flat(Color(0.4, 1.0, 0.5), 0.35)
+		ghost_overlay_bad = Palette.flat(Color(1.0, 0.3, 0.25), 0.45)
+	ghost_root.visible = true
+	var d: BuildingDef = Content.building(def_id)
+	var fpv := d.footprint if rot % 2 == 0 else Vector2i(d.footprint.y, d.footprint.x)
+	if ghost_def != def_id:
+		ghost_def = def_id
+		if ghost_model != null:
+			ghost_model.queue_free()
+		ghost_model = (load(d.view_scene) as PackedScene).instantiate()
+		ghost_root.add_child(ghost_model)
+		ghost_model.set_team_material(Palette.team_material(sim.players[pid].color))
+		_rebuild_grid_rings(pid, d)
+	var center := Vector3(tile.x + fpv.x * 0.5, 0.0, tile.y + fpv.y * 0.5)
+	ghost_pad.position = center + Vector3(0, 0.07, 0)
+	ghost_pad.scale = Vector3(fpv.x, 1, fpv.y)
+	ghost_pad.material_override = ghost_ok_mat if ok else ghost_bad_mat
+	ghost_model.position = center
+	ghost_model.rotation.y = [0.0, PI * 0.5, PI, -PI * 0.5][rot]
+	ghost_model.set_overlay(ghost_overlay_ok if ok else ghost_overlay_bad)
+
+func _rebuild_grid_rings(pid: int, d: BuildingDef) -> void:
+	for r in ghost_rings:
+		r.queue_free()
+	ghost_rings.clear()
+	if d.power >= 0 and d.grid_radius > 0 and not d.is_hq:
+		pass
+	for id in sim.ids:
+		var e: SimEntity = sim.ents[id]
+		if e.owner != pid or e.kind != SimEntity.Kind.BUILDING:
+			continue
+		var bd := Content.building(e.def_id)
+		if bd.grid_radius <= 0:
+			continue
+		var mi := MeshInstance3D.new()
+		mi.mesh = Palette.ring_mesh("circle", 0.03)
+		mi.material_override = Palette.flat(Color("#6fe3ff"), 0.7)
+		mi.position = FX.to_world(e.pos) + Vector3(0, 0.08, 0)
+		mi.scale = Vector3.ONE * float(bd.grid_radius)
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		ghost_root.add_child(mi)
+		ghost_rings.append(mi)
+
+func hide_ghost() -> void:
+	if ghost_root != null:
+		ghost_root.visible = false
+		ghost_def = &""
+		if ghost_model != null:
+			ghost_model.queue_free()
+			ghost_model = null
+		for r in ghost_rings:
+			r.queue_free()
+		ghost_rings.clear()
+
+# ---------------------------------------------------------------- rally flags
+var rally_flag: Node3D
+var rally_line: MeshInstance3D
+
+func update_rally(b: SimEntity) -> void:
+	if rally_flag == null:
+		rally_flag = Node3D.new()
+		var pole := MeshInstance3D.new()
+		var cm := CylinderMesh.new()
+		cm.top_radius = 0.04
+		cm.bottom_radius = 0.04
+		cm.height = 1.4
+		pole.mesh = cm
+		pole.position.y = 0.7
+		pole.material_override = Palette.flat(Color("#ffd166"))
+		rally_flag.add_child(pole)
+		var fl := MeshInstance3D.new()
+		var bm := BoxMesh.new()
+		bm.size = Vector3(0.5, 0.3, 0.04)
+		fl.mesh = bm
+		fl.position = Vector3(0.27, 1.25, 0)
+		fl.material_override = Palette.flat(Color("#ffd166"))
+		rally_flag.add_child(fl)
+		add_child(rally_flag)
+		rally_line = MeshInstance3D.new()
+		rally_line.mesh = BoxMesh.new()
+		rally_line.material_override = Palette.flat(Color("#ffd166"), 0.6)
+		rally_line.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		add_child(rally_line)
+	var show := b != null and b.rally.x >= 0
+	rally_flag.visible = show
+	rally_line.visible = show
+	if not show:
+		return
+	var a := FX.to_world(b.pos) + Vector3(0, 0.1, 0)
+	var t := FX.to_world(b.rally) + Vector3(0, 0.1, 0)
+	rally_flag.position = t - Vector3(0, 0.1, 0)
+	var len := a.distance_to(t)
+	if len > 0.1:
+		rally_line.transform = Transform3D(Basis.looking_at(t - a, Vector3.UP), (a + t) * 0.5).scaled_local(Vector3(0.06, 0.02, len))

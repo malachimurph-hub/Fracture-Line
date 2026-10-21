@@ -20,7 +20,10 @@ func _recompute() -> void:
 	if size.x <= 0:
 		return
 	var base: float
-	if OS.has_feature("android") or OS.has_feature("ios"):
+	var forced := _forced_dpi()
+	if forced > 0.0:
+		base = forced / 160.0
+	elif OS.has_feature("android") or OS.has_feature("ios"):
 		base = DisplayServer.screen_get_dpi() / 160.0
 	else:
 		base = maxf(1.0, size.y / 420.0)
@@ -36,6 +39,13 @@ func _recompute() -> void:
 	else:
 		safe_rect = Rect2((sa.position - win_pos) / dp, sa.size / dp).intersection(Rect2(Vector2.ZERO, size / dp))
 	changed.emit()
+
+## Testing aid: "--dpi=450" emulates a phone's density on desktop (screenshots/tests).
+func _forced_dpi() -> float:
+	for a in OS.get_cmdline_user_args():
+		if a.begins_with("--dpi="):
+			return float(a.substr(6))
+	return 0.0
 
 func logical_size() -> Vector2:
 	return Vector2(get_tree().root.content_scale_size)

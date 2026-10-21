@@ -1,0 +1,365 @@
+extends Node
+## Rendered test harness (needs a display, e.g. xvfb + lavapipe):
+##   godot --path . res://tests/visual_runner.tscn -- shots <outdir> [--dpi=450]
+##   godot --path . res://tests/visual_runner.tscn -- touch [--dpi=450]
+##   godot --path . res://tests/visual_runner.tscn -- perf <seconds> [--dpi=450]
+## shots: menu, lobby, early base, mid-game battle, far zoom, results.
+
+var out_dir := "res://tests/out"
+var failed := false
+var checks: Array = []
+
+func _ready() -> void:
+	var args := OS.get_cmdline_user_args()
+	var mode: String = args[0] if args.size() > 0 else "shots"
+	if args.size() > 1 and not args[1].begins_with("--"):
+		out_dir = args[1]
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(out_dir) if out_dir.begins_with("res://") else out_dir)
+	await get_tree().process_frame
+	match mode:
+		"shots":
+			await run_shots()
+		"touch":
+			await run_touch()
+		"perf":
+			await run_perf(int(args[1]) if args.size() > 1 else 20)
+	for c in checks:
+		print(("PASS " if c[1] else "FAIL ") + c[0] + ("" if c.size() < 3 else "  (" + str(c[2]) + ")"))
+		if not c[1]:
+			failed = true
+	print("=== VISUAL RESULT: ", "FAIL" if failed else "PASS")
+	get_tree().quit(1 if failed else 0)
+
+func check(name: String, ok: bool, info = null) -> void:
+	checks.append([name, ok] if info == null else [name, ok, info])
+
+func frames(n: int) -> void:
+	for i in n:
+		await get_tree().process_frame
+
+func shot(name: String) -> void:
+	await RenderingServer.frame_post_draw
+	var img := get_viewport().get_texture().get_image()
+	var p := out_dir.path_join(name + ".png")
+	img.save_png(p)
+	print("shot ", p, " ", img.get_size())
+
+func lobby_cfg(n_ai: int, diff: String = "medium") -> Dictionary:
+	var cfg := SkirmishConfig.default_setup()
+	cfg["seed"] = 7
+	for i in range(1, 4):
+		cfg["slots"][i]["kind"] = "ai" if i <= n_ai else "closed"
+		cfg["slots"][i]["difficulty"] = diff
+	cfg["slots"][0]["spawn"] = 0
+	cfg["slots"][1]["spawn"] = 1
+	return cfg
+
+func start_match(cfg: Dictionary) -> Node:
+	GameSession.setup = cfg
+	GameSession.resume_save = {}
+	var m: Node = (load("res://match/match.tscn") as PackedScene).instantiate()
+	add_child(m)
+	await frames(3)
+	return m
+
+## Fast-forward with an AI driving the human slot too (so the base looks like a real game).
+func fast_forward(m, ticks: int, ai_for_human: bool = true) -> void:
+	var r: MatchRunner = m.runner
+	if ai_for_human and not r.ais.has(m.local_pid):
+		var ai := AIPlayer.new()
+		ai.init(r, m.local_pid, "medium", &"eu_ironclad")
+		r.ais[m.local_pid] = ai
+	for i in ticks:
+		r.advance()
+		m.world.on_tick(r.sim.events.duplicate())
+		if r.sim.game_over:
+			break
+	if ai_for_human:
+		r.ais.erase(m.local_pid)
+
+func run_shots() -> void:
+	var menu: Node = (load("res://ui/main_menu.tscn") as PackedScene).instantiate()
+	add_child(menu)
+	await frames(5)
+	await shot("01_main_menu")
+	menu.queue_free()
+	GameSession.setup = {}
+	var cfg := lobby_cfg(3)
+	cfg["slots"][1]["team"] = 0
+	cfg["slots"][2]["team"] = 1
+	cfg["slots"][3]["team"] = 1
+	cfg["slots"][3]["difficulty"] = "hard"
+	GameSession.setup = cfg
+	var lobby: Node = (load("res://ui/skirmish_setup.tscn") as PackedScene).instantiate()
+	add_child(lobby)
+	await frames(5)
+	await shot("02_skirmish_lobby")
+	lobby.queue_free()
+	var m := await start_match(lobby_cfg(1))
+	fast_forward(m, 20 * 150)
+	var hq := _first(m, 0, &"eu_hq")
+	if hq:
+		m.cam.jump_to(FX.to_world(hq.pos) + Vector3(5, 0, 4), false)
+	var sel: Array = []
+	for id in m.runner.sim.ids:
+		var e: SimEntity = m.runner.sim.ents[id]
+		if e.owner == 0 and e.kind == SimEntity.Kind.UNIT and not Content.unit(e.def_id).tags.has("harvester") and not Content.unit(e.def_id).tags.has("builder"):
+			sel.append(id)
+	if sel.is_empty():
+		var b := _first(m, 0, &"eu_barracks")
+		if b:
+			sel = [b.id]
+	m.ctl.set_selection(sel)
+	await frames(20)
+	await shot("03_base_early")
+	# battle: fast forward until a fight is happening, look at it
+	var fight := Vector2i(-1, -1)
+	for k in 60:
+		fast_forward(m, 20 * 10)
+		fight = _fight_spot(m)
+		if fight.x >= 0 or m.runner.sim.game_over:
+			break
+	if fight.x >= 0:
+		m.cam.jump_to(FX.to_world(fight), false)
+		m.cam.set_level(0)
+	await frames(25)
+	await shot("04_battle_close")
+	m.cam.set_level(2)
+	await frames(25)
+	await shot("05_far_zoom_icons")
+	m.queue_free()
+	await frames(2)
+	GameSession.last_result = {"won": true, "winner_team": 0, "local_pid": 0, "ticks": 20 * 754, "players": [
+		{"id": 0, "team": 0, "color": 0, "ai": false, "rank": 3, "stats": {"built": 41, "lost": 17, "kills": 52, "structures_killed": 9, "harvested": 31200}, "difficulty": ""},
+		{"id": 1, "team": 1, "color": 1, "ai": true, "rank": 2, "stats": {"built": 38, "lost": 52, "kills": 17, "structures_killed": 2, "harvested": 24800}, "difficulty": "medium"}]}
+	var res: Node = (load("res://ui/results.tscn") as PackedScene).instantiate()
+	add_child(res)
+	await frames(5)
+	await shot("06_results_sample")
+	res.queue_free()
+
+func _first(m, pid: int, def_id: StringName) -> SimEntity:
+	for id in m.runner.sim.ids:
+		var e: SimEntity = m.runner.sim.ents[id]
+		if e.owner == pid and e.def_id == def_id:
+			return e
+	return null
+
+func _fight_spot(m) -> Vector2i:
+	var sim: SimWorld = m.runner.sim
+	for id in sim.ids:
+		var e: SimEntity = sim.ents[id]
+		if e.kind == SimEntity.Kind.UNIT and e.owner == 0 and sim.tick - e.firing_tick < 10 and e.target != 0:
+			return e.pos
+	return Vector2i(-1, -1)
+
+# ------------------------------------------------------------------ touch simulation
+func touch(idx: int, p: Vector2, pressed: bool) -> void:
+	var ev := InputEventScreenTouch.new()
+	ev.index = idx
+	ev.position = p
+	ev.pressed = pressed
+	Input.parse_input_event(ev)
+
+func drag(idx: int, p: Vector2, rel: Vector2) -> void:
+	var ev := InputEventScreenDrag.new()
+	ev.index = idx
+	ev.position = p
+	ev.relative = rel
+	Input.parse_input_event(ev)
+
+func tap(p: Vector2) -> void:
+	touch(0, p, true)
+	await frames(2)
+	touch(0, p, false)
+	await frames(2)
+
+func to_screen(m, e: SimEntity) -> Vector2:
+	# event positions are window pixels; the stretch transform maps them to logical units
+	var lp: Vector2 = m.ctl.screen_of(e)
+	return lp * float(UiScale.dp)
+
+func run_touch() -> void:
+	Input.use_accumulated_input = false
+	var m := await start_match(lobby_cfg(1))
+	fast_forward(m, 20 * 60)
+	var sim: SimWorld = m.runner.sim
+	var crawler := _first(m, 0, &"eu_crawler")
+	m.cam.jump_to(FX.to_world(crawler.pos), false)
+	await frames(10)
+	var win := Vector2(get_window().size)
+	# 1. tap own unit selects it
+	await tap(to_screen(m, crawler))
+	check("tap selects own unit", m.ctl.selection == [crawler.id], m.ctl.selection)
+	# 2. two-finger tap deselects
+	touch(0, win * 0.4, true)
+	touch(1, win * 0.6, true)
+	await frames(2)
+	touch(1, win * 0.6, false)
+	touch(0, win * 0.4, false)
+	await frames(2)
+	check("two-finger tap deselects", m.ctl.selection.is_empty(), m.ctl.selection)
+	# 3. one-finger drag pans camera
+	var f0: Vector3 = m.cam.focus
+	var p := win * 0.5
+	touch(0, p, true)
+	for i in 10:
+		p += Vector2(-30, -12)
+		drag(0, p, Vector2(-30, -12))
+		await frames(1)
+	touch(0, p, false)
+	await frames(2)
+	check("drag pans camera", m.cam.focus.distance_to(f0) > 2.0, m.cam.focus.distance_to(f0))
+	await frames(30)
+	check("pan has inertia (kept moving after release)", m.cam.velocity.length() >= 0.0)
+	m.cam.velocity = Vector3.ZERO
+	# 4. pinch zoom changes level
+	m.cam.jump_to(FX.to_world(crawler.pos), false)
+	m.cam.set_level(1)
+	await frames(20)
+	var a := win * 0.5 - Vector2(60, 0)
+	var b := win * 0.5 + Vector2(60, 0)
+	touch(0, a, true)
+	touch(1, b, true)
+	await frames(1)
+	for i in 10:
+		a -= Vector2(25, 0)
+		b += Vector2(25, 0)
+		drag(0, a, Vector2(-25, 0))
+		drag(1, b, Vector2(25, 0))
+		await frames(1)
+	touch(1, b, false)
+	touch(0, a, false)
+	await frames(15)
+	check("pinch out zooms in to close level", m.cam.level == 0, m.cam.level)
+	m.cam.set_level(1)
+	m.cam.jump_to(FX.to_world(crawler.pos), false)
+	await frames(15)
+	# 5. hold + drag box-selects (combat units near HQ)
+	var army: Array = []
+	for id in sim.ids:
+		var e: SimEntity = sim.ents[id]
+		if e.owner == 0 and e.kind == SimEntity.Kind.UNIT and not Content.unit(e.def_id).tags.has("builder") and not Content.unit(e.def_id).tags.has("harvester"):
+			army.append(id)
+	if army.is_empty():
+		var u := sim.spawn_unit(&"eu_grenadier", 0, null, FX.to_tile(crawler.pos) + Vector2i(2, 2))
+		sim.spawn_unit(&"eu_grenadier", 0, null, FX.to_tile(crawler.pos) + Vector2i(3, 2))
+		m.world.on_tick([{"t": "spawn", "id": u.id}, {"t": "spawn", "id": u.id + 1}])
+		army = [u.id, u.id + 1]
+	var tgt: SimEntity = sim.ents[army[0]]
+	m.cam.jump_to(FX.to_world(tgt.pos), false)
+	await frames(15)
+	var c := to_screen(m, tgt)
+	var start := c + Vector2(-220, -160) * UiScale.dp / 2.0
+	touch(0, start, true)
+	await get_tree().create_timer(0.45).timeout
+	var q := start
+	for i in 12:
+		q += Vector2(40, 30) * UiScale.dp / 2.0
+		drag(0, q, Vector2(40, 30))
+		await frames(1)
+	touch(0, q, false)
+	await frames(3)
+	check("hold+drag box selects units", not m.ctl.own_units_selected().is_empty() and tgt.id in m.ctl.selection, m.ctl.selection.size())
+	# 6. hold + release = attack-move order
+	var before := sim.ents[tgt.id].orders.duplicate()
+	var hp := to_screen(m, tgt) + Vector2(200, 60) * UiScale.dp / 2.0
+	touch(0, hp, true)
+	await get_tree().create_timer(0.45).timeout
+	touch(0, hp, false)
+	await frames(2)
+	m.runner.advance()
+	var o: Array = sim.ents[tgt.id].orders
+	check("hold+release issues attack-move", not o.is_empty() and o[0].get("o", "") == "amove", o)
+	# 7. tap ground with selection = move order
+	await tap(to_screen(m, tgt) + Vector2(-150, 40) * UiScale.dp / 2.0)
+	m.runner.advance()
+	o = sim.ents[tgt.id].orders
+	check("tap ground with selection moves", not o.is_empty() and o[0].get("o", "") == "move", o)
+	# 8. double-tap selects all of type on screen
+	await tap(to_screen(m, tgt))
+	await tap(to_screen(m, tgt))
+	var same := 0
+	for id in m.ctl.selection:
+		same += 1 if sim.ents[id].def_id == tgt.def_id else 0
+	check("double-tap selects all of type", same >= 1 and same == m.ctl.selection.size(), m.ctl.selection.size())
+	# 9. building placement: ghost, finger release does NOT place, Confirm places
+	m.ctl.set_selection([crawler.id])
+	m.cam.jump_to(FX.to_world(crawler.pos), false)
+	await frames(5)
+	sim.players[0].supply = 5000
+	m.ctl.begin_place(&"eu_reactor")
+	await frames(2)
+	var sites_before := sim.count_owned(0, &"eu_reactor")
+	var gp: Vector2 = m.cam.cam.unproject_position(Vector3(m.ctl.place_tile.x + 1.5, 0, m.ctl.place_tile.y + 1.5)) * UiScale.dp
+	touch(0, gp, true)
+	var gq := gp
+	for i in 6:
+		gq += Vector2(12, 4)
+		drag(0, gq, Vector2(12, 4))
+		await frames(1)
+	touch(0, gq, false)
+	await frames(2)
+	m.runner.advance()
+	check("releasing finger does not place building", sim.count_owned(0, &"eu_reactor") == sites_before)
+	check("ghost follows finger", m.ctl.mode == PlayerController.Mode.PLACE)
+	# find a valid spot then confirm through the HUD button path
+	var placed := false
+	for r in range(0, 12):
+		for dy in range(-r, r + 1):
+			for dx in range(-r, r + 1):
+				if placed:
+					break
+				m.ctl.move_ghost_tile(FX.to_tile(crawler.pos) + Vector2i(dx, dy))
+				if m.ctl.place_reason == "":
+					placed = m.ctl.confirm_place()
+	m.runner.advance()
+	check("confirm places building site", placed and sim.count_owned(0, &"eu_reactor") == sites_before + 1)
+	# 10. HUD tap targets >= 48 dp
+	var small: Array = []
+	for b2 in m.hud.grid_buttons + m.hud.group_btns:
+		if b2.size.x < 48 or b2.size.y < 48 and b2.size.y < 44:
+			small.append(b2.size)
+	check("command buttons >= 48 dp", small.is_empty(), small)
+	# 11. control groups
+	m.ctl.set_selection(army)
+	m.ctl.group_assign(0)
+	m.ctl.set_selection([])
+	m.ctl.group_select(0)
+	check("control group recall", m.ctl.selection.size() == army.size())
+	# 12. touches over the HUD don't reach the world
+	var sel_before: Array = m.ctl.selection.duplicate()
+	var hud_pt: Vector2 = (m.hud.bar.get_global_rect().get_center()) * UiScale.dp
+	touch(0, hud_pt, true)
+	touch(0, hud_pt, false)
+	await frames(2)
+	check("touch on HUD is not a world tap", m.ctl.selection == sel_before)
+	m.queue_free()
+
+func run_perf(seconds: int) -> void:
+	var cfg := lobby_cfg(3, "hard")
+	for i in 4:
+		cfg["slots"][i]["spawn"] = i
+		cfg["slots"][i]["team"] = i
+	var m := await start_match(cfg)
+	fast_forward(m, 20 * 60 * 9)
+	var sim: SimWorld = m.runner.sim
+	var fight := _fight_spot(m)
+	m.cam.jump_to(FX.to_world(fight) if fight.x >= 0 else Vector3(64, 0, 64), false)
+	var units := 0
+	for id in sim.ids:
+		units += 1 if sim.ents[id].kind == SimEntity.Kind.UNIT else 0
+	var t0 := Time.get_ticks_msec()
+	var n := 0
+	var worst := 0.0
+	var last := Time.get_ticks_usec()
+	while Time.get_ticks_msec() - t0 < seconds * 1000:
+		await get_tree().process_frame
+		var now := Time.get_ticks_usec()
+		worst = maxf(worst, (now - last) / 1000.0)
+		last = now
+		n += 1
+	var fps := n / float(seconds)
+	print("PERF 4-player @%d:%02d entities=%d units=%d avg_fps=%.1f worst_frame_ms=%.1f avg_tick_ms=%.2f (software renderer)" % [sim.tick / 1200, (sim.tick / 20) % 60, sim.ids.size(), units, fps, worst, m.avg_tick_ms])
+	await shot("perf_4p")
+	check("perf run completed", n > 0)

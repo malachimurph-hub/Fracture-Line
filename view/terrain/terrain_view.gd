@@ -61,7 +61,7 @@ func _corner_heights() -> PackedFloat32Array:
 		for x in m.w + 1:
 			var best := -10.0
 			var all_cliff := true
-			for d in [Vector2i(-1, -1), Vector2i(0, -1), Vector2i(-1, 0), Vector2i(0, 0)]:
+			for d: Vector2i in [Vector2i(-1, -1), Vector2i(0, -1), Vector2i(-1, 0), Vector2i(0, 0)]:
 				var t := Vector2i(x, y) + d
 				if not m.in_bounds(t):
 					continue
@@ -212,3 +212,7 @@ func update_fog(fog: SimFog, team: int) -> void:
 				data[i] = 255 if c[i] > 0 else (120 if ex[i] != 0 else 0)
 	fog_image.set_data(m.w, m.h, false, Image.FORMAT_L8, data)
 	fog_texture.update(fog_image)
+
+static func minimap_color(tt: int) -> Color:
+	var c: Color = COLORS[tt]
+	return c.lightened(0.08)
