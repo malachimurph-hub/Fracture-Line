@@ -11,7 +11,7 @@ signal secondary
 
 const MIN_FONT := 9
 const MAX_LINES := 2
-const PAD_X := 3.0
+const PAD_X := 2.0
 const SUB_H := 13.0
 
 var _down_ms: int = -1
@@ -67,7 +67,7 @@ func _process(_d: float) -> void:
 
 ## Caption box (inside the button): below the accent strip / [STUB] tag, above the sub line.
 func caption_rect() -> Rect2:
-	var top := 3.0 + (11.0 if stub else 0.0)
+	var top := 3.0 + (11.0 if stub and not _stub_on_sub() else 0.0)
 	var bottom := size.y - (SUB_H if sub != "" else 3.0)
 	return Rect2(Vector2(PAD_X, top), Vector2(maxf(1.0, size.x - PAD_X * 2.0), maxf(1.0, bottom - top)))
 
@@ -141,6 +141,11 @@ func _para_fits(p: TextParagraph, box: Vector2) -> bool:
 		h += ls.y
 	return h <= box.y + 0.5
 
+## With a price line and no queue badge, the [STUB] tag shares the price line (right-aligned)
+## so it does not steal a caption line.
+func _stub_on_sub() -> bool:
+	return sub != "" and badge == ""
+
 func _draw() -> void:
 	var f := get_theme_default_font()
 	if accent.a > 0:
@@ -156,13 +161,15 @@ func _draw() -> void:
 	var bw := 8.0 + 7.0 * badge.length() if badge != "" else 0.0
 	if sub != "":
 		# price / count on its own line; a queue badge sits at the right end of that line
-		var al := HORIZONTAL_ALIGNMENT_LEFT if badge != "" else HORIZONTAL_ALIGNMENT_CENTER
+		var al := HORIZONTAL_ALIGNMENT_LEFT if badge != "" or stub else HORIZONTAL_ALIGNMENT_CENTER
 		draw_string(f, Vector2(4, size.y - 4), sub, al, size.x - 8 - bw, 10, Color(1, 0.85, 0.45, 0.95 if not disabled else 0.5))
 	if badge != "":
 		var by := size.y - 15.0 if sub != "" else 2.0
 		draw_rect(Rect2(Vector2(size.x - bw - 2, by), Vector2(bw, 13)), Color("#e2b23c"))
 		draw_string(f, Vector2(size.x - bw + 2, by + 11), badge, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color.BLACK)
-	if stub:
+	if stub and _stub_on_sub():
+		draw_string(f, Vector2(size.x - 4 - f.get_string_size("[STUB]", HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x, size.y - 4), "[STUB]", HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color("#ff8a7a"))
+	elif stub:
 		draw_string(f, Vector2(4, 13), "[STUB]", HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color("#ff8a7a"))
 	if progress >= 0.0:
 		draw_rect(Rect2(Vector2(0, size.y - 3), Vector2(size.x * progress, 3)), Color("#6fe3ff"))
@@ -172,5 +179,6 @@ func text_fits() -> bool:
 	_fit()
 	var f := get_theme_default_font()
 	var bw := 8.0 + 7.0 * badge.length() if badge != "" else 0.0
-	var sub_ok := sub == "" or f.get_string_size(sub, HORIZONTAL_ALIGNMENT_LEFT, -1, 10).x <= size.x - 8 - bw + 0.5
+	var stub_w := f.get_string_size("[STUB]", HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x + 4.0 if stub and _stub_on_sub() else 0.0
+	var sub_ok := sub == "" or f.get_string_size(sub, HORIZONTAL_ALIGNMENT_LEFT, -1, 10).x <= size.x - 8 - bw - stub_w + 0.5
 	return fit_ok and sub_ok

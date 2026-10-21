@@ -5,9 +5,9 @@ extends CanvasLayer
 ## top strip with filters, 5 control groups, clock, pause and menu; alerts with jump/Back;
 ## placement Confirm/Rotate/Cancel; General powers tray; pause menu. All sizes in dp.
 
-const BAR_H := 112.0
-const PORTRAIT := Vector2(62, 50)
-const BTN := Vector2(60, 51)
+const BAR_H := 118.0
+const PORTRAIT := Vector2(72, 52)
+const BTN := Vector2(70, 54)
 
 var m  ## Match node
 var ctl: PlayerController
@@ -388,7 +388,7 @@ func _refresh() -> void:
 			power_bar.max_value = maxi(1, maxi(p.power_prod, p.power_used))
 			power_bar.value = p.power_used
 			power_bar.modulate = Color("#ff5a4a") if p.low_power else Color("#6fe3ff")
-			power_lbl.text = tr("HUD_POWER") % [p.power_used, p.power_prod] + (" " + tr("HUD_LOW_POWER") if p.low_power else "") + "\n" + tr("HUD_POP") % [p.pop, p.pop_cap]
+			power_lbl.text = tr("HUD_POWER") % [p.power_used, p.power_prod] + (" " + tr("HUD_LOW_POWER") if p.low_power else "") + "  " + tr("HUD_POP") % [p.pop, p.pop_cap]
 		else:
 			power_lbl.text = tr("HUD_NO_POWER_NEEDED") + "\n" + tr("HUD_POP") % [p.pop, p.pop_cap]
 		power_lbl.add_theme_color_override("font_color", Color("#ff7a6a") if p.low_power else UiTheme.TEXT)
@@ -530,7 +530,12 @@ func _fill_types(units: Array) -> void:
 	for id in units:
 		var d: StringName = sim.ents[id].def_id
 		counts[d] = counts.get(d, 0) + 1
+	var tmax := _chips_fit(66.0, 0.0)
+	var listed := 0
 	for d in counts:
+		if listed >= tmax:
+			break
+		listed += 1
 		var b := _hud_btn(tr(Content.unit(d).name_key), Vector2(66, 48))
 		b.sub = "×%d" % counts[d]
 		b.primary.connect(func():
@@ -540,13 +545,18 @@ func _fill_types(units: Array) -> void:
 					only.append(id)
 			ctl.set_selection(only))
 		sel_types.add_child(b)
-		if sel_types.get_child_count() >= TYPE_MAX:
-			break
+
+## How many chips of width w (3 dp gaps) fit in the selection panel, keeping `reserve` dp free
+## for a "+N" label. Chips are never squeezed below their tap size; the rest go to "+N".
+func _chips_fit(w: float, reserve: float) -> int:
+	var avail := sel_panel.size.x - reserve
+	return clampi(int((avail + 3.0) / (w + 3.0)), 1, 4)
 
 func _fill_queue(b: SimEntity) -> void:
 	if b.queue.is_empty():
 		return
-	var shown := b.queue.size() if b.queue.size() <= QUEUE_MAX else QUEUE_MAX - 1
+	var qmax := _chips_fit(QUEUE_CHIP.x, 0.0)
+	var shown := b.queue.size() if b.queue.size() <= qmax else maxi(1, _chips_fit(QUEUE_CHIP.x, 24.0))
 	for i in shown:
 		var q := _hud_btn(tr(Content.unit(b.queue[i]).name_key), QUEUE_CHIP)
 		if i == 0:
@@ -695,7 +705,7 @@ func _make_card() -> Array:
 
 const TYPE_MAX := 3
 const QUEUE_MAX := 4
-const QUEUE_CHIP := Vector2(54, 48)
+const QUEUE_CHIP := Vector2(66, 48)
 
 func _hud_btn(caption: String, sz: Vector2) -> HudButton:
 	var b := HudButton.new()

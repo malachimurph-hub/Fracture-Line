@@ -23,6 +23,8 @@ func _ready() -> void:
 			await run_touch()
 		"gallery":
 			await run_gallery()
+		"m2":
+			await run_m2()
 		"perf":
 			await run_perf(int(args[1]) if args.size() > 1 else 20)
 	for c in checks:
@@ -68,8 +70,9 @@ func start_match(cfg: Dictionary) -> Node:
 func fast_forward(m, ticks: int, ai_for_human: bool = true) -> void:
 	var r: MatchRunner = m.runner
 	if ai_for_human and not r.ais.has(m.local_pid):
-		var ai := AIPlayer.new()
-		ai.init(r, m.local_pid, "medium", &"eu_ironclad")
+		var fac: StringName = r.sim.faction_of(m.local_pid)
+		var ai := AIPlayer.create(fac)
+		ai.init(r, m.local_pid, "medium", StringName(Content.faction(fac)["personality"]))
 		r.ais[m.local_pid] = ai
 	for i in ticks:
 		r.advance()
@@ -445,3 +448,210 @@ func run_perf(seconds: int) -> void:
 	print("PERF 4-player @%d:%02d entities=%d units=%d avg_fps=%.1f worst_frame_ms=%.1f avg_tick_ms=%.2f (software renderer)" % [sim.tick / 1200, (sim.tick / 20) % 60, sim.ids.size(), units, fps, worst, m.avg_tick_ms])
 	await shot("perf_4p")
 	check("perf run completed", n > 0)
+
+# ------------------------------------------------------------------ M2 (TPLA) shots + HUD text checks
+func _hud_check(m, label: String) -> void:
+	await frames(4)
+	var probs: Array = HudTextCheck.problems(m.hud)
+	check("HUD text fits (%s)" % label, probs.is_empty(), probs.slice(0, 6) if not probs.is_empty() else null)
+
+func _select_first(m, def_id: StringName) -> SimEntity:
+	var e := _first(m, m.local_pid, def_id)
+	if e != null:
+		m.ctl.set_selection([e.id])
+	return e
+
+## Exercises every bottom-panel state for a faction: builder build menu, each producer's card
+## with a full queue, multi-selection type filters, special buildings.
+func _hud_states(m, fac: StringName) -> void:
+	var sim: SimWorld = m.runner.sim
+	var pid: int = m.local_pid
+	var fd: Dictionary = Content.faction(fac)
+	sim.players[pid].supply += 30000
+	var builder := _select_first(m, fd["builder"])
+	await _hud_check(m, "%s builder menu" % fac)
+	# every building's card (spawn missing ones next to the HQ so the card can be inspected)
+	var hq := _first(m, pid, fd["hq"])
+	var k := 0
+	for bid in fd["buildings"]:
+		var b := _first(m, pid, bid)
+		if b == null and hq != null:
+			var bd: BuildingDef = Content.building(bid)
+			var spot := Vector2i(-1, -1)
+			for r in range(4, 30):
+				for dx in range(-r, r + 1, 2):
+					var t := FX.to_tile(hq.pos) + Vector2i(dx, r if (k % 2 == 0) else -r)
+					var why := sim.can_place(pid, bid, t, false)
+					if why == "" or why == "REASON_SHROUD":
+						spot = t
+						break
+				if spot.x >= 0:
+					break
+			if spot.x >= 0:
+				b = sim._place_building(bd, pid, spot, 0, true)
+				m.world.on_tick([{"t": "spawn", "id": b.id}])
+			k += 1
+		if b == null:
+			continue
+		m.ctl.set_selection([b.id])
+		var bdef: BuildingDef = Content.building(bid)
+		for uid in bdef.produces:
+			m.ctl.queue_unit(b, StringName(uid), 2)
+		m.runner.advance()
+		await _hud_check(m, "%s %s card" % [fac, bid])
+	# multi-selection: one of every unit type
+	var ids: Array = []
+	var at := FX.to_tile(hq.pos) + Vector2i(6, 6) if hq != null else Vector2i(20, 20)
+	for uid in fd["units"]:
+		var u := sim.spawn_unit(StringName(uid), pid, null, FX.tile_center(at + Vector2i(ids.size() % 4, ids.size() / 4)))
+		m.world.on_tick([{"t": "spawn", "id": u.id}])
+		ids.append(u.id)
+		var u2 := sim.spawn_unit(StringName(uid), pid, null, FX.tile_center(at + Vector2i(ids.size() % 4, ids.size() / 4)))
+		m.world.on_tick([{"t": "spawn", "id": u2.id}])
+		ids.append(u2.id)
+	m.ctl.set_selection(ids)
+	await _hud_check(m, "%s multi-selection filters" % fac)
+	for uid in fd["units"]:
+		var one := _first(m, pid, StringName(uid))
+		if one != null:
+			m.ctl.set_selection([one.id])
+			await frames(2)
+			check("portrait name fits: %s" % uid, m.hud.portrait_fit_ok)
+	if builder != null:
+		m.ctl.set_selection([builder.id])
+
+func run_m2() -> void:
+	# 1. lobby: EU (you) + TPLA ally vs TPLA + EU
+	GameSession.setup = {}
+	var cfg := lobby_cfg(3)
+	cfg["slots"][1]["faction"] = "tpla"
+	cfg["slots"][1]["team"] = 0
+	cfg["slots"][2]["faction"] = "tpla"
+	cfg["slots"][2]["team"] = 1
+	cfg["slots"][3]["faction"] = "eu"
+	cfg["slots"][3]["team"] = 1
+	cfg["slots"][3]["difficulty"] = "hard"
+	GameSession.setup = cfg
+	var lobby: Node = (load("res://ui/skirmish_setup.tscn") as PackedScene).instantiate()
+	add_child(lobby)
+	await frames(6)
+	await shot("m2_lobby")
+	lobby.queue_free()
+	await frames(2)
+	# 2. TPLA base (you play TPLA vs an EU AI)
+	var c2 := lobby_cfg(1)
+	c2["slots"][0]["faction"] = "tpla"
+	c2["slots"][1]["faction"] = "eu"
+	var m := await start_match(c2)
+	check("local player is TPLA", m.runner.sim.faction_of(m.local_pid) == &"tpla")
+	fast_forward(m, 20 * 300)
+	var lab := _select_first(m, &"tpla_laborer")
+	var cen := Vector3.ZERO
+	var nb := 0
+	for id in m.runner.sim.ids:
+		var be: SimEntity = m.runner.sim.ents[id]
+		if be.owner == 0 and be.kind == SimEntity.Kind.BUILDING:
+			cen += FX.to_world(be.pos)
+			nb += 1
+	if nb > 0:
+		m.cam.jump_to(cen / nb + Vector3(0, 0, 3), false)
+		m.cam.set_level(1)
+	await frames(30)
+	await shot("m2_tpla_base")
+	var cs := _first(m, 0, &"tpla_chop_shop")
+	if cs:
+		m.runner.sim.players[0].supply += 4000
+		m.ctl.set_selection([cs.id])
+		m.ctl.queue_unit(cs, &"tpla_rattler", 2)
+		m.ctl.queue_unit(cs, &"tpla_scrapback", 1)
+		m.ctl.queue_unit(cs, &"tpla_hailstorm", 1)
+		m.ctl.queue_unit(cs, &"tpla_shrike", 1)
+		m.runner.advance()
+		await frames(20)
+		await shot("m2_tpla_production")
+	await _hud_states(m, &"tpla")
+	# 3. battle: EU vs TPLA
+	var sel: Array = []
+	var fight := Vector2i(-1, -1)
+	for kk in 60:
+		fast_forward(m, 20 * 10)
+		fight = _fight_spot(m)
+		if fight.x >= 0 or m.runner.sim.game_over:
+			break
+	if fight.x >= 0:
+		for id in m.runner.sim.ids:
+			var e: SimEntity = m.runner.sim.ents[id]
+			if e.owner == 0 and e.kind == SimEntity.Kind.UNIT and FX.dist(e.pos, fight) < FX.ONE * 12 and not Content.unit(e.def_id).tags.has("builder"):
+				sel.append(id)
+		m.ctl.set_selection(sel)
+		m.cam.jump_to(FX.to_world(fight), false)
+		m.cam.set_level(0)
+	await frames(25)
+	await shot("m2_battle_eu_vs_tpla")
+	await _hud_check(m, "battle selection")
+	m.queue_free()
+	await frames(3)
+	# 4. EU HUD states (full names everywhere for EU too)
+	var c3 := lobby_cfg(1)
+	c3["slots"][1]["faction"] = "tpla"
+	var m3 := await start_match(c3)
+	fast_forward(m3, 20 * 200)
+	await _hud_states(m3, &"eu")
+	var hq3 := _first(m3, 0, &"eu_hq")
+	if hq3:
+		m3.cam.jump_to(FX.to_world(hq3.pos) + Vector3(5, 0, 4), false)
+	await frames(20)
+	await shot("m2_eu_hud_full_names")
+	m3.queue_free()
+	await frames(3)
+	# 5. units gallery: every TPLA + EU unit (TPLA salvage tiers 0-3) and TPLA buildings
+	var cfg4 := lobby_cfg(1)
+	cfg4["options"]["fog"] = false
+	var m4 = await start_match(cfg4)
+	var base := Vector3(14, 0, 40)
+	var holder := Node3D.new()
+	m4.world.add_child(holder)
+	var x := 0.0
+	for f in DirAccess.get_files_at("res://view/buildings/tpla/"):
+		if f.ends_with(".tscn"):
+			var v: Node3D = (load("res://view/buildings/tpla/" + f) as PackedScene).instantiate()
+			holder.add_child(v)
+			v.position = base + Vector3(x, 0.02, 0)
+			v.rotation_degrees.y = 25.0
+			v.set_team_material(Palette.team_material(1))
+			x += 4.8
+	var ux := 0.0
+	for fac in ["tpla", "eu"]:
+		for f in DirAccess.get_files_at("res://view/units/%s/" % fac):
+			if not f.ends_with(".tscn"):
+				continue
+			var tiers := 4 if fac == "tpla" and f.get_basename() in ["rattler", "scrapback", "shrike", "hailstorm"] else 1
+			for t in tiers:
+				var v2: Node3D = (load("res://view/units/%s/%s" % [fac, f]) as PackedScene).instantiate()
+				holder.add_child(v2)
+				v2.position = base + Vector3(ux, 0.02, 6.0 if fac == "tpla" else 9.0)
+				v2.rotation_degrees.y = 30.0
+				v2.set_team_material(Palette.team_material(1 if fac == "tpla" else 0))
+				if v2.has_method("set_tier"):
+					v2.set_tier(t)
+				if f.get_basename() in ["laborer", "militia", "rocket_cell", "grenadier", "lancer", "crawler"]:
+					v2.scale = Vector3.ONE * 1.4
+				ux += 1.9
+		ux = 0.0
+	for spec in [[base + Vector3(10, 0, 1), 0, "m2_gallery_tpla_buildings_a"], [base + Vector3(30, 0, 1), 0, "m2_gallery_tpla_buildings_b"],
+			[base + Vector3(7, 0, 6.5), 0, "m2_gallery_units_a"], [base + Vector3(19, 0, 6.5), 0, "m2_gallery_units_b"], [base + Vector3(16, 0, 5), 1, "m2_gallery_wide"]]:
+		m4.cam.jump_to(spec[0], false)
+		m4.cam.set_level(spec[1])
+		await frames(30)
+		await shot(spec[2])
+	# TPLA effects: rust cloud, bomb blast, salvage sparkle, rocket salvo
+	var vf: Vfx = m4.world.vfx
+	var c := base + Vector3(10, 0, 13)
+	m4.cam.jump_to(c, false)
+	m4.cam.set_level(0)
+	vf.rust_cloud(c + Vector3(-3, 0, 0), 2.5, 6.0)
+	vf.big_blast(c + Vector3(2, 0, 1), 3.0)
+	vf.salvage_fx(c + Vector3(4, 0, -1), Palette.color(1))
+	await frames(20)
+	await shot("m2_vfx_tpla")
+	m4.queue_free()
