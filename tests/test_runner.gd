@@ -13,7 +13,9 @@ func _ready() -> void:
 		"match":
 			var mode: String = args[1] if args.size() > 1 else "1v1"
 			var seed := int(args[2]) if args.size() > 2 else 1
-			run_match(mode, seed, true)
+			# ZH 4-player games run long; allow 60 min there, 40 min for 1v1 (override with arg 3)
+			var cap := int(args[3]) if args.size() > 3 else (40 if mode == "1v1" else 60)
+			run_match(mode, seed, true, cap)
 		"soak":
 			var n := int(args[1]) if args.size() > 1 else 5
 			var wins := {}
@@ -55,6 +57,7 @@ func _ready() -> void:
 						for e in wu:
 							var o: String = e.orders[0].get("o", "") if not e.orders.is_empty() else "idle"
 							orders[o] = orders.get(o, 0) + 1
+						print("   threat_age=%d threat_pos=%s threat_val=%d" % [r2.sim.tick - int(a.bb["threat_tick"]), FX.to_tile(a.bb["threat_pos"]) if a.bb.has("threat_pos") else "-", a._enemy_strength_near(a.bb["threat_pos"], 12) if a.bb.has("threat_pos") else 0])
 						print("P%d wave=%d idle=%d orders=%s centroid=%s target=%s board=%s home=%d pop=%d/%d need=%d staged_val=%d" % [pid, wu.size(), idle, orders,
 							FX.to_tile(a._centroid(wu)) if not wu.is_empty() else "-", FX.to_tile(a._pick_target()), r2.team_board.get(r2.sim.players[pid].team, {}),
 							a.combat_units().size() - wu.size(), r2.sim.players[pid].pop, r2.sim.players[pid].pop_cap, a._wave_threshold(), a.army_value(a.combat_units())])

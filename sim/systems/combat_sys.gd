@@ -5,7 +5,12 @@ const VET_DMG := [100, 110, 120, 130]
 const VET_HP := [100, 110, 120, 130]
 const GARRISON_RANGE_BONUS := FX.ONE * 2
 
+const REPAIR_RADIUS := FX.ONE * 10
+const REPAIR_IDLE_TICKS := 200
+
 static func run(w: SimWorld) -> void:
+	if w.tick % 20 == 10:
+		_base_repair(w)
 	for id in w.ids:
 		var e: SimEntity = w.ents[id]
 		if not e.alive:
@@ -131,3 +136,30 @@ static func grant_vet_xp(w: SimWorld, a: SimEntity, value: int) -> void:
 		a.max_hp = w.udef(a).max_hp * VET_HP[nv] / 100
 		a.hp += a.max_hp - old_max
 		w.events.append({"t": "promoted", "id": a.id, "vet": nv})
+
+## Zero Hour-style field repair: units that have not been hit for 10 s and stand within
+## 10 tiles of their own finished HQ or production building regain 2% max HP per second.
+## Gives retreating (Medium/Hard AI or player) units a reason to fall back home.
+static func _base_repair(w: SimWorld) -> void:
+	var anchors := {}
+	for id in w.ids:
+		var b: SimEntity = w.ents[id]
+		if b.alive and b.built and b.kind == SimEntity.Kind.BUILDING and b.owner >= 0:
+			var bd: BuildingDef = Content.building(b.def_id)
+			if bd != null and (bd.is_hq or not bd.produces.is_empty()):
+				if not anchors.has(b.owner):
+					anchors[b.owner] = []
+				anchors[b.owner].append(b.pos)
+	if anchors.is_empty():
+		return
+	var r2 := REPAIR_RADIUS * REPAIR_RADIUS
+	for id in w.ids:
+		var u: SimEntity = w.ents[id]
+		if not u.alive or u.kind != SimEntity.Kind.UNIT or u.hp >= u.max_hp or not anchors.has(u.owner):
+			continue
+		if w.tick - u.last_hit_tick < REPAIR_IDLE_TICKS:
+			continue
+		for p: Vector2i in anchors[u.owner]:
+			if FX.dist2(p, u.pos) <= r2:
+				u.hp = mini(u.max_hp, u.hp + maxi(1, u.max_hp / 50))
+				break

@@ -534,8 +534,13 @@ func _army() -> void:
 	# 3. launch waves
 	var staged: Array = []
 	for u: SimEntity in home:
-		if u.id in bb["retreated"] and u.hp * 100 < u.max_hp * 60:
-			continue
+		if u.id in bb["retreated"]:
+			if u.hp * 100 < u.max_hp * 90:
+				# send it home to the field-repair zone; it rejoins once repaired
+				if u.is_idle() and FX.dist(u.pos, base_pos()) > FX.ONE * 8:
+					cmd({"t": "move", "ids": [u.id], "pos": base_pos()})
+				continue
+			bb["retreated"].erase(u.id)
 		staged.append(u)
 	var need := _wave_threshold()
 	# ZH-style pressure: at (near) the unit cap there is nothing to wait for - attack with
@@ -543,6 +548,10 @@ func _army() -> void:
 	var pl := me()
 	if pl.pop >= pl.pop_cap - 6:
 		need = mini(need, maxi(3000, army_value(staged)))
+	# Late-game pressure (ZH games end; turtling to a 40-minute draw is not ZH pacing):
+	# from 16 min the wave threshold ramps down so armies keep colliding and bases fall.
+	if seconds() > 960:
+		need = mini(need, maxi(2500, 6000 - (seconds() - 960) * 5))
 	var t_ok := seconds() >= int(cfg["first_wave_s"]) or (difficulty != "easy" and army_value(staged) >= need * 2)
 	if bb["wave"].is_empty() and t_ok and army_value(staged) >= need:
 		var target := _pick_target()
@@ -590,7 +599,7 @@ func _army() -> void:
 			var t2 := _pick_target()
 			if t2.x >= 0:
 				cmd({"t": "amove", "ids": bb["wave"].duplicate(), "pos": t2})
-		if _every("t_reinforce", 200) and army_value(staged) >= 2500:
+		if _every("t_reinforce", 200) and army_value(staged) >= (1200 if seconds() > 960 else 2500):
 			var rein: Array = []
 			for u: SimEntity in staged:
 				rein.append(u.id)
