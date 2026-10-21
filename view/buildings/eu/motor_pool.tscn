@@ -57,18 +57,18 @@ _surfaces = [{
 "vertex_data": PackedByteArray("exTOvylcrz8pXC8/exTOPylcrz8pXC8/exTOv6NwnT8pXC8/exTOP6NwnT8pXC8/exTOPylcrz9djyI/exTOvylcrz9djyI/exTOP6NwnT9djyI/exTOv6NwnT9djyI/exTOPylcrz8pXC8/exTOPylcrz9djyI/exTOP6NwnT8pXC8/exTOP6NwnT9djyI/exTOvylcrz9djyI/exTOvylcrz8pXC8/exTOv6NwnT9djyI/exTOv6NwnT8pXC8/exTOPylcrz8pXC8/exTOvylcrz8pXC8/exTOPylcrz9djyI/exTOvylcrz9djyI/exTOv6NwnT8pXC8/exTOP6NwnT8pXC8/exTOv6NwnT9djyI/exTOP6NwnT9djyI//3//fwCAAID/f/9/AIAAgP9//38AgACA/3//fwCAAID//////38AgP//////fwCA//////9/AID//////38AgP//AIAAgP+///8AgACA/7///wCAAID/v///AIAAgP+/AAAAgP9//78AAACA/3//vwAAAID/f/+/AAAAgP9//78AgP//AAD/vwCA//8AAP+/AID//wAA/78AgP//AAD/vwCAAAAAAP+/AIAAAAAA/78AgAAAAAD/vwCAAAAAAP+/")
 }]
 
-[node name="View" type="Node3D" unique_id=109606189]
+[node name="View" type="Node3D" unique_id=1770352396]
 script = ExtResource("1_urfy3")
 selection_radius = 2.0
 bar_height = 2.000000048428774
 footprint = Vector2(4, 4)
 is_structure = true
 
-[node name="Model" type="Node3D" parent="." unique_id=440152199]
+[node name="Model" type="Node3D" parent="." unique_id=1645004030]
 
-[node name="Body" type="MeshInstance3D" parent="Model" unique_id=1303956124]
+[node name="Body" type="MeshInstance3D" parent="Model" unique_id=1776899622]
 mesh = SubResource("ArrayMesh_adg7v")
 metadata/team_surface = 3
 
-[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=2103656843]
+[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=542162383]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)

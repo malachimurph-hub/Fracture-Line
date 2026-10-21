@@ -24,20 +24,24 @@ def rows(name):
     with open(os.path.join(BAL, name)) as f:
         return list(csv.DictReader(f))
 
+def fac_of(i):
+    return i.split("_", 1)[0]
+
 for r in rows("units.csv"):
     short = r["id"].split("_", 1)[1]
-    write("data/units/eu/%s.tres" % r["id"], "res://data/defs/unit_def.gd", "UnitDef", [
-        ("id", sn(r["id"])), ("faction", sn("eu")), ("name_key", s(r["name_key"])), ("desc_key", s(r["name_key"] + "_DESC")),
+    fac = fac_of(r["id"])
+    write("data/units/%s/%s.tres" % (fac, r["id"]), "res://data/defs/unit_def.gd", "UnitDef", [
+        ("id", sn(r["id"])), ("faction", sn(fac)), ("name_key", s(r["name_key"])), ("desc_key", s(r["name_key"] + "_DESC")),
         ("cost", r["cost"]), ("build_time_ms", r["build_time_ms"]), ("pop", r["pop"]), ("prereqs", psa(r["prereqs"])),
         ("tags", psa(r["tags"])), ("max_hp", r["max_hp"]), ("armor_type", sn(r["armor_type"])), ("weapons", psa(r["weapons"])),
         ("speed_mtps", r["speed_mtps"]), ("move_layer", sn(r["move_layer"])), ("sight", r["sight"]), ("radius_mt", r["radius_mt"]),
         ("shield_aura_radius", r["shield_aura_radius"]), ("shield_aura_pct", r["shield_aura_pct"]),
         ("harvest_capacity", r["harvest_capacity"]), ("role", sn(r["role"])),
-        ("view_scene", s("res://view/units/eu/%s.tscn" % short)), ("stubs", psa(r["stubs"]))])
+        ("view_scene", s("res://view/units/%s/%s.tscn" % (fac, short))), ("stubs", psa(r["stubs"]))])
 
 for r in rows("buildings.csv"):
     short = r["id"].split("_", 1)[1]
-    fac = "neutral" if r["id"].startswith("neutral") else "eu"
+    fac = fac_of(r["id"])
     write("data/buildings/%s/%s.tres" % (fac, r["id"]), "res://data/defs/building_def.gd", "BuildingDef", [
         ("id", sn(r["id"])), ("faction", sn(fac)), ("name_key", s(r["name_key"])), ("desc_key", s(r["name_key"] + "_DESC")),
         ("category", sn(r["category"])), ("cost", r["cost"]), ("build_time_ms", r["build_time_ms"]),
@@ -48,13 +52,15 @@ for r in rows("buildings.csv"):
         ("view_scene", s("res://view/buildings/%s/%s.tscn" % (fac, short))), ("stubs", psa(r["stubs"])),
         ("weapons", psa(r["weapons"])), ("needs_power_to_fire", b(r["needs_power_to_fire"])),
         ("garrison_capacity", r["garrison_capacity"]), ("capturable", b(r["capturable"])),
-        ("capture_income", r["capture_income"]), ("buildable", b(r["buildable"]))])
+        ("capture_income", r["capture_income"]), ("buildable", b(r["buildable"])),
+        ("tags", psa(r.get("tags", ""))), ("aux_radius", r.get("aux_radius", "0") or "0")])
 
 for r in rows("weapons.csv"):
     write("data/weapons/%s.tres" % r["id"], "res://data/defs/weapon_def.gd", "WeaponDef", [
         ("id", sn(r["id"])), ("damage", r["damage"]), ("range_mt", r["range_mt"]), ("min_range_mt", r["min_range_mt"]),
         ("cooldown_ms", r["cooldown_ms"]), ("damage_type", sn(r["damage_type"])), ("splash_mt", r["splash_mt"]),
-        ("targets_air", b(r["targets_air"])), ("targets_ground", b(r["targets_ground"])), ("vfx", sn(r["vfx"]))])
+        ("targets_air", b(r["targets_air"])), ("targets_ground", b(r["targets_ground"])), ("vfx", sn(r["vfx"])),
+        ("min_tier", r.get("min_tier", "0") or "0")])
 
 for r in rows("powers.csv"):
     write("data/powers/%s.tres" % r["id"], "res://data/defs/power_def.gd", "PowerDef", [

@@ -14,7 +14,9 @@ static func run(w: SimWorld) -> void:
 static func max_range(w: SimWorld, u: SimEntity) -> int:
 	var r := 0
 	for wid in w.udef(u).weapons:
-		r = maxi(r, FX.mt_to_fx(Content.weapon(wid).range_mt))
+		var wd: WeaponDef = Content.weapon(wid)
+		if wd.min_tier <= u.tier:
+			r = maxi(r, FX.mt_to_fx(wd.range_mt))
 	return r
 
 static func can_attack(w: SimWorld, u: SimEntity) -> bool:
@@ -23,7 +25,7 @@ static func can_attack(w: SimWorld, u: SimEntity) -> bool:
 static func valid_target(w: SimWorld, u: SimEntity, t: SimEntity) -> bool:
 	if t == null or not t.alive or t.kind == SimEntity.Kind.RESOURCE:
 		return false
-	if not w.enemies(u.team, t.team):
+	if t.kind == SimEntity.Kind.CRATE or not w.enemies(u.team, t.team):
 		return false
 	if t.kind == SimEntity.Kind.UNIT and t.res_id < 0:
 		return false
@@ -46,7 +48,7 @@ static func find_target(w: SimWorld, u: SimEntity, p: Vector2i, r: int) -> SimEn
 		return best
 	for id in w.ids:
 		var b: SimEntity = w.ents[id]
-		if b.kind == SimEntity.Kind.UNIT or b.kind == SimEntity.Kind.RESOURCE or not b.alive:
+		if b.kind == SimEntity.Kind.UNIT or b.kind == SimEntity.Kind.RESOURCE or b.kind == SimEntity.Kind.CRATE or not b.alive:
 			continue
 		if not valid_target(w, u, b):
 			continue
@@ -138,6 +140,9 @@ static func _think(w: SimWorld, u: SimEntity) -> void:
 			if b == null or (b.owner >= 0 and b.owner != u.owner and w.enemies(b.team, u.team)):
 				_pop(u)
 				return
+			if TplaSys.is_tunnel(w, b):
+				_enter_tunnel(w, u, b)
+				return
 			if w.dist_to_building(u.pos, b) <= u.radius + TILE:
 				if garrison_count(w, b) < w.bdef(b).garrison_capacity:
 					u.res_id = -b.id
@@ -174,6 +179,29 @@ static func _think(w: SimWorld, u: SimEntity) -> void:
 					_pop(u)
 				else:
 					_goto(u, cp)
+
+static func _enter_tunnel(w: SimWorld, u: SimEntity, b: SimEntity) -> void:
+	if b.owner != u.owner or not b.built:
+		_pop(u)
+		return
+	var veh := w.is_vehicle(u)
+	if w.dist_to_building(u.pos, b) <= u.radius + TILE * (2 if veh else 1):
+		if TplaSys.network_units(w, u.owner).size() < TplaSys.network_capacity():
+			u.res_id = -b.id
+			u.goal = NONE
+			u.path = []
+			u.orders.clear()
+			u.target = 0
+			w.events.append({"t": "garrison", "id": u.id, "b": b.id})
+		else:
+			w.events.append({"t": "reject", "owner": u.owner, "reason": "REASON_TUNNEL_FULL"})
+			_pop(u)
+	else:
+		var gp := FX.tile_center(w.exit_tile(b, veh))
+		if _reached(u, gp):
+			_pop(u)
+		else:
+			_goto(u, gp)
 
 static func garrison_count(w: SimWorld, b: SimEntity) -> int:
 	var n := 0

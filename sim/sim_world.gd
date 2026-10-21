@@ -3,7 +3,7 @@ extends RefCounted
 ## Deterministic simulation. No Node / scene dependencies. All state changes come
 ## from Commands (applied at tick start) and the fixed system order (GDD 16.4).
 
-const SAVE_VERSION := 1
+const SAVE_VERSION := 2
 const CELL := 4096        ## spatial hash cell = 4 tiles
 const SUPPLY_CAP := 50000
 
@@ -26,6 +26,9 @@ var path_queue: Array = []       ## unit ids waiting for a path
 var power_dirty: bool = true
 var temp_vision: Array = []      ## [{team, pos(tile), r, until}]
 var pending: Array = []          ## commands to apply next tick
+var zones: Array = []            ## rust (corrosive) zones: {pos, r, until, dps, owner, team}
+var pending_holes: Array = []    ## TPLA rebuild holes to open after the death pass
+var has_tpla: bool = false       ## salvage crates drop only when a TPLA player is in the match
 
 # ------------------------------------------------------------------ setup
 func setup(map_def: MapDef, slots: Array, opts: Dictionary, p_seed: int) -> void:
@@ -43,6 +46,11 @@ func setup(map_def: MapDef, slots: Array, opts: Dictionary, p_seed: int) -> void
 		p.team = int(s.get("team", i))
 		p.color = int(s.get("color", i))
 		p.is_ai = bool(s.get("ai", false))
+		p.faction = StringName(s.get("faction", "eu"))
+		if not Content.FACTIONS.has(p.faction):
+			p.faction = &"eu"
+		if p.faction == &"tpla":
+			has_tpla = true
 		p.supply = int(options["start_money"])
 		players.append(p)
 	fog.setup(map.w, map.h, 4, not options["fog"])
@@ -64,9 +72,11 @@ func setup(map_def: MapDef, slots: Array, opts: Dictionary, p_seed: int) -> void
 	for i in slots.size():
 		var sp: int = int(slots[i].get("spawn", i))
 		var t: Vector2i = map_def.spawns[sp]
-		var hq := _place_building(Content.building(&"eu_hq"), i, t, _spawn_rot(t), true)
-		var c := spawn_unit(&"eu_crawler", i, hq)
-		c.home = c.pos
+		var fac: Dictionary = Content.faction(players[i].faction)
+		var hq := _place_building(Content.building(fac["hq"]), i, t, _spawn_rot(t), true)
+		for su in fac["start_units"]:
+			var c := spawn_unit(su, i, hq)
+			c.home = c.pos
 	power_dirty = true
 	PowerSys.run(self)
 	FogSys.run(self, true)
@@ -166,6 +176,13 @@ func bdef(e: SimEntity) -> BuildingDef:
 
 func is_vehicle(e: SimEntity) -> bool:
 	return Content.unit(e.def_id).move_layer == &"vehicle"
+
+func faction_of(pid: int) -> StringName:
+	return players[pid].faction if pid >= 0 and pid < players.size() else &"neutral"
+
+## Max HP of a unit with veterancy and salvage tier applied.
+func unit_max_hp(e: SimEntity) -> int:
+	return udef(e).max_hp * CombatSys.VET_HP[e.vet] / 100 * (100 + TplaSys.TIER_HP * e.tier) / 100
 
 func get_ent(id: int) -> SimEntity:
 	var e = ents.get(id)
@@ -362,6 +379,8 @@ func step() -> void:
 	PowerSys.run(self)
 	# 9 powers
 	PowersSys.run(self)
+	# 10 faction mechanics (TPLA: stealth, traps, salvage, holes, tunnels, rust zones)
+	TplaSys.run(self)
 	# 11 fog (5 Hz)
 	if tick % 4 == 0:
 		FogSys.run(self, false)
@@ -399,6 +418,7 @@ func _kill(e: SimEntity, attacker: SimEntity) -> void:
 		value = udef(e).cost
 		if e.owner >= 0:
 			players[e.owner].stats["lost"] += 1
+		TplaSys.on_unit_death(self, e)
 	elif e.kind == SimEntity.Kind.BUILDING or e.kind == SimEntity.Kind.NEUTRAL:
 		value = bdef(e).cost / 2 + 200
 		if e.owner >= 0:
@@ -406,6 +426,7 @@ func _kill(e: SimEntity, attacker: SimEntity) -> void:
 		map.unstamp(e.tile, e.fp)
 		power_dirty = true
 		_eject_garrison(e)
+		TplaSys.on_building_death(self, e)
 	if attacker != null and attacker.owner >= 0 and e.owner >= 0 and enemies(attacker.team, e.team):
 		var ap: SimPlayer = players[attacker.owner]
 		ap.xp += value
@@ -418,6 +439,9 @@ func _kill(e: SimEntity, attacker: SimEntity) -> void:
 	events.append({"t": "death", "id": e.id, "kind": e.kind, "def": e.def_id, "pos": e.pos, "owner": e.owner})
 
 func _eject_garrison(b: SimEntity) -> void:
+	if b.kind == SimEntity.Kind.BUILDING and Content.btag(b.def_id, "tunnel"):
+		TplaSys.tunnel_destroyed(self, b)
+		return
 	for id in ids:
 		var u: SimEntity = ents[id]
 		if u.alive and u.kind == SimEntity.Kind.UNIT and u.res_id == -b.id:
@@ -504,6 +528,8 @@ func state_hash() -> int:
 		h = FX.fnv_int(h, e.hp)
 		h = FX.fnv_int(h, e.shield)
 		h = FX.fnv_int(h, e.owner)
+		h = FX.fnv_int(h, e.tier)
+	h = FX.fnv_int(h, zones.size())
 	return h
 
 func serialize() -> Dictionary:
@@ -516,7 +542,8 @@ func serialize() -> Dictionary:
 	return {"save_version": SAVE_VERSION, "tick": tick, "rng": rng.to_dict(), "seed": seed_value, "map_id": map_id,
 		"players": pd, "ents": ed, "next_id": next_id, "options": options.duplicate(), "fog": fog.to_dict(),
 		"winner_team": winner_team, "game_over": game_over, "temp_vision": temp_vision.duplicate(true),
-		"pending": pending.duplicate(true), "hash": state_hash()}
+		"pending": pending.duplicate(true), "zones": zones.duplicate(true), "pending_holes": pending_holes.duplicate(true),
+		"has_tpla": has_tpla, "hash": state_hash()}
 
 func deserialize(d: Dictionary) -> void:
 	var map_def: MapDef = Content.maps.get(StringName(d["map_id"]))
@@ -545,6 +572,9 @@ func deserialize(d: Dictionary) -> void:
 	game_over = bool(d["game_over"])
 	temp_vision = d["temp_vision"]
 	pending = d["pending"]
+	zones = d.get("zones", [])
+	pending_holes = d.get("pending_holes", [])
+	has_tpla = bool(d.get("has_tpla", false))
 	power_dirty = true
 	path_queue.clear()
 	for id in ids:

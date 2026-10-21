@@ -24,6 +24,14 @@ const C := {
 	"corr_green": ["metal", "#6e7a5e"], "corr_rust": ["metal", "#9a6a48"],
 	"cyan": ["glow", "#6fe3ff"], "lamp": ["glow", "#ffd27a"], "crystal": ["glow", "#5ce0a0"],
 	"team": ["team", "#ffffff"],
+	# TPLA: desert camo, mismatched scrap panels, canvas tarps, acid-green "rust" agent glow
+	"tan": ["base", "#c2a476"], "khaki": ["base", "#a58f63"], "camo_brown": ["base", "#7d6646"],
+	"camo_olive": ["base", "#6b6a45"], "scrap_blue": ["base", "#5d6f7a"], "scrap_green": ["base", "#5f6b4a"],
+	"scrap_red": ["base", "#8a4a34"], "tarp": ["base", "#8a8064"], "tarp_blue": ["base", "#4f6170"],
+	"cloth": ["base", "#b9a888"], "bone": ["base", "#d8cfb8"], "rust_dark": ["base", "#5e3a26"],
+	"dirt": ["base", "#8a7356"], "mud": ["concrete", "#b49a74"], "mud_dark": ["concrete", "#9a8160"],
+	"plank": ["base", "#7a5d3c"], "tire": ["base", "#1e1d1c"], "net": ["base", "#7b7a52"],
+	"acid": ["glow", "#b6e04a"], "fire": ["glow", "#ff9a3a"],
 }
 var mats := {}
 
@@ -39,6 +47,12 @@ func _init() -> void:
 		_save(b["parts"], b["path"], true, b["fp"])
 	for id in PROPS:
 		_save(PROPS[id], "res://view/neutral/%s.tscn" % id, false, Vector2.ONE)
+	_tpla_defs()
+	for id in TP_UNITS:
+		_save(TP_UNITS[id], "res://view/units/tpla/%s.tscn" % id, false, Vector2.ONE)
+	for id in TP_BUILDINGS:
+		var tb: Dictionary = TP_BUILDINGS[id]
+		_save(tb["parts"], "res://view/buildings/tpla/%s.tscn" % id, true, tb["fp"])
 	print("views generated")
 	quit()
 
@@ -145,21 +159,27 @@ func _save(parts: Array, path: String, structure: bool, fp: Vector2) -> void:
 	model.name = "Model"
 	root.add_child(model)
 	model.owner = root
-	var body: Array = []
-	var tur: Array = []
+	# groups: "" body, "turret", "tier1".."tier3" (salvage bolt-ons, hidden until earned),
+	# "turret:tier2" (bolt-on riding the turret)
+	var groups := {}
 	for p in parts:
-		if p.size() > 5 and p[5] == "turret":
-			tur.append(p)
-		else:
-			body.append(p)
+		var g: String = p[5] if p.size() > 5 else ""
+		if not groups.has(g):
+			groups[g] = []
+		groups[g].append(p)
 	var top := 0.0
 	var extent := 0.3
-	for grp in [[body, "Body"], [tur, "Turret"]]:
-		if grp[0].is_empty():
+	var order := [["", "Body"], ["turret", "Turret"], ["tier1", "Tier1"], ["tier2", "Tier2"], ["tier3", "Tier3"],
+		["turret:tier1", "TurretTier1"], ["turret:tier2", "TurretTier2"], ["turret:tier3", "TurretTier3"]]
+	var pivot: Node3D = null
+	for grp0 in order:
+		if not groups.has(grp0[0]):
 			continue
+		var grp := [groups[grp0[0]], grp0[1]]
 		var r := _merge(grp[0])
-		top = maxf(top, r["top"])
-		extent = maxf(extent, r["extent"])
+		if grp[1] in ["Body", "Turret"]:
+			top = maxf(top, r["top"])
+			extent = maxf(extent, r["extent"])
 		var mi := MeshInstance3D.new()
 		mi.name = grp[1]
 		mi.mesh = r["mesh"]
@@ -167,12 +187,16 @@ func _save(parts: Array, path: String, structure: bool, fp: Vector2) -> void:
 		if r["team"] >= 0:
 			mi.set_meta("team_surface", r["team"])
 		var parent: Node3D = model
-		if grp[1] == "Turret":
-			var pivot := Node3D.new()
-			pivot.name = "TurretPivot"
-			model.add_child(pivot)
-			pivot.owner = root
+		if grp[1].begins_with("Turret"):
+			if pivot == null:
+				pivot = Node3D.new()
+				pivot.name = "TurretPivot"
+				model.add_child(pivot)
+				pivot.owner = root
 			parent = pivot
+		if grp[1].contains("Tier"):
+			mi.visible = false
+			mi.set_meta("tier", int(grp[1].right(1)))
 		parent.add_child(mi)
 		mi.owner = root
 	var anchor := Marker3D.new()
@@ -542,3 +566,356 @@ func _defs() -> void:
 		P("box", Vector3(0.6, 0.35, 0.6), Vector3(0.6, 0.31, 0.65), "olive"),
 	]
 	PROPS["cache"] = crates(Vector3(-0.25, 0, -0.2), 4, 0.34) + barrels(Vector3(0.3, 0, 0.3), 2)
+
+# =====================================================================================
+# TPLA (M2): ramshackle, scavenged, tarp and scrap metal, sandbags, desert camo; team colour
+# on cloth (scarves, tarps, flags). Original designs.
+# =====================================================================================
+var TP_UNITS := {}
+var TP_BUILDINGS := {}
+
+static func Q(n: int, shape: String, s: Vector3, pos: Vector3, key: String, rot: Vector3 = Vector3.ZERO) -> Array:
+	return [shape, s, pos, rot, key, "tier%d" % n]
+
+static func QT(n: int, shape: String, s: Vector3, pos: Vector3, key: String, rot: Vector3 = Vector3.ZERO) -> Array:
+	return [shape, s, pos, rot, key, "turret:tier%d" % n]
+
+## One insurgent figure at (x, z). head: wrap | cap | helmet | hardhat. item: rifle | rpg | shovel | sack | none
+static func person(x: float, z: float, shirt: String, pants: String, head: String, item: String, lean: float = 0.0) -> Array:
+	var o: Array = []
+	o.append(P("box", Vector3(0.05, 0.22, 0.06), Vector3(x - 0.035, 0.11, z), pants, Vector3(8 + lean, 0, 0)))
+	o.append(P("box", Vector3(0.05, 0.22, 0.06), Vector3(x + 0.035, 0.11, z), pants, Vector3(-8 + lean, 0, 0)))
+	o.append(P("box", Vector3(0.14, 0.2, 0.085), Vector3(x, 0.32, z), shirt, Vector3(lean, 0, 0)))
+	o.append(P("box", Vector3(0.15, 0.04, 0.09), Vector3(x, 0.235, z), "camo_brown"))                     # belt
+	o.append(P("box", Vector3(0.16, 0.05, 0.1), Vector3(x, 0.4, z + 0.005), "team", Vector3(0, 0, 8)))      # scarf
+	o.append(P("sph", Vector3(0.05, 0, 0), Vector3(x, 0.47, z), "skin"))
+	match head:
+		"wrap":
+			o.append(P("hsph", Vector3(0.058, 0.045, 0.058), Vector3(x, 0.485, z), "cloth"))
+			o.append(P("box", Vector3(0.03, 0.06, 0.02), Vector3(x, 0.45, z - 0.06), "cloth", Vector3(20, 0, 0)))
+		"cap":
+			o.append(P("hsph", Vector3(0.055, 0.035, 0.055), Vector3(x, 0.49, z), "camo_olive"))
+			o.append(P("box", Vector3(0.07, 0.01, 0.05), Vector3(x, 0.49, z + 0.06), "camo_olive"))
+		"helmet":
+			o.append(P("hsph", Vector3(0.062, 0.05, 0.062), Vector3(x, 0.48, z), "scrap_green"))
+		"hardhat":
+			o.append(P("hsph", Vector3(0.06, 0.045, 0.06), Vector3(x, 0.49, z), "paint_y"))
+	o.append(P("box", Vector3(0.04, 0.16, 0.05), Vector3(x - 0.09, 0.31, z + 0.03), shirt, Vector3(-30, 0, 0)))
+	o.append(P("box", Vector3(0.04, 0.16, 0.05), Vector3(x + 0.09, 0.31, z + 0.03), shirt, Vector3(-30, 0, 0)))
+	match item:
+		"rifle":
+			o.append(P("box", Vector3(0.03, 0.045, 0.28), Vector3(x + 0.05, 0.3, z + 0.12), "gun", Vector3(-10, 0, 0)))
+			o.append(P("box", Vector3(0.025, 0.07, 0.03), Vector3(x + 0.05, 0.27, z + 0.12), "plank", Vector3(-10, 0, 0)))
+		"rpg":
+			o.append(P("cyl", Vector3(0.03, 0.46, 8), Vector3(x + 0.08, 0.43, z + 0.02), "camo_olive", Vector3(90, 0, 0)))
+			o.append(P("cone", Vector3(0.06, 0.12, 0.02), Vector3(x + 0.08, 0.43, z + 0.3), "khaki", Vector3(90, 0, 0)))
+		"shovel":
+			o.append(P("cyl", Vector3(0.012, 0.42, 5), Vector3(x + 0.09, 0.32, z + 0.06), "plank", Vector3(-25, 0, 0)))
+			o.append(P("box", Vector3(0.07, 0.09, 0.01), Vector3(x + 0.09, 0.13, z + 0.15), "steel_dark", Vector3(-25, 0, 0)))
+		"sack":
+			o.append(P("sph", Vector3(0.08, 0.06, 0.06), Vector3(x, 0.36, z - 0.08), "cloth"))
+	return o
+
+## Pickup-truck chassis (technical / Hailstorm / Mule base): front at +z.
+static func pickup(body_col: String, bed_len: float = 0.5) -> Array:
+	var o := wheels(0.3, [0.36, -0.36], 0.14, 0.11)
+	o += [
+		P("box", Vector3(0.6, 0.12, 1.25), Vector3(0, 0.24, 0), "steel_dark"),
+		P("box", Vector3(0.58, 0.2, 0.38), Vector3(0, 0.38, 0.42), body_col),                  # bonnet
+		P("box", Vector3(0.56, 0.26, 0.34), Vector3(0, 0.55, 0.08), body_col),                 # cab
+		P("box", Vector3(0.5, 0.13, 0.03), Vector3(0, 0.58, 0.26), "glass", Vector3(-15, 0, 0)),
+		P("box", Vector3(0.57, 0.04, 0.36), Vector3(0, 0.69, 0.08), body_col, Vector3.ZERO, "", 0.85),
+		P("box", Vector3(0.6, 0.06, 0.08), Vector3(0, 0.3, 0.63), "steel_light"),               # bumper
+		P("box", Vector3(0.6, 0.18, 0.03), Vector3(0, 0.38, -0.12 - bed_len), body_col, Vector3.ZERO, "", 0.9),
+		P("box", Vector3(0.03, 0.16, bed_len + 0.04), Vector3(-0.29, 0.38, -0.1 - bed_len * 0.5), body_col, Vector3.ZERO, "", 0.9),
+		P("box", Vector3(0.03, 0.16, bed_len + 0.04), Vector3(0.29, 0.38, -0.1 - bed_len * 0.5), body_col, Vector3.ZERO, "", 0.9),
+		P("box", Vector3(0.15, 0.1, 0.02), Vector3(-0.18, 0.4, 0.62), "lamp"),
+		P("box", Vector3(0.15, 0.1, 0.02), Vector3(0.18, 0.4, 0.62), "lamp"),
+		P("box", Vector3(0.3, 0.14, 0.02), Vector3(0.12, 0.45, 0.25 + 0.0), "scrap_red", Vector3(0, 0, 4)),   # mismatched door
+		P("box", Vector3(0.2, 0.03, 0.22), Vector3(-0.15, 0.71, 0.08), "team"),                    # cloth on roof
+	]
+	return o
+
+func _tpla_defs() -> void:
+	# ---------------- units ----------------
+	TP_UNITS["laborer"] = person(0, 0, "khaki", "camo_brown", "hardhat", "shovel") + [P("sph", Vector3(0.08, 0.06, 0.06), Vector3(0, 0.36, -0.08), "cloth")]
+	TP_UNITS["militia"] = person(-0.2, -0.16, "tan", "camo_olive", "wrap", "rifle") + person(0.2, -0.14, "camo_olive", "khaki", "cap", "rifle") \
+		+ person(-0.16, 0.2, "camo_brown", "tan", "wrap", "rifle") + person(0.2, 0.2, "khaki", "camo_brown", "helmet", "rifle")
+	TP_UNITS["rocket_cell"] = person(-0.16, 0, "camo_olive", "tan", "wrap", "rpg") + person(0.18, 0.04, "tan", "camo_brown", "cap", "rpg") \
+		+ [P("box", Vector3(0.1, 0.07, 0.14), Vector3(0.0, 0.035, -0.18), "camo_olive")]
+	TP_UNITS["rattler"] = pickup("tan") + [
+		P("box", Vector3(0.2, 0.12, 0.3), Vector3(-0.15, 0.36, -0.42), "crate"),
+		P("cyl", Vector3(0.12, 0.08, 10), Vector3(0.18, 0.37, -0.58), "tire", Vector3(90, 0, 0)),
+		T("cyl", Vector3(0.025, 0.36, 6), Vector3(0, 0.5, -0.32), "steel_dark"),
+		T("box", Vector3(0.24, 0.16, 0.03), Vector3(0, 0.74, -0.2), "scrap_green"),              # gun shield
+		T("box", Vector3(0.06, 0.08, 0.2), Vector3(0, 0.72, -0.3), "gun"),
+		T("cyl", Vector3(0.02, 0.5, 6), Vector3(0, 0.73, 0.0), "gun", Vector3(90, 0, 0)),
+		T("cyl", Vector3(0.03, 0.06, 6), Vector3(0, 0.73, 0.26), "black", Vector3(90, 0, 0)),
+		# salvage tier 1: side armour plates + spare tire on the bonnet
+		Q(1, "box", Vector3(0.03, 0.2, 0.5), Vector3(-0.31, 0.42, 0.15), "scrap_blue", Vector3(0, 0, -6)),
+		Q(1, "box", Vector3(0.03, 0.2, 0.5), Vector3(0.31, 0.42, 0.15), "corr_rust", Vector3(0, 0, 6)),
+		Q(1, "cyl", Vector3(0.11, 0.07, 10), Vector3(0, 0.52, 0.45), "tire"),
+		# tier 2: 40 mm cannon on the mount
+		QT(2, "cyl", Vector3(0.045, 0.7, 8), Vector3(0.1, 0.78, 0.06), "steel_dark", Vector3(90, 0, 0)),
+		QT(2, "box", Vector3(0.12, 0.12, 0.22), Vector3(0.1, 0.78, -0.26), "steel"),
+		# tier 3: sandbagged bed, cab cage, extra armour
+		Q(3, "box", Vector3(0.62, 0.05, 0.05), Vector3(0, 0.8, 0.26), "steel_dark"),
+		Q(3, "box", Vector3(0.05, 0.3, 0.05), Vector3(-0.27, 0.65, 0.26), "steel_dark"),
+		Q(3, "box", Vector3(0.05, 0.3, 0.05), Vector3(0.27, 0.65, 0.26), "steel_dark"),
+		Q(3, "box", Vector3(0.5, 0.1, 0.02), Vector3(0, 0.46, 0.67), "scrap_red"),
+	] + _tierify(3, sandbags(Vector2(-0.24, -0.66), Vector2(0.24, -0.66), 1))
+	TP_UNITS["hailstorm"] = pickup("khaki", 0.55) + [
+		P("box", Vector3(0.5, 0.06, 0.5), Vector3(0, 0.33, -0.36), "steel_dark"),
+		T("cyl", Vector3(0.17, 0.1, 10), Vector3(0, 0.42, -0.36), "camo_olive"),
+		T("box", Vector3(0.3, 0.2, 0.26), Vector3(0, 0.58, -0.36), "camo_olive"),
+		T("box", Vector3(0.31, 0.05, 0.14), Vector3(0, 0.7, -0.4), "team"),
+		T("box", Vector3(0.36, 0.2, 0.03), Vector3(0, 0.6, -0.2), "scrap_green", Vector3(-15, 0, 0)),
+		T("cyl", Vector3(0.022, 0.6, 6), Vector3(-0.12, 0.66, -0.05), "gun", Vector3(70, 0, 0)),
+		T("cyl", Vector3(0.022, 0.6, 6), Vector3(-0.06, 0.66, -0.05), "gun", Vector3(70, 0, 0)),
+		T("cyl", Vector3(0.022, 0.6, 6), Vector3(0.06, 0.66, -0.05), "gun", Vector3(70, 0, 0)),
+		T("cyl", Vector3(0.022, 0.6, 6), Vector3(0.12, 0.66, -0.05), "gun", Vector3(70, 0, 0)),
+		T("box", Vector3(0.08, 0.14, 0.1), Vector3(-0.2, 0.55, -0.42), "crate"),
+		Q(1, "box", Vector3(0.03, 0.2, 0.55), Vector3(-0.31, 0.42, 0.15), "scrap_blue"),
+		Q(1, "box", Vector3(0.03, 0.2, 0.55), Vector3(0.31, 0.42, 0.15), "scrap_red"),
+		QT(2, "box", Vector3(0.4, 0.16, 0.03), Vector3(0, 0.62, -0.18), "corr_rust", Vector3(-25, 0, 0)),
+		Q(3, "box", Vector3(0.5, 0.1, 0.02), Vector3(0, 0.46, 0.67), "scrap_red"),
+	] + _tierify(3, sandbags(Vector2(-0.26, -0.7), Vector2(0.26, -0.7), 1))
+	TP_UNITS["scrapback"] = tracks(0.4, 1.3, 0.28, 0.22, 5) + [
+		P("box", Vector3(0.62, 0.24, 1.18), Vector3(0, 0.38, -0.02), "camo_olive"),
+		P("wedge", Vector3(0.62, 0.18, 0.28), Vector3(0, 0.4, 0.68), "camo_olive", Vector3(90, 0, 180)),
+		P("box", Vector3(0.3, 0.02, 0.4), Vector3(-0.15, 0.51, -0.25), "scrap_blue"),             # patch plate
+		P("box", Vector3(0.22, 0.02, 0.3), Vector3(0.18, 0.51, 0.25), "corr_rust"),
+		P("box", Vector3(0.05, 0.16, 1.2), Vector3(-0.47, 0.34, 0), "scrap_red"),
+		P("box", Vector3(0.05, 0.16, 1.2), Vector3(0.47, 0.34, 0), "tan"),
+		P("cyl", Vector3(0.1, 0.4, 8), Vector3(0.2, 0.55, -0.55), "barrel", Vector3(0, 0, 90)),  # fuel drum
+		T("cyl", Vector3(0.28, 0.2, 9), Vector3(0, 0.6, -0.05), "tan"),
+		T("box", Vector3(0.36, 0.14, 0.32), Vector3(0, 0.66, 0.04), "tan"),
+		T("box", Vector3(0.37, 0.06, 0.14), Vector3(0, 0.72, -0.18), "team"),
+		T("cyl", Vector3(0.045, 0.85, 8), Vector3(0, 0.66, 0.6), "steel_dark", Vector3(90, 0, 0)),
+		T("cyl", Vector3(0.06, 0.12, 8), Vector3(0, 0.66, 1.0), "rust", Vector3(90, 0, 0)),
+		T("cyl", Vector3(0.05, 0.08, 6), Vector3(-0.12, 0.79, -0.08), "steel_dark"),
+		Q(1, "box", Vector3(0.04, 0.22, 1.0), Vector3(-0.51, 0.3, 0.05), "corr_rust", Vector3(0, 0, -8)),
+		Q(1, "box", Vector3(0.04, 0.22, 1.0), Vector3(0.51, 0.3, 0.05), "scrap_blue", Vector3(0, 0, 8)),
+		QT(2, "box", Vector3(0.14, 0.14, 0.34), Vector3(0.27, 0.72, 0.02), "scrap_green"),          # rocket pod
+		QT(2, "cyl", Vector3(0.035, 0.04, 6), Vector3(0.24, 0.75, 0.2), "black", Vector3(90, 0, 0)),
+		QT(2, "cyl", Vector3(0.035, 0.04, 6), Vector3(0.3, 0.69, 0.2), "black", Vector3(90, 0, 0)),
+		QT(3, "box", Vector3(0.4, 0.18, 0.03), Vector3(0, 0.66, 0.22), "corr_dark", Vector3(-20, 0, 0)),
+		Q(3, "box", Vector3(0.66, 0.03, 0.3), Vector3(0, 0.55, 0.7), "steel_light", Vector3(-30, 0, 0)),
+	]
+	TP_UNITS["shrike"] = [
+		P("box", Vector3(0.48, 0.08, 1.0), Vector3(0, 0.25, 0), "steel_dark"),
+		P("box", Vector3(0.4, 0.14, 0.4), Vector3(0, 0.33, 0.3), "tan"),
+		P("box", Vector3(0.03, 0.03, 0.8), Vector3(-0.2, 0.62, -0.02), "steel_dark"),              # roll cage
+		P("box", Vector3(0.03, 0.03, 0.8), Vector3(0.2, 0.62, -0.02), "steel_dark"),
+		P("box", Vector3(0.43, 0.03, 0.03), Vector3(0, 0.62, 0.36), "steel_dark"),
+		P("box", Vector3(0.03, 0.34, 0.03), Vector3(-0.2, 0.45, 0.38), "steel_dark", Vector3(-20, 0, 0)),
+		P("box", Vector3(0.03, 0.34, 0.03), Vector3(0.2, 0.45, 0.38), "steel_dark", Vector3(-20, 0, 0)),
+		P("box", Vector3(0.03, 0.36, 0.03), Vector3(-0.2, 0.44, -0.4), "steel_dark"),
+		P("box", Vector3(0.03, 0.36, 0.03), Vector3(0.2, 0.44, -0.4), "steel_dark"),
+		P("box", Vector3(0.12, 0.12, 0.14), Vector3(-0.08, 0.38, -0.02), "camo_brown"),            # seat
+		P("box", Vector3(0.4, 0.03, 0.12), Vector3(0, 0.64, -0.3), "team"),
+	] + wheels(0.27, [0.36, -0.34], 0.15, 0.13) + [
+		T("box", Vector3(0.34, 0.06, 0.24), Vector3(0, 0.68, -0.22), "steel_dark"),
+		T("box", Vector3(0.32, 0.2, 0.34), Vector3(0, 0.82, -0.22), "camo_olive", Vector3(-20, 0, 0)),
+		T("cyl", Vector3(0.03, 0.04, 6), Vector3(-0.1, 0.9, -0.04), "black", Vector3(70, 0, 0)),
+		T("cyl", Vector3(0.03, 0.04, 6), Vector3(0.0, 0.9, -0.04), "black", Vector3(70, 0, 0)),
+		T("cyl", Vector3(0.03, 0.04, 6), Vector3(0.1, 0.9, -0.04), "black", Vector3(70, 0, 0)),
+		T("cyl", Vector3(0.03, 0.04, 6), Vector3(-0.05, 0.82, -0.02), "black", Vector3(70, 0, 0)),
+		T("cyl", Vector3(0.03, 0.04, 6), Vector3(0.05, 0.82, -0.02), "black", Vector3(70, 0, 0)),
+		Q(1, "box", Vector3(0.44, 0.12, 0.03), Vector3(0, 0.38, 0.52), "scrap_blue"),
+		QT(2, "box", Vector3(0.1, 0.16, 0.3), Vector3(0.24, 0.8, -0.22), "camo_olive", Vector3(-20, 0, 0)),
+		QT(2, "box", Vector3(0.1, 0.16, 0.3), Vector3(-0.24, 0.8, -0.22), "camo_olive", Vector3(-20, 0, 0)),
+		Q(3, "box", Vector3(0.03, 0.18, 0.7), Vector3(-0.27, 0.36, 0.0), "corr_rust"),
+		Q(3, "box", Vector3(0.03, 0.18, 0.7), Vector3(0.27, 0.36, 0.0), "corr_rust"),
+	]
+	TP_UNITS["mule"] = wheels(0.3, [0.4, -0.25, -0.5], 0.14, 0.12) + [
+		P("box", Vector3(0.6, 0.12, 1.4), Vector3(0, 0.25, 0), "steel_dark"),
+		P("box", Vector3(0.56, 0.36, 0.34), Vector3(0, 0.49, 0.5), "scrap_blue"),
+		P("box", Vector3(0.5, 0.14, 0.03), Vector3(0, 0.58, 0.68), "glass", Vector3(-10, 0, 0)),
+		P("box", Vector3(0.6, 0.48, 0.92), Vector3(0, 0.56, -0.18), "tarp"),                          # tarp-covered cargo
+		P("box", Vector3(0.62, 0.05, 0.94), Vector3(0, 0.81, -0.18), "tarp", Vector3(0, 0, 3), "", 0.85),
+		P("box", Vector3(0.3, 0.3, 0.03), Vector3(0.12, 0.5, -0.65), "team"),
+		P("cyl", Vector3(0.1, 0.26, 8), Vector3(-0.18, 0.46, -0.66), "barrel"),
+		P("cyl", Vector3(0.1, 0.26, 8), Vector3(-0.18, 0.46, -0.66), "barrel"),
+		P("box", Vector3(0.14, 0.06, 0.02), Vector3(-0.18, 0.42, 0.68), "lamp"),
+		P("box", Vector3(0.14, 0.06, 0.02), Vector3(0.18, 0.42, 0.68), "lamp"),
+		P("box", Vector3(0.012, 0.3, 0.012), Vector3(0.25, 0.97, -0.5), "black"),                    # wire antenna
+	]
+	TP_UNITS["blight"] = pickup("camo_olive", 0.55) + [
+		P("cyl", Vector3(0.1, 0.42, 10), Vector3(-0.14, 0.42, -0.4), "scrap_green", Vector3(90, 0, 0)),
+		P("cyl", Vector3(0.1, 0.42, 10), Vector3(0.14, 0.42, -0.4), "scrap_green", Vector3(90, 0, 0)),
+		P("box", Vector3(0.05, 0.05, 0.3), Vector3(-0.14, 0.53, -0.4), "acid"),
+		P("box", Vector3(0.05, 0.05, 0.3), Vector3(0.14, 0.53, -0.4), "acid"),
+		T("box", Vector3(0.3, 0.1, 0.3), Vector3(0, 0.56, -0.62), "steel_dark"),
+		T("cyl", Vector3(0.07, 0.62, 10), Vector3(0, 0.82, -0.5), "camo_olive", Vector3(55, 0, 0)),
+		T("cyl", Vector3(0.08, 0.06, 10), Vector3(0, 1.0, -0.33), "acid", Vector3(55, 0, 0)),
+		T("box", Vector3(0.32, 0.04, 0.12), Vector3(0, 0.62, -0.75), "team"),
+	]
+	# ---------------- buildings (+z = front / exit side) ----------------
+	TP_BUILDINGS["den"] = {"fp": Vector2(4, 4), "parts": [
+		P("box", Vector3(3.8, 0.06, 3.8), Vector3(0, 0.03, 0), "dirt"),
+		P("box", Vector3(2.3, 1.1, 1.8), Vector3(-0.55, 0.55, -0.7), "mud"),
+		P("box", Vector3(2.45, 0.08, 1.95), Vector3(-0.55, 1.12, -0.7), "corr_rust", Vector3(0, 0, 3)),
+		P("box", Vector3(1.1, 0.75, 1.1), Vector3(-1.0, 1.5, -1.0), "mud_dark"),
+		P("box", Vector3(1.2, 0.06, 1.2), Vector3(-1.0, 1.9, -1.0), "corr_dark", Vector3(-4, 0, 0)),
+		P("box", Vector3(0.5, 0.7, 0.05), Vector3(-0.3, 0.35, 0.21), "plank"),
+		P("box", Vector3(0.3, 0.25, 0.05), Vector3(-1.3, 0.7, 0.21), "window"),
+		P("box", Vector3(0.3, 0.25, 0.05), Vector3(0.3, 0.7, 0.21), "window"),
+		P("box", Vector3(0.28, 0.22, 0.05), Vector3(-1.0, 1.55, -0.44), "window"),
+		# team-cloth awning on poles over the door
+		P("box", Vector3(1.6, 0.03, 0.8), Vector3(-0.5, 0.95, 0.62), "team", Vector3(12, 0, 0)),
+		P("cyl", Vector3(0.025, 0.9, 5), Vector3(-1.25, 0.45, 0.98), "plank"),
+		P("cyl", Vector3(0.025, 0.9, 5), Vector3(0.25, 0.45, 0.98), "plank"),
+		# radio mast + water tank + generator shed
+		P("cyl", Vector3(0.03, 2.4, 5), Vector3(1.4, 1.2, -1.4), "steel_dark"),
+		P("box", Vector3(0.5, 0.02, 0.02), Vector3(1.4, 2.2, -1.4), "steel_dark"),
+		P("box", Vector3(0.02, 0.02, 0.5), Vector3(1.4, 1.9, -1.4), "steel_dark"),
+		P("cyl", Vector3(0.35, 0.55, 10), Vector3(1.05, 1.15, -0.4), "scrap_blue"),
+		P("box", Vector3(0.05, 0.85, 0.05), Vector3(0.8, 0.42, -0.6), "steel_dark"),
+		P("box", Vector3(0.05, 0.85, 0.05), Vector3(1.3, 0.42, -0.2), "steel_dark"),
+		P("box", Vector3(0.05, 0.85, 0.05), Vector3(0.8, 0.42, -0.2), "steel_dark"),
+		P("box", Vector3(0.05, 0.85, 0.05), Vector3(1.3, 0.42, -0.6), "steel_dark"),
+		P("box", Vector3(0.9, 0.5, 0.7), Vector3(1.2, 0.25, 0.7), "corr_rust"),
+		P("box", Vector3(0.95, 0.04, 0.75), Vector3(1.2, 0.52, 0.7), "corr_dark", Vector3(0, 0, -6)),
+		P("box", Vector3(0.36, 0.22, 0.02), Vector3(-1.75, 2.2, -0.3), "team"),
+		P("cyl", Vector3(0.02, 2.2, 5), Vector3(-1.75, 1.1, -0.48), "plank"),
+	] + sandbags(Vector2(-1.85, 1.6), Vector2(-0.6, 1.6)) + sandbags(Vector2(0.4, 1.6), Vector2(1.85, 1.6)) + barrels(Vector3(1.4, 0.06, 1.25), 3) + crates(Vector3(-1.7, 0.06, 0.6), 4, 0.24) + tires(Vector3(0.5, 0.06, -1.6), 4)}
+	TP_BUILDINGS["stash"] = {"fp": Vector2(3, 3), "parts": [
+		P("box", Vector3(2.8, 0.05, 2.8), Vector3(0, 0.025, 0), "dirt"),
+		P("box", Vector3(2.0, 0.05, 1.6), Vector3(-0.2, 1.05, -0.5), "corr_rust", Vector3(6, 0, 0)),
+		P("cyl", Vector3(0.03, 1.05, 5), Vector3(-1.1, 0.52, -1.2), "plank"),
+		P("cyl", Vector3(0.03, 1.05, 5), Vector3(0.7, 0.52, -1.2), "plank"),
+		P("cyl", Vector3(0.03, 1.05, 5), Vector3(-1.1, 0.52, 0.2), "plank"),
+		P("cyl", Vector3(0.03, 1.05, 5), Vector3(0.7, 0.52, 0.2), "plank"),
+		P("box", Vector3(1.4, 0.55, 0.9), Vector3(-0.3, 0.3, -0.6), "tarp_blue"),
+		P("box", Vector3(1.5, 0.05, 1.0), Vector3(-0.3, 0.6, -0.6), "tarp_blue", Vector3(0, 0, 4), "", 0.85),
+		P("box", Vector3(0.6, 0.02, 0.4), Vector3(-0.7, 0.62, -0.5), "team"),
+		P("box", Vector3(0.9, 0.35, 0.6), Vector3(0.9, 0.18, 0.75), "cloth"),                         # sacks
+	] + crates(Vector3(-1.0, 0.05, 0.55), 6, 0.28) + barrels(Vector3(0.9, 0.05, -0.9), 6) + flag(Vector3(1.2, 0.05, 1.2), 1.3)}
+	TP_BUILDINGS["camp"] = {"fp": Vector2(3, 3), "parts": [
+		P("box", Vector3(2.8, 0.05, 2.8), Vector3(0, 0.025, 0), "dirt"),
+		P("wedge", Vector3(1.3, 0.75, 1.0), Vector3(-0.6, 0.4, -0.6), "tarp", Vector3(0, 90, 0)),
+		P("wedge", Vector3(1.1, 0.65, 0.9), Vector3(0.65, 0.35, -0.75), "team", Vector3(0, 90, 0)),
+		P("wedge", Vector3(1.0, 0.6, 0.8), Vector3(0.75, 0.32, 0.3), "camo_olive", Vector3(0, 0, 0)),
+		P("box", Vector3(0.2, 0.3, 0.02), Vector3(-0.6, 0.18, -0.09), "black"),
+		P("cyl", Vector3(0.12, 0.25, 8), Vector3(-0.3, 0.13, 0.55), "rust"),
+		P("box", Vector3(0.1, 0.08, 0.1), Vector3(-0.3, 0.3, 0.55), "fire"),
+		P("box", Vector3(0.05, 0.6, 0.35), Vector3(-1.2, 0.35, 0.6), "plank"),                          # target board
+		P("cyl", Vector3(0.11, 0.02, 10), Vector3(-1.17, 0.45, 0.6), "paint_w", Vector3(0, 0, 90)),
+	] + sandbags(Vector2(-1.4, 1.35), Vector2(-0.2, 1.35)) + sandbags(Vector2(0.4, 1.35), Vector2(1.4, 1.35)) + flag(Vector3(1.3, 0.05, -1.3), 1.5) + crates(Vector3(0.1, 0.05, 0.9), 3, 0.22)}
+	TP_BUILDINGS["chop_shop"] = {"fp": Vector2(4, 4), "parts": [
+		P("box", Vector3(3.8, 0.06, 3.8), Vector3(0, 0.03, 0), "concrete_dark"),
+		P("box", Vector3(3.2, 0.06, 2.2), Vector3(0, 1.35, -0.6), "corr_rust", Vector3(5, 0, 0)),
+		P("box", Vector3(0.08, 1.35, 0.08), Vector3(-1.5, 0.67, -1.6), "steel_dark"),
+		P("box", Vector3(0.08, 1.35, 0.08), Vector3(1.5, 0.67, -1.6), "steel_dark"),
+		P("box", Vector3(0.08, 1.35, 0.08), Vector3(-1.5, 0.67, 0.4), "steel_dark"),
+		P("box", Vector3(0.08, 1.35, 0.08), Vector3(1.5, 0.67, 0.4), "steel_dark"),
+		P("box", Vector3(3.1, 1.3, 0.05), Vector3(0, 0.65, -1.65), "corr", Vector3.ZERO, "", 0.8),
+		P("box", Vector3(0.05, 1.0, 1.4), Vector3(-1.55, 0.5, -0.95), "corr_rust"),
+		P("box", Vector3(3.25, 0.18, 0.05), Vector3(0, 1.25, 0.42), "team"),
+		# crane gantry
+		P("box", Vector3(0.08, 2.0, 0.08), Vector3(1.75, 1.0, 1.4), "hazard"),
+		P("box", Vector3(1.6, 0.08, 0.08), Vector3(1.0, 2.0, 1.4), "hazard"),
+		P("box", Vector3(0.015, 0.7, 0.015), Vector3(0.4, 1.65, 1.4), "black"),
+		P("box", Vector3(0.3, 0.2, 0.3), Vector3(0.4, 1.2, 1.4), "steel_dark"),
+		# car hulk under repair + engine block + welding light
+		P("box", Vector3(0.55, 0.25, 1.0), Vector3(-0.4, 0.25, -0.6), "scrap_red"),
+		P("box", Vector3(0.5, 0.2, 0.4), Vector3(-0.4, 0.45, -0.75), "scrap_red", Vector3.ZERO, "", 0.8),
+		P("box", Vector3(0.3, 0.25, 0.3), Vector3(0.6, 0.18, -0.9), "steel_dark"),
+		P("box", Vector3(0.08, 0.08, 0.08), Vector3(0.45, 0.4, -0.9), "lamp"),
+	] + tires(Vector3(-1.5, 0.06, 1.2), 6) + barrels(Vector3(0.9, 0.06, 1.0), 4) + crates(Vector3(-0.6, 0.06, 1.3), 3, 0.24)}
+	TP_BUILDINGS["tunnel"] = {"fp": Vector2(2, 2), "parts": [
+		P("cyl", Vector3(0.9, 0.08, 12), Vector3(0, 0.04, 0), "dirt"),
+		P("cyl", Vector3(0.5, 0.04, 12), Vector3(0, 0.09, 0.2), "black"),
+		P("box", Vector3(0.08, 0.55, 0.08), Vector3(-0.45, 0.28, 0.55), "plank"),
+		P("box", Vector3(0.08, 0.55, 0.08), Vector3(0.45, 0.28, 0.55), "plank"),
+		P("box", Vector3(1.05, 0.08, 0.08), Vector3(0, 0.55, 0.55), "plank"),
+		P("box", Vector3(1.1, 0.05, 0.9), Vector3(0, 0.5, 0.15), "tarp", Vector3(-14, 0, 0)),
+		P("box", Vector3(0.5, 0.02, 0.4), Vector3(0.2, 0.53, 0.1), "team", Vector3(-14, 0, 0)),
+	] + sandbags(Vector2(-0.85, -0.7), Vector2(0.85, -0.7)) + sandbags(Vector2(-0.85, -0.7), Vector2(-0.85, 0.5), 1) + sandbags(Vector2(0.85, -0.7), Vector2(0.85, 0.5), 1) + [
+		T("cyl", Vector3(0.14, 0.12, 8), Vector3(0, 0.62, -0.35), "steel_dark"),
+		T("box", Vector3(0.26, 0.16, 0.03), Vector3(0, 0.76, -0.2), "scrap_green"),
+		T("cyl", Vector3(0.022, 0.5, 6), Vector3(0, 0.75, -0.02), "gun", Vector3(90, 0, 0)),
+	]}
+	TP_BUILDINGS["workshop"] = {"fp": Vector2(3, 3), "parts": [
+		P("box", Vector3(2.8, 0.05, 2.8), Vector3(0, 0.025, 0), "dirt"),
+		P("box", Vector3(2.0, 1.0, 1.5), Vector3(-0.2, 0.5, -0.5), "mud"),
+		P("box", Vector3(1.5, 0.8, 1.2), Vector3(-0.4, 1.4, -0.6), "plaster2"),
+		P("box", Vector3(1.6, 0.06, 1.3), Vector3(-0.4, 1.83, -0.6), "corr_rust", Vector3(0, 0, -5)),
+		P("box", Vector3(1.4, 0.05, 0.4), Vector3(-0.4, 1.0, 0.25), "plank"),                           # balcony
+		P("box", Vector3(1.4, 0.2, 0.03), Vector3(-0.4, 1.12, 0.45), "plank"),
+		P("box", Vector3(1.0, 0.5, 0.02), Vector3(-0.4, 1.5, 0.01), "team"),                            # banner
+		P("box", Vector3(0.4, 0.6, 0.05), Vector3(-0.2, 0.3, 0.26), "plank"),
+		P("box", Vector3(0.3, 0.22, 0.05), Vector3(0.55, 0.6, 0.26), "window"),
+		P("hsph", Vector3(0.28, 0.12, 0.28), Vector3(0.2, 1.9, -0.9), "steel_light", Vector3(-50, 0, 0)),
+		P("box", Vector3(0.5, 0.35, 0.4), Vector3(1.0, 0.18, 0.6), "camo_olive"),                      # generator
+		P("cyl", Vector3(0.03, 0.4, 5), Vector3(1.15, 0.55, 0.5), "black"),
+		P("box", Vector3(0.07, 0.07, 0.07), Vector3(1.0, 0.4, 0.82), "lamp"),
+	] + sandbags(Vector2(-1.3, 1.2), Vector2(0.4, 1.2)) + barrels(Vector3(0.9, 0.05, -1.1), 3)}
+	TP_BUILDINGS["bazaar"] = {"fp": Vector2(3, 3), "parts": [
+		P("box", Vector3(2.8, 0.05, 2.8), Vector3(0, 0.025, 0), "dirt"),
+		P("box", Vector3(1.8, 0.9, 1.0), Vector3(-0.3, 0.45, -0.85), "mud"),
+		P("box", Vector3(1.9, 0.05, 1.1), Vector3(-0.3, 0.92, -0.85), "corr_dark"),
+		P("box", Vector3(0.8, 0.03, 0.7), Vector3(-0.85, 0.75, 0.1), "team", Vector3(15, 0, 0)),          # stall awnings
+		P("box", Vector3(0.8, 0.03, 0.7), Vector3(0.1, 0.75, 0.1), "paint_y", Vector3(15, 0, 0), "", 0.8),
+		P("box", Vector3(0.8, 0.03, 0.7), Vector3(1.0, 0.7, -0.1), "red", Vector3(15, 0, 0)),
+		P("box", Vector3(0.7, 0.3, 0.4), Vector3(-0.85, 0.15, 0.25), "plank"),
+		P("box", Vector3(0.7, 0.3, 0.4), Vector3(0.1, 0.15, 0.25), "plank"),
+		P("box", Vector3(0.7, 0.3, 0.4), Vector3(1.0, 0.15, 0.05), "plank"),
+		P("box", Vector3(0.6, 0.01, 0.4), Vector3(0.4, 0.06, 0.95), "red"),                               # rug
+		P("box", Vector3(0.3, 0.12, 0.2), Vector3(-0.85, 0.36, 0.25), "gun"),
+		P("box", Vector3(0.25, 0.2, 0.2), Vector3(0.1, 0.4, 0.25), "crate"),
+	] + crates(Vector3(1.0, 0.05, 1.0), 4, 0.22) + tires(Vector3(-1.2, 0.05, 1.1), 3) + barrels(Vector3(0.9, 0.05, -1.2), 2) + flag(Vector3(-1.3, 0.05, -1.3), 1.6)}
+	TP_BUILDINGS["demo_trap"] = {"fp": Vector2(1, 1), "parts": [
+		P("cyl", Vector3(0.1, 0.24, 8), Vector3(-0.1, 0.12, 0.0), "rust"),
+		P("cyl", Vector3(0.1, 0.24, 8), Vector3(0.12, 0.12, 0.05), "barrel"),
+		P("box", Vector3(0.18, 0.1, 0.12), Vector3(0.0, 0.05, -0.2), "crate"),
+		P("box", Vector3(0.4, 0.008, 0.01), Vector3(0.0, 0.01, 0.2), "red", Vector3(0, 30, 0)),
+		P("box", Vector3(0.05, 0.03, 0.03), Vector3(0.0, 0.11, -0.2), "fire"),
+	]}
+	TP_BUILDINGS["camo_net"] = {"fp": Vector2(1, 1), "parts": [
+		P("cyl", Vector3(0.03, 0.9, 5), Vector3(0, 0.45, 0), "plank"),
+		P("cone", Vector3(0.95, 0.55, 0.05), Vector3(0, 0.62, 0), "net"),
+		P("cone", Vector3(0.75, 0.4, 0.05), Vector3(0.1, 0.66, 0.05), "camo_brown", Vector3(0, 40, 0), "", 0.9),
+		P("box", Vector3(0.25, 0.02, 0.15), Vector3(0.0, 0.92, 0.0), "team"),
+	]}
+	TP_BUILDINGS["hole"] = {"fp": Vector2(2, 2), "parts": [
+		P("cyl", Vector3(0.9, 0.06, 12), Vector3(0, 0.03, 0), "dirt"),
+		P("cyl", Vector3(0.55, 0.03, 12), Vector3(0, 0.07, 0), "black"),
+		P("box", Vector3(1.0, 0.08, 0.1), Vector3(0.1, 0.12, 0.3), "plank", Vector3(0, 25, 8)),
+		P("box", Vector3(0.9, 0.08, 0.1), Vector3(-0.2, 0.1, -0.35), "plank", Vector3(0, -30, -6)),
+		P("box", Vector3(0.3, 0.12, 0.25), Vector3(0.6, 0.08, -0.3), "mud_dark", Vector3(0, 20, 10)),
+		P("box", Vector3(0.25, 0.1, 0.3), Vector3(-0.6, 0.07, 0.4), "mud", Vector3(0, -15, -8)),
+		P("box", Vector3(0.12, 0.02, 0.12), Vector3(0, 0.08, 0), "team"),
+	] + _scatter_rubble()}
+	PROPS["salvage_crate"] = [
+		P("box", Vector3(0.36, 0.26, 0.28), Vector3(0, 0.13, 0), "hazard"),
+		P("box", Vector3(0.37, 0.04, 0.29), Vector3(0, 0.2, 0), "steel_dark"),
+		P("cyl", Vector3(0.14, 0.07, 10), Vector3(0.28, 0.035, 0.18), "tire"),
+		P("box", Vector3(0.3, 0.05, 0.12), Vector3(-0.22, 0.03, 0.2), "corr_rust", Vector3(0, 30, 10)),
+		P("box", Vector3(0.2, 0.1, 0.16), Vector3(-0.2, 0.05, -0.2), "steel", Vector3(0, -20, 0)),
+	]
+	_save(PROPS["salvage_crate"], "res://view/neutral/salvage_crate.tscn", false, Vector2.ONE)
+
+static func tires(c: Vector3, n: int) -> Array:
+	var o: Array = []
+	for i in n:
+		o.append(P("cyl", Vector3(0.14, 0.08, 10), c + Vector3((i % 3) * 0.3, 0.04 + (i / 3) * 0.08, (i / 3) * 0.05), "tire"))
+	return o
+
+static func _scatter_rubble() -> Array:
+	var o: Array = []
+	for i in 7:
+		var a := i * 0.9
+		o.append(P("box", Vector3(0.14, 0.08, 0.1), Vector3(cos(a) * 0.8, 0.05, sin(a) * 0.75), "mud_dark" if i % 2 else "corr_rust", Vector3(0, i * 37, 12)))
+	return o
+
+static func _tierify(n: int, parts: Array) -> Array:
+	var o: Array = []
+	for p in parts:
+		var q: Array = p.duplicate()
+		while q.size() < 6:
+			q.append("")
+		q[5] = "tier%d" % n
+		o.append(q)
+	return o

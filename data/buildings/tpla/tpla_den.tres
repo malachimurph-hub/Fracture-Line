@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="BuildingDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/building_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"tpla_den"
+faction = &"tpla"
+name_key = "BLD_TPLA_DEN"
+desc_key = "BLD_TPLA_DEN_DESC"
+category = &"base"
+cost = 2500
+build_time_ms = 45000
+footprint = Vector2i(4, 4)
+max_hp = 4600
+power = 0
+grid_radius = 0
+sight = 10
+prereqs = PackedStringArray()
+produces = PackedStringArray("tpla_laborer")
+is_hq = true
+is_refinery = false
+passive_income = 0
+free_unit = &""
+shield_pct = 0
+view_scene = "res://view/buildings/tpla/den.tscn"
+stubs = PackedStringArray()
+weapons = PackedStringArray()
+needs_power_to_fire = false
+garrison_capacity = 0
+capturable = false
+capture_income = 0
+buildable = true
+tags = PackedStringArray()
+aux_radius = 0

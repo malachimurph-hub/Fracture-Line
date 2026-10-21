@@ -14,3 +14,4 @@ splash_mt = 0
 targets_air = true
 targets_ground = true
 vfx = &"missile"
+min_tier = 0

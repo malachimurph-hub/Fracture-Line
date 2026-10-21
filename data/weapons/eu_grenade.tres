@@ -14,3 +14,4 @@ splash_mt = 1200
 targets_air = false
 targets_ground = true
 vfx = &"grenade"
+min_tier = 0

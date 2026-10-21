@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="PowerDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/power_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"tpla_scrap_rain"
+name_key = "POWER_SCRAP_RAIN"
+desc_key = "POWER_SCRAP_RAIN_DESC"
+rank_required = 2
+point_cost = 1
+stub = false
+cooldown_ms = 240000
+radius = 3
+duration_ms = 0
+amount = 4
+kind = &"scrap_rain"

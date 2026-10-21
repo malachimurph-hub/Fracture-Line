@@ -14,3 +14,4 @@ splash_mt = 0
 targets_air = false
 targets_ground = true
 vfx = &"tracer"
+min_tier = 0

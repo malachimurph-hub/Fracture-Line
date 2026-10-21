@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"tpla_laborer"
+faction = &"tpla"
+name_key = "UNIT_TPLA_LABORER"
+desc_key = "UNIT_TPLA_LABORER_DESC"
+cost = 200
+build_time_ms = 5000
+pop = 1
+prereqs = PackedStringArray()
+tags = PackedStringArray("infantry", "builder", "harvester")
+max_hp = 120
+armor_type = &"infantry"
+weapons = PackedStringArray()
+speed_mtps = 1250
+move_layer = &"foot"
+sight = 6
+radius_mt = 320
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 75
+role = &"builder"
+view_scene = "res://view/units/tpla/laborer.tscn"
+stubs = PackedStringArray()

@@ -45,6 +45,10 @@ static func apply(w: SimWorld, c: Dictionary) -> void:
 					u.orders = [{"o": "harvest"}]
 		"garrison":
 			var b := w.get_ent(int(c.get("target", 0)))
+			if TplaSys.is_tunnel(w, b) and b.owner == pid and b.built:
+				for u: SimEntity in _own_units(w, pid, c):
+					_push(u, {"o": "garrison", "target": b.id}, bool(c.get("q", false)))
+				return
 			if b == null or b.kind != SimEntity.Kind.NEUTRAL or w.bdef(b).garrison_capacity <= 0:
 				return
 			if b.owner >= 0 and w.enemies(b.team, w.player_team(pid)):
@@ -63,6 +67,9 @@ static func apply(w: SimWorld, c: Dictionary) -> void:
 		"unload":
 			for id in c.get("ids", []):
 				var b3 := w.get_ent(int(id))
+				if TplaSys.is_tunnel(w, b3) and b3.owner == pid and b3.built:
+					TplaSys.evacuate(w, b3)
+					continue
 				if b3 != null and b3.kind == SimEntity.Kind.NEUTRAL and b3.owner == pid:
 					w._eject_garrison(b3)
 					b3.owner = -1
@@ -116,6 +123,11 @@ static func apply(w: SimWorld, c: Dictionary) -> void:
 			PowersSys.buy(w, pid, StringName(c.get("def", "")))
 		"power":
 			PowersSys.fire(w, pid, StringName(c.get("def", "")), c.get("pos", Vector2i.ZERO))
+		"detonate":
+			for id in c.get("ids", []):
+				var tr := w.get_ent(int(id))
+				if tr != null and tr.owner == pid and tr.kind == SimEntity.Kind.BUILDING and tr.built and Content.btag(tr.def_id, "trap"):
+					TplaSys.detonate_trap(w, tr)
 		"surrender":
 			w.eliminate(pid)
 

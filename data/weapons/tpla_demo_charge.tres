@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="WeaponDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/weapon_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"tpla_demo_charge"
+damage = 380
+range_mt = 1500
+min_range_mt = 0
+cooldown_ms = 1000
+damage_type = &"demolition"
+splash_mt = 2600
+targets_air = false
+targets_ground = true
+vfx = &"bomb"
+min_tier = 0

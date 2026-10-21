@@ -31,3 +31,5 @@ garrison_capacity = 0
 capturable = true
 capture_income = 6
 buildable = false
+tags = PackedStringArray()
+aux_radius = 0

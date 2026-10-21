@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="BuildingDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/building_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"tpla_tunnel"
+faction = &"tpla"
+name_key = "BLD_TPLA_TUNNEL"
+desc_key = "BLD_TPLA_TUNNEL_DESC"
+category = &"defense"
+cost = 800
+build_time_ms = 10000
+footprint = Vector2i(2, 2)
+max_hp = 1000
+power = 0
+grid_radius = 0
+sight = 8
+prereqs = PackedStringArray("tpla_camp")
+produces = PackedStringArray()
+is_hq = false
+is_refinery = false
+passive_income = 0
+free_unit = &""
+shield_pct = 0
+view_scene = "res://view/buildings/tpla/tunnel.tscn"
+stubs = PackedStringArray()
+weapons = PackedStringArray("tpla_tunnel_mg")
+needs_power_to_fire = false
+garrison_capacity = 10
+capturable = false
+capture_income = 0
+buildable = true
+tags = PackedStringArray("tunnel")
+aux_radius = 0

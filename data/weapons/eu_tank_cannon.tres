@@ -14,3 +14,4 @@ splash_mt = 600
 targets_air = false
 targets_ground = true
 vfx = &"shell"
+min_tier = 0

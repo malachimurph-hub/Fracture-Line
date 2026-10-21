@@ -3,12 +3,13 @@ class_name EconSys
 
 const GATHER_PER_TICK := 4      ## 400 load in ~5 s
 const UNLOAD_TICKS := 40        ## 2 s at the dock
+const UNLOAD_TICKS_FOOT := 10   ## TPLA Laborers drop their load in 0.5 s
 const NEAR := FX.ONE * 3 / 2
 
 static func run(w: SimWorld) -> void:
 	if w.tick % 20 != 0:
 		return
-	var hubs := {}
+	var hubs := {}       ## owner -> {def id: [count, income]}
 	var pumps := {}
 	for id in w.ids:
 		var e: SimEntity = w.ents[id]
@@ -17,14 +18,22 @@ static func run(w: SimWorld) -> void:
 		if e.kind == SimEntity.Kind.BUILDING and e.built and e.powered:
 			var d: BuildingDef = w.bdef(e)
 			if d.passive_income > 0:
-				hubs[e.owner] = hubs.get(e.owner, 0) + 1
+				if not hubs.has(e.owner):
+					hubs[e.owner] = {}
+				var cur: Array = hubs[e.owner].get(d.id, [0, d.passive_income])
+				cur[0] += 1
+				hubs[e.owner][d.id] = cur
 		elif e.kind == SimEntity.Kind.NEUTRAL and w.bdef(e).capture_income > 0:
 			pumps[e.owner] = pumps.get(e.owner, 0) + w.bdef(e).capture_income
 	for p in w.players:
 		if p.eliminated:
 			continue
-		var h: int = mini(4, hubs.get(p.id, 0))
-		var inc := 3 * h
+		# passive income: each income structure type counts up to 4 copies (EU Hub +3/s,
+		# TPLA Scrap Bazaar +6/s)
+		var inc := 0
+		for did in hubs.get(p.id, {}):
+			var hc: Array = hubs[p.id][did]
+			inc += mini(4, int(hc[0])) * int(hc[1])
 		if p.low_power:
 			inc /= 2
 		if p.logistics_until > w.tick:
@@ -133,7 +142,7 @@ static func harvest_think(w: SimWorld, u: SimEntity) -> void:
 				OrderSys._goto(u, dock)
 		3:
 			u.phase_t += 1
-			if u.phase_t >= UNLOAD_TICKS:
+			if u.phase_t >= (UNLOAD_TICKS if w.is_vehicle(u) else UNLOAD_TICKS_FOOT):
 				add_supply(w, w.players[u.owner], u.carry)
 				w.events.append({"t": "unload", "id": u.id, "amount": u.carry})
 				u.carry = 0

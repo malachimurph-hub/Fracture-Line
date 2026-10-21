@@ -2,7 +2,7 @@ class_name SimEntity
 extends RefCounted
 ## One simulation entity. Plain data only; systems in sim/systems operate on it.
 
-enum Kind { UNIT, BUILDING, RESOURCE, NEUTRAL }
+enum Kind { UNIT, BUILDING, RESOURCE, NEUTRAL, CRATE }
 
 var id: int = 0
 var kind: int = Kind.UNIT
@@ -60,9 +60,16 @@ var powered: bool = true
 var gridded: bool = false   ## inside an EU Grid field (HQ / Reactor / Pylon) - drives Grid shields only
 var hold_reason: String = ""            ## why production is paused (view)
 
-# --- resource
+# --- resource / salvage crate (amount = supply value)
 var amount: int = 0
 var max_amount: int = 0
+
+# --- TPLA mechanics
+var tier: int = 0                       ## salvage tier 0-3 (TPLA vehicles)
+var aux_def: StringName = &""           ## rebuild hole: structure to rebuild
+var aux_t: int = 0                      ## hole rebuild tick / crate expiry tick
+var stealthy: bool = false              ## currently hidden from enemies (camo net / demo trap)
+var stealth_mask: int = 0               ## bit per team that currently detects it
 
 func is_unit() -> bool: return kind == Kind.UNIT
 func is_building() -> bool: return kind == Kind.BUILDING
@@ -77,7 +84,7 @@ const _FIELDS := ["id", "kind", "def_id", "owner", "team", "pos", "hp", "max_hp"
 	"alive", "radius", "sight", "orders", "path", "path_i", "path_goal", "goal", "stuck", "done_goal", "vet", "vxp", "target", "cds", "home",
 	"carry", "res_id", "phase", "phase_t", "overcharge_until", "dir", "moving", "aura_tick", "tile", "fp", "rot", "built",
 	"progress", "build_ticks", "queue", "q_progress", "q_paid", "rally", "rally_attack", "repeat", "powered", "gridded", "hold_reason",
-	"amount", "max_amount"]
+	"amount", "max_amount", "tier", "aux_def", "aux_t", "stealthy", "stealth_mask"]
 
 func to_dict() -> Dictionary:
 	var d := {}

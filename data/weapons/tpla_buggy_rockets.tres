@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="WeaponDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/weapon_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"tpla_buggy_rockets"
+damage = 34
+range_mt = 8500
+min_range_mt = 2000
+cooldown_ms = 3400
+damage_type = &"explosive"
+splash_mt = 900
+targets_air = false
+targets_ground = true
+vfx = &"rocket_salvo"
+min_tier = 0

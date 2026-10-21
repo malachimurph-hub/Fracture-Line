@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="PowerDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/power_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"tpla_ambush"
+name_key = "POWER_AMBUSH"
+desc_key = "POWER_AMBUSH_DESC"
+rank_required = 1
+point_cost = 1
+stub = false
+cooldown_ms = 180000
+radius = 3
+duration_ms = 0
+amount = 5
+kind = &"ambush"

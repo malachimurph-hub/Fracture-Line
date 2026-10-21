@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="AIPersonalityDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/ai_personality_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"tpla_scrapjack"
+name_key = "AI_SCRAPJACK"
+aggression = 5
+expansion = 4
+tech_rush = 1
+harass = 4
+opening = PackedStringArray("tpla_stash", "tpla_camp", "tpla_chop_shop", "tpla_tunnel", "tpla_stash", "tpla_workshop", "tpla_demo_trap", "tpla_bazaar", "tpla_tunnel", "tpla_camo_net")
+unit_weights = {"tpla_militia": 3, "tpla_rocket_cell": 3, "tpla_rattler": 4, "tpla_scrapback": 5, "tpla_hailstorm": 1, "tpla_shrike": 2, "tpla_mule": 1, "tpla_blight": 2}
+wave_growth_pct = 30
+first_wave_value = 3000

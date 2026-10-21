@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="PowerDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/power_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"tpla_blight_shells"
+name_key = "POWER_BLIGHT"
+desc_key = "POWER_BLIGHT_DESC"
+rank_required = 3
+point_cost = 1
+stub = false
+cooldown_ms = 240000
+radius = 4
+duration_ms = 20000
+amount = 30
+kind = &"rust_barrage"

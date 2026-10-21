@@ -33,6 +33,9 @@ static func run(w: SimWorld) -> void:
 		elif e.kind == SimEntity.Kind.NEUTRAL and e.owner >= 0 and (w.tick + e.id) % 2 == 0:
 			_garrison_fire(w, e)
 
+static func dmg_pct(u: SimEntity) -> int:
+	return VET_DMG[u.vet] * (100 + TplaSys.TIER_DMG * u.tier) / 100
+
 static func _fire_unit(w: SimWorld, u: SimEntity, t: SimEntity) -> void:
 	var d: UnitDef = w.udef(u)
 	var dist := w.edge_dist(u, t)
@@ -40,10 +43,37 @@ static func _fire_unit(w: SimWorld, u: SimEntity, t: SimEntity) -> void:
 		if u.cds[i] > 0:
 			continue
 		var wd: WeaponDef = Content.weapon(d.weapons[i])
+		if wd.min_tier > u.tier:
+			continue
 		if dist > FX.mt_to_fx(wd.range_mt) or dist < FX.mt_to_fx(wd.min_range_mt):
 			continue
-		fire(w, u, t, wd, VET_DMG[u.vet])
+		if d.tags.has("suicide"):
+			# bomb truck: drives into the target and detonates (GDD 5.4 Mule)
+			u.phase = 99
+			u.firing_tick = w.tick
+			explode(w, u, u.pos, wd, dmg_pct(u))
+			w._kill(u, null)
+			return
+		fire(w, u, t, wd, dmg_pct(u))
 		u.cds[i] = FX.ms_to_ticks(wd.cooldown_ms * (90 if u.vet >= 2 else 100) / 100)
+
+## Area blast (Demo Trap, Mule bomb truck): hits enemy units and enemy structures in the radius.
+static func explode(w: SimWorld, src: SimEntity, center: Vector2i, wd: WeaponDef, pct: int) -> void:
+	var r := FX.mt_to_fx(wd.splash_mt)
+	w.events.append({"t": "explode", "id": src.id, "pos": center, "r": r, "vfx": wd.vfx})
+	for o: SimEntity in w.units_in_radius(center, r):
+		if o.res_id < 0 or not w.enemies(src.team, o.team):
+			continue
+		var frac := 100 - 50 * FX.dist(o.pos, center) / maxi(1, r)
+		var sd := wd.damage * Content.combat.mult(wd.damage_type, _armor_of(w, o)) / 100 * frac / 100 * pct / 100
+		w.damage(o, maxi(1, sd), src)
+	var blds: Array = []
+	for id in w.ids:
+		var b: SimEntity = w.ents[id]
+		if b.alive and (b.kind == SimEntity.Kind.BUILDING or b.kind == SimEntity.Kind.NEUTRAL) and w.enemies(src.team, b.team) and w.dist_to_building(center, b) <= r:
+			blds.append(b)
+	for b: SimEntity in blds:
+		w.damage(b, maxi(1, wd.damage * Content.combat.mult(wd.damage_type, &"structure") / 100 * pct / 100), src)
 
 static func fire(w: SimWorld, src: SimEntity, t: SimEntity, wd: WeaponDef, dmg_pct: int) -> void:
 	src.firing_tick = w.tick
@@ -53,6 +83,8 @@ static func fire(w: SimWorld, src: SimEntity, t: SimEntity, wd: WeaponDef, dmg_p
 	var armor := _armor_of(w, t)
 	var dmg := wd.damage * Content.combat.mult(wd.damage_type, armor) / 100 * dmg_pct / 100
 	w.damage(t, maxi(1, dmg), src)
+	if wd.damage_type == &"corrosive":
+		TplaSys.add_zone(w, t.pos, maxi(FX.ONE, FX.mt_to_fx(wd.splash_mt)), 120, wd.damage * dmg_pct / 100, src.owner, src.team)
 	if wd.splash_mt > 0:
 		var r := FX.mt_to_fx(wd.splash_mt)
 		for o: SimEntity in w.units_in_radius(t.pos, r):
@@ -115,7 +147,7 @@ static func _garrison_fire(w: SimWorld, b: SimEntity) -> void:
 			if t == null:
 				continue
 			u.pos = b.pos
-			fire(w, u, t, wd, VET_DMG[u.vet])
+			fire(w, u, t, wd, dmg_pct(u))
 			u.cds[i] = FX.ms_to_ticks(wd.cooldown_ms)
 
 static func grant_vet_xp(w: SimWorld, a: SimEntity, value: int) -> void:
@@ -133,7 +165,7 @@ static func grant_vet_xp(w: SimWorld, a: SimEntity, value: int) -> void:
 	if nv > a.vet:
 		var old_max := a.max_hp
 		a.vet = nv
-		a.max_hp = w.udef(a).max_hp * VET_HP[nv] / 100
+		a.max_hp = w.unit_max_hp(a)
 		a.hp += a.max_hp - old_max
 		w.events.append({"t": "promoted", "id": a.id, "vet": nv})
 

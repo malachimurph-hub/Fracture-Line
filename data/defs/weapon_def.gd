@@ -10,3 +10,4 @@ extends Resource
 @export var targets_air: bool = false
 @export var targets_ground: bool = true
 @export var vfx: StringName = &"tracer"   ## view-only effect key
+@export var min_tier: int = 0            ## TPLA salvage tier needed before this weapon fires (bolt-on guns)
