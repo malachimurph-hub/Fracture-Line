@@ -29,6 +29,25 @@ func _ready() -> void:
 			test_saveload()
 		"content":
 			test_content()
+		"aidiag":
+			var r := MatchRunner.new()
+			r.start(make_cfg("1v1", 5))
+			print("AI personalities: ", Content.ai_personalities.keys(), " maps: ", Content.maps.keys())
+			print("hq.produces=", Content.building(&"eu_hq").produces, " crawler.tags=", Content.unit(&"eu_crawler").tags, " opening=", Content.ai_personalities[&"eu_ironclad"].opening, " weights=", Content.ai_personalities[&"eu_ironclad"].unit_weights, " hq.cost=", Content.building(&"eu_hq").cost, " fp=", Content.building(&"eu_hq").footprint)
+			var ai0: AIPlayer = r.ais[0]
+			print("my buildings=", ai0.my_ents(SimEntity.Kind.BUILDING).size(), " units=", ai0.my_ents(SimEntity.Kind.UNIT).size(), " hq=", ai0.hq())
+			for id in r.sim.ids:
+				var e: SimEntity = r.sim.ents[id]
+				if e.owner == 0:
+					print("  ent ", e.id, " ", e.def_id, " kind=", e.kind, " bdef_hq=", (Content.building(e.def_id).is_hq if e.kind == SimEntity.Kind.BUILDING else null))
+			r.issue({"p": 0, "t": "queue", "target": ai0.hq().id if ai0.hq() else 0, "def": "eu_crawler", "n": 1})
+			r.advance()
+			print("supply after manual queue: ", r.sim.players[0].supply, " next_building=", ai0._next_building())
+			for i in 400:
+				r.advance()
+			var ai: AIPlayer = r.ais[0]
+			print("persona=", ai.persona, " think_every=", ai.think_every, " supply=", r.sim.players[0].supply, " ents=", r.sim.ids.size())
+			print("ai state: ", str(ai.to_dict()).substr(0, 1500))
 		_:
 			print("unknown test")
 			failed = true
@@ -172,6 +191,9 @@ func test_content() -> void:
 	if not Content.errors.is_empty():
 		failed = true
 	# CSV drift check: every CSV value must equal the loaded .tres value
+	if not FileAccess.file_exists("res://data/balance/units.csv"):
+		print("CONTENT: balance CSVs not packaged in this build (export) - drift check skipped")
+		return
 	var drift := 0
 	var f := FileAccess.open("res://data/balance/units.csv", FileAccess.READ)
 	var header := f.get_csv_line()

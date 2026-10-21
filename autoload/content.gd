@@ -69,6 +69,16 @@ func _validate() -> void:
 		var w: WeaponDef = weapons[id]
 		if combat == null or not combat.table.has(String(w.damage_type)):
 			errors.append("Weapon %s damage type not in combat table: %s" % [id, w.damage_type])
+	# Guards against data silently lost in export (e.g. PackedStringArray fields coming back
+	# empty after binary conversion - see KNOWN_ISSUES): every unit has tags, HQ produces.
+	for id in units:
+		if (units[id] as UnitDef).tags.is_empty():
+			errors.append("Unit %s has no tags (data lost?)" % id)
+	if buildings.has(&"eu_hq") and (buildings[&"eu_hq"] as BuildingDef).produces.is_empty():
+		errors.append("HQ produces nothing (data lost?)")
+	for id in ai_personalities:
+		if (ai_personalities[id] as AIPersonalityDef).opening.is_empty():
+			errors.append("AI personality %s has no opening (data lost?)" % id)
 	for id in UNIT_ORDER:
 		if not units.has(id): errors.append("Missing unit " + id)
 	for id in BUILDING_ORDER:
