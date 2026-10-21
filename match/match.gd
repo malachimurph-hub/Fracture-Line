@@ -50,23 +50,41 @@ func _ready() -> void:
 	get_tree().set_auto_accept_quit(false)
 
 func _build_scene() -> void:
+	# Zero Hour-style lighting (art bible baseline, GDD 15.1): strong warm sun with crisp
+	# shadows, slightly cool ambient for the shadow side, light warm distance haze,
+	# slightly saturated filmic grade.
 	var env := WorldEnvironment.new()
 	var e := Environment.new()
 	e.background_mode = Environment.BG_COLOR
-	e.background_color = Color("#0d0f12")
+	e.background_color = Color("#0b0c0e")
 	e.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	e.ambient_light_color = Color("#9fa8b8")
-	e.ambient_light_energy = 0.55
+	e.ambient_light_color = Color("#8ea3c4")
+	e.ambient_light_energy = 0.62
 	e.tonemap_mode = Environment.TONE_MAPPER_FILMIC
+	e.tonemap_exposure = 1.05
+	e.fog_enabled = true
+	e.fog_light_color = Color("#cdbb9c")
+	e.fog_light_energy = 0.9
+	e.fog_density = 0.0016
+	e.fog_sky_affect = 0.0
+	e.fog_aerial_perspective = 0.0
+	e.adjustment_enabled = true
+	e.adjustment_saturation = 1.12
+	e.adjustment_contrast = 1.06
+	e.adjustment_brightness = 1.0
 	env.environment = e
 	add_child(env)
 	var sun := DirectionalLight3D.new()
-	sun.rotation_degrees = Vector3(-52, -38, 0)
-	sun.light_energy = 1.15
-	sun.light_color = Color("#fff3e0")
+	sun.rotation_degrees = Vector3(-50, -35, 0)
+	sun.light_energy = 1.55
+	sun.light_color = Color("#ffe3b8")
 	sun.shadow_enabled = true
-	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
-	sun.directional_shadow_max_distance = 90.0
+	sun.shadow_bias = 0.04
+	sun.shadow_normal_bias = 1.2
+	sun.shadow_blur = 0.6
+	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
+	sun.directional_shadow_max_distance = 70.0
+	sun.directional_shadow_split_1 = 0.35
 	add_child(sun)
 	world = WorldView.new()
 	add_child(world)

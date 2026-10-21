@@ -36,7 +36,7 @@ func setup(r: MatchRunner, pid: int) -> void:
 	local_team = sim.players[pid].team if pid >= 0 else -1
 	terrain = TerrainView.new()
 	add_child(terrain)
-	terrain.build(sim.map)
+	terrain.build(sim.map, Content.maps[sim.map_id].tiles_path)
 	vfx = Vfx.new()
 	add_child(vfx)
 	fog_overlay = Palette.flat(Color(0.05, 0.06, 0.08), 0.55)
