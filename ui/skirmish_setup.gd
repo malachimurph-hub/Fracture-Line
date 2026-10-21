@@ -171,11 +171,35 @@ func _validate() -> bool:
 		preview.queue_redraw()
 	return e == ""
 
+var _preview_tex: ImageTexture = null
+const BIOME_PREVIEW := {"s": Color("#c9a878"), "d": Color("#9c8160"), "g": Color("#a09656"), "G": Color("#5f7a3a"),
+	"a": Color("#4f4c47"), "c": Color("#b0aa9e"), "r": Color("#857563"), "w": Color("#3f6f8f")}
+
+## Map preview from the map's biome layer (what the terrain actually looks like).
+func _biome_preview(md: MapDef) -> ImageTexture:
+	var bp := md.tiles_path.replace(".txt", ".biome.txt")
+	if not FileAccess.file_exists(bp):
+		return null
+	var lines := FileAccess.get_file_as_string(bp).split("\n", false)
+	if lines.is_empty():
+		return null
+	var w := lines[0].length()
+	var img := Image.create_empty(w, lines.size(), false, Image.FORMAT_RGBA8)
+	for y in lines.size():
+		var ln: String = lines[y]
+		for x in mini(w, ln.length()):
+			img.set_pixel(x, y, BIOME_PREVIEW.get(ln[x], Color("#b59a6c")))
+	return ImageTexture.create_from_image(img)
+
 func _draw_preview() -> void:
 	var md: MapDef = Content.maps[&"varno_crossing"]
 	var s := preview.size
-	preview.draw_rect(Rect2(Vector2.ZERO, s), Color("#3d5a2e"))
-	preview.draw_rect(Rect2(Vector2(s.x * 0.47, 0), Vector2(s.x * 0.06, s.y)), Color("#2e5f86"))
+	if _preview_tex == null:
+		_preview_tex = _biome_preview(md)
+	if _preview_tex != null:
+		preview.draw_texture_rect(_preview_tex, Rect2(Vector2.ZERO, s), false)
+	else:
+		preview.draw_rect(Rect2(Vector2.ZERO, s), Color("#b59a6c"))
 	preview.draw_rect(Rect2(Vector2.ZERO, s), UiTheme.GOLD, false, 1)
 	var f := preview.get_theme_default_font()
 	for i in md.spawns.size():
