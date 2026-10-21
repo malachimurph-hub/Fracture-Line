@@ -461,64 +461,8 @@ func _select_first(m, def_id: StringName) -> SimEntity:
 		m.ctl.set_selection([e.id])
 	return e
 
-## Exercises every bottom-panel state for a faction: builder build menu, each producer's card
-## with a full queue, multi-selection type filters, special buildings.
 func _hud_states(m, fac: StringName) -> void:
-	var sim: SimWorld = m.runner.sim
-	var pid: int = m.local_pid
-	var fd: Dictionary = Content.faction(fac)
-	sim.players[pid].supply += 30000
-	var builder := _select_first(m, fd["builder"])
-	await _hud_check(m, "%s builder menu" % fac)
-	# every building's card (spawn missing ones next to the HQ so the card can be inspected)
-	var hq := _first(m, pid, fd["hq"])
-	var k := 0
-	for bid in fd["buildings"]:
-		var b := _first(m, pid, bid)
-		if b == null and hq != null:
-			var bd: BuildingDef = Content.building(bid)
-			var spot := Vector2i(-1, -1)
-			for r in range(4, 30):
-				for dx in range(-r, r + 1, 2):
-					var t := FX.to_tile(hq.pos) + Vector2i(dx, r if (k % 2 == 0) else -r)
-					var why := sim.can_place(pid, bid, t, false)
-					if why == "" or why == "REASON_SHROUD":
-						spot = t
-						break
-				if spot.x >= 0:
-					break
-			if spot.x >= 0:
-				b = sim._place_building(bd, pid, spot, 0, true)
-				m.world.on_tick([{"t": "spawn", "id": b.id}])
-			k += 1
-		if b == null:
-			continue
-		m.ctl.set_selection([b.id])
-		var bdef: BuildingDef = Content.building(bid)
-		for uid in bdef.produces:
-			m.ctl.queue_unit(b, StringName(uid), 2)
-		m.runner.advance()
-		await _hud_check(m, "%s %s card" % [fac, bid])
-	# multi-selection: one of every unit type
-	var ids: Array = []
-	var at := FX.to_tile(hq.pos) + Vector2i(6, 6) if hq != null else Vector2i(20, 20)
-	for uid in fd["units"]:
-		var u := sim.spawn_unit(StringName(uid), pid, null, FX.tile_center(at + Vector2i(ids.size() % 4, ids.size() / 4)))
-		m.world.on_tick([{"t": "spawn", "id": u.id}])
-		ids.append(u.id)
-		var u2 := sim.spawn_unit(StringName(uid), pid, null, FX.tile_center(at + Vector2i(ids.size() % 4, ids.size() / 4)))
-		m.world.on_tick([{"t": "spawn", "id": u2.id}])
-		ids.append(u2.id)
-	m.ctl.set_selection(ids)
-	await _hud_check(m, "%s multi-selection filters" % fac)
-	for uid in fd["units"]:
-		var one := _first(m, pid, StringName(uid))
-		if one != null:
-			m.ctl.set_selection([one.id])
-			await frames(2)
-			check("portrait name fits: %s" % uid, m.hud.portrait_fit_ok)
-	if builder != null:
-		m.ctl.set_selection([builder.id])
+	await HudTextCheck.exercise(m, fac, get_tree(), check)
 
 func run_m2() -> void:
 	# 1. lobby: EU (you) + TPLA ally vs TPLA + EU

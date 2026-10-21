@@ -96,11 +96,30 @@ func _run() -> void:
 	_check(t0 >= 0 and t1 > t0 + 40, "match simulation advancing (tick %d -> %d)" % [t0, t1])
 	_check(not _overlay_up(), "no error panel in the match")
 	await _shot("ui_03_match")
+	# M2: full names everywhere in the bottom panel; no button text overflows or is clipped
+	var chk := func(name: String, ok: bool, info = null): _check(ok, name + ("" if info == null else " %s" % [info]))
+	if cs != null and is_instance_valid(cs) and "hud" in cs:
+		await HudTextCheck.exercise(cs, &"eu", get_tree(), chk)
+		await _shot("ui_03b_eu_hud")
 	# the error panel itself works (shown for a missing scene, instead of a blank screen)
 	var ok := GameSession.goto("res://does/not/exist.tscn")
 	await _frames(5)
 	_check(not ok and _overlay_up() and get_tree().current_scene == cs, "missing scene shows the error panel and keeps the current screen")
 	_check(FileAccess.file_exists(GameSession.ERROR_LOG_PATH), "error log written to user://")
 	await _shot("ui_04_error_panel")
+	GameSession._hide_overlay()
+	# M2: a TPLA match from the lobby config, same HUD checks
+	var cfg: Dictionary = SkirmishConfig.default_setup()
+	cfg["slots"][0]["faction"] = "tpla"
+	cfg["slots"][1]["faction"] = "eu"
+	GameSession.setup = cfg
+	GameSession.goto("res://match/match.tscn")
+	await _frames(60)
+	var tm := get_tree().current_scene
+	_check(tm != null and "runner" in tm and tm.runner != null and tm.runner.sim.faction_of(tm.local_pid) == &"tpla", "TPLA match starts from the lobby config")
+	if tm != null and "hud" in tm:
+		await HudTextCheck.exercise(tm, &"tpla", get_tree(), chk)
+		await _shot("ui_05_tpla_hud")
+	_check(not _overlay_up(), "no error panel in the TPLA match")
 	print("=== UI FLOW RESULT: %s (%d checks, %d failed)" % ["PASS" if failures.is_empty() else "FAIL", checks, failures.size()])
 	get_tree().quit(0 if failures.is_empty() else 1)

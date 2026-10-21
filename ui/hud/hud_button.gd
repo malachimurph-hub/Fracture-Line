@@ -104,7 +104,7 @@ static func fit_paragraph(t: String, f: Font, box: Vector2, start: int) -> Array
 static func _para_of(t: String, f: Font, fs: int, w: float) -> TextParagraph:
 	var p := TextParagraph.new()
 	p.width = w
-	p.break_flags = TextServer.BREAK_MANDATORY | TextServer.BREAK_WORD_BOUND | TextServer.BREAK_TRIM_EDGE_SPACES
+	p.break_flags = TextServer.BREAK_MANDATORY | TextServer.BREAK_WORD_BOUND | TextServer.BREAK_TRIM_START_EDGE_SPACES | TextServer.BREAK_TRIM_END_EDGE_SPACES
 	p.alignment = HORIZONTAL_ALIGNMENT_CENTER
 	p.add_string(t, f, fs)
 	return p
@@ -124,7 +124,7 @@ static func _fits_box(p: TextParagraph, box: Vector2) -> bool:
 func _make_para(f: Font, fs: int, w: float) -> TextParagraph:
 	var p := TextParagraph.new()
 	p.width = w
-	p.break_flags = TextServer.BREAK_MANDATORY | TextServer.BREAK_WORD_BOUND | TextServer.BREAK_TRIM_EDGE_SPACES
+	p.break_flags = TextServer.BREAK_MANDATORY | TextServer.BREAK_WORD_BOUND | TextServer.BREAK_TRIM_START_EDGE_SPACES | TextServer.BREAK_TRIM_END_EDGE_SPACES
 	p.alignment = HORIZONTAL_ALIGNMENT_CENTER
 	p.add_string(label_text, f, fs)
 	return p
