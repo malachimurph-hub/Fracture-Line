@@ -1,5 +1,34 @@
 # FRACTURE LINE M1: Known issues
 
+> **0.1.2-m1.2 update (visual pass, build-anywhere, audio v1).** See CHANGELOG. Verification logs are in `verification/m1.2/`.
+>
+> | Test | Result |
+> |---|---|
+> | Rendered UI flow on the exported, stripped engine (LinuxVerify, Vulkan Mobile/llvmpipe) | 17/17 PASS. Every screen's scripts compile. No deprecated-API errors. |
+> | Exported build (stripped engine): content, save/load, replay | PASS. Save/load: hash matches, 0 mismatches over 3000 ticks. Replay: 30 checkpoints, 0 mismatches. |
+> | Exported build: placement test (build anywhere) | 5/5 PASS |
+> | Exported build: audio and voice test | 24/24 PASS. 0 of 65 manifest event slots recorded yet; all fall back to placeholders. |
+> | AI matches on the exported build (Medium) | 1v1 seed 21: team 0 wins at 25:01. 2v2 seed 22: team 1 wins at 9:52. FFA seed 23: team 1 wins at 19:34 (team numbers as in the logs, 0-based). 0 ally-damage events. Avg tick 3.8–6.0 ms; worst single tick 46–90 ms. |
+> | Touch simulation 2340×1080 @450 dpi | 15/15 PASS |
+> | Perf, 4 players at 9:36 (142 entities, 67 units) | 92–103 draw calls (close / mid / far zoom). About 255k primitives including shadow passes. View update 0.5 ms per frame. Sim 7.4 ms per tick. FPS was not measured on hardware (software renderer on the box). |
+>
+> **Known issues in 0.1.2:**
+> - **Not tested on the S24 Ultra or any phone.** 60 fps with the new terrain, shadows and effects is unverified on hardware; the box only has a software GPU.
+>   - If it drops below 60, the first things to cut are: render scale (Settings), the second shadow split, and decor shadows.
+> - **Not tested with real audio.** The box has no audio device; the audio tests use the Dummy driver. Mix levels, music volume and 3D attenuation still need tuning by ear on the phone.
+> - **Voices are placeholders.** Every voice line is still robotic TTS until you record it (VOICE_SCRIPT.md). The game says so in Settings.
+>   - Placeholders exist only per event, not per unit, so all EU units share the same placeholder lines.
+> - **Draw calls with effects active were not measured.** The perf sample at 9:36 had no live effects on screen. The effects are drawn as 4 batched layers (fire, smoke, debris, decals), so they should add at most about 4 draw calls; this is not measured.
+> - **The battle-with-effects screenshots are staged.** `06_battle_vfx_staged` and `07_…` trigger explosions and smoke directly in a review scene; they are not from a live battle.
+> - **Before and after shots are on different maps.** The "before" screenshots show the old Varno Crossing; "after" shows v2. The camera setups are the same, but the content differs.
+> - **The APK's own assets could not be rendered on the box.** It ships ETC2 textures only, which the box's software GPU and the stripped desktop engine can't decode.
+>   - This build's APK assets were therefore checked on the full engine instead (it converts ETC2). The lobby and match loaded without script errors, but the screen capture there stayed on the lobby frame, so there is no in-match screenshot from the APK assets.
+>   - The same scripts and scenes pass the rendered UI flow test in the LinuxVerify export on the stripped engine.
+> - **Sim cost went up.** The 4-player sim tick averages about 7.4 ms, up from about 4–6 ms, because build-anywhere searches more spots. There are single-tick spikes up to about 90 ms during AI build searches (the 4-tick catch-up absorbs them, but they could cause a hitch on a phone).
+> - **Bridges can't be destroyed** yet, and the river can only be crossed by bridges and fords, as designed. Cliffs are visual height only; the sim map still decides what is passable.
+> - **Models are procedural low-poly stand-ins,** made in the Zero Hour style. Final hand-made art is planned later (GDD §14.6).
+> - **The music and SFX are first-pass synthesized originals.** There is no adaptive music yet (GDD §14.5).
+
 > **0.1.1-m1 update:** 0.1.0-m1 showed a blank screen after tapping Skirmish on Android (fixed; see CHANGELOG). The desktop tests missed it because they ran on the full editor engine, which still has deprecated APIs. The exported-build tests were headless and never loaded the UI scripts. A rendered UI flow test on the exported, stripped engine now covers this. The fix is still **not confirmed on the S24 Ultra**: an Android emulator could not run on the box (no KVM access), so there is no logcat. Evidence: the 0.1.1 APK's own assets were run on the matching stripped engine (Linux build, Vulkan Mobile via llvmpipe), and tapping Skirmish then Start battle opens the lobby and the match.
 Build 0.1.0-m1, project commit ac97149 (the APK and web build were exported from 038490e; ac97149 only changes a test cap).
 

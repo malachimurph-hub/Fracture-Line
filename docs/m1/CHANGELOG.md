@@ -1,5 +1,58 @@
 # FRACTURE LINE: Changelog
 
+## 0.1.2-m1.2 (2026-10-21): visual pass, Zero Hour build rules, audio v1, voice pipeline
+APK: `FractureLine-M1.2.apk`. It is 19,841,810 bytes (about 18.9 MiB, under the 24 MB limit), versionCode 3, and installs over 0.1.1-m1. It is arm64-v8a only, debug-signed, and apksigner verifies it (v2 and v3 signatures). Textures ship as ETC2 for this phone.
+
+### Gameplay
+- **Build anywhere, Zero Hour style.** The build radius around the HQ and Grid is gone. A Crawler can build on any spot that is:
+  - valid ground: not water, cliffs or rock
+  - free: no overlap, and not too close to a supply seam
+  - clear of enemy units
+  - **explored:** black shroud shows "Unexplored ground — scout it first"
+  - **reachable** by one of your Crawlers: otherwise "No Crawler can drive there"
+- **AI uses build-anywhere.** It builds forward bunkers near its remote refineries and expands toward oil and supply.
+- **Power is global, as in ZH.** Every finished structure counts toward power wherever it stands. Pylons and the Grid radius now only decide where EU Grid shields apply.
+
+### Map: Varno Crossing v2 (ZH-style)
+- A river crossing with 3 concrete bridges and 2 fords.
+- A central riverside town with 20 garrisonable flat-roof buildings, a gas station and shacks.
+- Asphalt streets with lane markings, 8 capturable oil derricks and central supply piles.
+- Cliffs, rocks, palms, scrub, burned-out cars and power poles.
+- The lobby map preview now shows the real terrain.
+
+### Visuals
+- **Terrain:** real ground textures (CC0, ambientCG) splat-blended: sand, dirt, dry scrub, green, asphalt, rock, riverbed and concrete. Terrain has height, with cliffs that keep pathing intact.
+- **Water:** animated, with bank foam.
+- **Lighting (Zero Hour look):** a warm, strong sun with crisp 2-split shadows, cool ambient light, light haze and a slightly saturated filmic grade.
+- **New EU models:** every unit and building, in ZH proportions.
+  - **Vehicles:** road wheels, sloped armour, turrets and team-colour stripes.
+  - **Base:** concrete pads, sandbags, chain-link fences, corrugated-metal halls (CC0 texture), smokestacks, a helipad and flags.
+- **New civilian and supply models:** the civilian building, the oil derrick with pumpjack, and the supply pile.
+- **Fewer draw calls:** each model is now 1–5 draw calls instead of one per part.
+- **Effects:**
+  - Weapons: muzzle flashes, explosions with fire, smoke, dust and debris, flak bursts and missile trails.
+  - Ground marks: scorch marks and craters.
+  - Damaged and destroyed buildings: smoking or burning buildings, and building collapse with rubble and a smoke column.
+  - Dust: from moving vehicles and from construction sites.
+
+### Audio (new; M1 had none)
+- **Settings:** volume sliders for Master, Music, Effects, Voices and Interface sounds.
+- **Sound effects (original, synthesized):** weapons, explosions, building collapse, construction, UI sounds, and desert wind ambience.
+- **Music (original):** "Dust Over Varno" (menu) and "Steel Rain" (battle).
+- **Unit voices:** select, move, attack, under fire, created, veteran, plus build, harvest and garrison.
+- **Announcer:** an EVA-style battle control voice. All wording is original.
+
+### Voice pipeline (you record the voices)
+- **Script and checklist:** `VOICE_SCRIPT.md` and `VOICE_CHECKLIST.csv` list 154 lines, with suggested wordings, delivery notes and phone recording tips.
+- **Drop-in folders:** `audio/voice/<faction>/<unit>/<event>_<n>.ogg`; the game picks up new files automatically.
+- **Import tool:** `tools/import_voice.py` trims silence, applies the radio filter (unit lines), normalizes to about −16 LUFS and converts to Ogg.
+- **Placeholders:** until a line is recorded, a robotic TTS **placeholder** plays. Settings shows "Voice lines recorded: X of Y".
+
+### Tests added
+- **Placement test:** checks the build-anywhere rules (5 checks).
+- **Audio test:** checks buses, that every sound loads, that every voice line resolves, and the no-repeat, priority and cooldown rules (24 checks).
+- **Perf:** the perf run now reports draw calls.
+
 ## 0.1.1-m1 (2026-10-21), hotfix: blank screen after tapping Skirmish on Android
 APK: `FractureLine-M1.1.apk` (versionCode 2, installs over 0.1.0-m1).
 
