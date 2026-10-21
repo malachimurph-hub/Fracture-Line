@@ -18,17 +18,17 @@ func build() -> void:
 	h.add_child(right)
 	var b := UiTheme.button(tr("MENU_SKIRMISH"), Vector2(260, 56))
 	b.add_theme_font_size_override("font_size", 18)
-	b.pressed.connect(func(): get_tree().change_scene_to_file("res://ui/skirmish_setup.tscn"))
+	b.pressed.connect(func(): GameSession.goto("res://ui/skirmish_setup.tscn"))
 	right.add_child(b)
 	if SaveSystem.has_suspend():
 		var c := UiTheme.button(tr("MENU_CONTINUE"), Vector2(260, 52))
 		c.pressed.connect(_continue)
 		right.add_child(c)
 	var s := UiTheme.button(tr("MENU_SETTINGS"), Vector2(260, 52))
-	s.pressed.connect(func(): get_tree().change_scene_to_file("res://ui/settings_screen.tscn"))
+	s.pressed.connect(func(): GameSession.goto("res://ui/settings_screen.tscn"))
 	right.add_child(s)
 	var cr := UiTheme.button(tr("MENU_CREDITS"), Vector2(260, 52))
-	cr.pressed.connect(func(): get_tree().change_scene_to_file("res://ui/credits.tscn"))
+	cr.pressed.connect(func(): GameSession.goto("res://ui/credits.tscn"))
 	right.add_child(cr)
 	if not OS.has_feature("web"):
 		var q := UiTheme.button(tr("MENU_QUIT"), Vector2(260, 52))
@@ -42,7 +42,7 @@ func _continue() -> void:
 		get_tree().reload_current_scene()
 		return
 	GameSession.resume_save = d
-	get_tree().change_scene_to_file("res://match/match.tscn")
+	GameSession.goto("res://match/match.tscn")
 
 func go_back() -> void:
 	get_tree().quit()

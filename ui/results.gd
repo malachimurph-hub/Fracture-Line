@@ -33,11 +33,11 @@ func build() -> void:
 	h.add_theme_constant_override("separation", 10)
 	v.add_child(h)
 	var again := UiTheme.button(tr("RESULT_BACK_SETUP"), Vector2(220, 54))
-	again.pressed.connect(func(): get_tree().change_scene_to_file("res://ui/skirmish_setup.tscn"))
+	again.pressed.connect(func(): GameSession.goto("res://ui/skirmish_setup.tscn"))
 	h.add_child(again)
 	var menu := UiTheme.button(tr("RESULT_MENU"), Vector2(160, 54))
-	menu.pressed.connect(func(): get_tree().change_scene_to_file("res://ui/main_menu.tscn"))
+	menu.pressed.connect(func(): GameSession.goto("res://ui/main_menu.tscn"))
 	h.add_child(menu)
 
 func go_back() -> void:
-	get_tree().change_scene_to_file("res://ui/skirmish_setup.tscn")
+	GameSession.goto("res://ui/skirmish_setup.tscn")

@@ -193,8 +193,8 @@ func _start() -> void:
 	GameSession.setup = cfg.duplicate(true)
 	GameSession.resume_save = {}
 	SaveSystem.clear_suspend()
-	get_tree().change_scene_to_file("res://match/match.tscn")
+	GameSession.goto("res://match/match.tscn")
 
 func go_back() -> void:
 	GameSession.setup = cfg.duplicate(true)
-	get_tree().change_scene_to_file("res://ui/main_menu.tscn")
+	GameSession.goto("res://ui/main_menu.tscn")

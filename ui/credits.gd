@@ -23,4 +23,4 @@ func build() -> void:
 	sc.add_child(t)
 
 func go_back() -> void:
-	get_tree().change_scene_to_file("res://ui/main_menu.tscn")
+	GameSession.goto("res://ui/main_menu.tscn")

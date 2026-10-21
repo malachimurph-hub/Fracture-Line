@@ -71,4 +71,4 @@ func _toggle(p: Control, key: String, sk: String) -> void:
 	p.add_child(c)
 
 func go_back() -> void:
-	get_tree().change_scene_to_file("res://ui/main_menu.tscn")
+	GameSession.goto("res://ui/main_menu.tscn")

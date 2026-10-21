@@ -153,7 +153,7 @@ func _game_over(delta: float) -> void:
 		SaveSystem.clear_suspend()
 	_over_t += delta
 	if _over_t > 3.5:
-		get_tree().change_scene_to_file("res://ui/results.tscn")
+		GameSession.goto("res://ui/results.tscn")
 
 func build_result(won: bool) -> Dictionary:
 	var sim := runner.sim
@@ -182,7 +182,7 @@ func cycle_speed() -> void:
 
 func restart() -> void:
 	SaveSystem.clear_suspend()
-	get_tree().change_scene_to_file("res://match/match.tscn")
+	GameSession.goto("res://match/match.tscn")
 
 func surrender() -> void:
 	if local_pid >= 0:
@@ -191,7 +191,7 @@ func surrender() -> void:
 
 func quit_to_menu() -> void:
 	autosave()
-	get_tree().change_scene_to_file("res://ui/main_menu.tscn")
+	GameSession.goto("res://ui/main_menu.tscn")
 
 func autosave() -> void:
 	if runner.sim.game_over or local_pid < 0:
