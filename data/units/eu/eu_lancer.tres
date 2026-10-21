@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"eu_lancer"
+faction = &"eu"
+name_key = "UNIT_EU_LANCER"
+desc_key = "UNIT_EU_LANCER_DESC"
+cost = 400
+build_time_ms = 7000
+pop = 1
+prereqs = PackedStringArray()
+tags = PackedStringArray("infantry", "at", "garrison")
+max_hp = 160
+armor_type = &"infantry"
+weapons = PackedStringArray("eu_lancer_missile")
+speed_mtps = 1050
+move_layer = &"foot"
+sight = 7
+radius_mt = 380
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 0
+role = &"anti_tank"
+view_scene = "res://view/units/eu/lancer.tscn"
+stubs = PackedStringArray()

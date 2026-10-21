@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"eu_aegis"
+faction = &"eu"
+name_key = "UNIT_EU_AEGIS"
+desc_key = "UNIT_EU_AEGIS_DESC"
+cost = 1200
+build_time_ms = 15000
+pop = 3
+prereqs = PackedStringArray("eu_heavy_factory")
+tags = PackedStringArray("vehicle", "shield")
+max_hp = 650
+armor_type = &"light"
+weapons = PackedStringArray()
+speed_mtps = 1600
+move_layer = &"vehicle"
+sight = 9
+radius_mt = 550
+shield_aura_radius = 5
+shield_aura_pct = 35
+harvest_capacity = 0
+role = &"shield"
+view_scene = "res://view/units/eu/aegis.tscn"
+stubs = PackedStringArray()

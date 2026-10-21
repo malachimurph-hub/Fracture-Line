@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="AIPersonalityDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/ai_personality_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"eu_ironclad"
+name_key = "AI_IRONCLAD"
+aggression = 3
+expansion = 3
+tech_rush = 4
+harass = 1
+opening = PackedStringArray("eu_reactor", "eu_hub", "eu_barracks", "eu_reactor", "eu_motor_pool", "eu_gun_bunker", "eu_heavy_factory", "eu_reactor", "eu_hub")
+unit_weights = {"eu_grenadier": 3, "eu_lancer": 3, "eu_wolfhound": 2, "eu_flakwerk": 1, "eu_leopold": 6, "eu_aegis": 1}
+wave_growth_pct = 40
+first_wave_value = 4000

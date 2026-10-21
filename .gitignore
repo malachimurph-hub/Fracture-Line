@@ -1,0 +1,7 @@
+.godot/
+*.import
+!locale/*.import
+export_build/
+*.tmp
+tests/out/
+!data/balance/*.import

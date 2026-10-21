@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"eu_harvester"
+faction = &"eu"
+name_key = "UNIT_EU_HARVESTER"
+desc_key = "UNIT_EU_HARVESTER_DESC"
+cost = 800
+build_time_ms = 10000
+pop = 2
+prereqs = PackedStringArray()
+tags = PackedStringArray("vehicle", "harvester")
+max_hp = 900
+armor_type = &"heavy"
+weapons = PackedStringArray("eu_harvester_mg")
+speed_mtps = 1400
+move_layer = &"vehicle"
+sight = 7
+radius_mt = 550
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 400
+role = &"harvester"
+view_scene = "res://view/units/eu/harvester.tscn"
+stubs = PackedStringArray()

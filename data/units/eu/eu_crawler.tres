@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"eu_crawler"
+faction = &"eu"
+name_key = "UNIT_EU_CRAWLER"
+desc_key = "UNIT_EU_CRAWLER_DESC"
+cost = 1000
+build_time_ms = 10000
+pop = 2
+prereqs = PackedStringArray()
+tags = PackedStringArray("vehicle", "builder")
+max_hp = 400
+armor_type = &"light"
+weapons = PackedStringArray()
+speed_mtps = 1500
+move_layer = &"vehicle"
+sight = 7
+radius_mt = 450
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 0
+role = &"builder"
+view_scene = "res://view/units/eu/crawler.tscn"
+stubs = PackedStringArray()

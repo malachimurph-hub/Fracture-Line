@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="MapDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/map_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"varno_crossing"
+name_key = "MAP_VARNO"
+description_key = "MAP_VARNO_DESC"
+size = Vector2i(128, 128)
+tiles_path = "res://data/maps/varno_crossing.txt"
+spawns = Array[Vector2i]([Vector2i(14, 14), Vector2i(110, 110), Vector2i(110, 14), Vector2i(14, 110)])
+resources = Array[Dictionary]([{"kind": "seam", "tile": Vector2i(8, 26), "amount": 15000}, {"kind": "seam", "tile": Vector2i(119, 101), "amount": 15000}, {"kind": "seam", "tile": Vector2i(119, 26), "amount": 15000}, {"kind": "seam", "tile": Vector2i(8, 101), "amount": 15000}, {"kind": "cache", "tile": Vector2i(27, 9), "amount": 3000}, {"kind": "cache", "tile": Vector2i(100, 118), "amount": 3000}, {"kind": "cache", "tile": Vector2i(100, 9), "amount": 3000}, {"kind": "cache", "tile": Vector2i(27, 118), "amount": 3000}, {"kind": "seam", "tile": Vector2i(38, 44), "amount": 20000}, {"kind": "seam", "tile": Vector2i(89, 83), "amount": 20000}, {"kind": "seam", "tile": Vector2i(89, 44), "amount": 20000}, {"kind": "seam", "tile": Vector2i(38, 83), "amount": 20000}])
+neutrals = Array[Dictionary]([{"kind": "neutral_pump", "tile": Vector2i(63, 63)}, {"kind": "neutral_pump", "tile": Vector2i(30, 62)}, {"kind": "neutral_pump", "tile": Vector2i(96, 62)}, {"kind": "neutral_civ_block", "tile": Vector2i(46, 26)}, {"kind": "neutral_civ_block", "tile": Vector2i(79, 26)}, {"kind": "neutral_civ_block", "tile": Vector2i(46, 99)}, {"kind": "neutral_civ_block", "tile": Vector2i(79, 99)}, {"kind": "neutral_civ_block", "tile": Vector2i(24, 46)}, {"kind": "neutral_civ_block", "tile": Vector2i(101, 46)}, {"kind": "neutral_civ_block", "tile": Vector2i(24, 79)}, {"kind": "neutral_civ_block", "tile": Vector2i(101, 79)}])

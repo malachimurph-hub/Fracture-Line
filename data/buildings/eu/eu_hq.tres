@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="BuildingDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/building_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"eu_hq"
+faction = &"eu"
+name_key = "BLD_EU_HQ"
+desc_key = "BLD_EU_HQ_DESC"
+category = &"base"
+cost = 2500
+build_time_ms = 45000
+footprint = Vector2i(4, 4)
+max_hp = 5000
+power = 5
+grid_radius = 8
+sight = 10
+prereqs = PackedStringArray()
+produces = PackedStringArray("eu_crawler")
+is_hq = true
+is_refinery = false
+passive_income = 0
+free_unit = &""
+shield_pct = 25
+view_scene = "res://view/buildings/eu/hq.tscn"
+stubs = PackedStringArray()
+weapons = PackedStringArray()
+needs_power_to_fire = false
+garrison_capacity = 0
+capturable = false
+capture_income = 0
+buildable = true

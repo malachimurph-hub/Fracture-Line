@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="PowerDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/power_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"eu_shield_overcharge"
+name_key = "POWER_OVERCHARGE"
+desc_key = "POWER_OVERCHARGE_DESC"
+rank_required = 3
+point_cost = 1
+stub = false
+cooldown_ms = 180000
+radius = 6
+duration_ms = 20000
+amount = 60
+kind = &"overcharge"

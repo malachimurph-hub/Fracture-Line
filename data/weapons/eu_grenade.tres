@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="WeaponDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/weapon_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"eu_grenade"
+damage = 40
+range_mt = 4500
+min_range_mt = 1000
+cooldown_ms = 3200
+damage_type = &"explosive"
+splash_mt = 1200
+targets_air = false
+targets_ground = true
+vfx = &"grenade"

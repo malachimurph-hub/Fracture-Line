@@ -1,0 +1,9 @@
+id,name_key,cost,build_time_ms,pop,prereqs,tags,max_hp,armor_type,weapons,speed_mtps,move_layer,sight,radius_mt,shield_aura_radius,shield_aura_pct,harvest_capacity,role,stubs
+eu_crawler,UNIT_EU_CRAWLER,1000,10000,2,,vehicle|builder,400,light,,1500,vehicle,7,450,0,0,0,builder,
+eu_harvester,UNIT_EU_HARVESTER,800,10000,2,,vehicle|harvester,900,heavy,eu_harvester_mg,1400,vehicle,7,550,0,0,400,harvester,
+eu_grenadier,UNIT_EU_GRENADIER,300,6000,1,,infantry|garrison,200,infantry,eu_rifle|eu_grenade,1100,foot,7,380,0,0,0,infantry,
+eu_lancer,UNIT_EU_LANCER,400,7000,1,,infantry|at|garrison,160,infantry,eu_lancer_missile,1050,foot,7,380,0,0,0,anti_tank,
+eu_wolfhound,UNIT_EU_WOLFHOUND,750,10000,2,,vehicle,600,light,eu_autocannon,2600,vehicle,9,500,0,0,0,ifv,transport
+eu_leopold,UNIT_EU_LEOPOLD,1000,12000,3,eu_heavy_factory,vehicle|tank,960,heavy,eu_tank_cannon,1650,vehicle,8,600,0,0,0,tank,
+eu_aegis,UNIT_EU_AEGIS,1200,15000,3,eu_heavy_factory,vehicle|shield,650,light,,1600,vehicle,9,550,5,35,0,shield,
+eu_flakwerk,UNIT_EU_FLAKWERK,800,12000,2,,vehicle|aa,600,light,eu_flak,1900,vehicle,9,500,0,0,0,anti_air,

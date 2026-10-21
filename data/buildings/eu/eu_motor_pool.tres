@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="BuildingDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/building_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"eu_motor_pool"
+faction = &"eu"
+name_key = "BLD_EU_MOTOR_POOL"
+desc_key = "BLD_EU_MOTOR_POOL_DESC"
+category = &"production"
+cost = 1500
+build_time_ms = 15000
+footprint = Vector2i(4, 4)
+max_hp = 1800
+power = -4
+grid_radius = 0
+sight = 6
+prereqs = PackedStringArray("eu_barracks")
+produces = PackedStringArray("eu_wolfhound", "eu_flakwerk")
+is_hq = false
+is_refinery = false
+passive_income = 0
+free_unit = &""
+shield_pct = 25
+view_scene = "res://view/buildings/eu/motor_pool.tscn"
+stubs = PackedStringArray()
+weapons = PackedStringArray()
+needs_power_to_fire = false
+garrison_capacity = 0
+capturable = false
+capture_income = 0
+buildable = true

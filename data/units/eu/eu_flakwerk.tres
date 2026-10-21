@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"eu_flakwerk"
+faction = &"eu"
+name_key = "UNIT_EU_FLAKWERK"
+desc_key = "UNIT_EU_FLAKWERK_DESC"
+cost = 800
+build_time_ms = 12000
+pop = 2
+prereqs = PackedStringArray()
+tags = PackedStringArray("vehicle", "aa")
+max_hp = 600
+armor_type = &"light"
+weapons = PackedStringArray("eu_flak")
+speed_mtps = 1900
+move_layer = &"vehicle"
+sight = 9
+radius_mt = 500
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 0
+role = &"anti_air"
+view_scene = "res://view/units/eu/flakwerk.tscn"
+stubs = PackedStringArray()

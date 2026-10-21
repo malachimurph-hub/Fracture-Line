@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="PowerDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/power_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"eu_recon_sweep"
+name_key = "POWER_RECON"
+desc_key = "POWER_RECON_DESC"
+rank_required = 1
+point_cost = 1
+stub = false
+cooldown_ms = 120000
+radius = 14
+duration_ms = 20000
+amount = 0
+kind = &"recon"
