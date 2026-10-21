@@ -202,10 +202,15 @@ func _next_building() -> StringName:
 		return &"eu_gun_bunker"
 	if seconds() > cfg["expand_s"] + 240 and counts.get(&"eu_hub", 0) < (3 if difficulty == "hard" else 2):
 		return &"eu_hub"
-	if seconds() > 480 and counts.get(&"eu_barracks", 0) < 2 and p.supply > 3000:
+	# mid-game base growth (ZH AI keeps adding production and defenses)
+	if seconds() > 420 and counts.get(&"eu_barracks", 0) < 2 and p.supply > 1000:
 		return &"eu_barracks"
-	if seconds() > 600 and counts.get(&"eu_heavy_factory", 0) < 2 and p.supply > 4000:
+	if seconds() > 540 and counts.get(&"eu_heavy_factory", 0) < 2 and p.supply > 2000:
 		return &"eu_heavy_factory"
+	if seconds() > 660 and difficulty != "easy" and counts.get(&"eu_gun_bunker", 0) < int(cfg["bunkers"]) + 2 and p.supply > 1200:
+		return &"eu_gun_bunker"
+	if seconds() > 780 and counts.get(&"eu_motor_pool", 0) < 2 and p.supply > 1500:
+		return &"eu_motor_pool"
 	return &""
 
 func _build() -> void:

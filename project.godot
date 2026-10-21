@@ -3,6 +3,8 @@ config_version=5
 
 [application]
 
+config/quit_on_go_back=false
+
 config/name="Fracture Line"
 config/description="FRACTURE LINE - original mobile RTS (M1 vertical slice)"
 config/version="0.1.0-m1"
