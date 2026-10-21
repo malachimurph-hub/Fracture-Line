@@ -4,7 +4,7 @@ Target device: Samsung Galaxy S24 Ultra (Android 14+). Any 64-bit (arm64) Androi
 This build has not been run on a real phone yet; it was verified in a desktop simulation (see KNOWN_ISSUES.md).
 
 ## Install
-1. In the chat, tap **FractureLine-M1.apk** to download it.
+1. In the chat, tap **FractureLine-M1.1.apk** (the latest build) to download it. It installs over the older FractureLine-M1.apk.
 2. Open it from the notification, or from **My Files > Downloads**.
 3. Android will say the app you opened it with isn't allowed to install apps. Tap **Settings**, then turn on
    **Allow from this source** for *that* app (for example My Files, Chrome or Samsung Internet). Then go back.
