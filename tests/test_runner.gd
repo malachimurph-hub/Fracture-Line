@@ -25,7 +25,7 @@ func _ready() -> void:
 			var diff_sets := [["medium", "medium"], ["hard", "easy"], ["easy", "hard"], ["hard", "medium", "medium", "hard"], ["medium", "hard", "easy", "medium"]]
 			for i in n:
 				var mode2: String = modes[(i + off) % modes.size()]
-				var res := run_match(mode2, 1000 + i + off, false, 40, diff_sets[(i + off) % diff_sets.size()])
+				var res := run_match(mode2, 1000 + i + off, false, 40 if mode2 == "1v1" else 60, diff_sets[(i + off) % diff_sets.size()])
 				wins[mode2 + ":" + str(res["winner"])] = wins.get(mode2 + ":" + str(res["winner"]), 0) + 1
 			print("SOAK done %d matches in %d s; outcomes=%s" % [n, (Time.get_ticks_msec() - t0) / 1000, wins])
 		"replay":
