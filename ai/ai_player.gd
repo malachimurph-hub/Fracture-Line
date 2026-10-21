@@ -436,7 +436,7 @@ func _pick_unit(bd: BuildingDef) -> StringName:
 	return StringName(bd.produces[0])
 
 func _staging() -> Vector2i:
-	if bb["staging"].x < 0 or w.tick % 600 == 0:
+	if bb["staging"].x < 0 or _every("t_staging", 600):
 		var base := base_pos()
 		var st := base + (map_center() - base) * 22 / 100
 		bb["staging"] = FX.tile_center(w.map.nearest_passable(FX.to_tile(st), true))
@@ -511,6 +511,11 @@ func _army() -> void:
 			continue
 		staged.append(u)
 	var need := _wave_threshold()
+	# ZH-style pressure: at (near) the unit cap there is nothing to wait for - attack with
+	# what we have instead of idling at staging (prevents late-game stalemates).
+	var pl := me()
+	if pl.pop >= pl.pop_cap - 6:
+		need = mini(need, maxi(3000, army_value(staged)))
 	var t_ok := seconds() >= int(cfg["first_wave_s"]) or (difficulty != "easy" and army_value(staged) >= need * 2)
 	if bb["wave"].is_empty() and t_ok and army_value(staged) >= need:
 		var target := _pick_target()
@@ -528,6 +533,27 @@ func _army() -> void:
 				bb["retreated"].erase(id)
 			return
 	# 4. keep the wave moving: when most of it is idle, push to the next target; reinforce from staging
+	if not bb["wave"].is_empty() and _every("t_watchdog", 1200):
+		# stuck-wave watchdog: if the wave's centroid hardly moved in a minute and it isn't
+		# fighting, re-target it at the nearest remembered enemy structure (or dissolve it).
+		var wl: Array = []
+		var fighting := false
+		for id in bb["wave"]:
+			var we := w.get_ent(id)
+			wl.append(we)
+			if w.tick - we.firing_tick < 200:
+				fighting = true
+		var cen := _centroid(wl)
+		var last: Vector2i = bb.get("wave_last_pos", Vector2i(-1, -1))
+		bb["wave_last_pos"] = cen
+		if not fighting and last.x >= 0 and FX.dist(cen, last) < FX.ONE * 4:
+			r.team_board.erase(me().team)
+			var t3 := _pick_target()
+			if t3.x >= 0 and FX.dist(t3, cen) > FX.ONE * 6:
+				cmd({"t": "amove", "ids": bb["wave"].duplicate(), "pos": t3})
+			else:
+				cmd({"t": "move", "ids": bb["wave"].duplicate(), "pos": _staging()})
+				bb["wave"] = []
 	if not bb["wave"].is_empty():
 		var idle := 0
 		for id in bb["wave"]:
@@ -537,7 +563,7 @@ func _army() -> void:
 			var t2 := _pick_target()
 			if t2.x >= 0:
 				cmd({"t": "amove", "ids": bb["wave"].duplicate(), "pos": t2})
-		if w.tick % 200 == 0 and army_value(staged) >= 2500:
+		if _every("t_reinforce", 200) and army_value(staged) >= 2500:
 			var rein: Array = []
 			for u: SimEntity in staged:
 				rein.append(u.id)
@@ -553,6 +579,14 @@ func _army() -> void:
 			gather.append(u.id)
 	if not gather.is_empty():
 		cmd({"t": "move", "ids": gather, "pos": _staging()})
+
+## True at most once per `period` ticks. AIs think on staggered ticks (tick + pid), so
+## "w.tick % N == 0" checks never fired for most players - this replaces them.
+func _every(key: String, period: int) -> bool:
+	if w.tick - int(bb.get(key, -1000000)) >= period:
+		bb[key] = w.tick
+		return true
+	return false
 
 func _wave_threshold() -> int:
 	var base: int = persona.first_wave_value * int(cfg["wave_mult"]) / 100
@@ -585,15 +619,26 @@ func _pick_target() -> Vector2i:
 	var board: Dictionary = r.team_board.get(my_team, {})
 	var tp := int(board.get("target_player", -1))
 	if tp < 0 or w.players[tp].eliminated or w.tick - int(board.get("tick", 0)) > 20 * 240:
+		# Pick the enemy with the best mix of proximity and weakness (army + base size).
+		# Allies share this choice through the team board, so they converge on one enemy.
 		tp = -1
 		var bd := 1 << 50
 		for p in w.players:
 			if p.eliminated or not w.enemies(my_team, p.team):
 				continue
 			var sp := _spawn_of(p.id)
-			var d := FX.dist2(sp, base_pos())
-			if d < bd:
-				bd = d
+			var d := FX.dist(sp, base_pos()) / FX.ONE
+			var strength := 0
+			for id in w.ids:
+				var e: SimEntity = w.ents[id]
+				if e.owner == p.id and e.alive:
+					if e.kind == SimEntity.Kind.UNIT and e.res_id >= 0:
+						strength += w.udef(e).cost
+					elif e.kind == SimEntity.Kind.BUILDING:
+						strength += 400
+			var score := d * 60 + strength
+			if score < bd:
+				bd = score
 				tp = p.id
 		r.team_board[my_team] = {"target_player": tp, "tick": w.tick}
 	if tp < 0:
