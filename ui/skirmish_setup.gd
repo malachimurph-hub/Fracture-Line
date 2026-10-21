@@ -158,7 +158,7 @@ func _refresh_row_state() -> void:
 		preview.queue_redraw()
 
 func _swatch(c: Color) -> ImageTexture:
-	var img := Image.create(16, 16, false, Image.FORMAT_RGBA8)
+	var img := Image.create_empty(16, 16, false, Image.FORMAT_RGBA8)
 	img.fill(c)
 	return ImageTexture.create_from_image(img)
 

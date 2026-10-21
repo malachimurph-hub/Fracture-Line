@@ -17,7 +17,7 @@ var m: SimMap
 
 func build(map: SimMap) -> void:
 	m = map
-	fog_image = Image.create(m.w, m.h, false, Image.FORMAT_L8)
+	fog_image = Image.create_empty(m.w, m.h, false, Image.FORMAT_L8)
 	fog_image.fill(Color(0, 0, 0))
 	fog_texture = ImageTexture.create_from_image(fog_image)
 	var sh: Shader = load("res://view/terrain/fog_world.gdshader")

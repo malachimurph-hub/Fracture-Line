@@ -22,12 +22,12 @@ func setup(w: WorldView, c: CameraRig, p: PlayerController) -> void:
 	cam = c
 	ctl = p
 	var m := w.sim.map
-	var img := Image.create(m.w, m.h, false, Image.FORMAT_RGB8)
+	var img := Image.create_empty(m.w, m.h, false, Image.FORMAT_RGB8)
 	for y in m.h:
 		for x in m.w:
 			img.set_pixel(x, y, TerrainView.minimap_color(m.ttype(Vector2i(x, y))))
 	base_tex = ImageTexture.create_from_image(img)
-	fog_img = Image.create(m.w, m.h, false, Image.FORMAT_RGBA8)
+	fog_img = Image.create_empty(m.w, m.h, false, Image.FORMAT_RGBA8)
 	fog_tex = ImageTexture.create_from_image(fog_img)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
