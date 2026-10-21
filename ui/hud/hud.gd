@@ -786,36 +786,57 @@ func on_events(events: Array) -> void:
 					if e != null:
 						var is_b := e.kind != SimEntity.Kind.UNIT
 						alert("attacked_b" if is_b else "attacked_u", tr("ALERT_BASE_ATTACK") if is_b else tr("ALERT_UNITS_ATTACK"), e.pos, 10.0 if is_b else 15.0)
+						if is_b:
+							AudioDirector.announce("base_under_attack")
+						elif not AudioDirector.unit_voice(String(Content.unit(e.def_id).faction), String(e.def_id), "under_fire"):
+							AudioDirector.announce("units_under_attack")
 			"built":
 				if int(ev["owner"]) == pid:
 					var b := sim.get_ent(int(ev["id"]))
 					if b != null:
 						alert("built" + str(b.id), tr("ALERT_BUILT") % ent_name(b), b.pos, 1.0)
+						AudioDirector.ui("build_ready")
+						AudioDirector.announce("construction_complete")
 			"spawn":
 				var u := sim.get_ent(int(ev["id"]))
 				if u != null and u.owner == pid and u.kind == SimEntity.Kind.UNIT and sim.tick > 5:
 					toast(tr("ALERT_UNIT_READY") % ent_name(u))
+					if not AudioDirector.unit_voice(String(Content.unit(u.def_id).faction), String(u.def_id), "created"):
+						AudioDirector.announce("unit_ready")
 			"low_power":
 				if int(ev["owner"]) == pid and ev["on"]:
 					alert("lowpower", tr("ALERT_LOW_POWER"), Vector2i(-1, -1), 20.0)
+					AudioDirector.announce("low_power")
 			"rank":
 				if int(ev["owner"]) == pid:
 					alert("rank", tr("ALERT_RANK") % int(ev["rank"]), Vector2i(-1, -1), 0.5)
+					AudioDirector.announce("general_promoted")
 			"eliminated":
 				var o := int(ev["owner"])
 				alert("elim%d" % o, tr("ALERT_ELIMINATED") % (o + 1) if sim.player_team(o) != my_team or o != pid else tr("ALERT_YOU_ELIMINATED"), Vector2i(-1, -1), 0.5)
+				AudioDirector.announce("you_eliminated" if o == pid else "player_eliminated")
 			"reject":
 				if int(ev["owner"]) == pid:
 					toast(tr(String(ev["reason"])))
+					AudioDirector.ui("error")
+					var rs := String(ev["reason"])
+					if rs == "REASON_FUNDS":
+						AudioDirector.announce("insufficient_funds")
+					elif rs in ["REASON_TERRAIN", "REASON_BLOCKED", "REASON_SHROUD", "REASON_UNREACHABLE", "REASON_ENEMY", "REASON_RESOURCE"]:
+						AudioDirector.announce("cannot_build")
 			"captured":
 				if int(ev["owner"]) == pid:
 					var c := sim.get_ent(int(ev["id"]))
 					if c != null:
 						alert("cap", tr("ALERT_CAPTURED"), c.pos, 2.0)
+						AudioDirector.announce("building_captured")
 			"promoted":
 				var pu := sim.get_ent(int(ev["id"]))
 				if pu != null and pu.owner == pid:
 					toast(tr("ALERT_PROMOTED") % [ent_name(pu), tr("VET_%d" % int(ev["vet"]))])
+					if pu.kind != SimEntity.Kind.UNIT or not AudioDirector.unit_voice(String(Content.unit(pu.def_id).faction), String(pu.def_id), "veteran"):
+						AudioDirector.announce("unit_promoted")
 			"power_fired":
 				if int(ev["owner"]) != pid and sim.enemies(sim.player_team(int(ev["owner"])), my_team) and float(ev["r"]) > 0:
 					alert("enemy_power", tr("ALERT_ENEMY_POWER"), ev["pos"], 10.0)
+					AudioDirector.announce("enemy_power_detected")

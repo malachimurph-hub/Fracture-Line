@@ -61,6 +61,7 @@ static func button(text: String, min_size := Vector2(48, 48)) -> Button:
 	b.text = text
 	b.custom_minimum_size = min_size
 	b.focus_mode = Control.FOCUS_NONE
+	b.pressed.connect(func(): AudioDirector.ui("click"))
 	return b
 
 static func label(text: String, size: int = 13, col: Color = TEXT) -> Label:

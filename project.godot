@@ -22,6 +22,7 @@ Settings="*res://autoload/settings.gd"
 UiScale="*res://autoload/ui_scale.gd"
 SaveSystem="*res://autoload/save_system.gd"
 GameSession="*res://autoload/game_session.gd"
+AudioDirector="*res://autoload/audio_director.gd"
 
 [display]
 

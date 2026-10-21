@@ -169,6 +169,13 @@ RES_COL_HARVEST,Harvested
 RES_AI,AI %d (%s)
 RES_SEAM,Veridite seam
 RES_CACHE,Supply cache
+SET_AUDIO,Audio
+SET_VOL_MASTER,Master volume
+SET_VOL_MUSIC,Music
+SET_VOL_SFX,Effects
+SET_VOL_VOICE,Voices
+SET_VOL_UI,Interface sounds
+SET_VOICE_STATUS,Voice lines recorded: %d of %d. The rest use robotic placeholder voices (TTS) until recordings are added.
 REASON_BLOCKED,Blocked
 REASON_ENEMY,Too close to enemies
 REASON_FUNDS,Not enough money

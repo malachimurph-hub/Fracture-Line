@@ -182,6 +182,12 @@ func _on_fire(ev: Dictionary) -> void:
 	var col: Color = VFX_COLORS.get(kind, Color.WHITE)
 	var dir := (to - from).normalized()
 	var muzzle := from + dir * 0.45
+	var snd: String = {"shell": "cannon", "missile": "missile", "grenade": "grenade", "flak": "flak", "tracer_heavy": "autocannon"}.get(kind, "rifle")
+	if kind == "tracer" and src.kind == SimEntity.Kind.BUILDING:
+		snd = "mg"
+	AudioDirector.sfx(snd, from, -3.0 if snd == "rifle" else 0.0)
+	if kind in ["shell", "missile", "grenade"]:
+		AudioDirector.sfx("expl_small", to, -6.0)
 	match kind:
 		"shell":
 			vfx.tracer(muzzle, to, col, 0.07, 0.1)
@@ -213,6 +219,7 @@ func _on_death(ev: Dictionary) -> void:
 	if seen and not ev.get("silent", false):
 		if ev["kind"] == SimEntity.Kind.UNIT:
 			var inf := v != null and v.scale.x > 1.2
+			AudioDirector.sfx("body_fall" if inf else "expl_large", pos, -4.0 if inf else -2.0)
 			if inf:
 				vfx.impact(pos + Vector3(0, 0.2, 0), 0.4)
 			else:
@@ -220,6 +227,8 @@ func _on_death(ev: Dictionary) -> void:
 				vfx.sources.append([pos, 5.0, 0.4, 0.0])   # burning wreck
 		else:
 			vfx.building_destroyed(pos, v.footprint if v != null else Vector2(3, 3))
+			AudioDirector.sfx("collapse", pos)
+			AudioDirector.sfx("expl_large", pos, 0.0, 0.1)
 	if shield_domes.has(id):
 		shield_domes[id].queue_free()
 		shield_domes.erase(id)

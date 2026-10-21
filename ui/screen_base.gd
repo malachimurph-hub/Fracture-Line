@@ -5,6 +5,7 @@ extends Control
 var body: MarginContainer
 
 func _ready() -> void:
+	AudioDirector.play_music("menu")
 	theme = UiTheme.get_theme()
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	var bg := ColorRect.new()

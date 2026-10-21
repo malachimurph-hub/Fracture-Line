@@ -174,8 +174,10 @@ func select_at(screen: Vector2, add: bool = false) -> bool:
 		else:
 			s.append(id)
 		set_selection(s)
+		_select_voice()
 	else:
 		set_selection([id])
+		_select_voice()
 	return true
 
 func select_same_type(screen: Vector2) -> void:
@@ -190,6 +192,7 @@ func select_same_type(screen: Vector2) -> void:
 		if o.owner == pid and o.def_id == e.def_id and o.res_id >= 0 and vp.has_point(screen_of(o)):
 			out.append(oid)
 	set_selection(out)
+	_select_voice()
 
 ## Box select own units (structures only if no units). Builders/harvesters are dropped
 ## when combat units are also in the box (keeps army boxes clean, like ZH).
@@ -210,6 +213,7 @@ func box_select(r: Rect2, add: bool = false) -> void:
 	if add:
 		pickd = selection + pickd
 	set_selection(pickd)
+	_select_voice()
 
 func select_all_army() -> void:
 	var out: Array = []
@@ -220,6 +224,7 @@ func select_all_army() -> void:
 			if not tags.has("builder") and not tags.has("harvester"):
 				out.append(id)
 	set_selection(out)
+	_select_voice()
 
 func select_idle_builder() -> void:
 	var best := 0
@@ -232,6 +237,7 @@ func select_idle_builder() -> void:
 					break
 	if best != 0:
 		set_selection([best])
+		_select_voice()
 		cam.jump_to(FX.to_world(sim.ents[best].pos))
 
 func group_assign(i: int) -> void:
@@ -248,6 +254,7 @@ func group_select(i: int) -> bool:
 		if e != null:
 			cam.jump_to(FX.to_world(e.pos))
 	set_selection(g.duplicate())
+	_select_voice()
 	return true
 
 # ---------------------------------------------------------------- commands
@@ -256,6 +263,35 @@ func issue(c: Dictionary) -> void:
 		return
 	c["p"] = pid
 	runner.issue(c)
+	_ack(c)
+
+## Unit voice acknowledgement for an order (GDD 16.3), spoken by the first unit.
+func _ack(c: Dictionary) -> void:
+	var ev: String = {"move": "move", "amove": "attack", "attack": "attack", "guard": "move", "harvest": "harvest",
+		"garrison": "garrison", "capture": "move", "place": "build", "resume_build": "build"}.get(String(c.get("t", "")), "")
+	if ev == "" or not c.has("ids") or (c["ids"] as Array).is_empty():
+		return
+	var e := sim.get_ent(int(c["ids"][0]))
+	if e == null or e.kind != SimEntity.Kind.UNIT:
+		return
+	var d: UnitDef = Content.unit(e.def_id)
+	if ev == "build" or ev == "harvest" or ev == "garrison":
+		if not AudioDirector.unit_voice(String(d.faction), String(e.def_id), ev):
+			AudioDirector.unit_voice(String(d.faction), String(e.def_id), "move")
+	else:
+		AudioDirector.unit_voice(String(d.faction), String(e.def_id), ev)
+	if ev == "build":
+		AudioDirector.announce("building")
+
+func _select_voice() -> void:
+	for id in selection:
+		var e := sim.get_ent(id)
+		if e != null and e.owner == pid and e.kind == SimEntity.Kind.UNIT:
+			AudioDirector.unit_voice(String(Content.unit(e.def_id).faction), String(e.def_id), "select")
+			return
+		elif e != null and e.owner == pid:
+			AudioDirector.ui("select")
+			return
 
 func _queue_flag() -> bool:
 	return Input.is_key_pressed(KEY_SHIFT)

@@ -20,8 +20,18 @@ func build() -> void:
 	sc.add_child(cols)
 	var a := VBoxContainer.new()
 	var b := VBoxContainer.new()
+	var c := VBoxContainer.new()
 	cols.add_child(a)
 	cols.add_child(b)
+	cols.add_child(c)
+	c.add_child(UiTheme.label(tr("SET_AUDIO"), 14, UiTheme.GOLD))
+	for pair in [["SET_VOL_MASTER", "vol_master"], ["SET_VOL_MUSIC", "vol_music"], ["SET_VOL_SFX", "vol_sfx"], ["SET_VOL_VOICE", "vol_voice"], ["SET_VOL_UI", "vol_ui"]]:
+		_slider(c, pair[0], pair[1], 0.0, 1.0, 0.05)
+	var vs: Dictionary = AudioDirector.voice_status()
+	var vl := UiTheme.label(tr("SET_VOICE_STATUS") % [vs["recorded"], vs["total"]], 11)
+	vl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	vl.custom_minimum_size = Vector2(260, 0)
+	c.add_child(vl)
 	_slider(a, "SET_UI_SCALE", "ui_scale", 0.8, 1.4, 0.05)
 	_slider(a, "SET_HOLD_MS", "hold_ms", 250, 600, 25)
 	_slider(a, "SET_DOUBLE_TAP", "double_tap_ms", 200, 450, 25)
@@ -49,7 +59,9 @@ func _slider(p: Control, key: String, sk: String, lo: float, hi: float, step: fl
 	var upd := func(val): l.text = "%s: %s" % [tr(key), str(snappedf(val, step))]
 	upd.call(s.value)
 	s.value_changed.connect(upd)
-	s.drag_ended.connect(func(_c): Settings.s(sk, int(s.value) if step >= 1.0 else s.value))
+	s.drag_ended.connect(func(_c):
+		Settings.s(sk, int(s.value) if step >= 1.0 else s.value)
+		AudioDirector.ui("click"))
 	p.add_child(s)
 
 func _choice(p: Control, key: String, sk: String, opts: Array) -> void:

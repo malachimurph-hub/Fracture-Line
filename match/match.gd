@@ -127,6 +127,14 @@ func _build_scene() -> void:
 			cam.jump_to(FX.to_world(en.pos) + Vector3(4, 0, 3), false)
 			break
 	cam.set_level(1)
+	AudioDirector.world_root = world
+	AudioDirector.play_music("battle")
+	AudioDirector.play_ambient("wind")
+	if runner.sim.tick < 10:
+		AudioDirector.announce("battle_start")
+
+func _exit_tree() -> void:
+	AudioDirector.on_match_end()
 
 func _process(delta: float) -> void:
 	if not paused and not runner.sim.game_over:
@@ -168,6 +176,8 @@ func _game_over(delta: float) -> void:
 		banner.position = Vector2(UiScale.logical_size().x * 0.5 - 200, 90)
 		banner.size = Vector2(400, 60)
 		GameSession.last_result = build_result(won)
+		if my_team >= 0:
+			AudioDirector.announce("victory" if won else "defeat")
 		SaveSystem.clear_suspend()
 	_over_t += delta
 	if _over_t > 3.5:

@@ -1,0 +1,311 @@
+extends Node
+## Audio v1 (GDD 16): buses (Master/Music/SFX/Voice/UI), pooled positional SFX with per-sound
+## limiting, UI sounds, music + ambience, and the data-driven voice system:
+##   data/audio/voice_manifest.json  -> factions/units/events, priorities, cooldowns
+##   res://audio/voice/<faction>/<folder>/<event>_<n>.ogg    recorded lines (drop-in)
+##   res://audio/voice/announcer/<event>_<n>.ogg
+##   res://audio/voice_placeholder/...                       TTS placeholders (fallback)
+## Variants are picked at random without immediate repeats (shuffle bag). A line plays when
+## its channel is idle or it outranks the line that is playing; cooldowns are per unit type.
+
+const BUSES := ["Music", "SFX", "Voice", "UI"]
+const MANIFEST := "res://data/audio/voice_manifest.json"
+const SFX := {
+	"rifle": "res://audio/sfx/rifle.ogg", "mg": "res://audio/sfx/mg_burst.ogg", "autocannon": "res://audio/sfx/autocannon.ogg",
+	"cannon": "res://audio/sfx/tank_cannon.ogg", "missile": "res://audio/sfx/missile_launch.ogg", "grenade": "res://audio/sfx/grenade_launch.ogg",
+	"flak": "res://audio/sfx/flak.ogg", "expl_small": "res://audio/sfx/explosion_small.ogg", "expl_large": "res://audio/sfx/explosion_large.ogg",
+	"collapse": "res://audio/sfx/building_collapse.ogg", "impact": "res://audio/sfx/impact_dirt.ogg", "body_fall": "res://audio/sfx/body_fall.ogg",
+	"construct": "res://audio/sfx/construct.ogg", "place": "res://audio/sfx/place_structure.ogg", "power_down": "res://audio/sfx/power_down.ogg",
+}
+const UI := {"click": "res://audio/ui/click.ogg", "select": "res://audio/ui/select.ogg", "error": "res://audio/ui/error.ogg",
+	"confirm": "res://audio/ui/confirm.ogg", "alert": "res://audio/ui/alert.ogg", "build_ready": "res://audio/ui/build_ready.ogg"}
+const MUSIC := {"menu": "res://audio/music/menu_dust_over_varno.ogg", "battle": "res://audio/music/battle_steel_rain.ogg"}
+const AMBIENT := {"wind": "res://audio/ambient/desert_wind.ogg", "river": "res://audio/ambient/river.ogg"}
+
+var manifest: Dictionary = {}
+var _streams: Dictionary = {}
+var _pool3d: Array = []
+var _ui_players: Array = []
+var _music: AudioStreamPlayer
+var _ambient: AudioStreamPlayer
+var _unit_voice: AudioStreamPlayer
+var _announcer: AudioStreamPlayer
+var _unit_prio := 0
+var _ann_prio := 0
+var _ann_queue: Array = []
+var _last_play: Dictionary = {}      ## sfx key -> msec
+var _cool: Dictionary = {}           ## voice key -> msec until allowed
+var _bags: Dictionary = {}           ## voice key -> Array of paths (shuffle bag)
+var _last_line: Dictionary = {}      ## voice key -> last path
+var _variants: Dictionary = {}       ## voice key -> [paths, is_placeholder]
+var world_root: Node3D = null        ## set by the match; positional SFX parent
+var music_track := ""
+
+func _init() -> void:
+	for b in BUSES:
+		if AudioServer.get_bus_index(b) < 0:
+			AudioServer.add_bus()
+			var i := AudioServer.bus_count - 1
+			AudioServer.set_bus_name(i, b)
+			AudioServer.set_bus_send(i, "Master")
+	# light ducking-free compressor on SFX so big battles don't clip
+	var si := AudioServer.get_bus_index("SFX")
+	if AudioServer.get_bus_effect_count(si) == 0:
+		var c := AudioEffectCompressor.new()
+		c.threshold = -14.0
+		c.ratio = 3.0
+		AudioServer.add_bus_effect(si, c)
+	var mi := AudioServer.get_bus_index("Master")
+	if AudioServer.get_bus_effect_count(mi) == 0:
+		var lim := AudioEffectHardLimiter.new()
+		lim.ceiling_db = -0.5
+		AudioServer.add_bus_effect(mi, lim)
+
+func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	var f := FileAccess.open(MANIFEST, FileAccess.READ)
+	if f:
+		var j = JSON.parse_string(f.get_as_text())
+		if j is Dictionary:
+			manifest = j
+	_music = _player("Music")
+	_ambient = _player("SFX")
+	_ambient.volume_db = -14.0
+	_unit_voice = _player("Voice")
+	_announcer = _player("Voice")
+	_unit_voice.finished.connect(func(): _unit_prio = 0)
+	_announcer.finished.connect(_ann_next)
+	for i in 4:
+		_ui_players.append(_player("UI"))
+	apply_volumes()
+	EventBus.settings_changed.connect(apply_volumes)
+
+func _player(bus: String) -> AudioStreamPlayer:
+	var p := AudioStreamPlayer.new()
+	p.bus = bus
+	add_child(p)
+	return p
+
+func apply_volumes() -> void:
+	var st := get_node_or_null("/root/Settings")
+	if st == null:
+		return
+	for pair in [["Master", "vol_master"], ["Music", "vol_music"], ["SFX", "vol_sfx"], ["Voice", "vol_voice"], ["UI", "vol_ui"]]:
+		var v = st.g(pair[1])
+		var lin := 1.0 if v == null else float(v)
+		var i := AudioServer.get_bus_index(pair[0])
+		AudioServer.set_bus_volume_db(i, linear_to_db(maxf(lin, 0.0001)))
+		AudioServer.set_bus_mute(i, lin <= 0.001)
+
+func stream(path: String) -> AudioStream:
+	if _streams.has(path):
+		return _streams[path]
+	var s: AudioStream = load(path) if ResourceLoader.exists(path) else null
+	_streams[path] = s
+	return s
+
+# ---------------------------------------------------------------- SFX
+## Positional one-shot. Limited to 3 overlapping and one start per 45 ms per sound.
+func sfx(key: String, pos: Vector3, vol_db: float = 0.0, pitch_var: float = 0.06) -> void:
+	if world_root == null or not is_instance_valid(world_root):
+		return
+	var now := Time.get_ticks_msec()
+	if now - int(_last_play.get(key, -1000)) < 45:
+		return
+	var busy := 0
+	var free_p: AudioStreamPlayer3D = null
+	for p: AudioStreamPlayer3D in _pool3d:
+		if p.playing:
+			if p.get_meta("k", "") == key:
+				busy += 1
+		elif free_p == null:
+			free_p = p
+	if busy >= 3:
+		return
+	if free_p == null:
+		if _pool3d.size() >= 24:
+			return
+		free_p = AudioStreamPlayer3D.new()
+		free_p.bus = "SFX"
+		free_p.attenuation_model = AudioStreamPlayer3D.ATTENUATION_INVERSE_DISTANCE
+		free_p.unit_size = 22.0
+		free_p.max_distance = 90.0
+		free_p.panning_strength = 0.6
+		world_root.add_child(free_p)
+		_pool3d.append(free_p)
+	var s := stream(SFX.get(key, ""))
+	if s == null:
+		return
+	_last_play[key] = now
+	free_p.set_meta("k", key)
+	free_p.stream = s
+	free_p.volume_db = vol_db
+	free_p.pitch_scale = 1.0 + randf_range(-pitch_var, pitch_var)
+	free_p.global_position = pos
+	free_p.play()
+
+func ui(key: String) -> void:
+	var s := stream(UI.get(key, ""))
+	if s == null:
+		return
+	for p: AudioStreamPlayer in _ui_players:
+		if not p.playing:
+			p.stream = s
+			p.play()
+			return
+
+func play_music(track: String) -> void:
+	if track == music_track and _music.playing:
+		return
+	music_track = track
+	var s := stream(MUSIC.get(track, ""))
+	if s == null:
+		_music.stop()
+		return
+	_music.stream = s
+	_music.volume_db = -4.0
+	_music.play()
+
+func play_ambient(key: String) -> void:
+	var s := stream(AMBIENT.get(key, ""))
+	if s == null:
+		_ambient.stop()
+		return
+	if _ambient.stream != s or not _ambient.playing:
+		_ambient.stream = s
+		_ambient.play()
+
+func stop_ambient() -> void:
+	_ambient.stop()
+
+func on_match_end() -> void:
+	world_root = null
+	_pool3d.clear()
+	stop_ambient()
+
+# ---------------------------------------------------------------- voices
+func _folder_of(faction: String, unit_id: String) -> String:
+	var fd: Dictionary = manifest.get("factions", {}).get(faction, {})
+	return str(fd.get("units", {}).get(unit_id, {}).get("folder", unit_id.trim_prefix(faction + "_")))
+
+## Variant list for a key: recorded lines first; else unit placeholder; else generic placeholder.
+func variants(faction: String, folder: String, event: String) -> Array:
+	var key := faction + "/" + folder + "/" + event
+	if _variants.has(key):
+		return _variants[key]
+	var maxv := int(manifest.get("max_variants", 9))
+	var dirs: Array
+	if faction == "announcer":
+		dirs = [["res://audio/voice/announcer/", false], ["res://audio/voice_placeholder/announcer/", true]]
+	else:
+		dirs = [["res://audio/voice/%s/%s/" % [faction, folder], false], ["res://audio/voice_placeholder/%s/%s/" % [faction, folder], true],
+			["res://audio/voice_placeholder/%s/_generic/" % faction, true]]
+	var out := [[], true]
+	for d in dirs:
+		var found: Array = []
+		for n in range(1, maxv + 1):
+			var p: String = d[0] + "%s_%d.ogg" % [event, n]
+			if ResourceLoader.exists(p):
+				found.append(p)
+		if not found.is_empty():
+			out = [found, d[1]]
+			break
+	_variants[key] = out
+	return out
+
+func _pick(key: String, paths: Array) -> String:
+	if paths.size() == 1:
+		return paths[0]
+	var bag: Array = _bags.get(key, [])
+	if bag.is_empty():
+		bag = paths.duplicate()
+		bag.shuffle()
+		if bag[0] == _last_line.get(key, ""):
+			bag.push_back(bag.pop_front())
+	var p: String = bag.pop_front()
+	_bags[key] = bag
+	_last_line[key] = p
+	return p
+
+func _rule(faction: String, event: String) -> Dictionary:
+	if faction == "announcer":
+		return manifest.get("announcer", {}).get("events", {}).get(event, {"priority": 1, "cooldown": 1.0})
+	return manifest.get("events", {}).get(event, {"priority": 1, "cooldown": 0.0})
+
+## Unit acknowledgement / chatter for the LOCAL player's units.
+func unit_voice(faction: String, unit_id: String, event: String) -> bool:
+	var folder := _folder_of(faction, unit_id)
+	var rule := _rule(faction, event)
+	var key := faction + "/" + folder + "/" + event
+	var now := Time.get_ticks_msec()
+	if now < int(_cool.get(key, 0)):
+		return false
+	var prio := int(rule.get("priority", 1))
+	if _unit_voice.playing and prio <= _unit_prio and prio < 2:
+		return false
+	if _unit_voice.playing and prio < _unit_prio:
+		return false
+	var v := variants(faction, folder, event)
+	if v[0].is_empty():
+		return false
+	var s := stream(_pick(key, v[0]))
+	if s == null:
+		return false
+	_cool[key] = now + int(float(rule.get("cooldown", 0.0)) * 1000.0)
+	_unit_prio = prio
+	_unit_voice.stream = s
+	_unit_voice.play()
+	return true
+
+## Battle-control announcer (EVA-style; original wording). Queues up to 2 lines.
+func announce(event: String) -> bool:
+	var rule := _rule("announcer", event)
+	var now := Time.get_ticks_msec()
+	if now < int(_cool.get("ann/" + event, 0)):
+		return false
+	_cool["ann/" + event] = now + int(float(rule.get("cooldown", 1.0)) * 1000.0)
+	var prio := int(rule.get("priority", 1))
+	if _announcer.playing:
+		if prio > _ann_prio + 1:
+			_ann_queue.clear()
+		else:
+			if _ann_queue.size() < 2:
+				_ann_queue.append(event)
+			return true
+	return _ann_play(event, prio)
+
+func _ann_play(event: String, prio: int) -> bool:
+	var v := variants("announcer", "announcer", event)
+	if v[0].is_empty():
+		return false
+	var s := stream(_pick("ann/" + event, v[0]))
+	if s == null:
+		return false
+	_ann_prio = prio
+	_announcer.stream = s
+	_announcer.play()
+	return true
+
+func _ann_next() -> void:
+	_ann_prio = 0
+	if not _ann_queue.is_empty():
+		var e: String = _ann_queue.pop_front()
+		_ann_play(e, int(_rule("announcer", e).get("priority", 1)))
+
+## Honest status for Settings/credits: how many manifest lines are recorded vs placeholder.
+func voice_status() -> Dictionary:
+	var rec := 0
+	var total := 0
+	for fac in manifest.get("factions", {}):
+		var fd: Dictionary = manifest["factions"][fac]
+		for uid in fd.get("units", {}):
+			var ud: Dictionary = fd["units"][uid]
+			for ev in ud.get("events", []):
+				total += 1
+				if not variants(fac, str(ud["folder"]), ev)[1]:
+					rec += 1
+	for ev in manifest.get("announcer", {}).get("events", {}):
+		total += 1
+		if not variants("announcer", "announcer", ev)[1]:
+			rec += 1
+	return {"recorded": rec, "total": total}

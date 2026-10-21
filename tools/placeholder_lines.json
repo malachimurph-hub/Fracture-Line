@@ -1,0 +1,53 @@
+{
+ "generic": {
+  "select": [
+   "Ready.",
+   "Standing by."
+  ],
+  "move": [
+   "Moving.",
+   "On my way."
+  ],
+  "attack": [
+   "Engaging!",
+   "Open fire!"
+  ],
+  "under_fire": [
+   "Taking fire!"
+  ],
+  "created": [
+   "Unit reporting."
+  ],
+  "veteran": [
+   "Promoted."
+  ],
+  "build": [
+   "Building."
+  ],
+  "harvest": [
+   "Collecting supplies."
+  ],
+  "garrison": [
+   "Taking the building."
+  ]
+ },
+ "announcer": {
+  "unit_ready": "Unit ready.",
+  "construction_complete": "Construction complete.",
+  "building": "Building.",
+  "base_under_attack": "Our base is under attack.",
+  "units_under_attack": "Our forces are under attack.",
+  "low_power": "Low power.",
+  "insufficient_funds": "Insufficient funds.",
+  "cannot_build": "Cannot build there.",
+  "building_captured": "Building captured.",
+  "unit_promoted": "Unit promoted.",
+  "general_promoted": "General promoted.",
+  "enemy_power_detected": "Enemy strike detected.",
+  "player_eliminated": "A player has been eliminated.",
+  "you_eliminated": "You have been defeated.",
+  "victory": "Victory.",
+  "defeat": "Defeat.",
+  "battle_start": "Battle control online."
+ }
+}

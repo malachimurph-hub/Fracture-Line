@@ -31,11 +31,13 @@ func _on_pressed() -> void:
 	if _fired:
 		_fired = false
 		return
+	AudioDirector.ui("error" if stub or disabled else "click")
 	primary.emit()
 
 func _process(_d: float) -> void:
 	if _down_ms >= 0 and not _fired and is_pressed() and Time.get_ticks_msec() - _down_ms > 500:
 		_fired = true
+		AudioDirector.ui("select")
 		if Settings.g("haptics"):
 			Input.vibrate_handheld(15)
 		secondary.emit()

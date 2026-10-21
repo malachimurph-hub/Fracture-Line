@@ -34,6 +34,8 @@ func _ready() -> void:
 			test_saveload()
 		"placement":
 			test_placement()
+		"audio":
+			test_audio()
 		"content":
 			test_content()
 		"stall":
@@ -232,6 +234,57 @@ func test_saveload() -> void:
 	if not ok or mism > 0:
 		failed = true
 	SaveSystem.clear_suspend()
+
+## Audio v1 + voice pipeline: every sound loads, every manifest line resolves (recorded or
+## placeholder), shuffle bag never repeats back-to-back, priority/cooldown rules hold.
+func test_audio() -> void:
+	var ad = get_node("/root/AudioDirector")
+	_check(not ad.manifest.is_empty(), "voice manifest loaded")
+	for b in ["Music", "SFX", "Voice", "UI"]:
+		_check(AudioServer.get_bus_index(b) >= 0, "bus " + b)
+	var bad: Array = []
+	for d in [ad.SFX, ad.UI, ad.MUSIC, ad.AMBIENT]:
+		for k in d:
+			if ad.stream(d[k]) == null:
+				bad.append(d[k])
+	_check(bad.is_empty(), "all SFX/UI/music/ambient streams load %s" % [bad])
+	var m1: AudioStream = ad.stream(ad.MUSIC["battle"])
+	_check(m1 is AudioStreamOggVorbis and (m1 as AudioStreamOggVorbis).loop, "battle music loops")
+	var missing: Array = []
+	var units := 0
+	for fac in ad.manifest["factions"]:
+		for uid in ad.manifest["factions"][fac]["units"]:
+			units += 1
+			var ud: Dictionary = ad.manifest["factions"][fac]["units"][uid]
+			for ev in ud["events"]:
+				if ad.variants(fac, ud["folder"], ev)[0].is_empty():
+					missing.append("%s/%s" % [uid, ev])
+			_check(Content.units.has(StringName(uid)), "manifest unit exists in content: " + uid)
+	for ev in ad.manifest["announcer"]["events"]:
+		if ad.variants("announcer", "announcer", ev)[0].is_empty():
+			missing.append("announcer/" + ev)
+	_check(missing.is_empty(), "every manifest line has a recording or placeholder %s" % [missing])
+	var st: Dictionary = ad.voice_status()
+	print("voice status: %d of %d lines recorded" % [st["recorded"], st["total"]])
+	_check(st["total"] > 50, "manifest covers %d lines" % st["total"])
+	var paths := ["a", "b", "c"]
+	var last := ""
+	var rep := 0
+	for i in 60:
+		var p: String = ad._pick("test", paths)
+		if p == last:
+			rep += 1
+		last = p
+	_check(rep == 0, "shuffle bag never repeats a line back-to-back")
+	ad._variants.clear()
+	_check(ad.unit_voice("eu", "eu_leopold", "select"), "select line plays")
+	_check(ad.unit_voice("eu", "eu_leopold", "under_fire"), "under_fire interrupts chatter (higher priority)")
+	_check(not ad.unit_voice("eu", "eu_leopold", "move"), "low-priority move does not cut an under_fire line")
+	ad._unit_voice.stop()
+	ad._unit_prio = 0
+	_check(not ad.unit_voice("eu", "eu_leopold", "under_fire"), "under_fire respects its 14 s cooldown")
+	_check(ad.announce("low_power"), "announcer plays")
+	_check(not ad.announce("low_power"), "announcer cooldown")
 
 func _check(ok: bool, what: String) -> void:
 	print(("PASS " if ok else "FAIL ") + what)

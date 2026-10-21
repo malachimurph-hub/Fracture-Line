@@ -15,6 +15,11 @@ var data := {
 	"haptics": true,
 	"edge_pan": false,
 	"camera_inertia": true,
+	"vol_master": 0.9,
+	"vol_music": 0.55,
+	"vol_sfx": 0.85,
+	"vol_voice": 1.0,
+	"vol_ui": 0.7,
 }
 
 func _ready() -> void:
