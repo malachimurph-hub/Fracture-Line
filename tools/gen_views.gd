@@ -1,14 +1,37 @@
 extends SceneTree
-## Generates the placeholder view wrapper scenes (original primitive art) and shared materials.
+## Generates the view wrapper scenes (ORIGINAL procedural low-poly art, M1.2 art pass) and
+## shared materials. Parts are merged into one multi-surface ArrayMesh per node (body /
+## turret) to keep draw calls low: surfaces are base (vertex colour), concrete and
+## corrugated metal (vertex colour x CC0 triplanar texture), glow (emissive) and team.
 ## Run: godot --headless --path . -s tools/gen_views.gd
 
 const M := "res://view/materials/"
+const SURF := ["base", "concrete", "metal", "glow", "team"]
+## key -> [surface, colour]   (Zero Hour-like semi-realistic palette; EU = blue-grey steel,
+## sand-gold trim, cyan Grid glow)
+const C := {
+	"steel": ["base", "#6d747a"], "steel_dark": ["base", "#4a5056"], "steel_light": ["base", "#8d949a"],
+	"olive": ["base", "#5f6648"], "trim": ["base", "#c49a46"], "hazard": ["base", "#d8a531"],
+	"tread": ["base", "#2a2b2c"], "wheel": ["base", "#222324"], "rubber": ["base", "#1b1b1c"],
+	"skin": ["base", "#c79a76"], "uniform": ["base", "#596049"], "vest": ["base", "#3f4535"],
+	"gun": ["base", "#2c2e30"], "glass": ["base", "#2c3a48"], "window": ["base", "#27313b"],
+	"wood": ["base", "#8a6a43"], "crate": ["base", "#8b6d3f"], "rust": ["base", "#7b5638"],
+	"sand": ["base", "#b8a37a"], "sand_dark": ["base", "#a38d64"], "paint_y": ["base", "#e0c045"],
+	"paint_w": ["base", "#e4e0d6"], "black": ["base", "#151617"], "barrel": ["base", "#4d6a3a"],
+	"red": ["base", "#a6382a"], "fence": ["base", "#7f8489"], "roof": ["base", "#77746c"],
+	"concrete": ["concrete", "#cfc7b6"], "concrete_dark": ["concrete", "#a59d8d"], "plaster": ["concrete", "#d8c9a8"],
+	"plaster2": ["concrete", "#c9b08a"], "corr": ["metal", "#a9adb1"], "corr_dark": ["metal", "#7d8287"],
+	"corr_green": ["metal", "#6e7a5e"], "corr_rust": ["metal", "#9a6a48"],
+	"cyan": ["glow", "#6fe3ff"], "lamp": ["glow", "#ffd27a"], "crystal": ["glow", "#5ce0a0"],
+	"team": ["team", "#ffffff"],
+}
 var mats := {}
 
 func _init() -> void:
+	_make_mats()
+	_defs()
 	UNITS["grenadier"] = _squad(4, false)
 	UNITS["lancer"] = _squad(3, true)
-	_make_mats()
 	for id in UNITS:
 		_save(UNITS[id], "res://view/units/eu/%s.tscn" % id, false, Vector2.ONE)
 	for id in BUILDINGS:
@@ -19,49 +42,100 @@ func _init() -> void:
 	print("views generated")
 	quit()
 
-func _mat(name: String, col: Color, emit: float = 0.0, rough: float = 0.8, metal: float = 0.0) -> void:
+func _std(name: String, tex: String = "", emit: float = 0.0, rough: float = 0.75, metal: float = 0.0) -> void:
 	var m := StandardMaterial3D.new()
-	m.albedo_color = col
+	m.vertex_color_use_as_albedo = true
+	m.vertex_color_is_srgb = true
 	m.roughness = rough
 	m.metallic = metal
+	if tex != "":
+		m.albedo_texture = load(tex)
+		m.uv1_triplanar = true
+		m.uv1_world_triplanar = false
+		m.uv1_scale = Vector3(0.6, 0.6, 0.6)
+		m.albedo_color = Color(1.25, 1.25, 1.25)
 	if emit > 0.0:
 		m.emission_enabled = true
-		m.emission = col
+		m.emission = Color.WHITE
+		m.emission_operator = BaseMaterial3D.EMISSION_OP_MULTIPLY
 		m.emission_energy_multiplier = emit
+		m.emission_on_uv2 = false
 	ResourceSaver.save(m, M + name + ".tres")
 	mats[name] = load(M + name + ".tres")
 
 func _make_mats() -> void:
 	DirAccess.make_dir_recursive_absolute("res://view/materials")
-	_mat("gunmetal", Color("#5a616b"), 0, 0.6, 0.3)
-	_mat("gunmetal_dark", Color("#3c4148"), 0, 0.7, 0.2)
-	_mat("gold", Color("#d4a73a"), 0, 0.45, 0.5)
-	_mat("cyan", Color("#6fe3ff"), 1.6, 0.3)
-	_mat("tread", Color("#23262b"), 0, 0.95)
-	_mat("team", Color("#ffffff"), 0, 0.5)
-	_mat("skin", Color("#c99b78"), 0, 0.9)
-	_mat("concrete", Color("#b9b2a3"), 0, 0.95)
-	_mat("window", Color("#2b3644"), 0.25, 0.2)
-	_mat("crystal", Color("#5ce0a0"), 1.2, 0.2)
-	_mat("crate", Color("#8a6a3a"), 0, 0.9)
-	_mat("rust", Color("#7a5a3a"), 0, 0.8)
+	_std("base", "", 0.0, 0.72, 0.15)
+	_std("concrete", "res://assets/textures/materials/concrete.png", 0.0, 0.95)
+	_std("metal", "res://assets/textures/materials/corrugated.png", 0.0, 0.6, 0.35)
+	_std("glow", "", 1.8, 0.3)
+	var t := StandardMaterial3D.new()
+	t.albedo_color = Color.WHITE
+	t.roughness = 0.5
+	ResourceSaver.save(t, M + "team.tres")
+	mats["team"] = load(M + "team.tres")
 
-# part: [shape, size(Vector3), pos(Vector3), rot_deg(Vector3), mat, parent]
-# shapes: box (size), cyl (x=radius, y=height, z=sides), cone, sph (x=radius), cap (x=radius, y=height)
-func _mesh(shape: String, s: Vector3) -> Mesh:
+# part: [shape, size(Vector3), pos(Vector3), rot_deg(Vector3), colour key, parent]
+# shapes: box (size), cyl (x=radius, y=height, z=sides), cone (x=bottom r, y=h, z=top r),
+# sph (x,y,z radii; y/z 0 = round), cap (x=radius, y=height), wedge (prism, size)
+func _prim(shape: String, s: Vector3) -> PrimitiveMesh:
 	match shape:
 		"box":
 			var b := BoxMesh.new(); b.size = s; return b
 		"cyl":
 			var c := CylinderMesh.new(); c.top_radius = s.x; c.bottom_radius = s.x; c.height = s.y
-			c.radial_segments = int(s.z) if s.z > 0 else 12; c.rings = 1; return c
+			c.radial_segments = int(s.z) if s.z > 0 else 10; c.rings = 1; return c
 		"cone":
 			var k := CylinderMesh.new(); k.top_radius = s.z; k.bottom_radius = s.x; k.height = s.y; k.radial_segments = 10; k.rings = 1; return k
 		"sph":
-			var p := SphereMesh.new(); p.radius = s.x; p.height = s.x * 2; p.radial_segments = 12; p.rings = 6; return p
+			var p := SphereMesh.new(); p.radius = 1.0; p.height = 2.0; p.radial_segments = 10; p.rings = 5; return p
+		"hsph":
+			var h := SphereMesh.new(); h.radius = 1.0; h.height = 1.0; h.is_hemisphere = true; h.radial_segments = 12; h.rings = 4; return h
 		"cap":
 			var q := CapsuleMesh.new(); q.radius = s.x; q.height = s.y; q.radial_segments = 8; q.rings = 2; return q
-	return BoxMesh.new()
+		"wedge":
+			var w := PrismMesh.new(); w.size = s; return w
+	var bb := BoxMesh.new(); bb.size = s; return bb
+
+func _merge(parts: Array) -> Dictionary:
+	## returns {mesh, top, extent, team_surface}
+	var sts := {}
+	var top := 0.0
+	var extent := 0.3
+	for p in parts:
+		var key: String = p[4]
+		var info: Array = C[key]
+		var surf: String = info[0]
+		if not sts.has(surf):
+			var st := SurfaceTool.new()
+			st.begin(Mesh.PRIMITIVE_TRIANGLES)
+			sts[surf] = st
+		var shape: String = p[0]
+		var s: Vector3 = p[1]
+		var basis := Basis.from_euler(p[3] * PI / 180.0)
+		if shape == "sph" or shape == "hsph":
+			basis = basis * Basis().scaled(Vector3(s.x, s.y if s.y > 0 else s.x, s.z if s.z > 0 else s.x))
+		var col := Color(info[1])
+		if p.size() > 6:
+			col = col * Color(p[6], p[6], p[6])
+		PropMeshes.add_prim(sts[surf], _prim(shape, s), Transform3D(basis, p[2]), col)
+		var hy: float = (s.y if s.y > 0 else s.x) if shape in ["sph", "hsph"] else s.y * 0.5
+		top = maxf(top, p[2].y + hy)
+		extent = maxf(extent, maxf(absf(p[2].x) + s.x * 0.5, absf(p[2].z) + s.z * 0.5))
+	var mesh := ArrayMesh.new()
+	var team_surface := -1
+	for name in SURF:
+		if not sts.has(name):
+			continue
+		var st: SurfaceTool = sts[name]
+		st.index()
+		st.commit(mesh)
+		var idx := mesh.get_surface_count() - 1
+		mesh.surface_set_material(idx, mats[name])
+		mesh.surface_set_name(idx, name)
+		if name == "team":
+			team_surface = idx
+	return {"mesh": mesh, "top": top, "extent": extent, "team": team_surface}
 
 func _save(parts: Array, path: String, structure: bool, fp: Vector2) -> void:
 	var root := Node3D.new()
@@ -71,30 +145,36 @@ func _save(parts: Array, path: String, structure: bool, fp: Vector2) -> void:
 	model.name = "Model"
 	root.add_child(model)
 	model.owner = root
-	var turret: Node3D = null
+	var body: Array = []
+	var tur: Array = []
+	for p in parts:
+		if p.size() > 5 and p[5] == "turret":
+			tur.append(p)
+		else:
+			body.append(p)
 	var top := 0.0
 	var extent := 0.3
-	for p in parts:
-		var parent: Node3D = model
-		if p.size() > 5 and p[5] == "turret":
-			if turret == null:
-				turret = Node3D.new()
-				turret.name = "TurretPivot"
-				model.add_child(turret)
-				turret.owner = root
-			parent = turret
+	for grp in [[body, "Body"], [tur, "Turret"]]:
+		if grp[0].is_empty():
+			continue
+		var r := _merge(grp[0])
+		top = maxf(top, r["top"])
+		extent = maxf(extent, r["extent"])
 		var mi := MeshInstance3D.new()
-		mi.mesh = _mesh(p[0], p[1])
-		mi.position = p[2]
-		mi.rotation_degrees = p[3]
-		mi.material_override = mats[p[4]]
+		mi.name = grp[1]
+		mi.mesh = r["mesh"]
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
-		if p[4] == "team":
-			mi.set_meta("team", true)
+		if r["team"] >= 0:
+			mi.set_meta("team_surface", r["team"])
+		var parent: Node3D = model
+		if grp[1] == "Turret":
+			var pivot := Node3D.new()
+			pivot.name = "TurretPivot"
+			model.add_child(pivot)
+			pivot.owner = root
+			parent = pivot
 		parent.add_child(mi)
 		mi.owner = root
-		top = maxf(top, p[2].y + (p[1].y * 0.5 if p[0] != "sph" else p[1].x))
-		extent = maxf(extent, maxf(absf(p[2].x) + p[1].x * 0.5, absf(p[2].z) + p[1].z * 0.5))
 	var anchor := Marker3D.new()
 	anchor.name = "HealthBarAnchor"
 	anchor.position = Vector3(0, top + 0.25, 0)
@@ -110,192 +190,355 @@ func _save(parts: Array, path: String, structure: bool, fp: Vector2) -> void:
 	ResourceSaver.save(ps, path)
 	root.free()
 
+# ---------------------------------------------------------------- part helpers
+static func P(shape: String, s: Vector3, pos: Vector3, key: String, rot: Vector3 = Vector3.ZERO, parent: String = "", shade: float = 1.0) -> Array:
+	if shade != 1.0:
+		return [shape, s, pos, rot, key, parent, shade]
+	return [shape, s, pos, rot, key, parent]
+
+static func T(shape: String, s: Vector3, pos: Vector3, key: String, rot: Vector3 = Vector3.ZERO) -> Array:
+	return [shape, s, pos, rot, key, "turret"]
+
+## Track assembly: belt, road wheels, sprocket, mud guard.
+static func tracks(x: float, length: float, h: float, w: float, wheels: int) -> Array:
+	var o: Array = []
+	for sx in [-x, x]:
+		o.append(P("box", Vector3(w, h, length), Vector3(sx, h * 0.5, 0), "tread"))
+		for i in wheels:
+			var z := lerpf(-length * 0.5 + h * 0.5, length * 0.5 - h * 0.5, float(i) / float(maxi(1, wheels - 1)))
+			o.append(P("cyl", Vector3(h * 0.38, w + 0.04, 10), Vector3(sx, h * 0.42, z), "wheel", Vector3(0, 0, 90)))
+		o.append(P("box", Vector3(w + 0.06, 0.04, length + 0.06), Vector3(sx, h + 0.02, 0), "steel_dark"))
+	return o
+
+## Wheels for a wheeled vehicle at the given z positions.
+static func wheels(x: float, zs: Array, r: float, w: float) -> Array:
+	var o: Array = []
+	for z in zs:
+		for sx in [-x, x]:
+			o.append(P("cyl", Vector3(r, w, 12), Vector3(sx, r, z), "rubber", Vector3(0, 0, 90)))
+			o.append(P("cyl", Vector3(r * 0.5, w + 0.02, 8), Vector3(sx, r, z), "steel_dark", Vector3(0, 0, 90)))
+	return o
+
+## Sandbag wall from a to b (xz), one or two courses.
+static func sandbags(a: Vector2, b: Vector2, courses: int = 2) -> Array:
+	var o: Array = []
+	var d := b - a
+	var n := maxi(1, int(d.length() / 0.32))
+	var ang := -rad_to_deg(atan2(d.y, d.x))
+	for c in courses:
+		for i in n:
+			var t := (float(i) + (0.5 if c % 2 == 0 else 0.0)) / float(n)
+			if t > 1.0:
+				continue
+			var p := a + d * t
+			o.append(P("sph", Vector3(0.17, 0.075, 0.1), Vector3(p.x, 0.08 + c * 0.13, p.y), "sand" if (i + c) % 3 else "sand_dark", Vector3(0, ang, 0)))
+	return o
+
+## Chain-link fence: posts + rails + mesh panel.
+static func fence(a: Vector2, b: Vector2, h: float = 0.55) -> Array:
+	var o: Array = []
+	var d := b - a
+	var n := maxi(1, int(d.length() / 0.8))
+	var ang := -rad_to_deg(atan2(d.y, d.x))
+	for i in n + 1:
+		var p := a + d * (float(i) / float(n))
+		o.append(P("box", Vector3(0.04, h, 0.04), Vector3(p.x, h * 0.5, p.y), "fence"))
+	var m := (a + b) * 0.5
+	o.append(P("box", Vector3(d.length(), 0.025, 0.025), Vector3(m.x, h, m.y), "fence", Vector3(0, ang, 0)))
+	o.append(P("box", Vector3(d.length(), h * 0.85, 0.01), Vector3(m.x, h * 0.48, m.y), "fence", Vector3(0, ang, 0), "", 0.75))
+	return o
+
+## Concrete foundation pad with painted edge lines.
+static func pad(fp: Vector2, h: float = 0.12) -> Array:
+	var sx := fp.x - 0.1
+	var sz := fp.y - 0.1
+	return [
+		P("box", Vector3(sx, h, sz), Vector3(0, h * 0.5, 0), "concrete_dark"),
+		P("box", Vector3(sx - 0.2, 0.01, 0.06), Vector3(0, h + 0.005, sz * 0.5 - 0.15), "paint_y"),
+		P("box", Vector3(sx - 0.2, 0.01, 0.06), Vector3(0, h + 0.005, -sz * 0.5 + 0.15), "paint_y"),
+	]
+
+static func crates(c: Vector3, n: int, sz: float = 0.32) -> Array:
+	var o: Array = []
+	var offs := [Vector3(0, 0, 0), Vector3(1.05, 0, 0.1), Vector3(0.1, 0, 1.05), Vector3(0.55, 1, 0.5), Vector3(1.0, 0, 1.1), Vector3(-1.0, 0, 0.2)]
+	for i in n:
+		var o3: Vector3 = offs[i % offs.size()]
+		o.append(P("box", Vector3(sz, sz * 0.8, sz), c + Vector3(o3.x * sz, sz * 0.4 + o3.y * sz * 0.8, o3.z * sz), "crate", Vector3(0, (i * 23) % 40 - 20, 0), "", 1.0 - 0.07 * (i % 3)))
+	return o
+
+static func barrels(c: Vector3, n: int) -> Array:
+	var o: Array = []
+	for i in n:
+		o.append(P("cyl", Vector3(0.09, 0.26, 8), c + Vector3((i % 3) * 0.2, 0.13, (i / 3) * 0.2), "barrel" if i % 2 == 0 else "rust"))
+	return o
+
+static func flag(pos: Vector3, h: float) -> Array:
+	return [
+		P("cyl", Vector3(0.025, h, 6), pos + Vector3(0, h * 0.5, 0), "steel_light"),
+		P("box", Vector3(0.36, 0.22, 0.02), pos + Vector3(0.19, h - 0.14, 0), "team"),
+	]
+
 func _squad(n: int, tube: bool) -> Array:
 	var out: Array = []
-	var offs := [Vector2(-0.2, -0.18), Vector2(0.2, -0.18), Vector2(-0.2, 0.2), Vector2(0.2, 0.2), Vector2(0, 0)]
+	var offs := [Vector2(-0.22, -0.18), Vector2(0.22, -0.16), Vector2(-0.18, 0.22), Vector2(0.2, 0.2), Vector2(0, 0)]
 	for i in n:
 		var o: Vector2 = offs[i]
-		out.append(["cap", Vector3(0.11, 0.5, 0), Vector3(o.x, 0.27, o.y), Vector3.ZERO, "gunmetal"])
-		out.append(["sph", Vector3(0.1, 0, 0), Vector3(o.x, 0.56, o.y), Vector3.ZERO, "team"])
+		var x := o.x
+		var z := o.y
+		out.append(P("box", Vector3(0.05, 0.22, 0.06), Vector3(x - 0.035, 0.11, z), "uniform", Vector3(8 if i % 2 else -8, 0, 0)))
+		out.append(P("box", Vector3(0.05, 0.22, 0.06), Vector3(x + 0.035, 0.11, z), "uniform", Vector3(-8 if i % 2 else 8, 0, 0)))
+		out.append(P("box", Vector3(0.15, 0.2, 0.09), Vector3(x, 0.32, z), "vest"))
+		out.append(P("box", Vector3(0.155, 0.05, 0.095), Vector3(x, 0.38, z), "team"))
+		out.append(P("box", Vector3(0.1, 0.12, 0.06), Vector3(x, 0.32, z - 0.07), "olive"))
+		out.append(P("sph", Vector3(0.05, 0, 0), Vector3(x, 0.47, z), "skin"))
+		out.append(P("hsph", Vector3(0.062, 0.05, 0.062), Vector3(x, 0.48, z), "olive"))
+		out.append(P("box", Vector3(0.04, 0.16, 0.05), Vector3(x - 0.09, 0.31, z + 0.03), "uniform", Vector3(-30, 0, 0)))
+		out.append(P("box", Vector3(0.04, 0.16, 0.05), Vector3(x + 0.09, 0.31, z + 0.03), "uniform", Vector3(-30, 0, 0)))
 		if tube:
-			out.append(["cyl", Vector3(0.05, 0.5, 8), Vector3(o.x + 0.1, 0.5, o.y), Vector3(90, 0, 0), "gold"])
+			out.append(P("cyl", Vector3(0.035, 0.42, 8), Vector3(x + 0.08, 0.43, z + 0.02), "olive", Vector3(90, 0, 0)))
+			out.append(P("cone", Vector3(0.05, 0.08, 0.035), Vector3(x + 0.08, 0.43, z + 0.26), "steel_dark", Vector3(90, 0, 0)))
 		else:
-			out.append(["box", Vector3(0.05, 0.05, 0.36), Vector3(o.x + 0.1, 0.34, o.y + 0.12), Vector3.ZERO, "tread"])
+			out.append(P("box", Vector3(0.03, 0.04, 0.3), Vector3(x + 0.05, 0.3, z + 0.12), "gun", Vector3(-10, 0, 0)))
 	return out
 
-var UNITS := {
-	"crawler": [
-		["box", Vector3(0.22, 0.26, 1.05), Vector3(-0.38, 0.13, 0), Vector3.ZERO, "tread"],
-		["box", Vector3(0.22, 0.26, 1.05), Vector3(0.38, 0.13, 0), Vector3.ZERO, "tread"],
-		["box", Vector3(0.62, 0.34, 0.9), Vector3(0, 0.36, -0.05), Vector3.ZERO, "gunmetal"],
-		["box", Vector3(0.4, 0.3, 0.34), Vector3(0, 0.66, -0.22), Vector3.ZERO, "gunmetal_dark"],
-		["box", Vector3(1.0, 0.32, 0.1), Vector3(0, 0.22, 0.6), Vector3(-12, 0, 0), "gold"],
-		["box", Vector3(0.08, 0.08, 0.9), Vector3(0.18, 0.85, 0.05), Vector3(28, 0, 0), "gold"],
-		["box", Vector3(0.64, 0.07, 0.22), Vector3(0, 0.55, 0.22), Vector3.ZERO, "team"],
-	],
-	"harvester": [
-		["box", Vector3(0.26, 0.3, 1.35), Vector3(-0.44, 0.15, 0), Vector3.ZERO, "tread"],
-		["box", Vector3(0.26, 0.3, 1.35), Vector3(0.44, 0.15, 0), Vector3.ZERO, "tread"],
-		["box", Vector3(0.74, 0.42, 1.25), Vector3(0, 0.42, 0), Vector3.ZERO, "gunmetal"],
-		["box", Vector3(0.7, 0.42, 0.62), Vector3(0, 0.82, -0.25), Vector3.ZERO, "gold"],
-		["box", Vector3(0.5, 0.1, 0.4), Vector3(0, 1.08, -0.25), Vector3.ZERO, "crystal"],
-		["box", Vector3(0.42, 0.3, 0.3), Vector3(0, 0.78, 0.38), Vector3.ZERO, "gunmetal_dark"],
-		["cyl", Vector3(0.11, 0.14, 8), Vector3(0, 1.0, 0.38), Vector3.ZERO, "gunmetal", "turret"],
-		["cyl", Vector3(0.03, 0.35, 6), Vector3(0, 1.02, 0.56), Vector3(90, 0, 0), "tread", "turret"],
-		["box", Vector3(0.76, 0.08, 0.2), Vector3(0, 0.66, 0.1), Vector3.ZERO, "team"],
-	],
-	"grenadier": [],
-	"lancer": [],
-	"wolfhound": [
-		["cyl", Vector3(0.17, 0.14, 10), Vector3(-0.38, 0.17, -0.42), Vector3(0, 0, 90), "tread"],
-		["cyl", Vector3(0.17, 0.14, 10), Vector3(0.38, 0.17, -0.42), Vector3(0, 0, 90), "tread"],
-		["cyl", Vector3(0.17, 0.14, 10), Vector3(-0.38, 0.17, 0), Vector3(0, 0, 90), "tread"],
-		["cyl", Vector3(0.17, 0.14, 10), Vector3(0.38, 0.17, 0), Vector3(0, 0, 90), "tread"],
-		["cyl", Vector3(0.17, 0.14, 10), Vector3(-0.38, 0.17, 0.42), Vector3(0, 0, 90), "tread"],
-		["cyl", Vector3(0.17, 0.14, 10), Vector3(0.38, 0.17, 0.42), Vector3(0, 0, 90), "tread"],
-		["box", Vector3(0.64, 0.34, 1.15), Vector3(0, 0.38, 0), Vector3.ZERO, "gunmetal"],
-		["box", Vector3(0.56, 0.18, 0.4), Vector3(0, 0.5, 0.42), Vector3(18, 0, 0), "gunmetal_dark"],
-		["box", Vector3(0.66, 0.07, 0.22), Vector3(0, 0.56, -0.3), Vector3.ZERO, "team"],
-		["box", Vector3(0.36, 0.18, 0.38), Vector3(0, 0.64, -0.02), Vector3.ZERO, "gold", "turret"],
-		["cyl", Vector3(0.04, 0.6, 8), Vector3(0, 0.66, 0.42), Vector3(90, 0, 0), "tread", "turret"],
-	],
-	"leopold": [
-		["box", Vector3(0.3, 0.32, 1.45), Vector3(-0.46, 0.16, 0), Vector3.ZERO, "tread"],
-		["box", Vector3(0.3, 0.32, 1.45), Vector3(0.46, 0.16, 0), Vector3.ZERO, "tread"],
-		["box", Vector3(0.78, 0.32, 1.32), Vector3(0, 0.4, 0), Vector3.ZERO, "gunmetal"],
-		["box", Vector3(0.62, 0.26, 0.62), Vector3(0, 0.68, -0.08), Vector3.ZERO, "gunmetal_dark", "turret"],
-		["box", Vector3(0.64, 0.08, 0.3), Vector3(0, 0.84, -0.2), Vector3.ZERO, "team", "turret"],
-		["cyl", Vector3(0.065, 1.05, 10), Vector3(0, 0.7, 0.68), Vector3(90, 0, 0), "gunmetal", "turret"],
-		["cyl", Vector3(0.1, 0.14, 10), Vector3(0, 0.7, 1.18), Vector3(90, 0, 0), "gold", "turret"],
-		["cyl", Vector3(0.09, 0.08, 8), Vector3(0.14, 0.86, -0.2), Vector3.ZERO, "gold", "turret"],
-	],
-	"aegis": [
-		["box", Vector3(0.26, 0.28, 1.2), Vector3(-0.4, 0.14, 0), Vector3.ZERO, "tread"],
-		["box", Vector3(0.26, 0.28, 1.2), Vector3(0.4, 0.14, 0), Vector3.ZERO, "tread"],
-		["box", Vector3(0.7, 0.4, 1.15), Vector3(0, 0.4, 0), Vector3.ZERO, "gunmetal"],
-		["box", Vector3(0.72, 0.08, 0.22), Vector3(0, 0.64, 0.35), Vector3.ZERO, "team"],
-		["cyl", Vector3(0.05, 1.0, 6), Vector3(0, 1.1, -0.2), Vector3.ZERO, "gold"],
-		["cyl", Vector3(0.36, 0.1, 6), Vector3(0, 1.62, -0.2), Vector3.ZERO, "cyan"],
-		["cyl", Vector3(0.22, 0.18, 6), Vector3(0, 0.7, -0.2), Vector3.ZERO, "cyan"],
-	],
-	"flakwerk": [
-		["box", Vector3(0.26, 0.28, 1.2), Vector3(-0.4, 0.14, 0), Vector3.ZERO, "tread"],
-		["box", Vector3(0.26, 0.28, 1.2), Vector3(0.4, 0.14, 0), Vector3.ZERO, "tread"],
-		["box", Vector3(0.7, 0.34, 1.15), Vector3(0, 0.38, 0), Vector3.ZERO, "gunmetal"],
-		["box", Vector3(0.72, 0.08, 0.22), Vector3(0, 0.58, -0.38), Vector3.ZERO, "team"],
-		["box", Vector3(0.5, 0.28, 0.46), Vector3(0, 0.7, 0.05), Vector3.ZERO, "gold", "turret"],
-		["cyl", Vector3(0.04, 0.75, 8), Vector3(-0.12, 1.05, 0.3), Vector3(40, 0, 0), "tread", "turret"],
-		["cyl", Vector3(0.04, 0.75, 8), Vector3(0.12, 1.05, 0.3), Vector3(40, 0, 0), "tread", "turret"],
-	],
-}
+var UNITS := {}
+var BUILDINGS := {}
+var PROPS := {}
 
-var BUILDINGS := {
-	"hq": {"fp": Vector2(4, 4), "path": "res://view/buildings/eu/hq.tscn", "parts": [
-		["box", Vector3(3.9, 0.22, 3.9), Vector3(0, 0.11, 0), Vector3.ZERO, "gunmetal_dark"],
-		["box", Vector3(3.0, 1.1, 2.4), Vector3(0, 0.76, -0.4), Vector3.ZERO, "gunmetal"],
-		["box", Vector3(1.1, 1.6, 1.1), Vector3(-1.0, 1.0, -0.8), Vector3.ZERO, "gunmetal_dark"],
-		["box", Vector3(1.2, 0.12, 1.2), Vector3(-1.0, 1.86, -0.8), Vector3.ZERO, "gold"],
-		["sph", Vector3(0.55, 0, 0), Vector3(0.7, 1.35, -0.6), Vector3.ZERO, "cyan"],
-		["cyl", Vector3(0.05, 1.6, 6), Vector3(1.4, 2.0, -1.4), Vector3.ZERO, "gold"],
-		["cyl", Vector3(0.05, 1.2, 6), Vector3(-1.5, 2.3, -1.5), Vector3.ZERO, "gold"],
-		["box", Vector3(3.05, 0.16, 0.4), Vector3(0, 1.1, 0.82), Vector3.ZERO, "team"],
-		["box", Vector3(0.5, 0.35, 0.05), Vector3(1.4, 2.55, -1.4), Vector3.ZERO, "team"],
-		["box", Vector3(1.4, 0.06, 1.0), Vector3(0, 0.25, 1.35), Vector3.ZERO, "gold"],
-	]},
-	"reactor": {"fp": Vector2(3, 3), "path": "res://view/buildings/eu/reactor.tscn", "parts": [
-		["box", Vector3(2.9, 0.2, 2.9), Vector3(0, 0.1, 0), Vector3.ZERO, "gunmetal_dark"],
-		["cyl", Vector3(0.95, 1.2, 12), Vector3(-0.2, 0.8, -0.2), Vector3.ZERO, "gunmetal"],
-		["cyl", Vector3(1.0, 0.16, 12), Vector3(-0.2, 1.2, -0.2), Vector3.ZERO, "cyan"],
-		["cone", Vector3(0.5, 1.4, 0.32), Vector3(0.85, 0.9, 0.85), Vector3.ZERO, "gunmetal_dark"],
-		["box", Vector3(0.9, 0.12, 0.3), Vector3(-0.2, 1.46, -0.2), Vector3.ZERO, "team"],
-		["sph", Vector3(0.35, 0, 0), Vector3(-0.2, 1.5, -0.2), Vector3.ZERO, "cyan"],
-	]},
-	"pylon": {"fp": Vector2(1, 1), "path": "res://view/buildings/eu/pylon.tscn", "parts": [
-		["box", Vector3(0.8, 0.14, 0.8), Vector3(0, 0.07, 0), Vector3.ZERO, "gunmetal_dark"],
-		["cyl", Vector3(0.08, 1.9, 6), Vector3(0, 1.05, 0), Vector3.ZERO, "gunmetal"],
-		["box", Vector3(0.8, 0.06, 0.06), Vector3(0, 1.6, 0), Vector3.ZERO, "gold"],
-		["sph", Vector3(0.2, 0, 0), Vector3(0, 2.1, 0), Vector3.ZERO, "cyan"],
-		["box", Vector3(0.3, 0.2, 0.04), Vector3(0, 1.25, 0.1), Vector3.ZERO, "team"],
-	]},
-	"hub": {"fp": Vector2(3, 3), "path": "res://view/buildings/eu/hub.tscn", "parts": [
-		["box", Vector3(2.9, 0.2, 2.9), Vector3(0, 0.1, 0), Vector3.ZERO, "gunmetal_dark"],
-		["box", Vector3(2.4, 0.8, 1.3), Vector3(0, 0.6, -0.6), Vector3.ZERO, "gunmetal"],
-		["cyl", Vector3(0.45, 1.5, 10), Vector3(-0.8, 1.0, -0.6), Vector3.ZERO, "gold"],
-		["cyl", Vector3(0.45, 1.5, 10), Vector3(0.2, 1.0, -0.6), Vector3.ZERO, "gold"],
-		["box", Vector3(0.5, 0.1, 0.5), Vector3(0.95, 1.05, -0.6), Vector3.ZERO, "crystal"],
-		["box", Vector3(2.2, 0.06, 1.0), Vector3(0, 0.23, 0.85), Vector3.ZERO, "team"],
-		["box", Vector3(0.2, 0.9, 0.2), Vector3(1.2, 0.6, 0.9), Vector3.ZERO, "gold"],
-	]},
-	"barracks": {"fp": Vector2(3, 3), "path": "res://view/buildings/eu/barracks.tscn", "parts": [
-		["box", Vector3(2.9, 0.2, 2.9), Vector3(0, 0.1, 0), Vector3.ZERO, "gunmetal_dark"],
-		["box", Vector3(2.6, 0.8, 1.9), Vector3(0, 0.6, -0.2), Vector3.ZERO, "gunmetal"],
-		["box", Vector3(2.7, 0.2, 1.0), Vector3(0, 1.08, -0.2), Vector3(0, 0, 0), "gunmetal_dark"],
-		["box", Vector3(0.8, 0.55, 0.06), Vector3(0, 0.48, 0.76), Vector3.ZERO, "window"],
-		["box", Vector3(2.62, 0.12, 0.3), Vector3(0, 0.9, 0.62), Vector3.ZERO, "team"],
-		["cyl", Vector3(0.04, 1.4, 6), Vector3(1.2, 1.0, 1.1), Vector3.ZERO, "gold"],
-		["box", Vector3(0.5, 0.32, 0.04), Vector3(1.0, 1.5, 1.1), Vector3.ZERO, "team"],
-	]},
-	"motor_pool": {"fp": Vector2(4, 4), "path": "res://view/buildings/eu/motor_pool.tscn", "parts": [
-		["box", Vector3(3.9, 0.2, 3.9), Vector3(0, 0.1, 0), Vector3.ZERO, "gunmetal_dark"],
-		["box", Vector3(3.3, 1.1, 2.6), Vector3(0, 0.75, -0.4), Vector3.ZERO, "gunmetal"],
-		["box", Vector3(1.6, 0.8, 0.06), Vector3(0, 0.6, 0.92), Vector3.ZERO, "window"],
-		["box", Vector3(3.35, 0.16, 0.3), Vector3(0, 1.2, 0.8), Vector3.ZERO, "team"],
-		["box", Vector3(0.14, 1.8, 0.14), Vector3(1.6, 0.9, 1.4), Vector3.ZERO, "gold"],
-		["box", Vector3(1.4, 0.12, 0.12), Vector3(1.0, 1.8, 1.4), Vector3.ZERO, "gold"],
-		["box", Vector3(1.6, 0.05, 1.2), Vector3(0, 0.23, 1.4), Vector3.ZERO, "gold"],
-	]},
-	"heavy_factory": {"fp": Vector2(4, 4), "path": "res://view/buildings/eu/heavy_factory.tscn", "parts": [
-		["box", Vector3(3.9, 0.2, 3.9), Vector3(0, 0.1, 0), Vector3.ZERO, "gunmetal_dark"],
-		["box", Vector3(3.5, 1.6, 3.0), Vector3(0, 1.0, -0.3), Vector3.ZERO, "gunmetal_dark"],
-		["box", Vector3(3.6, 0.2, 0.3), Vector3(0, 1.75, 1.0), Vector3.ZERO, "gold"],
-		["box", Vector3(1.8, 1.1, 0.06), Vector3(0, 0.75, 1.22), Vector3.ZERO, "window"],
-		["cyl", Vector3(0.22, 1.4, 8), Vector3(-1.2, 2.4, -1.2), Vector3.ZERO, "gunmetal"],
-		["cyl", Vector3(0.22, 1.1, 8), Vector3(-0.6, 2.25, -1.2), Vector3.ZERO, "gunmetal"],
-		["box", Vector3(3.52, 0.2, 0.35), Vector3(0, 1.5, -1.6), Vector3.ZERO, "team"],
-		["box", Vector3(0.8, 0.5, 0.8), Vector3(1.1, 2.05, -0.6), Vector3.ZERO, "gold"],
-	]},
-	"gun_bunker": {"fp": Vector2(2, 2), "path": "res://view/buildings/eu/gun_bunker.tscn", "parts": [
-		["box", Vector3(1.9, 0.5, 1.9), Vector3(0, 0.25, 0), Vector3.ZERO, "gunmetal_dark"],
-		["box", Vector3(1.5, 0.35, 1.5), Vector3(0, 0.6, 0), Vector3.ZERO, "gunmetal"],
-		["box", Vector3(1.52, 0.08, 0.3), Vector3(0, 0.82, -0.5), Vector3.ZERO, "team"],
-		["cyl", Vector3(0.38, 0.3, 8), Vector3(0, 0.95, 0), Vector3.ZERO, "gold", "turret"],
-		["cyl", Vector3(0.06, 0.9, 8), Vector3(-0.1, 1.0, 0.5), Vector3(90, 0, 0), "tread", "turret"],
-		["cyl", Vector3(0.06, 0.9, 8), Vector3(0.1, 1.0, 0.5), Vector3(90, 0, 0), "tread", "turret"],
-	]},
-	"civ_block": {"fp": Vector2(3, 3), "path": "res://view/buildings/neutral/civ_block.tscn", "parts": [
-		["box", Vector3(2.7, 1.8, 2.5), Vector3(0, 0.9, 0), Vector3.ZERO, "concrete"],
-		["box", Vector3(2.72, 0.22, 2.3), Vector3(0, 0.55, 0), Vector3.ZERO, "window"],
-		["box", Vector3(2.72, 0.22, 2.3), Vector3(0, 1.2, 0), Vector3.ZERO, "window"],
-		["box", Vector3(2.4, 0.2, 2.52), Vector3(0, 0.55, 0), Vector3.ZERO, "window"],
-		["box", Vector3(2.4, 0.2, 2.52), Vector3(0, 1.2, 0), Vector3.ZERO, "window"],
-		["box", Vector3(0.8, 0.4, 0.8), Vector3(0.6, 2.0, -0.5), Vector3.ZERO, "rust"],
-		["box", Vector3(0.5, 0.3, 0.06), Vector3(-0.9, 1.95, 1.0), Vector3.ZERO, "team"],
-	]},
-	"pump": {"fp": Vector2(2, 2), "path": "res://view/buildings/neutral/pump.tscn", "parts": [
-		["box", Vector3(1.9, 0.18, 1.9), Vector3(0, 0.09, 0), Vector3.ZERO, "rust"],
-		["box", Vector3(0.12, 1.8, 0.12), Vector3(-0.5, 1.0, -0.5), Vector3(0, 0, 8), "rust"],
-		["box", Vector3(0.12, 1.8, 0.12), Vector3(0.5, 1.0, -0.5), Vector3(0, 0, -8), "rust"],
-		["box", Vector3(1.2, 0.12, 0.12), Vector3(0, 1.85, -0.5), Vector3.ZERO, "rust"],
-		["cyl", Vector3(0.4, 0.7, 10), Vector3(0.3, 0.5, 0.45), Vector3.ZERO, "crystal"],
-		["box", Vector3(0.9, 0.12, 0.12), Vector3(-0.1, 1.4, 0.0), Vector3(0, 0, 18), "gunmetal"],
-		["box", Vector3(0.5, 0.3, 0.05), Vector3(-0.5, 0.5, 0.6), Vector3.ZERO, "team"],
-	]},
-}
-
-var PROPS := {
-	"seam": [
-		["cyl", Vector3(1.3, 0.04, 10), Vector3(0, 0.02, 0), Vector3.ZERO, "tread"],
-		["cone", Vector3(0.22, 0.9, 0.02), Vector3(-0.4, 0.45, -0.2), Vector3(10, 0, 8), "crystal"],
-		["cone", Vector3(0.18, 0.7, 0.02), Vector3(0.35, 0.35, -0.35), Vector3(-8, 0, -10), "crystal"],
-		["cone", Vector3(0.25, 1.1, 0.02), Vector3(0.05, 0.55, 0.3), Vector3(0, 0, 4), "crystal"],
-		["cone", Vector3(0.16, 0.6, 0.02), Vector3(0.6, 0.3, 0.4), Vector3(12, 0, -14), "crystal"],
-		["cone", Vector3(0.15, 0.55, 0.02), Vector3(-0.7, 0.27, 0.45), Vector3(-10, 0, 12), "crystal"],
-	],
-	"cache": [
-		["box", Vector3(0.5, 0.4, 0.5), Vector3(-0.3, 0.2, 0), Vector3.ZERO, "crate"],
-		["box", Vector3(0.5, 0.4, 0.5), Vector3(0.3, 0.2, 0.1), Vector3(0, 15, 0), "crate"],
-		["box", Vector3(0.5, 0.4, 0.5), Vector3(0, 0.6, 0.05), Vector3(0, -10, 0), "crate"],
-		["box", Vector3(0.3, 0.1, 0.3), Vector3(0, 0.85, 0.05), Vector3.ZERO, "crystal"],
-	],
-}
-
+func _defs() -> void:
+	# ---------------- units (+z = front) ----------------
+	UNITS["crawler"] = tracks(0.36, 1.0, 0.26, 0.2, 4) + [
+		P("box", Vector3(0.52, 0.28, 0.8), Vector3(0, 0.36, -0.08), "steel"),
+		P("box", Vector3(0.38, 0.3, 0.36), Vector3(-0.04, 0.64, -0.2), "steel_light"),
+		P("box", Vector3(0.39, 0.12, 0.3), Vector3(-0.04, 0.7, -0.18), "glass"),
+		P("box", Vector3(0.42, 0.04, 0.4), Vector3(-0.04, 0.81, -0.2), "steel_dark"),
+		P("box", Vector3(0.96, 0.3, 0.08), Vector3(0, 0.22, 0.62), "hazard", Vector3(-14, 0, 0)),
+		P("box", Vector3(0.96, 0.05, 0.1), Vector3(0, 0.08, 0.66), "steel_dark"),
+		P("box", Vector3(0.06, 0.06, 0.5), Vector3(-0.3, 0.32, 0.38), "steel_dark", Vector3(-12, 0, 0)),
+		P("box", Vector3(0.06, 0.06, 0.5), Vector3(0.3, 0.32, 0.38), "steel_dark", Vector3(-12, 0, 0)),
+		P("cyl", Vector3(0.035, 0.3, 6), Vector3(0.2, 0.68, -0.35), "black"),
+		P("box", Vector3(0.53, 0.07, 0.2), Vector3(0, 0.52, 0.2), "team"),
+		P("box", Vector3(0.18, 0.12, 0.05), Vector3(0.18, 0.86, -0.2), "lamp"),
+	]
+	UNITS["harvester"] = wheels(0.38, [0.45, -0.1, -0.45], 0.16, 0.13) + [
+		P("box", Vector3(0.66, 0.18, 1.35), Vector3(0, 0.3, 0), "steel_dark"),
+		P("box", Vector3(0.64, 0.42, 0.42), Vector3(0, 0.56, 0.42), "steel"),
+		P("box", Vector3(0.6, 0.16, 0.05), Vector3(0, 0.66, 0.64), "glass"),
+		P("box", Vector3(0.66, 0.05, 0.44), Vector3(0, 0.79, 0.42), "steel_dark"),
+		P("box", Vector3(0.66, 0.3, 0.82), Vector3(0, 0.53, -0.22), "olive"),
+		P("box", Vector3(0.68, 0.07, 0.84), Vector3(0, 0.45, -0.22), "team"),
+	] + crates(Vector3(-0.2, 0.68, -0.45), 4, 0.2) + [
+		P("box", Vector3(0.14, 0.1, 0.1), Vector3(0.22, 0.82, 0.42), "lamp"),
+		T("cyl", Vector3(0.07, 0.12, 8), Vector3(0.22, 0.76, -0.05), "steel_dark"),
+		T("box", Vector3(0.05, 0.05, 0.5), Vector3(0.22, 0.9, -0.2), "hazard", Vector3(-25, 0, 0)),
+	]
+	UNITS["wolfhound"] = wheels(0.34, [0.42, 0.0, -0.42], 0.17, 0.14) + [
+		P("box", Vector3(0.62, 0.3, 1.2), Vector3(0, 0.4, 0), "steel"),
+		P("wedge", Vector3(0.62, 0.22, 0.34), Vector3(0, 0.44, 0.68), "steel", Vector3(90, 0, 180)),
+		P("box", Vector3(0.66, 0.05, 1.1), Vector3(0, 0.26, 0), "steel_dark"),
+		P("box", Vector3(0.63, 0.06, 0.24), Vector3(0, 0.58, -0.36), "team"),
+		P("box", Vector3(0.12, 0.08, 0.18), Vector3(-0.2, 0.6, -0.5), "crate"),
+		P("box", Vector3(0.3, 0.06, 0.08), Vector3(0, 0.5, 0.78), "glass", Vector3(-30, 0, 0)),
+		T("box", Vector3(0.34, 0.16, 0.38), Vector3(0, 0.64, -0.02), "steel_light"),
+		T("wedge", Vector3(0.34, 0.1, 0.12), Vector3(0, 0.62, 0.22), "steel_light", Vector3(90, 0, 180)),
+		T("cyl", Vector3(0.03, 0.55, 8), Vector3(0.05, 0.66, 0.42), "gun", Vector3(90, 0, 0)),
+		T("cyl", Vector3(0.045, 0.1, 8), Vector3(0.05, 0.66, 0.7), "gun", Vector3(90, 0, 0)),
+		T("cyl", Vector3(0.012, 0.35, 4), Vector3(-0.12, 0.88, -0.15), "black"),
+	]
+	UNITS["leopold"] = tracks(0.44, 1.45, 0.3, 0.26, 6) + [
+		P("box", Vector3(0.66, 0.26, 1.3), Vector3(0, 0.4, -0.04), "steel"),
+		P("wedge", Vector3(0.66, 0.2, 0.3), Vector3(0, 0.42, 0.75), "steel", Vector3(90, 0, 180)),
+		P("box", Vector3(0.1, 0.18, 1.4), Vector3(-0.53, 0.34, 0), "steel_dark"),
+		P("box", Vector3(0.1, 0.18, 1.4), Vector3(0.53, 0.34, 0), "steel_dark"),
+		P("box", Vector3(0.5, 0.06, 0.3), Vector3(0, 0.55, -0.55), "steel_dark"),
+		P("cyl", Vector3(0.04, 0.2, 6), Vector3(0.24, 0.5, -0.66), "black", Vector3(90, 0, 0)),
+		T("box", Vector3(0.6, 0.24, 0.66), Vector3(0, 0.66, -0.08), "steel_light"),
+		T("wedge", Vector3(0.6, 0.18, 0.2), Vector3(0, 0.63, 0.34), "steel_light", Vector3(90, 0, 180)),
+		T("box", Vector3(0.62, 0.08, 0.22), Vector3(0, 0.74, -0.22), "team"),
+		T("box", Vector3(0.44, 0.14, 0.18), Vector3(0, 0.64, -0.48), "steel_dark"),
+		T("cyl", Vector3(0.05, 1.0, 10), Vector3(0, 0.68, 0.72), "steel_dark", Vector3(90, 0, 0)),
+		T("cyl", Vector3(0.075, 0.18, 10), Vector3(0, 0.68, 0.9), "steel", Vector3(90, 0, 0)),
+		T("cyl", Vector3(0.08, 0.1, 8), Vector3(0, 0.68, 1.22), "gun", Vector3(90, 0, 0)),
+		T("cyl", Vector3(0.09, 0.08, 8), Vector3(0.15, 0.82, -0.18), "steel_dark"),
+		T("box", Vector3(0.02, 0.03, 0.22), Vector3(0.15, 0.88, -0.08), "gun"),
+		T("cyl", Vector3(0.01, 0.4, 4), Vector3(-0.2, 0.98, -0.3), "black"),
+	]
+	UNITS["aegis"] = tracks(0.38, 1.2, 0.28, 0.22, 5) + [
+		P("box", Vector3(0.58, 0.34, 1.15), Vector3(0, 0.42, 0), "steel"),
+		P("wedge", Vector3(0.58, 0.16, 0.3), Vector3(0, 0.44, 0.66), "steel", Vector3(90, 0, 180)),
+		P("box", Vector3(0.6, 0.07, 0.22), Vector3(0, 0.62, 0.3), "team"),
+		P("box", Vector3(0.36, 0.16, 0.5), Vector3(0, 0.67, -0.2), "steel_light"),
+		P("cyl", Vector3(0.05, 0.9, 6), Vector3(0, 1.1, -0.2), "steel_dark"),
+		P("cyl", Vector3(0.32, 0.06, 10), Vector3(0, 1.5, -0.2), "trim"),
+		P("cyl", Vector3(0.26, 0.08, 10), Vector3(0, 1.56, -0.2), "cyan"),
+		P("sph", Vector3(0.1, 0, 0), Vector3(0, 1.66, -0.2), "cyan"),
+		P("cyl", Vector3(0.2, 0.12, 8), Vector3(0, 0.78, -0.2), "cyan"),
+	]
+	UNITS["flakwerk"] = tracks(0.38, 1.2, 0.28, 0.22, 5) + [
+		P("box", Vector3(0.58, 0.3, 1.15), Vector3(0, 0.4, 0), "steel"),
+		P("wedge", Vector3(0.58, 0.14, 0.26), Vector3(0, 0.42, 0.66), "steel", Vector3(90, 0, 180)),
+		P("box", Vector3(0.6, 0.07, 0.22), Vector3(0, 0.58, -0.4), "team"),
+		T("cyl", Vector3(0.24, 0.12, 10), Vector3(0, 0.62, 0.0), "steel_dark"),
+		T("box", Vector3(0.46, 0.26, 0.4), Vector3(0, 0.8, 0.0), "steel_light"),
+		T("box", Vector3(0.47, 0.07, 0.2), Vector3(0, 0.95, -0.08), "team"),
+		T("cyl", Vector3(0.028, 0.75, 6), Vector3(-0.17, 1.02, 0.3), "gun", Vector3(50, 0, 0)),
+		T("cyl", Vector3(0.028, 0.75, 6), Vector3(-0.27, 1.02, 0.3), "gun", Vector3(50, 0, 0)),
+		T("cyl", Vector3(0.028, 0.75, 6), Vector3(0.17, 1.02, 0.3), "gun", Vector3(50, 0, 0)),
+		T("cyl", Vector3(0.028, 0.75, 6), Vector3(0.27, 1.02, 0.3), "gun", Vector3(50, 0, 0)),
+		T("cyl", Vector3(0.16, 0.03, 10), Vector3(0, 1.08, -0.2), "steel_dark", Vector3(-60, 0, 0)),
+	]
+	# ---------------- buildings (+z = front / door side) ----------------
+	BUILDINGS["hq"] = {"fp": Vector2(4, 4), "path": "res://view/buildings/eu/hq.tscn", "parts": pad(Vector2(4, 4)) + [
+		P("box", Vector3(2.6, 1.0, 1.9), Vector3(-0.45, 0.62, -0.6), "concrete"),
+		P("box", Vector3(2.7, 0.08, 2.0), Vector3(-0.45, 1.16, -0.6), "concrete_dark"),
+		P("box", Vector3(2.5, 0.18, 0.04), Vector3(-0.45, 0.85, 0.36), "window"),
+		P("box", Vector3(0.6, 0.55, 0.06), Vector3(-0.45, 0.39, 0.37), "steel_dark"),
+		P("box", Vector3(2.62, 0.12, 0.05), Vector3(-0.45, 1.02, 0.37), "team"),
+		P("box", Vector3(1.1, 1.0, 1.2), Vector3(-1.2, 1.7, -0.9), "concrete"),
+		P("box", Vector3(1.12, 0.14, 0.04), Vector3(-1.2, 1.85, -0.29), "window"),
+		P("box", Vector3(1.15, 0.06, 1.25), Vector3(-1.2, 2.22, -0.9), "concrete_dark"),
+		P("cyl", Vector3(0.05, 0.9, 6), Vector3(-1.4, 2.65, -1.1), "steel_light"),
+		P("sph", Vector3(0.38, 0.12, 0.38), Vector3(-0.9, 2.4, -0.85), "steel_light", Vector3(-30, 0, 0)),
+		P("box", Vector3(1.2, 0.8, 1.5), Vector3(1.25, 0.52, -0.85), "corr"),
+		P("cyl", Vector3(0.75, 1.2, 12), Vector3(1.25, 0.92, -0.85), "corr_dark", Vector3(90, 0, 0), "", 1.0),
+		P("cyl", Vector3(0.6, 0.02, 16), Vector3(1.1, 0.13, 1.1), "concrete_dark"),
+		P("box", Vector3(0.08, 0.01, 0.5), Vector3(0.95, 0.15, 1.1), "paint_w"),
+		P("box", Vector3(0.08, 0.01, 0.5), Vector3(1.25, 0.15, 1.1), "paint_w"),
+		P("box", Vector3(0.3, 0.01, 0.08), Vector3(1.1, 0.15, 1.1), "paint_w"),
+		P("box", Vector3(0.22, 0.12, 0.06), Vector3(-1.0, 1.0, 0.38), "lamp"),
+	] + sandbags(Vector2(-1.9, 1.85), Vector2(0.1, 1.85)) + flag(Vector3(1.75, 0.12, 1.7), 1.6) + barrels(Vector3(-1.75, 0.12, 0.7), 4)}
+	BUILDINGS["reactor"] = {"fp": Vector2(3, 3), "path": "res://view/buildings/eu/reactor.tscn", "parts": pad(Vector2(3, 3)) + [
+		P("cone", Vector3(0.85, 1.7, 0.6), Vector3(-0.4, 0.97, -0.4), "concrete"),
+		P("cyl", Vector3(0.62, 0.1, 14), Vector3(-0.4, 1.85, -0.4), "concrete_dark"),
+		P("cyl", Vector3(0.55, 0.04, 14), Vector3(-0.4, 1.9, -0.4), "black"),
+		P("box", Vector3(1.3, 0.6, 0.9), Vector3(0.5, 0.42, 0.65), "corr"),
+		P("box", Vector3(1.32, 0.06, 0.92), Vector3(0.5, 0.75, 0.65), "roof"),
+		P("hsph", Vector3(0.5, 0.45, 0.5), Vector3(0.75, 0.12, -0.6), "steel_light"),
+		P("cyl", Vector3(0.52, 0.08, 14), Vector3(0.75, 0.2, -0.6), "cyan"),
+		P("cyl", Vector3(0.06, 1.2, 6), Vector3(0.2, 0.55, -0.1), "steel_dark", Vector3(0, 0, 90)),
+		P("cyl", Vector3(0.06, 0.9, 6), Vector3(-0.4, 0.3, 0.45), "steel_dark", Vector3(90, 0, 0)),
+		P("box", Vector3(0.9, 0.1, 0.04), Vector3(0.5, 0.55, 1.11), "team"),
+		P("box", Vector3(0.3, 0.3, 0.04), Vector3(-0.4, 1.0, 0.24), "trim"),
+	] + fence(Vector2(-1.4, 1.4), Vector2(-0.3, 1.4))}
+	BUILDINGS["pylon"] = {"fp": Vector2(1, 1), "path": "res://view/buildings/eu/pylon.tscn", "parts": [
+		P("box", Vector3(0.85, 0.1, 0.85), Vector3(0, 0.05, 0), "concrete_dark"),
+		P("box", Vector3(0.05, 2.0, 0.05), Vector3(-0.22, 1.0, -0.22), "steel_dark", Vector3(-5, 0, 5)),
+		P("box", Vector3(0.05, 2.0, 0.05), Vector3(0.22, 1.0, -0.22), "steel_dark", Vector3(-5, 0, -5)),
+		P("box", Vector3(0.05, 2.0, 0.05), Vector3(-0.22, 1.0, 0.22), "steel_dark", Vector3(5, 0, 5)),
+		P("box", Vector3(0.05, 2.0, 0.05), Vector3(0.22, 1.0, 0.22), "steel_dark", Vector3(5, 0, -5)),
+		P("box", Vector3(0.42, 0.03, 0.03), Vector3(0, 0.7, 0.2), "steel_dark", Vector3(0, 0, 30)),
+		P("box", Vector3(0.42, 0.03, 0.03), Vector3(0, 1.3, 0.16), "steel_dark", Vector3(0, 0, -30)),
+		P("box", Vector3(0.9, 0.06, 0.06), Vector3(0, 1.75, 0), "steel"),
+		P("cyl", Vector3(0.05, 0.14, 6), Vector3(-0.4, 1.68, 0), "cyan"),
+		P("cyl", Vector3(0.05, 0.14, 6), Vector3(0.4, 1.68, 0), "cyan"),
+		P("sph", Vector3(0.13, 0, 0), Vector3(0, 2.08, 0), "cyan"),
+		P("box", Vector3(0.24, 0.16, 0.02), Vector3(0, 0.5, 0.24), "team"),
+	]}
+	BUILDINGS["hub"] = {"fp": Vector2(3, 3), "path": "res://view/buildings/eu/hub.tscn", "parts": pad(Vector2(3, 3)) + [
+		P("box", Vector3(2.2, 0.9, 1.3), Vector3(-0.2, 0.57, -0.7), "corr"),
+		P("wedge", Vector3(2.25, 0.3, 1.35), Vector3(-0.2, 1.17, -0.7), "corr_dark", Vector3(0, 90, 0)),
+		P("box", Vector3(0.9, 0.7, 0.05), Vector3(-0.5, 0.47, -0.03), "steel_dark"),
+		P("box", Vector3(2.22, 0.1, 0.05), Vector3(-0.2, 0.92, -0.04), "team"),
+		P("cyl", Vector3(0.32, 1.4, 12), Vector3(1.05, 0.82, -0.85), "steel_light"),
+		P("cone", Vector3(0.32, 0.2, 0.05), Vector3(1.05, 1.62, -0.85), "steel_light"),
+		P("cyl", Vector3(0.32, 1.1, 12), Vector3(1.05, 0.67, -0.15), "steel_light", Vector3.ZERO, "", 0.92),
+		P("box", Vector3(1.0, 0.25, 0.9), Vector3(-0.6, 0.25, 0.85), "concrete"),
+		P("box", Vector3(0.9, 0.04, 0.06), Vector3(-0.6, 0.38, 1.3), "paint_y"),
+	] + crates(Vector3(0.6, 0.12, 0.65), 5, 0.26) + [P("box", Vector3(0.2, 0.1, 0.06), Vector3(0.3, 0.8, -0.03), "lamp")]}
+	BUILDINGS["barracks"] = {"fp": Vector2(3, 3), "path": "res://view/buildings/eu/barracks.tscn", "parts": pad(Vector2(3, 3)) + [
+		P("cyl", Vector3(0.85, 2.3, 14), Vector3(0, 0.12, -0.35), "corr_green", Vector3(0, 0, 90)),
+		P("box", Vector3(2.32, 0.9, 1.0), Vector3(0, -0.33, -0.35), "concrete_dark"),
+		P("box", Vector3(0.5, 0.6, 0.05), Vector3(0.45, 0.42, 0.5), "steel_dark", Vector3(0, 90, 0)),
+		P("box", Vector3(0.06, 0.62, 0.55), Vector3(-1.16, 0.42, -0.35), "steel_dark"),
+		P("box", Vector3(0.05, 0.12, 1.75), Vector3(1.16, 0.75, -0.35), "team"),
+		P("box", Vector3(0.05, 0.12, 1.75), Vector3(-1.17, 0.75, -0.35), "team"),
+		P("box", Vector3(0.05, 0.22, 0.35), Vector3(1.16, 0.5, 0.0), "window"),
+		P("box", Vector3(0.05, 0.22, 0.35), Vector3(1.16, 0.5, -0.7), "window"),
+	] + sandbags(Vector2(-1.3, 0.9), Vector2(-0.2, 0.9)) + sandbags(Vector2(0.4, 0.9), Vector2(1.3, 0.9)) + flag(Vector3(1.2, 0.12, 1.25), 1.4) + crates(Vector3(-1.1, 0.12, 1.15), 3, 0.22)}
+	BUILDINGS["motor_pool"] = {"fp": Vector2(4, 4), "path": "res://view/buildings/eu/motor_pool.tscn", "parts": pad(Vector2(4, 4)) + [
+		P("box", Vector3(3.2, 1.25, 2.4), Vector3(0, 0.74, -0.55), "corr"),
+		P("wedge", Vector3(3.25, 0.35, 2.45), Vector3(0, 1.54, -0.55), "corr_dark", Vector3(0, 90, 0)),
+		P("box", Vector3(1.6, 1.0, 0.05), Vector3(-0.5, 0.62, 0.66), "black"),
+		P("box", Vector3(1.7, 0.1, 0.08), Vector3(-0.5, 1.15, 0.67), "hazard"),
+		P("box", Vector3(0.9, 0.9, 0.9), Vector3(1.05, 0.57, 0.95), "concrete"),
+		P("box", Vector3(0.92, 0.18, 0.04), Vector3(1.05, 0.75, 1.41), "window"),
+		P("box", Vector3(3.22, 0.14, 0.05), Vector3(0, 1.3, 0.66), "team"),
+		P("box", Vector3(0.1, 1.6, 0.1), Vector3(-1.6, 0.9, 1.6), "hazard"),
+		P("box", Vector3(0.1, 1.6, 0.1), Vector3(0.6, 0.9, 1.6), "hazard"),
+		P("box", Vector3(2.3, 0.1, 0.12), Vector3(-0.5, 1.7, 1.6), "hazard"),
+		P("box", Vector3(1.4, 0.01, 0.08), Vector3(-0.5, 0.125, 1.35), "paint_w"),
+	] + barrels(Vector3(1.4, 0.12, -1.7), 5)}
+	BUILDINGS["heavy_factory"] = {"fp": Vector2(4, 4), "path": "res://view/buildings/eu/heavy_factory.tscn", "parts": pad(Vector2(4, 4)) + [
+		P("box", Vector3(3.5, 1.6, 2.8), Vector3(0, 0.92, -0.4), "corr_dark"),
+		P("box", Vector3(3.55, 0.1, 2.85), Vector3(0, 1.75, -0.4), "roof"),
+		P("box", Vector3(3.0, 0.3, 0.6), Vector3(0, 1.95, -0.6), "corr"),
+		P("box", Vector3(2.0, 1.25, 0.05), Vector3(-0.3, 0.75, 1.0), "black"),
+		P("box", Vector3(2.1, 0.12, 0.08), Vector3(-0.3, 1.42, 1.02), "hazard"),
+		P("box", Vector3(3.52, 0.18, 0.05), Vector3(0, 1.6, 1.01), "team"),
+		P("cyl", Vector3(0.18, 1.6, 10), Vector3(-1.3, 2.4, -1.4), "steel_dark"),
+		P("cyl", Vector3(0.2, 0.1, 10), Vector3(-1.3, 3.2, -1.4), "rust"),
+		P("cyl", Vector3(0.18, 1.3, 10), Vector3(-0.8, 2.25, -1.4), "steel_dark"),
+		P("box", Vector3(0.7, 0.5, 0.7), Vector3(1.2, 2.05, -1.0), "steel"),
+		P("cyl", Vector3(0.25, 0.9, 10), Vector3(1.5, 0.57, 1.45), "steel_light"),
+		P("box", Vector3(0.3, 0.12, 0.06), Vector3(1.1, 1.3, 1.0), "lamp"),
+	] + fence(Vector2(-1.9, 1.85), Vector2(-1.4, 1.85)) + barrels(Vector3(0.9, 0.12, 1.5), 3)}
+	BUILDINGS["gun_bunker"] = {"fp": Vector2(2, 2), "path": "res://view/buildings/eu/gun_bunker.tscn", "parts": [
+		P("cyl", Vector3(0.82, 0.12, 14), Vector3(0, 0.06, 0), "concrete_dark"),
+		P("cone", Vector3(0.72, 0.5, 0.58), Vector3(0, 0.37, 0), "concrete"),
+		P("box", Vector3(0.9, 0.08, 0.06), Vector3(0, 0.5, 0.6), "black"),
+		P("box", Vector3(0.9, 0.07, 0.25), Vector3(0, 0.6, -0.45), "team"),
+	] + sandbags(Vector2(-0.95, 0.9), Vector2(0.95, 0.9)) + sandbags(Vector2(-0.95, -0.9), Vector2(-0.95, 0.9)) + sandbags(Vector2(0.95, -0.9), Vector2(0.95, 0.9)) + [
+		T("cyl", Vector3(0.36, 0.22, 10), Vector3(0, 0.73, 0), "steel"),
+		T("box", Vector3(0.4, 0.18, 0.32), Vector3(0, 0.9, 0.05), "steel_light"),
+		T("cyl", Vector3(0.04, 0.8, 8), Vector3(-0.09, 0.9, 0.55), "gun", Vector3(90, 0, 0)),
+		T("cyl", Vector3(0.04, 0.8, 8), Vector3(0.09, 0.9, 0.55), "gun", Vector3(90, 0, 0)),
+		T("box", Vector3(0.41, 0.05, 0.2), Vector3(0, 0.98, -0.05), "team"),
+	]}
+	BUILDINGS["civ_block"] = {"fp": Vector2(3, 3), "path": "res://view/buildings/neutral/civ_block.tscn", "parts": [
+		P("box", Vector3(2.6, 1.9, 2.4), Vector3(0, 0.95, 0), "plaster"),
+		P("box", Vector3(2.7, 0.12, 2.5), Vector3(0, 1.94, 0), "plaster2"),
+		P("box", Vector3(2.62, 0.08, 2.42), Vector3(0, 0.98, 0), "plaster2"),
+		P("box", Vector3(1.0, 0.6, 0.06), Vector3(-0.5, 0.45, 1.21), "window"),
+		P("box", Vector3(0.45, 0.75, 0.06), Vector3(0.75, 0.38, 1.21), "wood"),
+		P("box", Vector3(1.3, 0.05, 0.45), Vector3(-0.5, 0.85, 1.42), "red", Vector3(-12, 0, 0)),
+		P("box", Vector3(0.28, 0.38, 0.06), Vector3(-0.8, 1.45, 1.21), "window"),
+		P("box", Vector3(0.28, 0.38, 0.06), Vector3(-0.1, 1.45, 1.21), "window"),
+		P("box", Vector3(0.28, 0.38, 0.06), Vector3(0.6, 1.45, 1.21), "window"),
+		P("box", Vector3(0.06, 0.38, 0.28), Vector3(1.31, 1.45, -0.5), "window"),
+		P("box", Vector3(0.06, 0.38, 0.28), Vector3(1.31, 1.45, 0.4), "window"),
+		P("box", Vector3(0.06, 0.38, 0.28), Vector3(-1.31, 1.45, 0.0), "window"),
+		P("box", Vector3(0.06, 0.38, 0.28), Vector3(1.31, 0.5, -0.5), "window"),
+		P("box", Vector3(0.28, 0.38, 0.06), Vector3(0.3, 1.45, -1.21), "window"),
+		P("box", Vector3(0.9, 0.06, 0.4), Vector3(0.25, 1.22, 1.38), "plaster2"),
+		P("cyl", Vector3(0.22, 0.4, 10), Vector3(0.75, 2.2, -0.6), "steel_light"),
+		P("box", Vector3(0.4, 0.22, 0.3), Vector3(-0.7, 2.11, -0.5), "steel_light"),
+		P("box", Vector3(0.6, 0.04, 0.04), Vector3(-0.1, 2.3, 0.4), "black"),
+		P("box", Vector3(2.7, 0.12, 0.04), Vector3(0, 2.06, 1.25), "plaster2"),
+		P("box", Vector3(0.32, 0.22, 0.02), Vector3(-1.0, 2.38, 0.8), "team"),
+		P("cyl", Vector3(0.015, 0.45, 4), Vector3(-1.17, 2.22, 0.8), "steel_light"),
+	]}
+	BUILDINGS["pump"] = {"fp": Vector2(2, 2), "path": "res://view/buildings/neutral/pump.tscn", "parts": [
+		P("box", Vector3(1.9, 0.12, 1.9), Vector3(0, 0.06, 0), "concrete_dark"),
+		# derrick lattice
+		P("box", Vector3(0.06, 2.3, 0.06), Vector3(-0.45, 1.15, -0.45), "rust", Vector3(-6, 0, 6)),
+		P("box", Vector3(0.06, 2.3, 0.06), Vector3(-0.05, 1.15, -0.45), "rust", Vector3(-6, 0, -6)),
+		P("box", Vector3(0.06, 2.3, 0.06), Vector3(-0.45, 1.15, -0.05), "rust", Vector3(6, 0, 6)),
+		P("box", Vector3(0.06, 2.3, 0.06), Vector3(-0.05, 1.15, -0.05), "rust", Vector3(6, 0, -6)),
+		P("box", Vector3(0.42, 0.04, 0.04), Vector3(-0.25, 0.8, -0.08), "rust", Vector3(0, 0, 32)),
+		P("box", Vector3(0.36, 0.04, 0.04), Vector3(-0.25, 1.5, -0.12), "rust", Vector3(0, 0, -32)),
+		P("box", Vector3(0.2, 0.08, 0.2), Vector3(-0.25, 2.3, -0.25), "rust"),
+		# pumpjack
+		P("box", Vector3(0.08, 0.7, 0.08), Vector3(0.45, 0.45, 0.35), "steel_dark", Vector3(0, 0, 10)),
+		P("box", Vector3(0.08, 0.7, 0.08), Vector3(0.45, 0.45, 0.6), "steel_dark", Vector3(0, 0, 10)),
+		P("box", Vector3(1.2, 0.08, 0.1), Vector3(0.45, 0.82, 0.47), "hazard", Vector3(0, 0, -10)),
+		P("box", Vector3(0.12, 0.35, 0.16), Vector3(-0.12, 0.8, 0.47), "hazard", Vector3(0, 0, -10)),
+		P("box", Vector3(0.3, 0.3, 0.3), Vector3(0.95, 0.25, 0.47), "steel"),
+		P("cyl", Vector3(0.05, 0.4, 6), Vector3(-0.15, 0.3, 0.47), "steel_dark"),
+		P("cyl", Vector3(0.28, 0.6, 12), Vector3(0.55, 0.42, -0.5), "steel_light"),
+		P("cyl", Vector3(0.29, 0.06, 12), Vector3(0.55, 0.6, -0.5), "team"),
+	] + barrels(Vector3(-0.8, 0.12, 0.55), 3)}
+	PROPS["seam"] = [P("box", Vector3(2.2, 0.06, 2.2), Vector3(0, 0.03, 0), "wood", Vector3.ZERO, "", 0.8)] + crates(Vector3(-0.7, 0.06, -0.7), 6, 0.36) + crates(Vector3(0.2, 0.06, 0.1), 5, 0.36) + crates(Vector3(-0.6, 0.06, 0.5), 4, 0.36) + barrels(Vector3(0.45, 0.06, -0.8), 4) + [
+		P("box", Vector3(0.7, 0.08, 0.7), Vector3(0.6, 0.1, 0.65), "wood"),
+		P("box", Vector3(0.6, 0.35, 0.6), Vector3(0.6, 0.31, 0.65), "olive"),
+	]
+	PROPS["cache"] = crates(Vector3(-0.25, 0, -0.2), 4, 0.34) + barrels(Vector3(0.3, 0, 0.3), 2)

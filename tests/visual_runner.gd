@@ -21,6 +21,8 @@ func _ready() -> void:
 			await run_shots()
 		"touch":
 			await run_touch()
+		"gallery":
+			await run_gallery()
 		"perf":
 			await run_perf(int(args[1]) if args.size() > 1 else 20)
 	for c in checks:
@@ -146,6 +148,39 @@ func run_shots() -> void:
 	await frames(5)
 	await shot("06_results_sample")
 	res.queue_free()
+
+## Art review: every EU/neutral model lined up on the real map with match lighting.
+func run_gallery() -> void:
+	var cfg := lobby_cfg(1)
+	cfg["options"]["fog"] = false
+	var m = await start_match(cfg)
+	var base := Vector3(14, 0, 40)
+	var paths := []
+	for d in ["res://view/buildings/eu/", "res://view/buildings/neutral/", "res://view/neutral/", "res://view/units/eu/"]:
+		for f in DirAccess.get_files_at(d):
+			if f.ends_with(".tscn"):
+				paths.append(d + f)
+	var x := 0.0
+	var row := 0
+	var holder := Node3D.new()
+	m.world.add_child(holder)
+	for p in paths:
+		var v: Node3D = (load(p) as PackedScene).instantiate()
+		holder.add_child(v)
+		var unit: bool = p.contains("/units/")
+		if unit and row == 0:
+			row = 1
+			x = 0.0
+		v.position = base + Vector3(x, 0.02, row * 5.0)
+		v.rotation_degrees.y = 25.0
+		if v.has_method("set_team_material"):
+			v.set_team_material(Palette.team_material(0))
+		x += 1.7 if unit else 4.6
+	for spec in [[base + Vector3(8, 0, 1), 0, "gallery_buildings_a"], [base + Vector3(30, 0, 1), 0, "gallery_buildings_b"], [base + Vector3(6, 0, 5), 0, "gallery_units"], [base + Vector3(20, 0, 3), 1, "gallery_wide"]]:
+		m.cam.jump_to(spec[0], false)
+		m.cam.set_level(spec[1])
+		await frames(30)
+		await shot(spec[2])
 
 func _first(m, pid: int, def_id: StringName) -> SimEntity:
 	for id in m.runner.sim.ids:

@@ -1,0 +1,13 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/textures/materials/corrugated.png" id="1_16vcc"]
+
+[resource]
+vertex_color_use_as_albedo = true
+vertex_color_is_srgb = true
+albedo_color = Color(1.25, 1.25, 1.25, 1)
+albedo_texture = ExtResource("1_16vcc")
+metallic = 0.35
+roughness = 0.6
+uv1_scale = Vector3(0.6, 0.6, 0.6)
+uv1_triplanar = true

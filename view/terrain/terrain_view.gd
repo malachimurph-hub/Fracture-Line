@@ -115,6 +115,9 @@ func _build_splats() -> void:
 			ib.set_pixel(x, y, BIOME_B.get(b, Color(0, 0, 0, 0)))
 	# soften natural-ground transitions (asphalt stays crisp)
 	var sa := ia.duplicate() as Image
+	var soft := ia.duplicate() as Image   # wide, organic falloff (≈3 tiles)
+	soft.resize(maxi(4, m.w / 4), maxi(4, m.h / 4), Image.INTERPOLATE_BILINEAR)
+	soft.resize(m.w, m.h, Image.INTERPOLATE_CUBIC)
 	for y in m.h:
 		for x in m.w:
 			var acc := Color(0, 0, 0, 0)
@@ -126,7 +129,7 @@ func _build_splats() -> void:
 					var wgt := 2.0 if dx == 0 and dy == 0 else 1.0
 					acc += ia.get_pixel(xx, yy) * wgt
 					n += wgt
-			sa.set_pixel(x, y, acc / n)
+			sa.set_pixel(x, y, (acc / n).lerp(soft.get_pixel(x, y), 0.45))
 	material.set_shader_parameter("splat_a", ImageTexture.create_from_image(sa))
 	material.set_shader_parameter("splat_b", ImageTexture.create_from_image(ib))
 

@@ -19,13 +19,16 @@ func _ready() -> void:
 
 func _collect(n: Node) -> void:
 	for c in n.get_children():
-		if c is MeshInstance3D and c.has_meta("team"):
+		if c is MeshInstance3D and (c.has_meta("team") or c.has_meta("team_surface")):
 			team_meshes.append(c)
 		_collect(c)
 
 func set_team_material(mat: Material) -> void:
 	for m in team_meshes:
-		m.material_override = mat
+		if m.has_meta("team_surface"):
+			m.set_surface_override_material(int(m.get_meta("team_surface")), mat)
+		else:
+			m.material_override = mat
 
 func set_overlay(mat: Material) -> void:
 	_overlay(self, mat)
