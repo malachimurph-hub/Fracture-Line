@@ -289,20 +289,32 @@ func can_place(pid: int, def_id: StringName, t: Vector2i, check_cost: bool = tru
 	return ""
 
 ## True if one of the player's builders shares a drivable region with the footprint's edge.
+## Builder regions are cached per tick (placement searches call this hundreds of times).
+var _reach_tick := -1
+var _reach: Dictionary = {}   ## pid -> {region: true}, or {-1: true} when the player has no builder
 func _builder_can_reach(pid: int, t: Vector2i, fp: Vector2i) -> bool:
-	var regs := map.footprint_regions(t, fp)
-	if regs.is_empty():
-		return false
-	var any_builder := false
-	for id in ids:
-		var e: SimEntity = ents[id]
-		if e.alive and e.owner == pid and e.kind == SimEntity.Kind.UNIT and udef(e).tags.has("builder"):
-			any_builder = true
-			var bt := FX.to_tile(e.pos)
-			if map.in_bounds(bt) and regs.has(map.region[map.idx(bt)]):
-				return true
-	# no builder alive: the command itself is rejected later (REASON_NO_BUILDER)
-	return not any_builder
+	if _reach_tick != tick:
+		_reach_tick = tick
+		_reach.clear()
+	if not _reach.has(pid):
+		var rs := {}
+		for id in ids:
+			var e: SimEntity = ents[id]
+			if e.alive and e.owner == pid and e.kind == SimEntity.Kind.UNIT and udef(e).tags.has("builder"):
+				var bt := FX.to_tile(e.pos)
+				if map.in_bounds(bt):
+					rs[map.region[map.idx(bt)]] = true
+					rs[-2] = true
+		if rs.is_empty():
+			rs[-1] = true
+		_reach[pid] = rs
+	var mine: Dictionary = _reach[pid]
+	if mine.has(-1):
+		return true   # no builder alive: the command itself is rejected (REASON_NO_BUILDER)
+	for r in map.footprint_regions(t, fp):
+		if mine.has(r):
+			return true
+	return false
 
 func in_grid(pid: int, p: Vector2i) -> bool:
 	for id in ids:
