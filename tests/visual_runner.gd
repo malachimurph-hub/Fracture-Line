@@ -181,6 +181,24 @@ func run_gallery() -> void:
 		m.cam.set_level(spec[1])
 		await frames(30)
 		await shot(spec[2])
+	# effects review
+	var vf: Vfx = m.world.vfx
+	var c := base + Vector3(10, 0, 9)
+	m.cam.jump_to(c, false)
+	m.cam.set_level(0)
+	vf.building_destroyed(c + Vector3(-3, 0, 0), Vector2(3, 3))
+	for k in 6:
+		vf.smoke_puff(c + Vector3(3, 0.8, -1), 0.5, true)
+		await frames(6)
+	vf.explosion(c + Vector3(0, 0, 2), 1.0)
+	vf.explosion(c + Vector3(2, 0, 3), 0.5)
+	for k in 5:
+		vf.muzzle(c + Vector3(-1 + k * 0.6, 0.6, 3), Vector3(1, 0, -0.3), 0.3)
+		vf.dust(c + Vector3(4, 0, 2 + k * 0.3), 0.45, 0.5)
+	await frames(4)
+	await shot("gallery_vfx")
+	await frames(90)
+	await shot("gallery_vfx_after")
 
 func _first(m, pid: int, def_id: StringName) -> SimEntity:
 	for id in m.runner.sim.ids:

@@ -16,6 +16,7 @@ var views: Dictionary = {}       ## id -> EntityView
 var ghosts: Dictionary = {}      ## dead buildings remembered in fog: id -> EntityView
 var prev: Dictionary = {}        ## id -> Vector3
 var cur: Dictionary = {}         ## id -> Vector3
+var fx_acc: Dictionary = {}      ## id -> seconds since last ambient puff (dust / smoke)
 var yaw: Dictionary = {}         ## id -> float
 var rings: Dictionary = {}       ## id -> MeshInstance3D
 var ring_meshes: Array = []
@@ -39,6 +40,7 @@ func setup(r: MatchRunner, pid: int) -> void:
 	terrain.build(sim.map, Content.maps[sim.map_id].tiles_path)
 	vfx = Vfx.new()
 	add_child(vfx)
+	vfx.set_fog(terrain.fog_texture, Vector2(sim.map.w, sim.map.h))
 	fog_overlay = Palette.flat(Color(0.05, 0.06, 0.08), 0.55)
 	dome_mat = StandardMaterial3D.new()
 	dome_mat.albedo_color = Color(0.43, 0.89, 1.0, 0.10)
@@ -178,22 +180,30 @@ func _on_fire(ev: Dictionary) -> void:
 	to.y += 0.4
 	var kind: String = String(ev["vfx"])
 	var col: Color = VFX_COLORS.get(kind, Color.WHITE)
+	var dir := (to - from).normalized()
+	var muzzle := from + dir * 0.45
 	match kind:
 		"shell":
-			vfx.tracer(from, to, col, 0.09, 0.12)
-			vfx.flash(from, Color("#ffe6a0"), 0.35, 0.08)
-			vfx.flash(to, Color("#ff9d4a"), 0.6, 0.2)
+			vfx.tracer(muzzle, to, col, 0.07, 0.1)
+			vfx.muzzle(muzzle + dir * 0.4, dir, 0.32)
+			vfx.explosion(to - Vector3(0, 0.35, 0), 0.45)
 		"missile":
-			vfx.tracer(from, to, col, 0.07, 0.25)
-			vfx.flash(to, Color("#ff7a2a"), 0.5, 0.25)
+			vfx.tracer(muzzle, to, col, 0.05, 0.22)
+			vfx.muzzle(muzzle, dir, 0.2)
+			for k in 5:
+				vfx.trail(muzzle.lerp(to, (k + 0.5) / 5.0))
+			vfx.explosion(to - Vector3(0, 0.35, 0), 0.5)
 		"grenade":
-			vfx.tracer(from + Vector3(0, 0.4, 0), to, col, 0.05, 0.2)
-			vfx.flash(to, Color("#c9e86b"), 0.8, 0.25)
+			vfx.tracer(from + Vector3(0, 0.4, 0), to, col, 0.04, 0.2)
+			vfx.explosion(to - Vector3(0, 0.35, 0), 0.4)
 		"flak":
-			vfx.tracer(from, to, col, 0.04, 0.08)
-			vfx.flash(to, Color("#eeeeee"), 0.45, 0.15)
+			vfx.tracer(muzzle, to, col, 0.03, 0.07)
+			vfx.muzzle(muzzle, dir, 0.18)
+			vfx.flak_burst(to + Vector3(randf_range(-0.3, 0.3), randf_range(0.2, 0.6), randf_range(-0.3, 0.3)))
 		_:
-			vfx.tracer(from, to, col, 0.035 if kind == "tracer" else 0.05, 0.07)
+			vfx.tracer(muzzle, to, col, 0.03 if kind == "tracer" else 0.045, 0.06)
+			vfx.muzzle(muzzle, dir, 0.12 if kind == "tracer" else 0.18)
+			vfx.impact(to - Vector3(0, 0.3, 0), 0.25)
 
 func _on_death(ev: Dictionary) -> void:
 	var id := int(ev["id"])
@@ -201,8 +211,15 @@ func _on_death(ev: Dictionary) -> void:
 	var pos := FX.to_world(ev["pos"])
 	var seen := _visible_pos(ev["pos"]) or int(ev.get("owner", -1)) >= 0 and sim.player_team(int(ev["owner"])) == local_team
 	if seen and not ev.get("silent", false):
-		var big: bool = ev["kind"] != SimEntity.Kind.UNIT
-		vfx.explosion(pos, 1.8 if big else 0.7)
+		if ev["kind"] == SimEntity.Kind.UNIT:
+			var inf := v != null and v.scale.x > 1.2
+			if inf:
+				vfx.impact(pos + Vector3(0, 0.2, 0), 0.4)
+			else:
+				vfx.explosion(pos, 0.9)
+				vfx.sources.append([pos, 5.0, 0.4, 0.0])   # burning wreck
+		else:
+			vfx.building_destroyed(pos, v.footprint if v != null else Vector2(3, 3))
 	if shield_domes.has(id):
 		shield_domes[id].queue_free()
 		shield_domes.erase(id)
@@ -210,6 +227,7 @@ func _on_death(ev: Dictionary) -> void:
 		rings[id].queue_free()
 		rings.erase(id)
 	views.erase(id)
+	fx_acc.erase(id)
 	prev.erase(id)
 	cur.erase(id)
 	if v == null:
@@ -251,6 +269,15 @@ func frame(a: float, delta: float) -> void:
 					v.turret.rotation.y = lerp_angle(v.turret.rotation.y, ang, minf(1.0, delta * 10.0))
 				else:
 					v.turret.rotation.y = lerp_angle(v.turret.rotation.y, 0.0, minf(1.0, delta * 3.0))
+			# dust behind moving vehicles
+			if v.scale.x < 1.2 and not icon_mode:
+				var spd: float = p.distance_to(v.get_meta("lastp", p)) / maxf(delta, 0.001)
+				v.set_meta("lastp", p)
+				var acc: float = fx_acc.get(id, 0.0) + delta
+				if spd > 0.6 and acc > 0.14:
+					acc = 0.0
+					vfx.dust(p - Vector3(sin(ny), 0, cos(ny)) * 0.5, 0.45, 0.45)
+				fx_acc[id] = acc
 			if shield_domes.has(id):
 				var dome: MeshInstance3D = shield_domes[id]
 				dome.visible = not icon_mode
@@ -262,6 +289,17 @@ func frame(a: float, delta: float) -> void:
 				var k := 1.0 if e.built else 0.15 + 0.85 * float(e.progress) / float(maxi(1, e.build_ticks))
 				if v.model:
 					v.model.scale.y = k
+				if vis and not icon_mode:
+					var acc2: float = fx_acc.get(id, 0.0) + delta
+					var hpk := float(e.hp) / float(maxi(1, e.max_hp))
+					if not e.built and acc2 > 0.35:
+						acc2 = 0.0   # construction dust around the footprint
+						var r := v.footprint * 0.5
+						vfx.dust(v.position + Vector3(randf_range(-r.x, r.x), 0, randf_range(-r.y, r.y)), 0.6, 0.4)
+					elif e.built and hpk < 0.5 and acc2 > (0.22 if hpk < 0.25 else 0.4):
+						acc2 = 0.0   # damaged: smoke column, on fire below 25 %
+						vfx.smoke_puff(v.position + Vector3(randf_range(-0.6, 0.6), v.bar_height * 0.6, randf_range(-0.6, 0.6)), 0.5 if hpk < 0.25 else 0.3, hpk < 0.25)
+					fx_acc[id] = acc2
 				if v.turret != null and e.target != 0:
 					var t2 := sim.get_ent(e.target)
 					if t2 != null:

@@ -80,6 +80,8 @@ static func make(kind: String) -> Mesh:
 		"rock":
 			sph(st, Vector3(0, 0.25, 0), Vector3(0.7, 0.55, 0.6), Color("#9c8a72"), 6)
 			sph(st, Vector3(0.45, 0.15, 0.25), Vector3(0.4, 0.35, 0.35), Color("#8b7a64"), 5)
+		"debris_chunk":
+			box(st, Vector3.ZERO, Vector3(1, 0.6, 0.8), Color.WHITE)
 		"rock_small":
 			sph(st, Vector3(0, 0.08, 0), Vector3(0.28, 0.18, 0.24), Color("#a28f75"), 5)
 		"power_pole":
