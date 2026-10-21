@@ -248,3 +248,44 @@ Voices: to be recorded by Malachi Murphy; until then robotic placeholder lines a
 Inspired by the classic base-building RTS genre; no names, art, audio or text from any other game are used.
 UI font: Godot's built-in default font."
 CREDITS_ENGINE,"Built with Godot Engine %s (MIT license, see below)."
+FACTION_TPLA,TPLA
+FACTION_TPLA_FULL,The Peoples Liberation Army
+UNIT_TPLA_LABORER,Laborer
+UNIT_TPLA_MILITIA,Militia
+UNIT_TPLA_ROCKET_CELL,Rocket Cell
+UNIT_TPLA_RATTLER,Rattler Truck
+UNIT_TPLA_HAILSTORM,Hailstorm Quad Gun
+UNIT_TPLA_SCRAPBACK,Scrapback Tank
+UNIT_TPLA_SHRIKE,Shrike Rocket Buggy
+UNIT_TPLA_MULE,Mule Bomb Truck
+UNIT_TPLA_BLIGHT,Blight Launcher
+BLD_TPLA_DEN,Command Den
+BLD_TPLA_STASH,Supply Stash
+BLD_TPLA_CAMP,Militia Camp
+BLD_TPLA_CHOP_SHOP,Chop Shop
+BLD_TPLA_TUNNEL,Tunnel Network
+BLD_TPLA_WORKSHOP,Workshop
+BLD_TPLA_BAZAAR,Night Bazaar
+BLD_TPLA_DEMO_TRAP,Demo Trap
+BLD_TPLA_CAMO_NET,Camo Net
+BLD_TPLA_HOLE,Rebuild Hole
+POWER_AMBUSH,Ambush
+POWER_AMBUSH_DESC,Five militia emerge from hiding at the target.
+POWER_SCRAP_RAIN,Scrap Rain
+POWER_SCRAP_RAIN_DESC,Drops four salvage crates at the target.
+POWER_BLIGHT,Blight Shells
+POWER_BLIGHT_DESC,Rust barrage: corrodes everything in the area for 20 s.
+POWER_UPRISING,Uprising
+POWER_UPRISING_DESC,Eight veteran militia rally at your Command Den.
+HUD_NO_POWER_NEEDED,No power needed
+HUD_IDLE_LABORER,Laborer
+HUD_EVACUATE,Evacuate
+HUD_DETONATE,Detonate
+HUD_TUNNEL_NET,Network %d / %d
+HUD_SALVAGE_TIER,Salvage tier %d / 3
+HUD_HOLE_REBUILD,Rebuilds in %d s
+HUD_STEALTHED,Hidden
+HUD_CRATE,Salvage crate
+HUD_CRATE_VALUE,Worth $%d or one salvage tier
+FACTION_US,United States
+FACTION_WA,Western Alliance

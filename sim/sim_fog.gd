@@ -92,9 +92,14 @@ func explored_tile(team: int, t: Vector2i) -> bool:
 	return explored[team][t.y * w + t.x] != 0
 
 func is_visible_ent(sim, team: int, e) -> bool:
-	if disabled or e.team == team:
+	if e.team == team:
 		return true
-	if e.kind == SimEntity.Kind.UNIT:
+	# TPLA stealth (camo nets, demo traps): hidden from a team unless one of its units is close
+	if e.stealthy and team >= 0 and (e.stealth_mask & (1 << team)) == 0:
+		return false
+	if disabled:
+		return true
+	if e.kind == SimEntity.Kind.UNIT or e.kind == SimEntity.Kind.CRATE:
 		return visible_tile(team, FX.to_tile(e.pos))
 	var t: Vector2i = e.tile
 	return visible_tile(team, FX.to_tile(e.pos)) or visible_tile(team, t) or visible_tile(team, t + e.fp - Vector2i.ONE) \

@@ -128,7 +128,10 @@ static func harvest_think(w: SimWorld, u: SimEntity) -> void:
 		2:
 			var hub := nearest_hub(w, u)
 			if hub == null:
+				# nowhere to deliver (all refineries lost): go idle, keeping the cargo
 				u.goal = Vector2i(-1, -1)
+				u.orders.clear()
+				u.phase = -1
 				return
 			var dock := w.dock_point(hub)
 			if FX.dist(u.pos, dock) <= NEAR or w.dist_to_building(u.pos, hub) <= u.radius + FX.ONE / 2:

@@ -4,7 +4,7 @@ extends ScreenBase
 ## with a clear message when the setup is invalid (e.g. everyone on one team).
 
 const KIND_ITEMS := ["human", "open", "closed", "ai:easy", "ai:medium", "ai:hard"]
-const FACTIONS := [["eu", "FACTION_EU", true], ["iron_pact", "FACTION_PACT", false], ["free_coalition", "FACTION_COALITION", false]]
+const FACTIONS := [["eu", "FACTION_EU", true], ["tpla", "FACTION_TPLA", true], ["us", "FACTION_US", false], ["wa", "FACTION_WA", false]]
 
 var cfg: Dictionary
 var err_lbl: Label
@@ -118,7 +118,12 @@ func _build_rows() -> void:
 		for f in FACTIONS:
 			fac.add_item(tr(f[1]) + ("" if f[2] else " — " + tr("LOBBY_COMING_LATER")))
 			fac.set_item_disabled(fac.item_count - 1, not f[2])
-		fac.selected = 0
+		var fi := 0
+		for k in FACTIONS.size():
+			if FACTIONS[k][0] == String(s.get("faction", "eu")):
+				fi = k
+		fac.selected = fi
+		fac.item_selected.connect(func(idx): s["faction"] = FACTIONS[idx][0]; _validate())
 		r.add_child(fac)
 		var col := OptionButton.new()
 		col.custom_minimum_size = Vector2(110, 44)

@@ -19,13 +19,13 @@ func start(cfg: Dictionary) -> void:
 	var map_def: MapDef = Content.maps[StringName(cfg.get("map", "varno_crossing"))]
 	var slots: Array = []
 	for s in cfg["slots"]:
-		slots.append({"team": s["team"], "color": s["color"], "ai": s["kind"] == "ai", "spawn": s["spawn"]})
+		slots.append({"team": s["team"], "color": s["color"], "ai": s["kind"] == "ai", "spawn": s["spawn"], "faction": String(s.get("faction", "eu"))})
 	sim.setup(map_def, slots, cfg.get("options", {}), int(cfg.get("seed", 1)))
 	for i in cfg["slots"].size():
 		var s: Dictionary = cfg["slots"][i]
 		if s["kind"] == "ai":
-			var ai := AIPlayer.new()
-			ai.init(self, i, String(s.get("difficulty", "medium")), StringName(s.get("personality", "eu_ironclad")))
+			var ai := AIPlayer.create(StringName(s.get("faction", "eu")))
+			ai.init(self, i, String(s.get("difficulty", "medium")), StringName(s.get("personality", String(Content.faction(StringName(s.get("faction", "eu")))["personality"]))))
 			ais[i] = ai
 
 func issue(cmd: Dictionary) -> void:
@@ -65,6 +65,6 @@ func deserialize(d: Dictionary) -> void:
 	team_board = d["team_board"]
 	ais.clear()
 	for k in d["ai"]:
-		var ai := AIPlayer.new()
+		var ai := AIPlayer.create(StringName(d["ai"][k].get("faction", "eu")))
 		ai.from_dict(self, d["ai"][k])
 		ais[int(k)] = ai

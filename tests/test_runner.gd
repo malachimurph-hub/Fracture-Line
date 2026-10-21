@@ -15,19 +15,45 @@ func _ready() -> void:
 			var seed := int(args[2]) if args.size() > 2 else 1
 			# ZH 4-player games run long; allow 60 min there, 40 min for 1v1 (override with arg 3)
 			var cap := int(args[3]) if args.size() > 3 else (40 if mode == "1v1" else 60)
-			run_match(mode, seed, true, cap)
+			var mf: Array = (args[4] if args.size() > 4 else "").split(",", false)
+			var md: Array = (args[5] if args.size() > 5 else "").split(",", false)
+			run_match(mode, seed, true, cap, md, mf)
 		"soak":
 			var n := int(args[1]) if args.size() > 1 else 5
 			var wins := {}
 			var t0 := Time.get_ticks_msec()
 			var off := int(args[2]) if args.size() > 2 else 0
 			var modes: Array = (args[3] if args.size() > 3 else "1v1,1v1,2v2,ffa").split(",")
+			# arg 4: faction pattern, e.g. "eu,tpla" (alternated per seed so both sides get each spawn)
+			var fpat: Array = (args[4] if args.size() > 4 else "eu").split(",")
+			var fwins := {}
 			var diff_sets := [["medium", "medium"], ["hard", "easy"], ["easy", "hard"], ["hard", "medium", "medium", "hard"], ["medium", "hard", "easy", "medium"]]
 			for i in n:
 				var mode2: String = modes[(i + off) % modes.size()]
-				var res := run_match(mode2, 1000 + i + off, false, 40 if mode2 == "1v1" else 60, diff_sets[(i + off) % diff_sets.size()])
+				var nsl := 2 if mode2 == "1v1" else 4
+				var facs: Array = []
+				for k in nsl:
+					facs.append(fpat[(k + (i + off) + (k / 2 if mode2 == "2v2" else 0)) % fpat.size()] if fpat.size() > 1 else fpat[0])
+				if mode2 == "2v2" and fpat.size() > 1:
+					# teams 0/0/1/1 by slot -> give each team one faction, swapping per seed
+					var a0: String = fpat[(i + off) % fpat.size()]
+					var b0: String = fpat[(i + off + 1) % fpat.size()]
+					facs = [a0, a0, b0, b0]
+				var dset: Array = diff_sets[(i + off) % diff_sets.size()]
+				if fpat.size() > 1 and nsl == 2:
+					dset = ["medium", "medium"] if (i + off) % 3 == 0 else (["hard", "hard"] if (i + off) % 3 == 1 else ["easy", "easy"])
+				var res := run_match(mode2, 1000 + i + off, false, 40 if mode2 == "1v1" else 60, dset, facs)
 				wins[mode2 + ":" + str(res["winner"])] = wins.get(mode2 + ":" + str(res["winner"]), 0) + 1
-			print("SOAK done %d matches in %d s; outcomes=%s" % [n, (Time.get_ticks_msec() - t0) / 1000, wins])
+				var wf := "draw"
+				if int(res["winner"]) >= 0:
+					var wfs := {}
+					for k in nsl:
+						if int(res["teams"][k]) == int(res["winner"]):
+							wfs[facs[k]] = true
+					wf = "+".join(wfs.keys())
+				fwins[wf] = fwins.get(wf, 0) + 1
+				print("SOAK-RESULT seed=%d mode=%s facs=%s diffs=%s winner_team=%d winner_faction=%s time=%d:%02d" % [1000 + i + off, mode2, facs, dset, res["winner"], wf, int(res["secs"]) / 60, int(res["secs"]) % 60])
+			print("SOAK done %d matches in %d s; outcomes=%s faction_wins=%s" % [n, (Time.get_ticks_msec() - t0) / 1000, wins, fwins])
 		"replay":
 			test_replay()
 		"saveload":
@@ -72,6 +98,22 @@ func _ready() -> void:
 							if b.owner == p.id and b.kind == SimEntity.Kind.BUILDING:
 								bl.append("%s@%s" % [String(b.def_id).substr(3, 4), b.tile])
 						print("  P%d bld: %s" % [p.id, " ".join(bl)])
+		"tdiag":
+			var rt := MatchRunner.new()
+			rt.record_replay = false
+			rt.start(make_cfg("1v1", int(args[1]) if args.size() > 1 else 21, [], ["eu", "tpla"]))
+			for i in (int(args[2]) if args.size() > 2 else 600):
+				rt.advance()
+			var ta = rt.ais[1]
+			print("tpla? ", ta is AITpla, " builders=", ta.bb["builders"], " next=", ta._next_building(), " fs=", ta.bb.get("fs"), " supply=", rt.sim.players[1].supply)
+			for u in ta._laborers():
+				print(" lab ", u.id, " orders=", u.orders, " phase=", u.phase, " idle=", u.is_idle())
+			var nb2: StringName = ta._next_building()
+			if nb2 != &"":
+				var tw: Vector2i = ta._toward_for(nb2)
+				print("toward ", FX.to_tile(tw), " prereq=", rt.sim.prereqs_met(1, Content.building(nb2).prereqs), " spot=", ta.find_spot(nb2, tw))
+				for k in 5:
+					print(" can_place ", FX.to_tile(tw) + Vector2i(k * 2, 0), " -> ", rt.sim.can_place(1, nb2, FX.to_tile(tw) + Vector2i(k * 2, 0)))
 		"aidiag":
 			var r := MatchRunner.new()
 			r.start(make_cfg("1v1", 5))
@@ -97,7 +139,7 @@ func _ready() -> void:
 	print("=== RESULT: ", "FAIL" if failed else "PASS")
 	get_tree().quit(1 if failed else 0)
 
-static func make_cfg(mode: String, seed: int, diffs: Array = []) -> Dictionary:
+static func make_cfg(mode: String, seed: int, diffs: Array = [], facs: Array = []) -> Dictionary:
 	var slots: Array = []
 	match mode:
 		"1v1":
@@ -110,13 +152,15 @@ static func make_cfg(mode: String, seed: int, diffs: Array = []) -> Dictionary:
 		slots[i]["kind"] = "ai"
 		slots[i]["color"] = i
 		slots[i]["difficulty"] = diffs[i] if i < diffs.size() else "medium"
-		slots[i]["personality"] = "eu_ironclad"
+		var f: String = facs[i] if i < facs.size() else "eu"
+		slots[i]["faction"] = f
+		slots[i]["personality"] = String(Content.faction(StringName(f))["personality"])
 	return {"map": "varno_crossing", "seed": seed, "options": {"fog": true, "start_money": 10000}, "slots": slots}
 
-func run_match(mode: String, seed: int, verbose: bool, max_minutes: int = 40, diffs: Array = []) -> Dictionary:
+func run_match(mode: String, seed: int, verbose: bool, max_minutes: int = 40, diffs: Array = [], facs: Array = []) -> Dictionary:
 	var r := MatchRunner.new()
 	r.record_replay = false
-	r.start(make_cfg(mode, seed, diffs))
+	r.start(make_cfg(mode, seed, diffs, facs))
 	var t0 := Time.get_ticks_msec()
 	var max_ticks := max_minutes * 60 * 20
 	var first_attack := {}
@@ -142,6 +186,10 @@ func run_match(mode: String, seed: int, verbose: bool, max_minutes: int = 40, di
 	var res := {"mode": mode, "seed": seed, "winner": r.sim.winner_team, "secs": secs, "over": r.sim.game_over,
 		"avg_tick_ms": sum_ms / maxf(1, r.sim.tick), "worst_tick_ms": worst_tick_ms, "first_base_attack_s": first_attack,
 		"wall_s": (Time.get_ticks_msec() - t0) / 1000.0}
+	var tl: Array = []
+	for p in r.sim.players:
+		tl.append(p.team)
+	res["teams"] = tl
 	var ok: bool = r.sim.game_over and r.sim.winner_team >= 0
 	# winner must be a team that still has a non-eliminated player, and all others eliminated
 	if ok:
@@ -160,7 +208,7 @@ func run_match(mode: String, seed: int, verbose: bool, max_minutes: int = 40, di
 		mode, seed, r.sim.winner_team, secs / 60, secs % 60, "over" if r.sim.game_over else "TIMEOUT", res["avg_tick_ms"],
 		worst_tick_ms, first_attack, res["wall_s"], "OK" if ok else "FAIL"])
 	for p in r.sim.players:
-		print("   P%d team%d elim=%s supply=%d rank=%d stats=%s" % [p.id, p.team, p.eliminated, p.supply, p.rank, p.stats])
+		print("   P%d %s team%d elim=%s supply=%d rank=%d stats=%s" % [p.id, p.faction, p.team, p.eliminated, p.supply, p.rank, p.stats])
 	return res
 
 func _print_state(r: MatchRunner) -> void:
@@ -179,7 +227,7 @@ func _print_state(r: MatchRunner) -> void:
 						army += s.udef(e).cost
 				elif e.kind == SimEntity.Kind.BUILDING:
 					blds += 1
-		line += " | P%d $%d u%d b%d army$%d pw%d/%d r%d%s" % [p.id, p.supply, units, blds, army, p.power_used, p.power_prod, p.rank, " X" if p.eliminated else ""]
+		line += " | P%d%s $%d u%d b%d army$%d pw%d/%d r%d%s" % [p.id, "T" if p.faction == &"tpla" else "", p.supply, units, blds, army, p.power_used, p.power_prod, p.rank, " X" if p.eliminated else ""]
 		if r.ais.has(p.id):
 			line += " w%d" % r.ais[p.id].bb["wave_n"]
 	print(line)

@@ -32,7 +32,17 @@ func init(runner: MatchRunner, p_id: int, diff: String, personality: StringName)
 		"capture_unit": 0, "next_think_prod": 0, "target_player": -1, "pylon_fail": 0, "defenders": []}
 
 func to_dict() -> Dictionary:
-	return {"pid": pid, "difficulty": difficulty, "persona": persona.id, "bb": bb.duplicate(true)}
+	return {"pid": pid, "difficulty": difficulty, "persona": persona.id, "faction": String(faction()), "bb": bb.duplicate(true)}
+
+## Faction this AI plays (subclasses such as AITpla override the faction-specific layers).
+func faction() -> StringName:
+	return w.faction_of(pid)
+
+## Factory used by MatchRunner: picks the AI class for the slot's faction.
+static func create(fac: StringName) -> AIPlayer:
+	if fac == &"tpla":
+		return AITpla.new()
+	return AIPlayer.new()
 
 func from_dict(runner: MatchRunner, d: Dictionary) -> void:
 	init(runner, int(d["pid"]), d["difficulty"], StringName(d["persona"]))
@@ -213,12 +223,17 @@ func _next_building() -> StringName:
 		return &"eu_motor_pool"
 	return &""
 
-func _build() -> void:
-	var p := me()
-	var crawlers: Array = []
+## Units allowed to take build orders (EU: every Crawler; TPLA: the reserved Laborers).
+func _builders() -> Array:
+	var out: Array = []
 	for u: SimEntity in my_ents(SimEntity.Kind.UNIT):
 		if w.udef(u).tags.has("builder"):
-			crawlers.append(u)
+			out.append(u)
+	return out
+
+func _build() -> void:
+	var p := me()
+	var crawlers: Array = _builders()
 	if crawlers.is_empty():
 		return
 	# unfinished sites without a builder: resume
@@ -249,7 +264,7 @@ func _build() -> void:
 	if w.prereqs_met(pid, d.prereqs) != "":
 		return
 	var toward := _toward_for(next)
-	var t := find_spot(next, toward)
+	var t := find_spot_step(next, toward)
 	if t.x < 0:
 		return
 	cmd({"t": "place", "ids": [free.id], "def": String(next), "tile": t, "rot": _rot_toward(t, map_center())})
@@ -327,28 +342,73 @@ func _pick_expansion() -> SimEntity:
 ## Best valid placement tile for building `id`, preferring spots close to `toward`.
 ## Zero Hour rules: there is no build radius, so the search ring is centred on the goal
 ## itself (a supply field, an oil derrick, a forward choke) and the base is only a fallback.
-func find_spot(id: StringName, toward: Vector2i) -> Vector2i:
+const SPOT_PENDING := Vector2i(-2, -2)
+const SPOT_R := 12
+const SPOT_BUDGET := 40          ## can_place() calls per think (M1.2 spikes: ~600 in one tick)
+const SPOT_MAX_TRIES := 300
+static var _spot_offs: Array = []
+
+## Search offsets sorted by distance (computed once; the old per-call sort of 625 entries
+## with a lambda was half of the M1.2 ~90 ms hitch).
+static func _offsets() -> Array:
+	if _spot_offs.is_empty():
+		for yy in range(-SPOT_R, SPOT_R + 1):
+			for xx in range(-SPOT_R, SPOT_R + 1):
+				_spot_offs.append(Vector2i(xx, yy))
+		_spot_offs.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
+			var da := a.x * a.x + a.y * a.y
+			var db := b.x * b.x + b.y * b.y
+			return da < db if da != db else (a.y * 1000 + a.x) < (b.y * 1000 + b.x))
+	return _spot_offs
+
+func _margin_for(id: StringName) -> int:
+	return 0 if id == &"eu_pylon" else 1
+
+## Incremental placement search spread over several thinks: returns a tile, SPOT_PENDING
+## while still searching (state in bb["fs"]), or (-1,-1) when nothing fits.
+func find_spot_step(id: StringName, toward: Vector2i) -> Vector2i:
+	var st: Dictionary = bb.get("fs", {})
+	if st.is_empty() or StringName(st["id"]) != id or st["toward"] != toward:
+		st = {"id": String(id), "toward": toward, "c": 0, "i": 0, "tries": 0}
 	var d: BuildingDef = Content.building(id)
-	for centre: Vector2i in [toward, base_pos()]:
+	var offs := _offsets()
+	var m := _margin_for(id)
+	var calls := 0
+	var checks := 0
+	while int(st["c"]) < 2:
+		var centre: Vector2i = toward if int(st["c"]) == 0 else base_pos()
 		var c := FX.to_tile(centre)
-		var cands: Array = []
-		for yy in range(-12, 13):
-			for xx in range(-12, 13):
-				var t := Vector2i(c.x + xx - d.footprint.x / 2, c.y + yy - d.footprint.y / 2)
-				var ctr := Vector2i(t.x * FX.ONE + d.footprint.x * FX.HALF, t.y * FX.ONE + d.footprint.y * FX.HALF)
-				cands.append([FX.dist2(ctr, toward), t])
-		cands.sort_custom(func(p, q): return p[0] < q[0] if p[0] != q[0] else (p[1].y * 1000 + p[1].x) < (q[1].y * 1000 + q[1].x))
-		var tries := 0
-		for cnd in cands:
-			var t2: Vector2i = cnd[1]
-			if not _margin_free(t2, d.footprint, 0 if id == &"eu_pylon" else 1):
+		while int(st["i"]) < offs.size() and int(st["tries"]) <= SPOT_MAX_TRIES:
+			var o: Vector2i = offs[int(st["i"])]
+			st["i"] = int(st["i"]) + 1
+			var t2 := Vector2i(c.x + o.x - d.footprint.x / 2, c.y + o.y - d.footprint.y / 2)
+			checks += 1
+			if not _margin_free(t2, d.footprint, m):
+				if checks > 400:
+					bb["fs"] = st
+					return SPOT_PENDING
 				continue
-			tries += 1
+			st["tries"] = int(st["tries"]) + 1
+			calls += 1
 			if w.can_place(pid, id, t2) == "":
+				bb.erase("fs")
 				return t2
-			if tries > 300:
-				break
+			if calls >= SPOT_BUDGET:
+				bb["fs"] = st
+				return SPOT_PENDING
+		st["c"] = int(st["c"]) + 1
+		st["i"] = 0
+		st["tries"] = 0
+	bb.erase("fs")
 	return Vector2i(-1, -1)
+
+## Synchronous search (tools/tests); the AI itself uses find_spot_step.
+func find_spot(id: StringName, toward: Vector2i) -> Vector2i:
+	bb.erase("fs")
+	var t := find_spot_step(id, toward)
+	while t == SPOT_PENDING:
+		t = find_spot_step(id, toward)
+	return t
 
 func _margin_free(t: Vector2i, fp: Vector2i, m: int) -> bool:
 	for yy in range(-m, fp.y + m):
@@ -455,8 +515,9 @@ func _army() -> void:
 	for id in bb["wave"]:
 		in_wave[id] = true
 	var home: Array = []
+	var reserved := _reserved_ids()
 	for u: SimEntity in units:
-		if not in_wave.has(u.id) and u.id != int(bb["scout"]) and u.id != int(bb["capture_unit"]):
+		if not in_wave.has(u.id) and u.id != int(bb["scout"]) and u.id != int(bb["capture_unit"]) and not reserved.has(u.id):
 			home.append(u)
 	# 1. defend the base
 	var threatened: bool = w.tick - int(bb["threat_tick"]) < 100
@@ -506,7 +567,7 @@ func _army() -> void:
 			if e != null and e.hp * 100 < e.max_hp * 30 and e.def_id != &"eu_aegis":
 				back.append(e.id)
 		if not back.is_empty():
-			cmd({"t": "move", "ids": back, "pos": _staging()})
+			_send_back(back)
 			for id in back:
 				bb["wave"].erase(id)
 				bb["retreated"].append(id)
@@ -609,6 +670,17 @@ func _army() -> void:
 
 ## True at most once per `period` ticks. AIs think on staggered ticks (tick + pid), so
 ## "w.tick % N == 0" checks never fired for most players - this replaces them.
+## Units the wave logic must not touch (raid squads, salvage runs, tunnel guards...).
+func _reserved_ids() -> Dictionary:
+	return {}
+
+## Where badly damaged wave units go (EU: staging, then the base repair zone).
+func _send_back(ids: Array) -> void:
+	cmd({"t": "move", "ids": ids, "pos": _staging()})
+
+func _is_scout_type(u: SimEntity) -> bool:
+	return u.def_id == &"eu_grenadier" or u.def_id == &"eu_wolfhound"
+
 func _every(key: String, period: int) -> bool:
 	if w.tick - int(bb.get(key, -1000000)) >= period:
 		bb[key] = w.tick
@@ -709,7 +781,7 @@ func _scout() -> void:
 	if s == null:
 		if int(bb["scout_i"]) >= 0 and int(bb["scout_i"]) < 4:
 			for u: SimEntity in combat_units():
-				if u.def_id == &"eu_grenadier" or u.def_id == &"eu_wolfhound":
+				if _is_scout_type(u):
 					if not (u.id in bb["wave"]):
 						bb["scout"] = u.id
 						s = u
