@@ -57,6 +57,7 @@ var rally: Vector2i = Vector2i(-1, -1)
 var rally_attack: bool = false
 var repeat: bool = false
 var powered: bool = true
+var gridded: bool = false   ## inside an EU Grid field (HQ / Reactor / Pylon) - drives Grid shields only
 var hold_reason: String = ""            ## why production is paused (view)
 
 # --- resource
@@ -75,7 +76,7 @@ func is_idle() -> bool:
 const _FIELDS := ["id", "kind", "def_id", "owner", "team", "pos", "hp", "max_hp", "shield", "max_shield", "last_hit_tick",
 	"alive", "radius", "sight", "orders", "path", "path_i", "path_goal", "goal", "stuck", "done_goal", "vet", "vxp", "target", "cds", "home",
 	"carry", "res_id", "phase", "phase_t", "overcharge_until", "dir", "moving", "aura_tick", "tile", "fp", "rot", "built",
-	"progress", "build_ticks", "queue", "q_progress", "q_paid", "rally", "rally_attack", "repeat", "powered", "hold_reason",
+	"progress", "build_ticks", "queue", "q_progress", "q_paid", "rally", "rally_attack", "repeat", "powered", "gridded", "hold_reason",
 	"amount", "max_amount"]
 
 func to_dict() -> Dictionary:

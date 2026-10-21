@@ -277,9 +277,32 @@ func can_place(pid: int, def_id: StringName, t: Vector2i, check_cost: bool = tru
 	for u: SimEntity in units_in_radius(center, maxi(d.footprint.x, d.footprint.y) * FX.ONE):
 		if enemies(u.team, p.team):
 			return "REASON_ENEMY"
-	if not d.is_hq and not in_grid(pid, center):
-		return "REASON_GRID"
+	# Zero Hour rules: no build radius - a dozer builds anywhere it can drive to, on
+	# terrain the player has explored (never in black shroud).
+	if fog != null and not fog.disabled:
+		for yy in d.footprint.y:
+			for xx in d.footprint.x:
+				if not fog.explored_tile(p.team, Vector2i(t.x + xx, t.y + yy)):
+					return "REASON_SHROUD"
+	if not d.is_hq and not _builder_can_reach(pid, t, d.footprint):
+		return "REASON_UNREACHABLE"
 	return ""
+
+## True if one of the player's builders shares a drivable region with the footprint's edge.
+func _builder_can_reach(pid: int, t: Vector2i, fp: Vector2i) -> bool:
+	var regs := map.footprint_regions(t, fp)
+	if regs.is_empty():
+		return false
+	var any_builder := false
+	for id in ids:
+		var e: SimEntity = ents[id]
+		if e.alive and e.owner == pid and e.kind == SimEntity.Kind.UNIT and udef(e).tags.has("builder"):
+			any_builder = true
+			var bt := FX.to_tile(e.pos)
+			if map.in_bounds(bt) and regs.has(map.region[map.idx(bt)]):
+				return true
+	# no builder alive: the command itself is rejected later (REASON_NO_BUILDER)
+	return not any_builder
 
 func in_grid(pid: int, p: Vector2i) -> bool:
 	for id in ids:
@@ -288,8 +311,6 @@ func in_grid(pid: int, p: Vector2i) -> bool:
 			continue
 		var d: BuildingDef = Content.building(e.def_id)
 		if d.grid_radius <= 0:
-			continue
-		if d.id == &"eu_pylon" and not e.powered:
 			continue
 		var r := d.grid_radius * FX.ONE
 		if FX.dist2(e.pos, p) <= r * r:

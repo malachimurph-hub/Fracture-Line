@@ -172,7 +172,9 @@ RES_CACHE,Supply cache
 REASON_BLOCKED,Blocked
 REASON_ENEMY,Too close to enemies
 REASON_FUNDS,Not enough money
-REASON_GRID,Outside the EU Grid — build near a Reactor or Pylon
+REASON_GRID,Outside the EU Grid
+REASON_SHROUD,Unexplored ground — scout it first
+REASON_UNREACHABLE,No Crawler can drive there
 REASON_INVALID,Can't do that
 REASON_LOW_POWER,Low power: production at half speed
 REASON_NO_BUILDER,Select a Crawler to build

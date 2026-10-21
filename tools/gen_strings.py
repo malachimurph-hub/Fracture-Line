@@ -59,7 +59,7 @@ S = {
 "RES_COL_PLAYER": "Player", "RES_COL_TEAM": "Team", "RES_COL_RANK": "Rank", "RES_COL_BUILT": "Built", "RES_COL_LOST": "Lost",
 "RES_COL_KILLS": "Kills", "RES_COL_STRUCT": "Bldg. kills", "RES_COL_HARVEST": "Harvested", "RES_AI": "AI %d (%s)",
 "RES_SEAM": "Veridite seam", "RES_CACHE": "Supply cache",
-"REASON_BLOCKED": "Blocked", "REASON_ENEMY": "Too close to enemies", "REASON_FUNDS": "Not enough money", "REASON_GRID": "Outside the EU Grid — build near a Reactor or Pylon",
+"REASON_BLOCKED": "Blocked", "REASON_ENEMY": "Too close to enemies", "REASON_FUNDS": "Not enough money", "REASON_GRID": "Outside the EU Grid", "REASON_SHROUD": "Unexplored ground — scout it first", "REASON_UNREACHABLE": "No Crawler can drive there",
 "REASON_INVALID": "Can't do that", "REASON_LOW_POWER": "Low power: production at half speed", "REASON_NO_BUILDER": "Select a Crawler to build",
 "REASON_NO_POWER": "Offline: no power", "REASON_OWNED": "Already owned", "REASON_POINTS": "Not enough General points",
 "REASON_POP_CAP": "Unit limit reached", "REASON_PREREQ": "Requirements not met", "REASON_RANK": "Needs a higher General rank",

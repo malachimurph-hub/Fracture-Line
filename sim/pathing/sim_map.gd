@@ -16,6 +16,9 @@ var tiles: PackedByteArray
 var occ: PackedInt32Array            ## building entity id per tile (0 = none)
 var nobuild: PackedByteArray         ## 1 near resources
 var pf: Pathfinder
+## Static vehicle-terrain connectivity (flood fill at load, ignores buildings). 0 = not
+## vehicle-passable. Zero Hour lets a dozer build anywhere it can drive to.
+var region: PackedInt32Array
 
 func load_from(def: MapDef) -> void:
 	w = def.size.x
@@ -39,6 +42,46 @@ func load_from(def: MapDef) -> void:
 	pf = Pathfinder.new()
 	pf.bind(self)
 	pf.setup(self)
+	_build_regions()
+
+func _build_regions() -> void:
+	region = PackedInt32Array()
+	region.resize(w * h)
+	var next := 1
+	for start in w * h:
+		if region[start] != 0 or not VEH_OK[tiles[start]]:
+			continue
+		var stack := PackedInt32Array([start])
+		region[start] = next
+		while not stack.is_empty():
+			var i: int = stack[stack.size() - 1]
+			stack.resize(stack.size() - 1)
+			var x := i % w
+			var y := i / w
+			for d: Vector2i in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
+				var nx := x + d.x
+				var ny := y + d.y
+				if nx < 0 or ny < 0 or nx >= w or ny >= h:
+					continue
+				var j := ny * w + nx
+				if region[j] == 0 and VEH_OK[tiles[j]]:
+					region[j] = next
+					stack.append(j)
+		next += 1
+
+## Vehicle region a building footprint touches (any passable tile on its border ring).
+func footprint_regions(t: Vector2i, fp: Vector2i) -> Dictionary:
+	var out := {}
+	for yy in range(-1, fp.y + 1):
+		for xx in range(-1, fp.x + 1):
+			if xx >= 0 and yy >= 0 and xx < fp.x and yy < fp.y:
+				continue
+			var c := Vector2i(t.x + xx, t.y + yy)
+			if in_bounds(c):
+				var r := region[idx(c)]
+				if r != 0:
+					out[r] = true
+	return out
 
 func idx(t: Vector2i) -> int:
 	return t.y * w + t.x

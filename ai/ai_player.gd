@@ -251,11 +251,6 @@ func _build() -> void:
 	var toward := _toward_for(next)
 	var t := find_spot(next, toward)
 	if t.x < 0:
-		# could not fit inside the grid: extend it with a pylon toward the goal
-		if next != &"eu_pylon" and p.supply >= Content.building(&"eu_pylon").cost + d.cost:
-			var tp := find_spot(&"eu_pylon", toward)
-			if tp.x >= 0:
-				cmd({"t": "place", "ids": [free.id], "def": "eu_pylon", "tile": tp, "rot": 0})
 		return
 	cmd({"t": "place", "ids": [free.id], "def": String(next), "tile": t, "rot": _rot_toward(t, map_center())})
 
@@ -280,10 +275,20 @@ func _toward_for(id: StringName) -> Vector2i:
 		&"eu_reactor":
 			return base + (base - map_center()) / 8
 		&"eu_gun_bunker":
+			# ZH AI fortifies its expansions: every other bunker after the first two goes to the
+			# newest remote Supply Hub, facing the map centre.
+			var nb := w.count_owned(pid, &"eu_gun_bunker")
+			if nb >= 2 and nb % 2 == 0:
+				var far: SimEntity = null
+				for b: SimEntity in my_ents(SimEntity.Kind.BUILDING):
+					if w.bdef(b).is_refinery and FX.dist(b.pos, base) > FX.ONE * 20 and (far == null or b.id > far.id):
+						far = b
+				if far != null:
+					return far.pos + (map_center() - far.pos) / 10
 			return base + (map_center() - base) * 3 / 10
 		&"eu_pylon":
-			var er2 := _pick_expansion()
-			return er2.pos if er2 != null else base
+			# pylons only extend the Grid shield now; keep them among the base buildings
+			return base + (map_center() - base) / 5
 	return base + (map_center() - base) / 6
 
 func _pick_expansion() -> SimEntity:
@@ -320,43 +325,29 @@ func _pick_expansion() -> SimEntity:
 	return best
 
 ## Best valid placement tile for building `id`, preferring spots close to `toward`.
+## Zero Hour rules: there is no build radius, so the search ring is centred on the goal
+## itself (a supply field, an oil derrick, a forward choke) and the base is only a fallback.
 func find_spot(id: StringName, toward: Vector2i) -> Vector2i:
 	var d: BuildingDef = Content.building(id)
-	var sources: Array = []
-	for b: SimEntity in my_ents(SimEntity.Kind.BUILDING):
-		var bd: BuildingDef = w.bdef(b)
-		if b.built and bd.grid_radius > 0 and (b.powered or bd.id != &"eu_pylon"):
-			sources.append(b)
-	if sources.is_empty():
-		return Vector2i(-1, -1)
-	var cands: Array = []
-	var seen := {}
-	for s: SimEntity in sources:
-		var gr: int = w.bdef(s).grid_radius
-		var c := FX.to_tile(s.pos)
-		for yy in range(-gr, gr + 1):
-			for xx in range(-gr, gr + 1):
+	for centre: Vector2i in [toward, base_pos()]:
+		var c := FX.to_tile(centre)
+		var cands: Array = []
+		for yy in range(-12, 13):
+			for xx in range(-12, 13):
 				var t := Vector2i(c.x + xx - d.footprint.x / 2, c.y + yy - d.footprint.y / 2)
-				var key := t.y * 1000 + t.x
-				if seen.has(key):
-					continue
-				seen[key] = true
-				var center := Vector2i(t.x * FX.ONE + d.footprint.x * FX.HALF, t.y * FX.ONE + d.footprint.y * FX.HALF)
-				var gr2 := gr * FX.ONE
-				if FX.dist2(center, s.pos) > gr2 * gr2:
-					continue
-				cands.append([FX.dist2(center, toward), t])
-	cands.sort_custom(func(a, b): return a[0] < b[0] if a[0] != b[0] else (a[1].y * 1000 + a[1].x) < (b[1].y * 1000 + b[1].x))
-	var tries := 0
-	for cnd in cands:
-		var t2: Vector2i = cnd[1]
-		if not _margin_free(t2, d.footprint, 0 if id == &"eu_pylon" else 1):
-			continue
-		tries += 1
-		if w.can_place(pid, id, t2) == "":
-			return t2
-		if tries > 300:
-			break
+				var ctr := Vector2i(t.x * FX.ONE + d.footprint.x * FX.HALF, t.y * FX.ONE + d.footprint.y * FX.HALF)
+				cands.append([FX.dist2(ctr, toward), t])
+		cands.sort_custom(func(p, q): return p[0] < q[0] if p[0] != q[0] else (p[1].y * 1000 + p[1].x) < (q[1].y * 1000 + q[1].x))
+		var tries := 0
+		for cnd in cands:
+			var t2: Vector2i = cnd[1]
+			if not _margin_free(t2, d.footprint, 0 if id == &"eu_pylon" else 1):
+				continue
+			tries += 1
+			if w.can_place(pid, id, t2) == "":
+				return t2
+			if tries > 300:
+				break
 	return Vector2i(-1, -1)
 
 func _margin_free(t: Vector2i, fp: Vector2i, m: int) -> bool:

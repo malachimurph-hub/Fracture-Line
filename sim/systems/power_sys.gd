@@ -1,7 +1,7 @@
 class_name PowerSys
-## EU Grid: a structure is powered only inside the grid radius of a connected source
-## (HQ, Grid Reactor, or a Pylon chained to one). Low Power (use > capacity) halves
-## production, turns off powered defenses and collapses shields. Also: unit shields
+## Zero Hour-style global power: Low Power (use > capacity) halves production, turns off
+## powered defenses and collapses shields. EU Grid flavor: structures inside the grid radius
+## of an HQ / Reactor / Pylon carry the Grid shield. Also: unit shields
 ## from Aegis aura / Shield Overcharge, and population count.
 
 static func run(w: SimWorld) -> void:
@@ -31,52 +31,30 @@ static func recompute_grid(w: SimWorld) -> void:
 	for pid in by_owner:
 		var blds: Array = by_owner[pid]
 		var p: SimPlayer = w.players[pid]
-		# connected sources: HQ / Reactors are roots, pylons connect if inside a connected source radius
+		# Zero Hour power: global per player. Every finished structure is powered unless the
+		# player is in Low Power. The EU Grid radius (HQ, Reactor, Pylon) only decides which
+		# structures get the faction's Grid shield.
 		var sources: Array = []
-		var pylons: Array = []
+		for b: SimEntity in blds:
+			if b.built and w.bdef(b).grid_radius > 0:
+				sources.append(b)
 		for b: SimEntity in blds:
 			var d: BuildingDef = w.bdef(b)
-			if not b.built:
-				continue
-			if d.grid_radius > 0:
-				if d.id == &"eu_pylon":
-					pylons.append(b)
-				else:
-					sources.append(b)
-		var changed := true
-		var connected := {}
-		while changed:
-			changed = false
-			for py: SimEntity in pylons:
-				if connected.has(py.id):
-					continue
-				for s: SimEntity in sources:
-					var r: int = w.bdef(s).grid_radius * FX.ONE
-					if FX.dist2(s.pos, py.pos) <= r * r:
-						connected[py.id] = true
-						sources.append(py)
-						changed = true
-						break
-		for b: SimEntity in blds:
-			var d: BuildingDef = w.bdef(b)
-			var pw := false
-			if d.grid_radius > 0 and d.id != &"eu_pylon":
-				pw = true
-			else:
-				for s: SimEntity in sources:
-					var r2: int = w.bdef(s).grid_radius * FX.ONE
-					if FX.dist2(s.pos, b.pos) <= r2 * r2:
-						pw = true
-						break
-			if d.id == &"eu_pylon":
-				pw = connected.has(b.id)
+			var pw: bool = b.built
 			if b.powered != pw:
 				b.powered = pw
 				w.events.append({"t": "power_state", "id": b.id, "on": pw})
+			var g := false
+			for s: SimEntity in sources:
+				var r2: int = w.bdef(s).grid_radius * FX.ONE
+				if FX.dist2(s.pos, b.pos) <= r2 * r2:
+					g = true
+					break
+			b.gridded = g
 			if b.built:
 				if d.power > 0:
 					p.power_prod += d.power
-				elif pw:
+				else:
 					p.power_used -= d.power
 		var low := p.power_used > p.power_prod
 		if low != p.low_power:
@@ -103,7 +81,7 @@ static func _shields(w: SimWorld) -> void:
 			continue
 		if e.kind == SimEntity.Kind.BUILDING:
 			var d: BuildingDef = w.bdef(e)
-			var on: bool = e.built and e.powered and not w.players[e.owner].low_power and d.shield_pct > 0
+			var on: bool = e.built and e.gridded and not w.players[e.owner].low_power and d.shield_pct > 0
 			e.max_shield = d.max_hp * d.shield_pct / 100 if on else 0
 			if not on:
 				if e.shield > 0:

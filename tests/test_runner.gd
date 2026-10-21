@@ -32,6 +32,8 @@ func _ready() -> void:
 			test_replay()
 		"saveload":
 			test_saveload()
+		"placement":
+			test_placement()
 		"content":
 			test_content()
 		"stall":
@@ -230,6 +232,86 @@ func test_saveload() -> void:
 	if not ok or mism > 0:
 		failed = true
 	SaveSystem.clear_suspend()
+
+func _check(ok: bool, what: String) -> void:
+	print(("PASS " if ok else "FAIL ") + what)
+	if not ok:
+		failed = true
+
+## Zero Hour build rules: no build radius; blocked by terrain, overlap, shroud, reachability.
+func test_placement() -> void:
+	var r := MatchRunner.new()
+	r.record_replay = false
+	var cfg := make_cfg("1v1", 3)
+	r.start(cfg)
+	var w := r.sim
+	var hq: SimEntity = null
+	for id in w.ids:
+		var e: SimEntity = w.ents[id]
+		if e.owner == 0 and e.kind == SimEntity.Kind.BUILDING:
+			hq = e
+	var ht := FX.to_tile(hq.pos)
+	# 1. far from the HQ (no grid / radius) on explored ground -> valid
+	var far := Vector2i(-1, -1)
+	var best := 0
+	for y in range(2, w.map.h - 4):
+		for x in range(2, w.map.w - 4):
+			var t := Vector2i(x, y)
+			var dd := (t - ht).length_squared()
+			if dd > best and dd < 40 * 40 and w.fog.explored_tile(0, t) and w.can_place(0, &"eu_reactor", t) == "":
+				best = dd
+				far = t
+	var ex: PackedByteArray = w.fog.explored[0]
+	ex.fill(1)
+	w.fog.explored[0] = ex
+	var far2 := Vector2i(-1, -1)
+	for y in range(2, w.map.h - 4):
+		for x in range(2, w.map.w - 4):
+			var t2 := Vector2i(x, y)
+			if (t2 - ht).length() > 45 and w.can_place(0, &"eu_reactor", t2) == "":
+				far2 = t2
+				break
+		if far2.x >= 0:
+			break
+	_check(far2.x >= 0, "explored ground 45+ tiles from the HQ is buildable (no build radius) at %s" % far2)
+	# 2. water / cliff -> terrain
+	var water := Vector2i(-1, -1)
+	for i in w.map.w * w.map.h:
+		if w.map.tiles[i] == SimMap.T.WATER:
+			water = Vector2i(i % w.map.w, i / w.map.w)
+			break
+	_check(w.can_place(0, &"eu_reactor", water) in ["REASON_TERRAIN", "REASON_BLOCKED", "REASON_RESOURCE"], "water is not buildable (%s)" % w.can_place(0, &"eu_reactor", water))
+	# 3. overlapping the HQ -> blocked
+	_check(w.can_place(0, &"eu_reactor", hq.tile) == "REASON_BLOCKED", "overlapping a building is blocked")
+	# 4. black shroud -> forbidden (ZH)
+	var r2 := MatchRunner.new()
+	r2.record_replay = false
+	r2.start(make_cfg("1v1", 3))
+	var w2 := r2.sim
+	var sh := Vector2i(-1, -1)
+	for i in w2.map.w * w2.map.h:
+		var t3 := Vector2i(i % w2.map.w, i / w2.map.w)
+		if not w2.fog.explored_tile(0, t3) and SimMap.BUILD_OK[w2.map.tiles[i]] and w2.map.nobuild[i] == 0 and t3.x > 2 and t3.y > 2 and t3.x < w2.map.w - 6 and t3.y < w2.map.h - 6:
+			sh = t3
+			break
+	_check(w2.can_place(0, &"eu_reactor", sh) == "REASON_SHROUD", "unexplored shroud is not buildable (%s)" % w2.can_place(0, &"eu_reactor", sh))
+	# 5. a placed far site is actually built by the Crawler driving there
+	var crawler: SimEntity = null
+	for id in w.ids:
+		var e2: SimEntity = w.ents[id]
+		if e2.owner == 0 and e2.kind == SimEntity.Kind.UNIT and w.udef(e2).tags.has("builder"):
+			crawler = e2
+	var site := far if far.x >= 0 else far2
+	r.issue({"p": 0, "t": "place", "ids": [crawler.id], "def": "eu_reactor", "tile": site, "rot": 0})
+	var built := false
+	for i in 20 * 120:
+		r.advance()
+		var occ := w.map.occ[w.map.idx(site)]
+		if occ != 0 and w.get_ent(occ) != null and w.get_ent(occ).owner == 0 and w.get_ent(occ).built:
+			built = true
+			break
+	_check(built, "Crawler drives %d tiles and finishes a Reactor away from the base" % int((site - ht).length()))
+	print("=== RESULT: %s" % ("FAIL" if failed else "PASS"))
 
 func test_content() -> void:
 	print("CONTENT: %d units, %d buildings, %d weapons, %d powers, %d maps, errors=%s" % [Content.units.size(),
