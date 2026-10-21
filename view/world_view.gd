@@ -182,9 +182,8 @@ func _on_fire(ev: Dictionary) -> void:
 	var col: Color = VFX_COLORS.get(kind, Color.WHITE)
 	var dir := (to - from).normalized()
 	var muzzle := from + dir * 0.45
-	var snd: String = {"shell": "cannon", "missile": "missile", "grenade": "grenade", "flak": "flak", "tracer_heavy": "autocannon"}.get(kind, "rifle")
-	if kind == "tracer" and src.kind == SimEntity.Kind.BUILDING:
-		snd = "mg"
+	var is_struct := src.kind != SimEntity.Kind.UNIT or src.res_id < 0
+	var snd: String = AudioDirector.weapon_sfx(_faction_of(src), kind, is_struct)
 	AudioDirector.sfx(snd, from, -3.0 if snd == "rifle" else 0.0)
 	if kind in ["shell", "missile", "grenade"]:
 		AudioDirector.sfx("expl_small", to, -6.0)
@@ -210,6 +209,14 @@ func _on_fire(ev: Dictionary) -> void:
 			vfx.tracer(muzzle, to, col, 0.03 if kind == "tracer" else 0.045, 0.06)
 			vfx.muzzle(muzzle, dir, 0.12 if kind == "tracer" else 0.18)
 			vfx.impact(to - Vector3(0, 0.3, 0), 0.25)
+
+func _faction_of(e: SimEntity) -> String:
+	if e.owner < 0:
+		return "neutral"
+	if e.kind == SimEntity.Kind.UNIT:
+		return String(Content.unit(e.def_id).faction)
+	var bd = Content.buildings.get(e.def_id)
+	return String(bd.faction) if bd != null and "faction" in bd else "eu"
 
 func _on_death(ev: Dictionary) -> void:
 	var id := int(ev["id"])

@@ -23,6 +23,7 @@ const MUSIC := {"menu": "res://audio/music/menu_dust_over_varno.ogg", "battle": 
 const AMBIENT := {"wind": "res://audio/ambient/desert_wind.ogg", "river": "res://audio/ambient/river.ogg"}
 
 var manifest: Dictionary = {}
+var faction_audio: Dictionary = {}   ## data/audio/faction_audio.json
 var _streams: Dictionary = {}
 var _pool3d: Array = []
 var _ui_players: Array = []
@@ -68,6 +69,11 @@ func _ready() -> void:
 		var j = JSON.parse_string(f.get_as_text())
 		if j is Dictionary:
 			manifest = j
+	var fa := FileAccess.open("res://data/audio/faction_audio.json", FileAccess.READ)
+	if fa:
+		var j2 = JSON.parse_string(fa.get_as_text())
+		if j2 is Dictionary:
+			faction_audio = j2
 	_music = _player("Music")
 	_ambient = _player("SFX")
 	_ambient.volume_db = -14.0
@@ -143,6 +149,16 @@ func sfx(key: String, pos: Vector3, vol_db: float = 0.0, pitch_var: float = 0.06
 	free_p.pitch_scale = 1.0 + randf_range(-pitch_var, pitch_var)
 	free_p.global_position = pos
 	free_p.play()
+
+## Per-faction weapon sound for a weapon vfx kind.
+func weapon_sfx(faction: String, vfx_kind: String, structure: bool) -> String:
+	var fd: Dictionary = faction_audio.get(faction, faction_audio.get("eu", {}))
+	if structure and fd.get("structure_weapons", {}).has(vfx_kind):
+		return fd["structure_weapons"][vfx_kind]
+	return fd.get("weapons", {}).get(vfx_kind, "rifle")
+
+func faction_sfx(faction: String, what: String, fallback: String) -> String:
+	return faction_audio.get(faction, {}).get(what, fallback)
 
 func ui(key: String) -> void:
 	var s := stream(UI.get(key, ""))

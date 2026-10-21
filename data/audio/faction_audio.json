@@ -1,0 +1,17 @@
+{
+ "note": "Per-faction audio data (M1.2). weapons: weapon vfx kind -> SFX key (see AudioDirector.SFX); structure_weapons override for defenses. Voice lines live in voice_manifest.json. Other factions are added in M2.",
+ "eu": {
+  "weapons": {"tracer": "rifle", "tracer_heavy": "autocannon", "shell": "cannon", "missile": "missile", "grenade": "grenade", "flak": "flak"},
+  "structure_weapons": {"tracer": "mg"},
+  "death_vehicle": "expl_large",
+  "death_infantry": "body_fall",
+  "death_structure": "collapse",
+  "construct": "construct",
+  "place": "place"
+ },
+ "neutral": {
+  "weapons": {"tracer": "rifle", "tracer_heavy": "mg"},
+  "structure_weapons": {"tracer": "rifle"},
+  "death_structure": "collapse"
+ }
+}
