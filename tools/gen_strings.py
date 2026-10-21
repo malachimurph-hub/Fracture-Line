@@ -81,7 +81,8 @@ S = {
 "POWER_LOGISTICS": "Emergency Logistics", "POWER_LOGISTICS_DESC": "Instant supply drop.",
 "POWER_OVERCHARGE": "Shield Overcharge", "POWER_OVERCHARGE_DESC": "Your units in the area gain a strong temporary shield.",
 "POWER_BLACKOUT": "Grid Blackout", "POWER_BLACKOUT_DESC": "[STUB] Not implemented in M1.",
-"CREDITS_BODY": "FRACTURE LINE — Milestone 1 (skirmish).\nDesign, code, models (procedural primitives), UI and text: original work made for Malachi Murphy with Grok Bot.\nInspired by the classic base-building RTS genre; no names, art, audio or text from any other game are used.\nNo audio in M1.\nUI font: Godot's built-in default font.",
+"CREDITS_BODY": "FRACTURE LINE — Milestone 1.2 (skirmish).\nDesign, code, procedural 3D models, shaders, effects, UI and text: original work made for Malachi Murphy with Grok Bot.\nTextures: ambientCG (ambientcg.com), CC0 1.0 public domain — Ground097, Ground109, Grass004, Rock063, Asphalt033, Gravel035, Concrete034, CorrugatedSteel005.\nSound effects and music (\"Dust Over Varno\", \"Steel Rain\"): original, synthesized for this game.\nVoices: to be recorded by Malachi Murphy; until then robotic placeholder lines are generated with eSpeak NG (GPL-3.0 program; only its audio output ships).\nInspired by the classic base-building RTS genre; no names, art, audio or text from any other game are used.\nUI font: Godot's built-in default font.",
+
 "CREDITS_ENGINE": "Built with Godot Engine %s (MIT license, see below).",
 }
 here = os.path.dirname(os.path.abspath(__file__))

@@ -423,6 +423,25 @@ func run_perf(seconds: int) -> void:
 		last = now
 		n += 1
 	var fps := n / float(seconds)
+	var dc := {}
+	for lvl in [0, 1, 2]:
+		m.cam.set_level(lvl)
+		await frames(20)
+		var mx := 0
+		var prims := 0
+		var objs := 0
+		var proc_ms := 0.0
+		for k in 30:
+			await get_tree().process_frame
+			mx = maxi(mx, RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME))
+			prims = maxi(prims, RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME))
+			objs = maxi(objs, RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME))
+			proc_ms = maxf(proc_ms, Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0)
+		dc[lvl] = [mx, prims, objs, proc_ms]
+		print("VIEWCOST avg_view_ms=%.2f avg_tick_ms=%.2f" % [m.avg_view_ms, m.avg_tick_ms])
+		print("DRAWCALLS zoom_level=%d max_draw_calls=%d max_primitives=%d max_objects=%d max_process_ms=%.2f vfx_particles=%d" % [lvl, mx, prims, objs, proc_ms, m.world.vfx.smoke.live + m.world.vfx.fire.live + m.world.vfx.debris.live])
+	m.cam.set_level(1)
+	await frames(5)
 	print("PERF 4-player @%d:%02d entities=%d units=%d avg_fps=%.1f worst_frame_ms=%.1f avg_tick_ms=%.2f (software renderer)" % [sim.tick / 1200, (sim.tick / 20) % 60, sim.ids.size(), units, fps, worst, m.avg_tick_ms])
 	await shot("perf_4p")
 	check("perf run completed", n > 0)

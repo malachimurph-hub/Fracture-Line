@@ -18,6 +18,7 @@ var paused: bool = false
 var _menu_pause: bool = false
 var speed: float = 1.0
 var avg_tick_ms: float = 0.0
+var avg_view_ms: float = 0.0   ## WorldView.frame cost (interpolation, fog, VFX emitters)
 var local_pid: int = -1
 var _over_t: float = -1.0
 var _last_save_tick: int = 0
@@ -154,7 +155,9 @@ func _process(delta: float) -> void:
 			acc = minf(acc, DT)
 		if runner.sim.tick - _last_save_tick >= AUTOSAVE_TICKS:
 			autosave()
+	var tv := Time.get_ticks_usec()
 	world.frame(clampf(acc / DT, 0.0, 1.0) if not paused else 1.0, delta)
+	avg_view_ms = lerpf(avg_view_ms, (Time.get_ticks_usec() - tv) / 1000.0, 0.05)
 	if runner.sim.game_over:
 		_game_over(delta)
 

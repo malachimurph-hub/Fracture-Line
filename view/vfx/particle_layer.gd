@@ -66,8 +66,13 @@ func emit(p: Vector3, v: Vector3, lifetime: float, size_from: float, size_to: fl
 	spin[i] = randf_range(-1.5, 1.5) if billboard else randf_range(-8.0, 8.0)
 	seed[i] = randf()
 	heat[i] = h
+	_idle = false
+
+var _idle := true
 
 func _process(delta: float) -> void:
+	if _idle:
+		return
 	var n := 0
 	var dmp := maxf(0.0, 1.0 - drag * delta)
 	for i in cap:
@@ -107,3 +112,5 @@ func _process(delta: float) -> void:
 	if n > 0:
 		multimesh.buffer = buf
 	multimesh.visible_instance_count = n
+	if n == 0:
+		_idle = true
