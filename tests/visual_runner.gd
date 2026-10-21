@@ -12,7 +12,7 @@ var checks: Array = []
 func _ready() -> void:
 	var args := OS.get_cmdline_user_args()
 	var mode: String = args[0] if args.size() > 0 else "shots"
-	if args.size() > 1 and not args[1].begins_with("--"):
+	if args.size() > 1 and not args[1].begins_with("--") and mode != "perf":
 		out_dir = args[1]
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(out_dir) if out_dir.begins_with("res://") else out_dir)
 	await get_tree().process_frame
