@@ -22,7 +22,7 @@ func build() -> void:
 		var name := tr("LOBBY_YOU") if int(p["id"]) == int(r.get("local_pid", -1)) else tr("RES_AI") % [int(p["id"]) + 1, tr("DIFF_" + String(p.get("difficulty", "medium")).to_upper())]
 		var lbl := UiTheme.label(name, 13, Palette.COLORS[int(p["color"])])
 		g.add_child(lbl)
-		g.add_child(UiTheme.label(str(int(p["team"]) + 1) + ("  ✓" if int(p["team"]) == int(r.get("winner_team", -9)) else ""), 13))
+		g.add_child(UiTheme.label(str(int(p["team"]) + 1) + ("  WIN" if int(p["team"]) == int(r.get("winner_team", -9)) else ""), 13))
 		g.add_child(UiTheme.label(str(p["rank"]), 13))
 		g.add_child(UiTheme.label(str(st.get("built", 0)), 13))
 		g.add_child(UiTheme.label(str(st.get("lost", 0)), 13))

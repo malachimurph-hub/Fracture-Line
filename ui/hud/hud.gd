@@ -178,7 +178,7 @@ func _build() -> void:
 	pause_btn = UiTheme.button("II", Vector2(48, 44))
 	pause_btn.pressed.connect(toggle_pause)
 	top.add_child(pause_btn)
-	var menu_btn := UiTheme.button("≡", Vector2(48, 44))
+	var menu_btn := UiTheme.button("Menu", Vector2(64, 44))
 	menu_btn.pressed.connect(toggle_pause_menu)
 	top.add_child(menu_btn)
 	for c in [army, idle, pause_btn, menu_btn] + group_btns:
@@ -362,7 +362,7 @@ func _refresh() -> void:
 	var secs := sim.tick / 20
 	clock_lbl.text = "%02d:%02d" % [secs / 60, secs % 60]
 	paused_lbl.visible = m.paused
-	pause_btn.text = "▶" if m.paused else "II"
+	pause_btn.text = ">" if m.paused else "II"
 	for i in 5:
 		var gb: HudButton = group_btns[i]
 		gb.badge = str(ctl.groups[i].size()) if not ctl.groups[i].is_empty() else ""
@@ -384,7 +384,7 @@ func _refresh() -> void:
 		power_lbl.add_theme_color_override("font_color", Color("#ff7a6a") if p.low_power else UiTheme.TEXT)
 		var next: int = SimPlayer.RANK_XP[p.rank + 1] if p.rank + 1 < SimPlayer.RANK_XP.size() else -1
 		rank_lbl.text = tr("HUD_RANK") % p.rank + ("  XP %d/%d" % [p.xp, next] if next > 0 else "  XP %d" % p.xp)
-		general_btn.text = tr("HUD_GENERAL_RANK") % p.rank + (" ★%d" % p.points if p.points > 0 else "")
+		general_btn.text = tr("HUD_GENERAL_RANK") % p.rank + (" +%d" % p.points if p.points > 0 else "")
 	_refresh_selection_info()
 	_refresh_card()
 	if tray.visible:
@@ -646,7 +646,7 @@ func _make_card() -> Array:
 			out.append({"text": "", "disabled": true})
 		out.append({"text": tr("CMD_RALLY"), "act": ctl.begin_target.bind("rally"), "accent": Color("#ffd166"),
 			"alt": func(): ctl.issue({"t": "rally", "ids": [e.id], "clear": true})})
-		out.append({"text": "∞" + (" ✓" if e.repeat else ""), "act": func(): ctl.issue({"t": "repeat", "target": e.id, "flag": not e.repeat}), "tip": tr("CMD_REPEAT_TIP")})
+		out.append({"text": "Loop" + (" ON" if e.repeat else ""), "act": func(): ctl.issue({"t": "repeat", "target": e.id, "flag": not e.repeat}), "tip": tr("CMD_REPEAT_TIP")})
 		out.append({"text": tr("CMD_CANCEL_LAST"), "act": func(): ctl.dequeue(e, -1), "disabled": e.queue.is_empty()})
 	return out
 

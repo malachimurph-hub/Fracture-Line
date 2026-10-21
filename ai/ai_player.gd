@@ -470,21 +470,43 @@ func _army() -> void:
 	# 1. defend the base
 	var threatened: bool = w.tick - int(bb["threat_tick"]) < 100
 	if threatened:
-		var ids: Array = []
+		# Proportional defence: send the nearest idle home units worth ~2x the visible threat
+		# (min 1500). The rest stay available for waves/reinforcement - an all-hands
+		# response to every raid on an outlying structure used to freeze the army for good.
+		var threat_val: int = _enemy_strength_near(bb["threat_pos"], 12)
+		var budget: int = maxi(1500, threat_val * 2)
+		var cands: Array = []
 		for u: SimEntity in home:
 			if u.is_idle() or (not u.orders.is_empty() and u.orders[0].get("o", "") == "move"):
-				ids.append(u.id)
+				cands.append(u)
+		var tp: Vector2i = bb["threat_pos"]
+		cands.sort_custom(func(a: SimEntity, b: SimEntity) -> bool: return FX.dist2(a.pos, tp) < FX.dist2(b.pos, tp) or (FX.dist2(a.pos, tp) == FX.dist2(b.pos, tp) and a.id < b.id))
+		var ids: Array = []
+		var sent := 0
+		for u: SimEntity in cands:
+			if sent >= budget:
+				break
+			ids.append(u.id)
+			sent += w.udef(u).cost
 		if not ids.is_empty():
-			cmd({"t": "amove", "ids": ids, "pos": bb["threat_pos"]})
+			cmd({"t": "amove", "ids": ids, "pos": tp})
 		# recall the wave if the base is under heavy attack and the wave is far away
-		if not bb["wave"].is_empty() and _enemy_strength_near(bb["threat_pos"], 12) > army_value(home) + 1500:
+		if not bb["wave"].is_empty() and threat_val > army_value(home) + 1500:
 			var wave_units: Array = []
 			for id in bb["wave"]:
 				wave_units.append(w.get_ent(id))
 			if not wave_units.is_empty() and FX.dist(_centroid(wave_units), base_pos()) > FX.ONE * 40:
-				cmd({"t": "amove", "ids": bb["wave"].duplicate(), "pos": bb["threat_pos"]})
+				cmd({"t": "amove", "ids": bb["wave"].duplicate(), "pos": tp})
 				bb["wave"] = []
-		return
+		if threat_val * 3 + 2000 > army_value(home):
+			return
+		# Small raid and a big home army: keep running the wave logic with the units not
+		# committed to defence.
+		var keep: Array = []
+		for u: SimEntity in home:
+			if not (u.id in ids) and FX.dist(u.pos, tp) > FX.ONE * 10:
+				keep.append(u)
+		home = keep
 	# 2. retreat badly damaged wave units (medium/hard)
 	if cfg["retreat"] and not bb["wave"].is_empty():
 		var back: Array = []
