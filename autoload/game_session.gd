@@ -48,7 +48,9 @@ func goto(path: String) -> bool:
 		fail("Could not load scene: %s" % path)
 		return false
 	var bad := broken_scripts(res as PackedScene)
-	bad.append_array(broken_dependencies(path))
+	for b in broken_dependencies(path):
+		if not b in bad:
+			bad.append(b)
 	if not bad.is_empty():
 		fail("Scene %s has scripts that failed to compile:\n  %s" % [path, "\n  ".join(bad)])
 		return false
@@ -68,7 +70,7 @@ static func broken_scripts(ps: PackedScene) -> PackedStringArray:
 		for p in st.get_node_property_count(n):
 			if st.get_node_property_name(n, p) == &"script":
 				var s: Variant = st.get_node_property_value(n, p)
-				if s is Script and not (s as Script).can_instantiate():
+				if s is Script and not (s as Script).can_instantiate() and not (s as Script).resource_path in out:
 					out.append((s as Script).resource_path)
 		var inst: PackedScene = st.get_node_instance(n)
 		if inst != null:
