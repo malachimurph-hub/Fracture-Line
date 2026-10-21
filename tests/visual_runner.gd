@@ -109,9 +109,18 @@ func run_shots() -> void:
 		var b := _first(m, 0, &"eu_barracks")
 		if b:
 			sel = [b.id]
-	m.ctl.set_selection(sel)
+	var bar := _first(m, 0, &"eu_barracks")
+	if bar:
+		m.runner.sim.players[0].supply += 2000
+		m.ctl.queue_unit(bar, &"eu_grenadier", 2)
+		m.ctl.queue_unit(bar, &"eu_lancer", 1)
+		fast_forward(m, 40, false)
+		m.ctl.set_selection([bar.id])
+	else:
+		m.ctl.set_selection(sel)
 	await frames(20)
 	await shot("03_base_early")
+	m.ctl.set_selection(sel)
 	# battle: fast forward until a fight is happening, look at it
 	var fight := Vector2i(-1, -1)
 	for k in 60:
@@ -208,10 +217,11 @@ func run_touch() -> void:
 		drag(0, p, Vector2(-30, -12))
 		await frames(1)
 	touch(0, p, false)
-	await frames(2)
+	await frames(1)
+	var f1: Vector3 = m.cam.focus
 	check("drag pans camera", m.cam.focus.distance_to(f0) > 2.0, m.cam.focus.distance_to(f0))
-	await frames(30)
-	check("pan has inertia (kept moving after release)", m.cam.velocity.length() >= 0.0)
+	await frames(10)
+	check("pan has inertia (kept moving after release)", m.cam.focus.distance_to(f1) > 0.2, m.cam.focus.distance_to(f1))
 	m.cam.velocity = Vector3.ZERO
 	# 4. pinch zoom changes level
 	m.cam.jump_to(FX.to_world(crawler.pos), false)
@@ -262,7 +272,7 @@ func run_touch() -> void:
 	await frames(3)
 	check("hold+drag box selects units", not m.ctl.own_units_selected().is_empty() and tgt.id in m.ctl.selection, m.ctl.selection.size())
 	# 6. hold + release = attack-move order
-	var before := sim.ents[tgt.id].orders.duplicate()
+	var before: Array = sim.ents[tgt.id].orders.duplicate()
 	var hp := to_screen(m, tgt) + Vector2(200, 60) * UiScale.dp / 2.0
 	touch(0, hp, true)
 	await get_tree().create_timer(0.45).timeout
@@ -270,7 +280,7 @@ func run_touch() -> void:
 	await frames(2)
 	m.runner.advance()
 	var o: Array = sim.ents[tgt.id].orders
-	check("hold+release issues attack-move", not o.is_empty() and o[0].get("o", "") == "amove", o)
+	check("hold+release issues attack-move", not o.is_empty() and o[0].get("o", "") == "amove", o.duplicate(true))
 	# 7. tap ground with selection = move order
 	await tap(to_screen(m, tgt) + Vector2(-150, 40) * UiScale.dp / 2.0)
 	m.runner.advance()

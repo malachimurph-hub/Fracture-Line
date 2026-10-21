@@ -125,7 +125,7 @@ func _build() -> void:
 	rp.name = "Res"
 	rp.add_theme_constant_override("separation", 2)
 	bar.add_child(rp)
-	money_lbl = UiTheme.label("$0", 18, Color("#ffd166"))
+	money_lbl = UiTheme.label("$0", 17, Color("#ffd166"))
 	rp.add_child(money_lbl)
 	power_bar = ProgressBar.new()
 	power_bar.show_percentage = false
@@ -133,12 +133,11 @@ func _build() -> void:
 	rp.add_child(power_bar)
 	power_lbl = UiTheme.label("", 11)
 	rp.add_child(power_lbl)
-	pop_lbl = UiTheme.label("", 11)
-	rp.add_child(pop_lbl)
+	pop_lbl = power_lbl
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 4)
 	rp.add_child(row)
-	general_btn = UiTheme.button(tr("HUD_GENERAL"), Vector2(64, 48))
+	general_btn = UiTheme.button(tr("HUD_GENERAL"), Vector2(86, 48))
 	general_btn.add_theme_font_size_override("font_size", 11)
 	general_btn.pressed.connect(toggle_tray)
 	row.add_child(general_btn)
@@ -147,7 +146,6 @@ func _build() -> void:
 	build_btn.pressed.connect(open_build)
 	row.add_child(build_btn)
 	rank_lbl = UiTheme.label("", 11, UiTheme.CYAN)
-	rp.add_child(rank_lbl)
 	# top strip
 	top = HBoxContainer.new()
 	top.add_theme_constant_override("separation", 4)
@@ -286,7 +284,7 @@ func _layout() -> void:
 	var pad := 4.0
 	minimap.position = Vector2(pad, pad)
 	minimap.size = Vector2(bh - pad * 2, bh - pad * 2)
-	var res_w := 132.0
+	var res_w := 150.0
 	var grid_w := BTN.x * 5 + 12
 	var res: Control = bar.get_node("Res")
 	res.position = Vector2(bar.size.x - res_w - pad, pad)
@@ -382,12 +380,11 @@ func _refresh() -> void:
 		power_bar.max_value = maxi(1, maxi(p.power_prod, p.power_used))
 		power_bar.value = p.power_used
 		power_bar.modulate = Color("#ff5a4a") if p.low_power else Color("#6fe3ff")
-		power_lbl.text = tr("HUD_POWER") % [p.power_used, p.power_prod] + ("  " + tr("HUD_LOW_POWER") if p.low_power else "")
+		power_lbl.text = tr("HUD_POWER") % [p.power_used, p.power_prod] + (" " + tr("HUD_LOW_POWER") if p.low_power else "") + "  " + tr("HUD_POP") % [p.pop, p.pop_cap]
 		power_lbl.add_theme_color_override("font_color", Color("#ff7a6a") if p.low_power else UiTheme.TEXT)
-		pop_lbl.text = tr("HUD_POP") % [p.pop, p.pop_cap]
 		var next: int = SimPlayer.RANK_XP[p.rank + 1] if p.rank + 1 < SimPlayer.RANK_XP.size() else -1
 		rank_lbl.text = tr("HUD_RANK") % p.rank + ("  XP %d/%d" % [p.xp, next] if next > 0 else "  XP %d" % p.xp)
-		general_btn.text = tr("HUD_GENERAL") + (" ★%d" % p.points if p.points > 0 else "")
+		general_btn.text = tr("HUD_GENERAL_RANK") % p.rank + (" ★%d" % p.points if p.points > 0 else "")
 	_refresh_selection_info()
 	_refresh_card()
 	if tray.visible:
@@ -687,7 +684,8 @@ func _fill_tray() -> void:
 	for c in tray_list.get_children():
 		c.queue_free()
 	var p: SimPlayer = sim.players[pid]
-	tray_list.add_child(UiTheme.label(tr("TRAY_TITLE") % [p.rank, p.points], 13, UiTheme.GOLD))
+	var nx: int = SimPlayer.RANK_XP[p.rank + 1] if p.rank + 1 < SimPlayer.RANK_XP.size() else -1
+	tray_list.add_child(UiTheme.label(tr("TRAY_TITLE") % [p.rank, p.points, ("%d/%d" % [p.xp, nx]) if nx > 0 else str(p.xp)], 12, UiTheme.GOLD))
 	for id in Content.power_order:
 		var d: PowerDef = Content.powers[id]
 		var row := HBoxContainer.new()

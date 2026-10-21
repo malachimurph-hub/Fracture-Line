@@ -72,6 +72,7 @@ PAUSE_RESTART,Restart match
 PAUSE_SURRENDER,Surrender
 PAUSE_QUIT,Save & quit to menu
 HUD_GENERAL,General
+HUD_GENERAL_RANK,Gen. R%d
 HUD_BUILD,Build
 HUD_ARMY,Army
 HUD_IDLE_CRAWLER,Crawler
@@ -81,9 +82,9 @@ HUD_CANCEL,Cancel
 HUD_CONFIRM,Confirm
 HUD_PAUSED,PAUSED
 HUD_OBSERVER,Observer
-HUD_POWER,Power %d / %d
+HUD_POWER,Pwr %d/%d
 HUD_LOW_POWER,LOW
-HUD_POP,Units %d / %d
+HUD_POP,Pop %d/%d
 HUD_RANK,Rank %d
 HUD_GROUP_SET,Group %d set
 HUD_GROUP_HINT,Empty group — long-press (Ctrl+1–5) to assign
@@ -135,7 +136,7 @@ TARGET_MOVE,Tap where to move
 TARGET_GUARD,Tap the area to guard
 TARGET_RALLY,Tap to set the rally point
 TARGET_POWER,Tap the target for the General power
-TRAY_TITLE,"General — rank %d, %d point(s)"
+TRAY_TITLE,General rank %d — %d point(s) — XP %s
 TRAY_BUY,"Buy (rank %d, %d pt)"
 TRAY_FIRE,Use
 TRAY_COOLDOWN,Ready in %ds

@@ -10,7 +10,7 @@ varying vec3 vcol;
 
 void vertex() {
 	wpos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
-	vcol = COLOR.rgb;
+	vcol = pow(COLOR.rgb, vec3(2.2)); // vertex colors are authored in sRGB
 }
 
 void fragment() {

@@ -29,9 +29,10 @@ func build() -> void:
 	v.add_child(main)
 	var left := VBoxContainer.new()
 	left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	left.clip_contents = true
 	main.add_child(left)
 	var hdr := HBoxContainer.new()
-	for t in [["LOBBY_PLAYER", 150], ["LOBBY_FACTION", 120], ["LOBBY_COLOR", 90], ["LOBBY_TEAM", 70], ["LOBBY_START", 80]]:
+	for t in [["LOBBY_PLAYER", 144], ["LOBBY_FACTION", 134], ["LOBBY_COLOR", 114], ["LOBBY_TEAM", 68], ["LOBBY_START", 96]]:
 		var l := UiTheme.label(tr(t[0]), 11, Color(0.7, 0.7, 0.7))
 		l.custom_minimum_size = Vector2(t[1], 0)
 		hdr.add_child(l)
@@ -90,14 +91,15 @@ func _build_rows() -> void:
 		r.add_theme_constant_override("separation", 4)
 		rows.add_child(r)
 		var kind := OptionButton.new()
-		kind.custom_minimum_size = Vector2(150, 44)
+		kind.custom_minimum_size = Vector2(140, 44)
+		kind.fit_to_longest_item = false
 		if i == 0:
 			kind.add_item(tr("LOBBY_YOU"))
 			kind.disabled = true
 		else:
 			for k in KIND_ITEMS.slice(1):
 				kind.add_item(tr("LOBBY_KIND_" + k.replace(":", "_").to_upper()))
-			var cur := s["kind"] if s["kind"] != "ai" else "ai:" + s["difficulty"]
+			var cur: String = s["kind"] if s["kind"] != "ai" else "ai:" + s["difficulty"]
 			kind.selected = KIND_ITEMS.slice(1).find(cur)
 			kind.item_selected.connect(func(idx):
 				var k: String = KIND_ITEMS.slice(1)[idx]
@@ -110,28 +112,33 @@ func _build_rows() -> void:
 				_validate())
 		r.add_child(kind)
 		var fac := OptionButton.new()
-		fac.custom_minimum_size = Vector2(120, 44)
+		fac.custom_minimum_size = Vector2(130, 44)
+		fac.fit_to_longest_item = false
+		fac.clip_text = true
 		for f in FACTIONS:
 			fac.add_item(tr(f[1]) + ("" if f[2] else " — " + tr("LOBBY_COMING_LATER")))
 			fac.set_item_disabled(fac.item_count - 1, not f[2])
 		fac.selected = 0
 		r.add_child(fac)
 		var col := OptionButton.new()
-		col.custom_minimum_size = Vector2(90, 44)
+		col.custom_minimum_size = Vector2(110, 44)
+		col.fit_to_longest_item = false
 		for ci in Palette.COLORS.size():
 			col.add_icon_item(_swatch(Palette.COLORS[ci]), tr(Palette.COLOR_KEYS[ci]))
 		col.selected = int(s["color"])
 		col.item_selected.connect(func(idx): s["color"] = idx; _validate())
 		r.add_child(col)
 		var team := OptionButton.new()
-		team.custom_minimum_size = Vector2(70, 44)
+		team.custom_minimum_size = Vector2(64, 44)
+		team.fit_to_longest_item = false
 		for t in 4:
 			team.add_item(str(t + 1))
 		team.selected = int(s["team"])
 		team.item_selected.connect(func(idx): s["team"] = idx; _validate())
 		r.add_child(team)
 		var sp := OptionButton.new()
-		sp.custom_minimum_size = Vector2(80, 44)
+		sp.custom_minimum_size = Vector2(92, 44)
+		sp.fit_to_longest_item = false
 		sp.add_item(tr("LOBBY_RANDOM"))
 		for t in 4:
 			sp.add_item(str(t + 1))

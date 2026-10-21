@@ -94,7 +94,7 @@ func _build_chunk(cx: int, cy: int, hts: PackedFloat32Array) -> void:
 			var p01 := Vector3(x, h01, y + 1)
 			var p11 := Vector3(x + 1, h11, y + 1)
 			var n1 := (p01 - p00).cross(p10 - p00).normalized()
-			var n2 := (p11 - p10).cross(p01 - p10).normalized()
+			var n2 := (p01 - p10).cross(p11 - p10).normalized()
 			# faceted (flat) shading per triangle
 			for v in [[p00, n1], [p10, n1], [p01, n1], [p10, n2], [p11, n2], [p01, n2]]:
 				st.set_color(c)
