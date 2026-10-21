@@ -18,9 +18,12 @@ func _ready() -> void:
 			var n := int(args[1]) if args.size() > 1 else 5
 			var wins := {}
 			var t0 := Time.get_ticks_msec()
+			var off := int(args[2]) if args.size() > 2 else 0
+			var modes: Array = (args[3] if args.size() > 3 else "1v1,1v1,2v2,ffa").split(",")
+			var diff_sets := [["medium", "medium"], ["hard", "easy"], ["easy", "hard"], ["hard", "medium", "medium", "hard"], ["medium", "hard", "easy", "medium"]]
 			for i in n:
-				var mode2: String = ["1v1", "1v1", "2v2", "ffa"][i % 4]
-				var res := run_match(mode2, 1000 + i, false)
+				var mode2: String = modes[(i + off) % modes.size()]
+				var res := run_match(mode2, 1000 + i + off, false, 40, diff_sets[(i + off) % diff_sets.size()])
 				wins[mode2 + ":" + str(res["winner"])] = wins.get(mode2 + ":" + str(res["winner"]), 0) + 1
 			print("SOAK done %d matches in %d s; outcomes=%s" % [n, (Time.get_ticks_msec() - t0) / 1000, wins])
 		"replay":
@@ -103,13 +106,14 @@ static func make_cfg(mode: String, seed: int, diffs: Array = []) -> Dictionary:
 		slots[i]["personality"] = "eu_ironclad"
 	return {"map": "varno_crossing", "seed": seed, "options": {"fog": true, "start_money": 10000}, "slots": slots}
 
-func run_match(mode: String, seed: int, verbose: bool, max_minutes: int = 40) -> Dictionary:
+func run_match(mode: String, seed: int, verbose: bool, max_minutes: int = 40, diffs: Array = []) -> Dictionary:
 	var r := MatchRunner.new()
 	r.record_replay = false
-	r.start(make_cfg(mode, seed))
+	r.start(make_cfg(mode, seed, diffs))
 	var t0 := Time.get_ticks_msec()
 	var max_ticks := max_minutes * 60 * 20
 	var first_attack := {}
+	var friendly_hits := 0
 	var worst_tick_ms := 0.0
 	var sum_ms := 0.0
 	while not r.sim.game_over and r.sim.tick < max_ticks:
@@ -119,6 +123,8 @@ func run_match(mode: String, seed: int, verbose: bool, max_minutes: int = 40) ->
 		sum_ms += dt
 		worst_tick_ms = maxf(worst_tick_ms, dt)
 		for ev in r.sim.events:
+			if ev["t"] == "attacked" and int(ev["by"]) >= 0 and int(ev["owner"]) >= 0 and int(ev["by"]) != int(ev["owner"]) and not r.sim.enemies(r.sim.player_team(int(ev["by"])), r.sim.player_team(int(ev["owner"]))):
+				friendly_hits += 1
 			if ev["t"] == "attacked" and r.sim.ents.has(ev["id"]):
 				var tgt: SimEntity = r.sim.ents[ev["id"]]
 				if tgt.kind == SimEntity.Kind.BUILDING and not first_attack.has(ev["by"]):
@@ -137,8 +143,12 @@ func run_match(mode: String, seed: int, verbose: bool, max_minutes: int = 40) ->
 				ok = false
 			if p.team != r.sim.winner_team and not p.eliminated:
 				ok = false
+	if friendly_hits > 0:
+		ok = false
+	res["friendly_hits"] = friendly_hits
 	if not ok:
 		failed = true
+	print("ALLY-CHECK %s seed=%d: %d damage events between allies (must be 0)" % [mode, seed, friendly_hits])
 	print("MATCH %s seed=%d -> winner team %d after %d:%02d (%s) avg_tick=%.2fms worst=%.1fms first_base_attack_s=%s wall=%.1fs %s" % [
 		mode, seed, r.sim.winner_team, secs / 60, secs % 60, "over" if r.sim.game_over else "TIMEOUT", res["avg_tick_ms"],
 		worst_tick_ms, first_attack, res["wall_s"], "OK" if ok else "FAIL"])
