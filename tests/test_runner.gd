@@ -29,6 +29,39 @@ func _ready() -> void:
 			test_saveload()
 		"content":
 			test_content()
+		"stall":
+			var r2 := MatchRunner.new()
+			r2.record_replay = false
+			r2.start(make_cfg(args[1] if args.size() > 1 else "ffa", int(args[2]) if args.size() > 2 else 3))
+			var mins := int(args[3]) if args.size() > 3 else 15
+			for i in mins * 1200:
+				r2.advance()
+				if i % 6000 == 5999 or i == mins * 1200 - 1:
+					print("--- t=%d:00" % ((i + 1) / 1200))
+					for pid in r2.ais:
+						var a: AIPlayer = r2.ais[pid]
+						if r2.sim.players[pid].eliminated:
+							continue
+						var wu: Array = []
+						var idle := 0
+						for id in a.bb["wave"]:
+							var e := r2.sim.get_ent(id)
+							wu.append(e)
+							if e.is_idle(): idle += 1
+						var orders := {}
+						for e in wu:
+							var o: String = e.orders[0].get("o", "") if not e.orders.is_empty() else "idle"
+							orders[o] = orders.get(o, 0) + 1
+						print("P%d wave=%d idle=%d orders=%s centroid=%s target=%s board=%s home=%d pop=%d/%d need=%d staged_val=%d" % [pid, wu.size(), idle, orders,
+							FX.to_tile(a._centroid(wu)) if not wu.is_empty() else "-", FX.to_tile(a._pick_target()), r2.team_board.get(r2.sim.players[pid].team, {}),
+							a.combat_units().size() - wu.size(), r2.sim.players[pid].pop, r2.sim.players[pid].pop_cap, a._wave_threshold(), a.army_value(a.combat_units())])
+					for p in r2.sim.players:
+						var bl: Array = []
+						for id in r2.sim.ids:
+							var b: SimEntity = r2.sim.ents[id]
+							if b.owner == p.id and b.kind == SimEntity.Kind.BUILDING:
+								bl.append("%s@%s" % [String(b.def_id).substr(3, 4), b.tile])
+						print("  P%d bld: %s" % [p.id, " ".join(bl)])
 		"aidiag":
 			var r := MatchRunner.new()
 			r.start(make_cfg("1v1", 5))
