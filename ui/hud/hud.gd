@@ -6,7 +6,8 @@ extends CanvasLayer
 ## placement Confirm/Rotate/Cancel; General powers tray; pause menu. All sizes in dp.
 
 const BAR_H := 112.0
-const BTN := Vector2(54, 50)
+const PORTRAIT := Vector2(62, 50)
+const BTN := Vector2(60, 51)
 
 var m  ## Match node
 var ctl: PlayerController
@@ -31,8 +32,10 @@ var power_lbl: Label
 var power_bar: ProgressBar
 var pop_lbl: Label
 var rank_lbl: Label
-var general_btn: Button
-var build_btn: Button
+var general_btn: HudButton
+var build_btn: HudButton
+var idle_btn: HudButton
+var army_btn: HudButton
 var top: HBoxContainer
 var group_btns: Array = []
 var clock_lbl: Label
@@ -92,12 +95,13 @@ func _build() -> void:
 	sel_panel = Control.new()
 	bar.add_child(sel_panel)
 	sel_portrait = Control.new()
-	sel_portrait.custom_minimum_size = Vector2(44, 44)
+	sel_portrait.custom_minimum_size = PORTRAIT
 	sel_portrait.draw.connect(_draw_portrait)
 	sel_panel.add_child(sel_portrait)
 	sel_name = UiTheme.label("", 14, UiTheme.GOLD)
 	sel_panel.add_child(sel_name)
-	sel_info = UiTheme.label("", 11)
+	sel_info = UiTheme.label("", 10)
+	sel_info.clip_text = true
 	sel_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	sel_panel.add_child(sel_info)
 	sel_types = HBoxContainer.new()
@@ -115,6 +119,7 @@ func _build() -> void:
 	for i in 10:
 		var b := HudButton.new()
 		b.custom_minimum_size = BTN
+		b.size = BTN
 		b.add_theme_font_size_override("font_size", 11)
 		b.primary.connect(_on_grid.bind(i, false))
 		b.secondary.connect(_on_grid.bind(i, true))
@@ -137,34 +142,32 @@ func _build() -> void:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 4)
 	rp.add_child(row)
-	general_btn = UiTheme.button(tr("HUD_GENERAL"), Vector2(86, 48))
-	general_btn.add_theme_font_size_override("font_size", 11)
-	general_btn.pressed.connect(toggle_tray)
+	general_btn = _hud_btn(tr("HUD_GENERAL"), Vector2(86, 48))
+	general_btn.primary.connect(toggle_tray)
 	row.add_child(general_btn)
-	build_btn = UiTheme.button(tr("HUD_BUILD"), Vector2(56, 48))
-	build_btn.add_theme_font_size_override("font_size", 11)
-	build_btn.pressed.connect(open_build)
+	build_btn = _hud_btn(tr("HUD_BUILD"), Vector2(56, 48))
+	build_btn.primary.connect(open_build)
 	row.add_child(build_btn)
 	rank_lbl = UiTheme.label("", 11, UiTheme.CYAN)
 	# top strip
 	top = HBoxContainer.new()
 	top.add_theme_constant_override("separation", 4)
 	root.add_child(top)
-	var army := UiTheme.button(tr("HUD_ARMY"), Vector2(56, 44))
-	army.add_theme_font_size_override("font_size", 11)
-	army.pressed.connect(ctl.select_all_army)
+	var army := _hud_btn(tr("HUD_ARMY"), Vector2(64, 48))
+	army.primary.connect(ctl.select_all_army)
 	top.add_child(army)
-	var idle := UiTheme.button(tr("HUD_IDLE_CRAWLER"), Vector2(64, 44))
-	idle.add_theme_font_size_override("font_size", 11)
-	idle.pressed.connect(ctl.select_idle_builder)
+	army_btn = army
+	var idle := _hud_btn(tr("HUD_IDLE_BUILDER") % tr(Content.unit(Content.faction(sim.faction_of(pid) if pid >= 0 else &"eu")["builder"]).name_key), Vector2(72, 48))
+	idle.primary.connect(ctl.select_idle_builder)
 	top.add_child(idle)
+	idle_btn = idle
 	var sp := Control.new()
 	sp.custom_minimum_size = Vector2(8, 1)
 	top.add_child(sp)
 	for i in 5:
 		var gb := HudButton.new()
-		gb.custom_minimum_size = Vector2(48, 44)
-		gb.text = str(i + 1)
+		gb.custom_minimum_size = Vector2(48, 48)
+		gb.label_text = str(i + 1)
 		gb.primary.connect(func(): if not ctl.group_select(i): toast(tr("HUD_GROUP_HINT")))
 		gb.secondary.connect(func(): ctl.group_assign(i))
 		top.add_child(gb)
@@ -175,10 +178,10 @@ func _build() -> void:
 	top.add_child(fill)
 	clock_lbl = UiTheme.label("00:00", 14)
 	top.add_child(clock_lbl)
-	pause_btn = UiTheme.button("II", Vector2(48, 44))
+	pause_btn = UiTheme.button("II", Vector2(48, 48))
 	pause_btn.pressed.connect(toggle_pause)
 	top.add_child(pause_btn)
-	var menu_btn := UiTheme.button("Menu", Vector2(64, 44))
+	var menu_btn := UiTheme.button(tr("HUD_MENU"), Vector2(64, 48))
 	menu_btn.pressed.connect(toggle_pause_menu)
 	top.add_child(menu_btn)
 	for c in [army, idle, pause_btn, menu_btn] + group_btns:
@@ -295,15 +298,16 @@ func _layout() -> void:
 	sel_panel.position = Vector2(sx, pad)
 	sel_panel.size = Vector2(sw, bh - pad * 2)
 	sel_portrait.position = Vector2(0, 2)
-	sel_name.position = Vector2(50, 0)
-	sel_name.size = Vector2(sw - 50, 20)
-	sel_info.position = Vector2(50, 20)
-	sel_info.size = Vector2(sw - 50, 44)
-	sel_types.position = Vector2(0, 54)
-	queue_box.position = Vector2(0, 62)
+	sel_portrait.size = PORTRAIT
+	sel_name.position = Vector2(PORTRAIT.x + 6, 0)
+	sel_name.size = Vector2(sw - PORTRAIT.x - 6, 20)
+	sel_info.position = Vector2(PORTRAIT.x + 6, 19)
+	sel_info.size = Vector2(sw - PORTRAIT.x - 6, 36)
+	sel_types.position = Vector2(0, bh - pad * 2 - 49)
+	queue_box.position = Vector2(0, bh - pad * 2 - 49)
 	top.position = sr.position + Vector2(4, 4)
-	top.size = Vector2(sr.size.x - 8, 44)
-	alerts_box.position = sr.position + Vector2(6, 54)
+	top.size = Vector2(sr.size.x - 8, 48)
+	alerts_box.position = sr.position + Vector2(6, 58)
 	alerts_box.size = Vector2(minf(320, sr.size.x * 0.4), 10)
 	back_btn.position = sr.position + Vector2(6, sr.size.y - bh - 56)
 	toast_lbl.position = Vector2(sr.position.x, sr.end.y - bh - 34)
@@ -378,14 +382,20 @@ func _refresh() -> void:
 	else:
 		var p: SimPlayer = sim.players[pid]
 		money_lbl.text = "$%d" % p.supply
-		power_bar.max_value = maxi(1, maxi(p.power_prod, p.power_used))
-		power_bar.value = p.power_used
-		power_bar.modulate = Color("#ff5a4a") if p.low_power else Color("#6fe3ff")
-		power_lbl.text = tr("HUD_POWER") % [p.power_used, p.power_prod] + (" " + tr("HUD_LOW_POWER") if p.low_power else "") + "  " + tr("HUD_POP") % [p.pop, p.pop_cap]
+		var needs_power: bool = Content.faction(p.faction)["power"]
+		power_bar.visible = needs_power
+		if needs_power:
+			power_bar.max_value = maxi(1, maxi(p.power_prod, p.power_used))
+			power_bar.value = p.power_used
+			power_bar.modulate = Color("#ff5a4a") if p.low_power else Color("#6fe3ff")
+			power_lbl.text = tr("HUD_POWER") % [p.power_used, p.power_prod] + (" " + tr("HUD_LOW_POWER") if p.low_power else "") + "\n" + tr("HUD_POP") % [p.pop, p.pop_cap]
+		else:
+			power_lbl.text = tr("HUD_NO_POWER_NEEDED") + "\n" + tr("HUD_POP") % [p.pop, p.pop_cap]
 		power_lbl.add_theme_color_override("font_color", Color("#ff7a6a") if p.low_power else UiTheme.TEXT)
 		var next: int = SimPlayer.RANK_XP[p.rank + 1] if p.rank + 1 < SimPlayer.RANK_XP.size() else -1
 		rank_lbl.text = tr("HUD_RANK") % p.rank + ("  XP %d/%d" % [p.xp, next] if next > 0 else "  XP %d" % p.xp)
-		general_btn.text = tr("HUD_GENERAL_RANK") % p.rank + (" +%d" % p.points if p.points > 0 else "")
+		general_btn.sub = tr("HUD_RANK") % p.rank + (" +%d" % p.points if p.points > 0 else "")
+		general_btn.queue_redraw()
 	_refresh_selection_info()
 	_refresh_card()
 	if tray.visible:
@@ -407,13 +417,18 @@ func _draw_portrait() -> void:
 		return
 	var col := Palette.color(sim.players[e.owner].color) if e.owner >= 0 else Palette.NEUTRAL
 	var f := sel_portrait.get_theme_default_font()
-	sel_portrait.draw_circle(s * 0.5, s.x * 0.36, col.darkened(0.3))
-	sel_portrait.draw_string(f, Vector2(2, s.y * 0.5 + 6), short_name(e.def_id), HORIZONTAL_ALIGNMENT_CENTER, s.x - 4, 15, Color.WHITE)
+	sel_portrait.draw_circle(s * 0.5, minf(s.x, s.y) * 0.42, col.darkened(0.45))
+	# full name, wrapped to two lines and auto-shrunk (never an abbreviation)
+	var box := Vector2(s.x - 6, s.y - 6)
+	var fit: Array = HudButton.fit_paragraph(ent_name(e), f, box, 12)
+	portrait_fit_ok = fit[1]
+	var para: TextParagraph = fit[0]
+	var h := 0.0
+	for i in para.get_line_count():
+		h += para.get_line_size(i).y
+	para.draw(sel_portrait.get_canvas_item(), Vector2(3, 3 + maxf(0.0, (box.y - h) * 0.5)), Color.WHITE)
 
-func short_name(def_id: StringName) -> String:
-	var k := "SHORT_" + String(def_id).to_upper()
-	var t := tr(k)
-	return t if t != k else String(def_id).substr(3, 3).to_upper()
+var portrait_fit_ok := true
 
 func ent_name(e: SimEntity) -> String:
 	match e.kind:
@@ -421,6 +436,8 @@ func ent_name(e: SimEntity) -> String:
 			return tr(Content.unit(e.def_id).name_key)
 		SimEntity.Kind.RESOURCE:
 			return tr("RES_" + String(e.def_id).to_upper())
+		SimEntity.Kind.CRATE:
+			return tr("HUD_CRATE")
 	return tr(Content.building(e.def_id).name_key)
 
 func _refresh_selection_info() -> void:
@@ -444,6 +461,8 @@ func _refresh_selection_info() -> void:
 	var lines: Array = []
 	if e.kind == SimEntity.Kind.RESOURCE:
 		lines.append(tr("HUD_SUPPLY_LEFT") % e.amount)
+	elif e.kind == SimEntity.Kind.CRATE:
+		lines.append(tr("HUD_CRATE_VALUE") % e.amount)
 	else:
 		var hp := "HP %d/%d" % [e.hp, e.max_hp]
 		if e.max_shield > 0:
@@ -455,6 +474,11 @@ func _refresh_selection_info() -> void:
 		if e.vet > 0:
 			lines.append(tr("VET_%d" % e.vet))
 		var ud := Content.unit(e.def_id)
+		var role_k := "ROLE_" + String(ud.role).to_upper()
+		if tr(role_k) != role_k:
+			lines[0] = tr(role_k) + "  ·  " + lines[0]
+		if ud.tags.has("salvage"):
+			lines.append(tr("HUD_SALVAGE_TIER") % e.tier)
 		if ud.harvest_capacity > 0:
 			lines.append(tr("HUD_CARRY") % [e.carry, ud.harvest_capacity])
 		if not ud.stubs.is_empty():
@@ -466,7 +490,13 @@ func _refresh_selection_info() -> void:
 		if not e.built:
 			lines.append(tr("HUD_CONSTRUCTING") % int(100.0 * e.progress / maxi(1, e.build_ticks)))
 		elif e.owner == pid:
-			if not e.powered:
+			if bd.tags.has("hole"):
+				lines.append(tr("HUD_HOLE_REBUILD") % maxi(0, (int(e.aux_t) - sim.tick) / FX.TICK_HZ))
+			if TplaSys.is_tunnel(sim, e):
+				lines.append(tr("HUD_TUNNEL_NET") % [TplaSys.network_units(sim, pid).size(), TplaSys.network_capacity()])
+			if e.stealthy:
+				lines.append(tr("HUD_STEALTHED"))
+			if not e.powered and Content.faction(sim.faction_of(pid))["power"]:
 				lines.append(tr("HUD_UNPOWERED"))
 			if bd.power != 0:
 				lines.append(tr("HUD_BLD_POWER") % bd.power)
@@ -501,26 +531,24 @@ func _fill_types(units: Array) -> void:
 		var d: StringName = sim.ents[id].def_id
 		counts[d] = counts.get(d, 0) + 1
 	for d in counts:
-		var b := UiTheme.button("%s×%d" % [short_name(d), counts[d]], Vector2(48, 48))
-		b.add_theme_font_size_override("font_size", 11)
-		b.pressed.connect(func():
+		var b := _hud_btn(tr(Content.unit(d).name_key), Vector2(66, 48))
+		b.sub = "×%d" % counts[d]
+		b.primary.connect(func():
 			var only: Array = []
 			for id in ctl.own_units_selected():
 				if sim.ents[id].def_id == d:
 					only.append(id)
 			ctl.set_selection(only))
 		sel_types.add_child(b)
-		if sel_types.get_child_count() >= 4:
+		if sel_types.get_child_count() >= TYPE_MAX:
 			break
 
 func _fill_queue(b: SimEntity) -> void:
 	if b.queue.is_empty():
 		return
-	for i in mini(b.queue.size(), 5):
-		var q := HudButton.new()
-		q.custom_minimum_size = Vector2(40, 40)
-		q.text = short_name(b.queue[i])
-		q.add_theme_font_size_override("font_size", 10)
+	var shown := b.queue.size() if b.queue.size() <= QUEUE_MAX else QUEUE_MAX - 1
+	for i in shown:
+		var q := _hud_btn(tr(Content.unit(b.queue[i]).name_key), QUEUE_CHIP)
 		if i == 0:
 			var need := FX.ms_to_ticks(Content.unit(b.queue[0]).build_time_ms) * 2
 			q.progress = float(b.q_progress) / float(maxi(1, need))
@@ -528,8 +556,8 @@ func _fill_queue(b: SimEntity) -> void:
 		q.primary.connect(func(): ctl.dequeue(b, idx))
 		q.tooltip_text = tr("HUD_TAP_CANCEL")
 		queue_box.add_child(q)
-	if b.queue.size() > 5:
-		queue_box.add_child(UiTheme.label("+%d" % (b.queue.size() - 5), 11))
+	if b.queue.size() > shown:
+		queue_box.add_child(UiTheme.label("+%d" % (b.queue.size() - shown), 12))
 
 # ------------------------------------------------------------------ command card
 ## Each card entry: {id, text, sub, act, alt, disabled, badge, stub, accent, tip}
@@ -542,7 +570,7 @@ func _refresh_card() -> void:
 		if i < card.size():
 			var c: Dictionary = card[i]
 			b.visible = true
-			b.text = c.get("text", "")
+			b.label_text = c.get("text", "")
 			b.sub = c.get("sub", "")
 			b.disabled = c.get("disabled", false)
 			b.badge = c.get("badge", "")
@@ -553,7 +581,7 @@ func _refresh_card() -> void:
 			b.modulate = Color(1, 1, 1, 1) if not b.disabled else Color(1, 1, 1, 0.75)
 		else:
 			b.visible = true
-			b.text = ""
+			b.label_text = ""
 			b.sub = ""
 			b.badge = ""
 			b.stub = false
@@ -593,18 +621,26 @@ func _make_card() -> Array:
 	if e.kind == SimEntity.Kind.UNIT and not units.is_empty():
 		var builders := ctl._filter(units, "builder")
 		if not builders.is_empty() and builders.size() == units.size():
-			for bid in Content.BUILDING_ORDER:
+			for bid in Content.building_order(sim.faction_of(pid)):
 				var bd: BuildingDef = Content.building(bid)
 				if not bd.buildable or bd.is_hq:
 					continue
 				var why := sim.prereqs_met(pid, bd.prereqs)
 				var funds: bool = sim.players[pid].supply >= bd.cost
-				out.append({"text": short_name(bid), "sub": "$%d" % bd.cost,
+				out.append({"text": tr(bd.name_key), "sub": "$%d" % bd.cost,
 					"act": ctl.begin_place.bind(bid), "disabled": why != "" or not funds,
 					"tip": tr(bd.name_key) + (" — " + tr("HUD_NEEDS") % _prereq_names(bd.prereqs) if why != "" else (" — " + tr("REASON_FUNDS") if not funds else "")),
 					"accent": UiTheme.GOLD})
-			while out.size() < 9:
+			var hvb := ctl._filter(units, "harvester")
+			var tail := 2 if not hvb.is_empty() else 1
+			while out.size() < 10 - tail:
 				out.append({"text": "", "disabled": true})
+			out = out.slice(0, 10 - tail)
+			if not hvb.is_empty():
+				out.append({"text": tr("CMD_HARVEST"), "act": func():
+					var r := ctl._nearest_resource(sim.ents[hvb[0]].pos)
+					if r != 0:
+						ctl.issue({"t": "harvest", "ids": hvb, "target": r})})
 			out.append({"text": tr("CMD_STOP"), "act": ctl.simple.bind("stop")})
 			return out
 		out.append({"text": tr("CMD_AMOVE"), "act": ctl.begin_target.bind("amove"), "accent": Color("#ff9a2a"), "tip": tr("CMD_AMOVE_TIP")})
@@ -631,6 +667,12 @@ func _make_card() -> Array:
 	if not e.built:
 		out.append({"text": tr("CMD_CANCEL_BUILD"), "act": func(): ctl.issue({"t": "cancel_build", "target": e.id}), "tip": tr("CMD_CANCEL_BUILD_TIP")})
 		return out
+	if TplaSys.is_tunnel(sim, e):
+		var inside := TplaSys.network_units(sim, pid).size()
+		out.append({"text": tr("HUD_EVACUATE"), "sub": "%d / %d" % [inside, TplaSys.network_capacity()], "disabled": inside == 0,
+			"act": func(): ctl.issue({"t": "unload", "ids": [e.id]}), "tip": tr("HUD_EVACUATE_TIP"), "accent": Color("#ffd166")})
+	if bd2.tags.has("trap"):
+		out.append({"text": tr("HUD_DETONATE"), "act": func(): ctl.issue({"t": "detonate", "ids": [e.id]}), "accent": Color("#ff6a4a"), "tip": tr("HUD_DETONATE_TIP")})
 	for uid in bd2.produces:
 		var udf: UnitDef = Content.unit(uid)
 		var why2 := sim.prereqs_met(pid, udf.prereqs)
@@ -638,7 +680,7 @@ func _make_card() -> Array:
 		var prog := -1.0
 		if not e.queue.is_empty() and e.queue[0] == StringName(uid):
 			prog = float(e.q_progress) / float(maxi(1, FX.ms_to_ticks(udf.build_time_ms) * 2))
-		out.append({"text": short_name(uid), "sub": "$%d" % udf.cost, "badge": str(n) if n > 0 else "",
+		out.append({"text": tr(udf.name_key), "sub": "$%d" % udf.cost, "badge": str(n) if n > 0 else "",
 			"act": ctl.queue_unit.bind(e, StringName(uid), 1), "alt": func(): ctl.dequeue(e, e.queue.rfind(StringName(uid))),
 			"disabled": why2 != "" or e.queue.size() >= 9, "progress": prog, "stub": not udf.stubs.is_empty(),
 			"tip": tr(udf.name_key) + ("  [" + tr("HUD_LONGPRESS_CANCEL") + "]"), "accent": UiTheme.GOLD})
@@ -647,9 +689,21 @@ func _make_card() -> Array:
 			out.append({"text": "", "disabled": true})
 		out.append({"text": tr("CMD_RALLY"), "act": ctl.begin_target.bind("rally"), "accent": Color("#ffd166"),
 			"alt": func(): ctl.issue({"t": "rally", "ids": [e.id], "clear": true})})
-		out.append({"text": "Loop" + (" ON" if e.repeat else ""), "act": func(): ctl.issue({"t": "repeat", "target": e.id, "flag": not e.repeat}), "tip": tr("CMD_REPEAT_TIP")})
+		out.append({"text": tr("CMD_LOOP_ON") if e.repeat else tr("CMD_LOOP"), "act": func(): ctl.issue({"t": "repeat", "target": e.id, "flag": not e.repeat}), "tip": tr("CMD_REPEAT_TIP")})
 		out.append({"text": tr("CMD_CANCEL_LAST"), "act": func(): ctl.dequeue(e, -1), "disabled": e.queue.is_empty()})
 	return out
+
+const TYPE_MAX := 3
+const QUEUE_MAX := 4
+const QUEUE_CHIP := Vector2(54, 48)
+
+func _hud_btn(caption: String, sz: Vector2) -> HudButton:
+	var b := HudButton.new()
+	b.custom_minimum_size = sz
+	b.size = sz
+	b.label_text = caption
+	b.add_theme_font_size_override("font_size", 11)
+	return b
 
 func _prereq_names(p: PackedStringArray) -> String:
 	var n: Array = []
@@ -687,7 +741,7 @@ func _fill_tray() -> void:
 	var p: SimPlayer = sim.players[pid]
 	var nx: int = SimPlayer.RANK_XP[p.rank + 1] if p.rank + 1 < SimPlayer.RANK_XP.size() else -1
 	tray_list.add_child(UiTheme.label(tr("TRAY_TITLE") % [p.rank, p.points, ("%d/%d" % [p.xp, nx]) if nx > 0 else str(p.xp)], 12, UiTheme.GOLD))
-	for id in Content.power_order:
+	for id in Content.powers_for(sim.faction_of(pid)):
 		var d: PowerDef = Content.powers[id]
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 6)
@@ -836,6 +890,20 @@ func on_events(events: Array) -> void:
 					toast(tr("ALERT_PROMOTED") % [ent_name(pu), tr("VET_%d" % int(ev["vet"]))])
 					if pu.kind != SimEntity.Kind.UNIT or not AudioDirector.unit_voice(String(Content.unit(pu.def_id).faction), String(pu.def_id), "veteran"):
 						AudioDirector.announce("unit_promoted")
+			"salvage":
+				var su := sim.get_ent(int(ev["id"]))
+				if su != null and su.owner == pid:
+					toast(tr("ALERT_SALVAGE") % [ent_name(su), int(ev["tier"])])
+					AudioDirector.announce("salvage_upgrade")
+			"hole_rebuild":
+				if int(ev["owner"]) == pid:
+					AudioDirector.announce("hole_rebuild")
+			"explode":
+				if int(ev.get("owner", -1)) == pid and ev.get("trap", false):
+					AudioDirector.announce("trap_detonated")
+			"death":
+				if int(ev.get("owner", -1)) == pid and ev["kind"] == SimEntity.Kind.BUILDING and Content.btag(StringName(ev.get("def", "")), "tunnel") and not ev.get("silent", false):
+					AudioDirector.announce("tunnel_lost")
 			"power_fired":
 				if int(ev["owner"]) != pid and sim.enemies(sim.player_team(int(ev["owner"])), my_team) and float(ev["r"]) > 0:
 					alert("enemy_power", tr("ALERT_ENEMY_POWER"), ev["pos"], 10.0)

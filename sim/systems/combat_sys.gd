@@ -60,7 +60,7 @@ static func _fire_unit(w: SimWorld, u: SimEntity, t: SimEntity) -> void:
 ## Area blast (Demo Trap, Mule bomb truck): hits enemy units and enemy structures in the radius.
 static func explode(w: SimWorld, src: SimEntity, center: Vector2i, wd: WeaponDef, pct: int) -> void:
 	var r := FX.mt_to_fx(wd.splash_mt)
-	w.events.append({"t": "explode", "id": src.id, "pos": center, "r": r, "vfx": wd.vfx})
+	w.events.append({"t": "explode", "id": src.id, "owner": src.owner, "trap": src.kind == SimEntity.Kind.BUILDING, "pos": center, "r": r, "vfx": wd.vfx})
 	for o: SimEntity in w.units_in_radius(center, r):
 		if o.res_id < 0 or not w.enemies(src.team, o.team):
 			continue

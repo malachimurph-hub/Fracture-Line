@@ -41,8 +41,9 @@ func _ready() -> void:
 					facs = [a0, a0, b0, b0]
 				var dset: Array = diff_sets[(i + off) % diff_sets.size()]
 				if fpat.size() > 1 and nsl == 2:
-					dset = ["medium", "medium"] if (i + off) % 3 == 0 else (["hard", "hard"] if (i + off) % 3 == 1 else ["easy", "easy"])
-				var res := run_match(mode2, 1000 + i + off, false, 40 if mode2 == "1v1" else 60, dset, facs)
+					var dk := ((i + off) / 2) % 3
+					dset = ["medium", "medium"] if dk == 0 else (["hard", "hard"] if dk == 1 else ["easy", "easy"])
+				var res := run_match(mode2, 1000 + i + off, false, 40 if mode2 == "1v1" else 60, dset, facs, (i + off) / 2 if fpat.size() > 1 else 0)
 				wins[mode2 + ":" + str(res["winner"])] = wins.get(mode2 + ":" + str(res["winner"]), 0) + 1
 				var wf := "draw"
 				if int(res["winner"]) >= 0:
@@ -98,6 +99,23 @@ func _ready() -> void:
 							if b.owner == p.id and b.kind == SimEntity.Kind.BUILDING:
 								bl.append("%s@%s" % [String(b.def_id).substr(3, 4), b.tile])
 						print("  P%d bld: %s" % [p.id, " ".join(bl)])
+		"compile":
+			var bad: Array = []
+			var stack: Array = ["res://"]
+			var n := 0
+			while not stack.is_empty():
+				var d: String = stack.pop_back()
+				for sub in DirAccess.get_directories_at(d):
+					if not sub.begins_with(".") and sub != "tools" and sub != "addons":
+						stack.append(d.path_join(sub))
+				for f in DirAccess.get_files_at(d):
+					if f.ends_with(".gd"):
+						n += 1
+						var scr: GDScript = load(d.path_join(f))
+						if scr == null or not scr.can_instantiate():
+							bad.append(d.path_join(f))
+			print("COMPILE: %d scripts, broken: %s" % [n, bad])
+			failed = not bad.is_empty()
 		"tdiag":
 			var rt := MatchRunner.new()
 			rt.record_replay = false
@@ -139,7 +157,7 @@ func _ready() -> void:
 	print("=== RESULT: ", "FAIL" if failed else "PASS")
 	get_tree().quit(1 if failed else 0)
 
-static func make_cfg(mode: String, seed: int, diffs: Array = [], facs: Array = []) -> Dictionary:
+static func make_cfg(mode: String, seed: int, diffs: Array = [], facs: Array = [], spawn_rot: int = 0) -> Dictionary:
 	var slots: Array = []
 	match mode:
 		"1v1":
@@ -148,6 +166,16 @@ static func make_cfg(mode: String, seed: int, diffs: Array = [], facs: Array = [
 			slots = [{"team": 0, "spawn": 0}, {"team": 0, "spawn": 3}, {"team": 1, "spawn": 1}, {"team": 1, "spawn": 2}]
 		"ffa":
 			slots = [{"team": 0, "spawn": 0}, {"team": 1, "spawn": 1}, {"team": 2, "spawn": 2}, {"team": 3, "spawn": 3}]
+	# seed-varied start positions for faction balance batches (FL_SPAWN_ROT set by soak)
+	if spawn_rot > 0:
+		var pairs := [[0, 1], [1, 0], [2, 3], [3, 2], [0, 2], [2, 0], [1, 3], [3, 1], [0, 3], [3, 0], [1, 2], [2, 1]]
+		if mode == "1v1":
+			var pr: Array = pairs[spawn_rot % pairs.size()]
+			slots[0]["spawn"] = pr[0]
+			slots[1]["spawn"] = pr[1]
+		else:
+			for i in slots.size():
+				slots[i]["spawn"] = (int(slots[i]["spawn"]) + spawn_rot) % 4
 	for i in slots.size():
 		slots[i]["kind"] = "ai"
 		slots[i]["color"] = i
@@ -157,10 +185,10 @@ static func make_cfg(mode: String, seed: int, diffs: Array = [], facs: Array = [
 		slots[i]["personality"] = String(Content.faction(StringName(f))["personality"])
 	return {"map": "varno_crossing", "seed": seed, "options": {"fog": true, "start_money": 10000}, "slots": slots}
 
-func run_match(mode: String, seed: int, verbose: bool, max_minutes: int = 40, diffs: Array = [], facs: Array = []) -> Dictionary:
+func run_match(mode: String, seed: int, verbose: bool, max_minutes: int = 40, diffs: Array = [], facs: Array = [], spawn_rot: int = 0) -> Dictionary:
 	var r := MatchRunner.new()
 	r.record_replay = false
-	r.start(make_cfg(mode, seed, diffs, facs))
+	r.start(make_cfg(mode, seed, diffs, facs, spawn_rot))
 	var t0 := Time.get_ticks_msec()
 	var max_ticks := max_minutes * 60 * 20
 	var first_attack := {}
@@ -308,12 +336,27 @@ func test_audio() -> void:
 				if ad.variants(fac, ud["folder"], ev)[0].is_empty():
 					missing.append("%s/%s" % [uid, ev])
 			_check(Content.units.has(StringName(uid)), "manifest unit exists in content: " + uid)
-	for ev in ad.manifest["announcer"]["events"]:
-		if ad.variants("announcer", "announcer", ev)[0].is_empty():
-			missing.append("announcer/" + ev)
-	_check(missing.is_empty(), "every manifest line has a recording or placeholder %s" % [missing])
+	var afolders: Dictionary = ad.manifest["announcer"].get("folders", {"eu": "announcer"})
+	_check(afolders.has("eu") and afolders.has("tpla") and afolders["eu"] != afolders["tpla"], "separate announcer per faction %s" % [afolders])
+	var not_ai: Array = []
+	for f in afolders:
+		for ev in ad.manifest["announcer"].get("faction_events", {}).get(f, ad.manifest["announcer"]["events"].keys()):
+			var av: Array = ad.variants("announcer", afolders[f], ev)
+			if av[0].is_empty():
+				missing.append("%s/%s" % [afolders[f], ev])
+			elif int(av[1]) == 2:
+				not_ai.append("%s/%s" % [afolders[f], ev])
+	for fac in ["eu", "tpla"]:
+		for uid in ad.manifest["factions"][fac]["units"]:
+			var ud2: Dictionary = ad.manifest["factions"][fac]["units"][uid]
+			for ev in ud2["events"]:
+				if int(ad.variants(fac, ud2["folder"], ev)[1]) == 2:
+					not_ai.append("%s/%s" % [uid, ev])
+	_check(missing.is_empty(), "every manifest line has a voice %s" % [missing])
+	_check(not_ai.is_empty(), "every EU + TPLA line has a recorded or AI voice (no robotic fallback) %s" % [not_ai.slice(0, 8)])
+	_check(ad.manifest["factions"]["tpla"]["units"].size() == Content.TPLA_UNIT_ORDER.size(), "manifest has every TPLA unit")
 	var st: Dictionary = ad.voice_status()
-	print("voice status: %d of %d lines recorded" % [st["recorded"], st["total"]])
+	print("voice status: %d of %d lines recorded, %d AI, %d placeholder, %d missing" % [st["recorded"], st["total"], st["ai"], st["placeholder"], st["missing"]])
 	_check(st["total"] > 50, "manifest covers %d lines" % st["total"])
 	var paths := ["a", "b", "c"]
 	var last := ""
@@ -333,6 +376,13 @@ func test_audio() -> void:
 	_check(not ad.unit_voice("eu", "eu_leopold", "under_fire"), "under_fire respects its 14 s cooldown")
 	_check(ad.announce("low_power"), "announcer plays")
 	_check(not ad.announce("low_power"), "announcer cooldown")
+	ad.announcer_faction = "tpla"
+	ad._announcer.stop()
+	_check(ad.announce("victory"), "TPLA announcer plays")
+	_check(String(ad._announcer.stream.resource_path).contains("announcer_tpla"), "TPLA announcer uses its own voice: " + String(ad._announcer.stream.resource_path))
+	ad.announcer_faction = "eu"
+	_check(ad.unit_voice("tpla", "tpla_rattler", "select"), "TPLA unit voice plays")
+	_check(ad.weapon_sfx("tpla", "rocket", false) == "tpla_rpg" and ad.stream(ad.SFX["tpla_rpg"]) != null, "TPLA weapon SFX mapped and loadable")
 
 func _check(ok: bool, what: String) -> void:
 	print(("PASS " if ok else "FAIL ") + what)

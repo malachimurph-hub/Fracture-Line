@@ -175,7 +175,7 @@ SET_VOL_MUSIC,Music
 SET_VOL_SFX,Effects
 SET_VOL_VOICE,Voices
 SET_VOL_UI,Interface sounds
-SET_VOICE_STATUS,Voice lines recorded: %d of %d. The rest use robotic placeholder voices (TTS) until recordings are added.
+SET_VOICE_STATUS,"Voice lines: %d of %d recorded by you, %d AI-generated (offline neural TTS), %d robotic placeholders. Your recordings replace the AI voices line by line."
 REASON_BLOCKED,Blocked
 REASON_ENEMY,Too close to enemies
 REASON_FUNDS,Not enough money
@@ -194,14 +194,14 @@ REASON_RANK,Needs a higher General rank
 REASON_RESOURCE,Too close to a supply seam
 REASON_STUB,[STUB] Not available in M1
 REASON_TERRAIN,Can't build on that ground
-UNIT_EU_CRAWLER,Crawler (builder)
-UNIT_EU_HARVESTER,Hauler (supply truck)
-UNIT_EU_GRENADIER,Grenadier squad
-UNIT_EU_LANCER,Lancer squad (anti-tank)
-UNIT_EU_WOLFHOUND,Wolfhound IFV
-UNIT_EU_LEOPOLD,Leopold battle tank
-UNIT_EU_AEGIS,Aegis shield carrier
-UNIT_EU_FLAKWERK,Flakwerk AA
+UNIT_EU_CRAWLER,Crawler
+UNIT_EU_HARVESTER,Supply Hauler
+UNIT_EU_GRENADIER,Grenadier Squad
+UNIT_EU_LANCER,Lancer Squad
+UNIT_EU_WOLFHOUND,Wolfhound Scout Car
+UNIT_EU_LEOPOLD,Leopold Tank
+UNIT_EU_AEGIS,Aegis Shield Carrier
+UNIT_EU_FLAKWERK,Flakwerk Flak Gun
 BLD_EU_HQ,Command HQ
 BLD_EU_REACTOR,Fusion Reactor
 BLD_EU_PYLON,Grid Pylon
@@ -210,8 +210,8 @@ BLD_EU_BARRACKS,Barracks
 BLD_EU_MOTOR_POOL,Motor Pool
 BLD_EU_HEAVY_FACTORY,Heavy Factory
 BLD_EU_GUN_BUNKER,Gun Bunker
-BLD_CIV_BLOCK,Civilian block
-BLD_PUMP,Veridite pump
+BLD_CIV_BLOCK,Civilian Block
+BLD_PUMP,Veridite Pump
 SHORT_EU_CRAWLER,CRW
 SHORT_EU_HARVESTER,HAUL
 SHORT_EU_GRENADIER,GREN
@@ -289,3 +289,20 @@ HUD_CRATE,Salvage crate
 HUD_CRATE_VALUE,Worth $%d or one salvage tier
 FACTION_US,United States
 FACTION_WA,Western Alliance
+HUD_IDLE_BUILDER,Idle %s
+HUD_MENU,Menu
+HUD_EVACUATE_TIP,Everyone in the tunnel network climbs out here
+HUD_DETONATE_TIP,Set off the trap now
+ALERT_SALVAGE,%s salvaged scrap: tier %d
+CMD_LOOP,Loop
+CMD_LOOP_ON,Loop on
+ROLE_BUILDER,Builder
+ROLE_HARVESTER,Supply gatherer
+ROLE_INFANTRY,Rifle infantry
+ROLE_ANTI_TANK,Anti-tank
+ROLE_IFV,Fast attack
+ROLE_TANK,Battle tank
+ROLE_SHIELD,Shield support
+ROLE_ANTI_AIR,Anti-air
+ROLE_ARTILLERY,Artillery
+ROLE_SUICIDE,Bomb truck

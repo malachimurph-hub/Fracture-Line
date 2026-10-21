@@ -1,8 +1,22 @@
 {
- "note": "Per-faction audio data (M1.2). weapons: weapon vfx kind -> SFX key (see AudioDirector.SFX); structure_weapons override for defenses. Voice lines live in voice_manifest.json. Other factions are added in M2.",
+ "note": "Per-faction audio data. weapons: weapon vfx kind -> SFX key (see AudioDirector.SFX); structure_weapons override for defenses. Voice lines live in voice_manifest.json; announcer folder per faction in voice_manifest.json announcer.folders.",
  "eu": {
-  "weapons": {"tracer": "rifle", "tracer_heavy": "autocannon", "shell": "cannon", "missile": "missile", "grenade": "grenade", "flak": "flak"},
-  "structure_weapons": {"tracer": "mg"},
+  "weapons": {
+   "tracer": "rifle",
+   "tracer_heavy": "autocannon",
+   "shell": "cannon",
+   "missile": "missile",
+   "grenade": "grenade",
+   "flak": "flak",
+   "rocket": "missile",
+   "rocket_salvo": "missile",
+   "tracer_quad": "flak",
+   "bomb": "expl_huge",
+   "rust_shell": "grenade"
+  },
+  "structure_weapons": {
+   "tracer": "mg"
+  },
   "death_vehicle": "expl_large",
   "death_infantry": "body_fall",
   "death_structure": "collapse",
@@ -10,8 +24,39 @@
   "place": "place"
  },
  "neutral": {
-  "weapons": {"tracer": "rifle", "tracer_heavy": "mg"},
-  "structure_weapons": {"tracer": "rifle"},
+  "weapons": {
+   "tracer": "rifle",
+   "tracer_heavy": "mg"
+  },
+  "structure_weapons": {
+   "tracer": "rifle"
+  },
   "death_structure": "collapse"
+ },
+ "tpla": {
+  "weapons": {
+   "tracer": "tpla_carbine",
+   "tracer_heavy": "tpla_hmg",
+   "shell": "tpla_scrap_cannon",
+   "rocket": "tpla_rpg",
+   "rocket_salvo": "tpla_salvo",
+   "tracer_quad": "tpla_quad",
+   "bomb": "trap_click",
+   "rust_shell": "tpla_rust_launch",
+   "missile": "tpla_rpg",
+   "grenade": "tpla_rust_launch",
+   "flak": "tpla_quad"
+  },
+  "structure_weapons": {
+   "tracer_heavy": "tpla_hmg"
+  },
+  "death_vehicle": "expl_large",
+  "death_infantry": "body_fall",
+  "death_structure": "collapse",
+  "construct": "construct",
+  "place": "place",
+  "salvage": "salvage",
+  "tunnel": "tunnel",
+  "rust_zone": "tpla_rust_sizzle"
  }
 }

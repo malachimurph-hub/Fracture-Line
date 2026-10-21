@@ -28,7 +28,7 @@ func build() -> void:
 	for pair in [["SET_VOL_MASTER", "vol_master"], ["SET_VOL_MUSIC", "vol_music"], ["SET_VOL_SFX", "vol_sfx"], ["SET_VOL_VOICE", "vol_voice"], ["SET_VOL_UI", "vol_ui"]]:
 		_slider(c, pair[0], pair[1], 0.0, 1.0, 0.05)
 	var vs: Dictionary = AudioDirector.voice_status()
-	var vl := UiTheme.label(tr("SET_VOICE_STATUS") % [vs["recorded"], vs["total"]], 11)
+	var vl := UiTheme.label(tr("SET_VOICE_STATUS") % [vs["recorded"], vs["total"], vs["ai"], vs["placeholder"] + vs["missing"]], 11)
 	vl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vl.custom_minimum_size = Vector2(260, 0)
 	c.add_child(vl)

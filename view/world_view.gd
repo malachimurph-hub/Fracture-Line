@@ -4,7 +4,9 @@ extends Node3D
 ## smooth 60+ fps rendering, applies fog visibility, and plays view-only effects.
 
 const VFX_COLORS := {"tracer": Color("#fff2b0"), "tracer_heavy": Color("#ffd166"), "missile": Color("#ff9b54"),
-	"shell": Color("#ffe08a"), "grenade": Color("#c9e86b"), "flak": Color("#f7f7f7")}
+	"shell": Color("#ffe08a"), "grenade": Color("#c9e86b"), "flak": Color("#f7f7f7"),
+	"rocket": Color("#ffb070"), "rocket_salvo": Color("#ffa060"), "tracer_quad": Color("#ffe9a8"),
+	"bomb": Color("#ffcf7a"), "rust_shell": Color("#b5d64a")}
 
 var runner: MatchRunner
 var sim: SimWorld
@@ -77,6 +79,8 @@ func _scene_for(e: SimEntity) -> String:
 			return Content.unit(e.def_id).view_scene
 		SimEntity.Kind.RESOURCE:
 			return "res://view/neutral/%s.tscn" % String(e.def_id)
+		SimEntity.Kind.CRATE:
+			return "res://view/neutral/salvage_crate.tscn"
 	return Content.building(e.def_id).view_scene
 
 func _ensure_view(e: SimEntity) -> EntityView:
@@ -88,12 +92,20 @@ func _ensure_view(e: SimEntity) -> EntityView:
 	v.set_team_material(Palette.team_material(sim.players[e.owner].color if e.owner >= 0 else -1))
 	v.position = _world_pos(e)
 	if e.kind == SimEntity.Kind.BUILDING or e.kind == SimEntity.Kind.NEUTRAL:
-		v.rotation.y = -e.rot * PI * 0.5 + (PI if e.rot == 0 else 0.0) * 0.0
 		v.rotation.y = [0.0, PI * 0.5, PI, -PI * 0.5][e.rot]
+		if e.kind == SimEntity.Kind.BUILDING and Content.btag(e.def_id, "hole") and v.model != null:
+			# a rebuild hole covers the footprint of the structure that died there
+			var hf: Vector2i = Content.building(e.def_id).footprint
+			v.model.scale = Vector3(float(e.fp.x) / maxf(1, hf.x), 1.0, float(e.fp.y) / maxf(1, hf.y))
+			v.footprint = Vector2(e.fp)
+	elif e.kind == SimEntity.Kind.CRATE:
+		v.rotation.y = float(e.id % 7) * 0.9
 	elif e.kind == SimEntity.Kind.UNIT:
 		var d: UnitDef = Content.unit(e.def_id)
 		if d.tags.has("infantry"):
 			v.scale = Vector3.ONE * 1.4
+		if e.tier > 0:
+			v.set_tier(e.tier)
 		if d.shield_aura_radius > 0:
 			var dome := MeshInstance3D.new()
 			var sm := SphereMesh.new()
@@ -114,7 +126,7 @@ func _ensure_view(e: SimEntity) -> EntityView:
 func on_tick(events: Array) -> void:
 	for ev in events:
 		match ev["t"]:
-			"spawn", "site":
+			"spawn", "site", "crate":
 				var e := sim.get_ent(int(ev["id"]))
 				if e != null:
 					_ensure_view(e)
@@ -122,6 +134,24 @@ func on_tick(events: Array) -> void:
 					prev[e.id] = cur[e.id]
 			"death":
 				_on_death(ev)
+			"salvage":
+				var su := sim.get_ent(int(ev["id"]))
+				if su != null and views.has(su.id):
+					views[su.id].set_tier(int(ev["tier"]))
+				if _visible_pos(ev["pos"]):
+					vfx.salvage_fx(FX.to_world(ev["pos"]), Palette.COLORS[sim.players[su.owner].color] if su != null else Color.WHITE)
+					AudioDirector.sfx("salvage", FX.to_world(ev["pos"]))
+			"crate_cash":
+				if _visible_pos(ev["pos"]):
+					vfx.salvage_fx(FX.to_world(ev["pos"]), Color("#ffd75e"))
+					AudioDirector.sfx("salvage", FX.to_world(ev["pos"]), -4.0)
+			"explode":
+				if _visible_pos(ev["pos"]):
+					vfx.big_blast(FX.to_world(ev["pos"]), float(ev["r"]) / FX.ONE)
+					AudioDirector.sfx("expl_huge", FX.to_world(ev["pos"]))
+			"rust_zone":
+				if _visible_pos(ev["pos"]) or local_team < 0:
+					vfx.rust_cloud(FX.to_world(ev["pos"]), float(ev["r"]) / FX.ONE, float(ev["ticks"]) / FX.TICK_HZ)
 			"fire":
 				_on_fire(ev)
 			"captured":
@@ -185,7 +215,7 @@ func _on_fire(ev: Dictionary) -> void:
 	var is_struct := src.kind != SimEntity.Kind.UNIT or src.res_id < 0
 	var snd: String = AudioDirector.weapon_sfx(_faction_of(src), kind, is_struct)
 	AudioDirector.sfx(snd, from, -3.0 if snd == "rifle" else 0.0)
-	if kind in ["shell", "missile", "grenade"]:
+	if kind in ["shell", "missile", "grenade", "rocket", "rocket_salvo"]:
 		AudioDirector.sfx("expl_small", to, -6.0)
 	match kind:
 		"shell":
@@ -198,6 +228,39 @@ func _on_fire(ev: Dictionary) -> void:
 			for k in 5:
 				vfx.trail(muzzle.lerp(to, (k + 0.5) / 5.0))
 			vfx.explosion(to - Vector3(0, 0.35, 0), 0.5)
+		"rocket":
+			# unguided RPG: wobbly smoke trail, small blast
+			vfx.tracer(muzzle, to, col, 0.04, 0.18)
+			vfx.muzzle(muzzle, dir, 0.16)
+			for k in 4:
+				vfx.trail(muzzle.lerp(to, (k + 0.5) / 4.0) + Vector3(randf_range(-0.08, 0.08), randf_range(-0.05, 0.08), randf_range(-0.08, 0.08)))
+			vfx.explosion(to - Vector3(0, 0.35, 0), 0.4)
+		"rocket_salvo":
+			# buggy rocket salvo: three staggered rockets around the target
+			for k in 3:
+				var off := Vector3(randf_range(-0.6, 0.6), 0, randf_range(-0.6, 0.6))
+				var top := from.lerp(to + off, 0.5) + Vector3(0, 1.2, 0)
+				vfx.tracer(muzzle, top, col, 0.035, 0.14)
+				vfx.tracer(top, to + off, col, 0.035, 0.16)
+				vfx.trail(top)
+				vfx.explosion(to + off - Vector3(0, 0.35, 0), 0.35)
+			vfx.muzzle(muzzle, dir, 0.2)
+		"tracer_quad":
+			# four-barrel AA: two pairs of fast tracers
+			for k in 2:
+				var o := Vector3(0, 0.05 * k, 0)
+				vfx.tracer(muzzle + o, to + o * 2.0, col, 0.025, 0.05)
+			vfx.muzzle(muzzle, dir, 0.16)
+			vfx.impact(to - Vector3(0, 0.3, 0), 0.18)
+		"rust_shell":
+			# lobbed toxic canister
+			var apex := from.lerp(to, 0.5) + Vector3(0, 2.0, 0)
+			vfx.tracer(muzzle, apex, col, 0.05, 0.2)
+			vfx.tracer(apex, to, col, 0.05, 0.25)
+			vfx.muzzle(muzzle, dir, 0.25)
+			vfx.impact(to - Vector3(0, 0.3, 0), 0.35)
+		"bomb":
+			pass   # the "explode" event draws the blast
 		"grenade":
 			vfx.tracer(from + Vector3(0, 0.4, 0), to, col, 0.04, 0.2)
 			vfx.explosion(to - Vector3(0, 0.35, 0), 0.4)
@@ -302,6 +365,7 @@ func frame(a: float, delta: float) -> void:
 			var show_mem := not vis and mem.has(id)
 			v.visible = (vis or show_mem) and not (icon_mode and e.kind == SimEntity.Kind.UNIT)
 			if e.kind == SimEntity.Kind.BUILDING:
+				v.set_ghosted(e.stealthy and (e.team == local_team or local_team < 0))
 				var k := 1.0 if e.built else 0.15 + 0.85 * float(e.progress) / float(maxi(1, e.build_ticks))
 				if v.model:
 					v.model.scale.y = k

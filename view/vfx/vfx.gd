@@ -19,6 +19,8 @@ var _decal_next := 0
 var _decal_t: PackedFloat32Array
 var _decal_age_acc := 0.0
 var sources: Array = []    ## lingering smoke columns [pos, t_left, strength, acc]
+var rust: Array = []       ## lingering rust (corrosive) clouds [pos, radius, t_left, acc]
+const RUST := Color("#9fbf3a")
 const DECAL_CAP := 160
 const SMOKE := Color("#3d3833")
 const DUST := Color("#c2a77e")
@@ -125,6 +127,31 @@ func building_destroyed(p: Vector3, fp: Vector2) -> void:
 	decal(p, r * 1.15, 2)
 	sources.append([p, 14.0, clampf(r * 0.6, 0.6, 1.4), 0.0])
 
+## TPLA corrosive "rust" cloud: sickly yellow-green haze that lingers over the zone.
+func rust_cloud(p: Vector3, radius: float, secs: float) -> void:
+	rust.append([p, radius, secs, 0.0])
+	decal(p, radius * 0.8, 0)
+
+func _rust_puff(p: Vector3, radius: float) -> void:
+	var a := randf() * TAU
+	var d := sqrt(randf()) * radius
+	var q := p + Vector3(cos(a) * d, 0.1, sin(a) * d)
+	smoke.emit(q, Vector3(randf_range(-0.15, 0.15), 0.25, randf_range(-0.15, 0.15)), 2.2, 0.35, 1.3, Color(RUST, 0.55), Color(0.45, 0.5, 0.2, 0.0))
+
+## Suicide truck / demo charge: big fireball with a shock ring.
+func big_blast(p: Vector3, radius: float) -> void:
+	explosion(p, 1.6 + radius * 0.25)
+	explosion(p + Vector3(randf_range(-0.5, 0.5), 0, randf_range(-0.5, 0.5)), 1.2)
+	ring(p, radius, Color("#ffcf7a"), 0.5, false)
+	decal(p, radius * 0.7, 1)
+
+## Salvage pickup: brief sparkle and a rising ring in the team colour.
+func salvage_fx(p: Vector3, col: Color) -> void:
+	flash(p + Vector3(0, 0.5, 0), Color("#fff3c4"), 0.35, 0.2)
+	ring(p, 1.0, col, 0.6, true)
+	for k in 6:
+		fire.emit(p + Vector3(0, 0.3, 0), Vector3(randf_range(-1.2, 1.2), randf_range(1.5, 3.0), randf_range(-1.2, 1.2)), 0.4, 0.08, 0.02, Color("#ffe9a0"), Color(1, 0.6, 0.2, 0), 1.0)
+
 func _take(kind: String, mesh: Mesh) -> MeshInstance3D:
 	var arr: Array = pool.get(kind, [])
 	var mi: MeshInstance3D
@@ -207,6 +234,16 @@ func _process(delta: float) -> void:
 		if src[1] > 0.0:
 			ks.append(src)
 	sources = ks
+	var kr: Array = []
+	for rz in rust:
+		rz[2] -= delta
+		rz[3] += delta
+		if rz[3] > 0.12:
+			rz[3] = 0.0
+			_rust_puff(rz[0], rz[1])
+		if rz[2] > 0.0:
+			kr.append(rz)
+	rust = kr
 	# decals fade out after ~90 s
 	_decal_age_acc += delta
 	if _decal_age_acc > 1.0:

@@ -16,6 +16,12 @@ const SFX := {
 	"flak": "res://audio/sfx/flak.ogg", "expl_small": "res://audio/sfx/explosion_small.ogg", "expl_large": "res://audio/sfx/explosion_large.ogg",
 	"collapse": "res://audio/sfx/building_collapse.ogg", "impact": "res://audio/sfx/impact_dirt.ogg", "body_fall": "res://audio/sfx/body_fall.ogg",
 	"construct": "res://audio/sfx/construct.ogg", "place": "res://audio/sfx/place_structure.ogg", "power_down": "res://audio/sfx/power_down.ogg",
+	# M2 (TPLA)
+	"tpla_carbine": "res://audio/sfx/tpla_carbine.ogg", "tpla_hmg": "res://audio/sfx/tpla_hmg.ogg", "tpla_quad": "res://audio/sfx/tpla_quad.ogg",
+	"tpla_rpg": "res://audio/sfx/tpla_rpg.ogg", "tpla_salvo": "res://audio/sfx/tpla_salvo.ogg", "tpla_scrap_cannon": "res://audio/sfx/tpla_scrap_cannon.ogg",
+	"tpla_rust_launch": "res://audio/sfx/tpla_rust_launch.ogg", "tpla_rust_sizzle": "res://audio/sfx/tpla_rust_sizzle.ogg",
+	"expl_huge": "res://audio/sfx/explosion_huge.ogg", "salvage": "res://audio/sfx/salvage.ogg", "tunnel": "res://audio/sfx/tunnel.ogg",
+	"trap_click": "res://audio/sfx/trap_click.ogg",
 }
 const UI := {"click": "res://audio/ui/click.ogg", "select": "res://audio/ui/select.ogg", "error": "res://audio/ui/error.ogg",
 	"confirm": "res://audio/ui/confirm.ogg", "alert": "res://audio/ui/alert.ogg", "build_ready": "res://audio/ui/build_ready.ogg"}
@@ -40,6 +46,7 @@ var _bags: Dictionary = {}           ## voice key -> Array of paths (shuffle bag
 var _last_line: Dictionary = {}      ## voice key -> last path
 var _variants: Dictionary = {}       ## voice key -> [paths, is_placeholder]
 var world_root: Node3D = null        ## set by the match; positional SFX parent
+var announcer_faction := "eu"        ## local player's faction: picks the announcer voice (M2)
 var music_track := ""
 
 func _init() -> void:
@@ -204,7 +211,13 @@ func _folder_of(faction: String, unit_id: String) -> String:
 	var fd: Dictionary = manifest.get("factions", {}).get(faction, {})
 	return str(fd.get("units", {}).get(unit_id, {}).get("folder", unit_id.trim_prefix(faction + "_")))
 
-## Variant list for a key: recorded lines first; else unit placeholder; else generic placeholder.
+func announcer_folder(fac: String = "") -> String:
+	var f := fac if fac != "" else announcer_faction
+	return str(manifest.get("announcer", {}).get("folders", {}).get(f, "announcer"))
+
+## Variant list for a key: [paths, source] with source 0 = your recording, 1 = AI-generated
+## voice, 2 = robotic placeholder. Lookup: res://audio/voice/ -> res://audio/voice_ai/ ->
+## res://audio/voice_placeholder/ (unit, then generic). Recordings always win.
 func variants(faction: String, folder: String, event: String) -> Array:
 	var key := faction + "/" + folder + "/" + event
 	if _variants.has(key):
@@ -212,11 +225,13 @@ func variants(faction: String, folder: String, event: String) -> Array:
 	var maxv := int(manifest.get("max_variants", 9))
 	var dirs: Array
 	if faction == "announcer":
-		dirs = [["res://audio/voice/announcer/", false], ["res://audio/voice_placeholder/announcer/", true]]
+		dirs = [["res://audio/voice/%s/" % folder, 0], ["res://audio/voice_ai/%s/" % folder, 1], ["res://audio/voice_placeholder/%s/" % folder, 2],
+			["res://audio/voice/announcer/", 0], ["res://audio/voice_ai/announcer/", 1], ["res://audio/voice_placeholder/announcer/", 2]]
 	else:
-		dirs = [["res://audio/voice/%s/%s/" % [faction, folder], false], ["res://audio/voice_placeholder/%s/%s/" % [faction, folder], true],
-			["res://audio/voice_placeholder/%s/_generic/" % faction, true]]
-	var out := [[], true]
+		dirs = [["res://audio/voice/%s/%s/" % [faction, folder], 0], ["res://audio/voice_ai/%s/%s/" % [faction, folder], 1],
+			["res://audio/voice_placeholder/%s/%s/" % [faction, folder], 2], ["res://audio/voice_placeholder/%s/_generic/" % faction, 2],
+			["res://audio/voice_placeholder/eu/_generic/", 2]]
+	var out := [[], 2]
 	for d in dirs:
 		var found: Array = []
 		for n in range(1, maxv + 1):
@@ -244,7 +259,7 @@ func _pick(key: String, paths: Array) -> String:
 	return p
 
 func _rule(faction: String, event: String) -> Dictionary:
-	if faction == "announcer":
+	if faction == "announcer" or faction.begins_with("announcer"):
 		return manifest.get("announcer", {}).get("events", {}).get(event, {"priority": 1, "cooldown": 1.0})
 	return manifest.get("events", {}).get(event, {"priority": 1, "cooldown": 0.0})
 
@@ -291,7 +306,7 @@ func announce(event: String) -> bool:
 	return _ann_play(event, prio)
 
 func _ann_play(event: String, prio: int) -> bool:
-	var v := variants("announcer", "announcer", event)
+	var v := variants("announcer", announcer_folder(), event)
 	if v[0].is_empty():
 		return false
 	var s := stream(_pick("ann/" + event, v[0]))
@@ -308,20 +323,30 @@ func _ann_next() -> void:
 		var e: String = _ann_queue.pop_front()
 		_ann_play(e, int(_rule("announcer", e).get("priority", 1)))
 
-## Honest status for Settings/credits: how many manifest lines are recorded vs placeholder.
+## Honest status for Settings/credits: manifest lines by source (your recording / AI voice /
+## robotic placeholder / silent).
 func voice_status() -> Dictionary:
-	var rec := 0
+	var counts := [0, 0, 0]
 	var total := 0
+	var missing := 0
 	for fac in manifest.get("factions", {}):
 		var fd: Dictionary = manifest["factions"][fac]
 		for uid in fd.get("units", {}):
 			var ud: Dictionary = fd["units"][uid]
 			for ev in ud.get("events", []):
 				total += 1
-				if not variants(fac, str(ud["folder"]), ev)[1]:
-					rec += 1
-	for ev in manifest.get("announcer", {}).get("events", {}):
-		total += 1
-		if not variants("announcer", "announcer", ev)[1]:
-			rec += 1
-	return {"recorded": rec, "total": total}
+				var v := variants(fac, str(ud["folder"]), ev)
+				if v[0].is_empty():
+					missing += 1
+				else:
+					counts[int(v[1])] += 1
+	var folders: Dictionary = manifest.get("announcer", {}).get("folders", {"eu": "announcer"})
+	for f in folders:
+		for ev in manifest.get("announcer", {}).get("faction_events", {}).get(f, manifest.get("announcer", {}).get("events", {}).keys()):
+			total += 1
+			var v2 := variants("announcer", str(folders[f]), ev)
+			if v2[0].is_empty():
+				missing += 1
+			else:
+				counts[int(v2[1])] += 1
+	return {"recorded": counts[0], "ai": counts[1], "placeholder": counts[2], "missing": missing, "total": total}

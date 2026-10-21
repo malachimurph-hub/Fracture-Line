@@ -16,7 +16,15 @@ import json, os, re, subprocess, sys, tempfile
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 MAN = json.load(open(os.path.join(ROOT, "data", "audio", "voice_manifest.json")))
 EXTS = (".wav", ".m4a", ".mp3", ".ogg", ".flac", ".aac", ".opus", ".3gp", ".amr", ".webm")
-RADIO = "highpass=f=320,lowpass=f=3300,acompressor=threshold=-20dB:ratio=5:attack=4:release=80:makeup=4,asoftclip=type=tanh,highpass=f=300,lowpass=f=3500"
+# Per-faction radio styles (unit lines). EU: clean military handset. TPLA: rougher scavenged
+# walkie-talkie (narrower band, harder drive, slight bit-crush grit). Announcers: "ann_*".
+RADIO_STYLES = {
+    "eu": "highpass=f=320,lowpass=f=3300,acompressor=threshold=-20dB:ratio=5:attack=4:release=80:makeup=4,asoftclip=type=tanh,highpass=f=300,lowpass=f=3500",
+    "tpla": "highpass=f=420,lowpass=f=2900,acompressor=threshold=-22dB:ratio=6:attack=3:release=60:makeup=5,asoftclip=type=tanh:threshold=0.6,acrusher=bits=11:mix=0.18:mode=log,highpass=f=380,lowpass=f=3100",
+    "ann_eu": "highpass=f=90,acompressor=threshold=-18dB:ratio=2.5:attack=8:release=120:makeup=2",
+    "ann_tpla": "highpass=f=160,lowpass=f=6500,acompressor=threshold=-20dB:ratio=3:attack=6:release=100:makeup=2.5,aecho=0.8:0.5:22:0.12",
+}
+RADIO = RADIO_STYLES["eu"]
 TRIM = "silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.04,areverse,silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.08,areverse"
 
 def known():
@@ -25,6 +33,11 @@ def known():
         for uid, ud in fd["units"].items():
             folders[(fac, ud["folder"])] = ud["events"]
     return folders, list(MAN["events"].keys()), list(MAN["announcer"]["events"].keys())
+
+def ann_folders():
+    """announcer folder -> faction (announcer -> eu, announcer_tpla -> tpla), longest first."""
+    fo = MAN["announcer"].get("folders", {"eu": "announcer"})
+    return sorted(((v, k) for k, v in fo.items()), key=lambda x: -len(x[0]))
 
 def parse(path):
     """-> (rel_dir, event, n or None, radio_default)"""
@@ -36,15 +49,18 @@ def parse(path):
     parent = p.split("/")[-3:-1]
     if len(parent) == 2 and (parent[0], parent[1]) in folders:
         stem = f"{parent[0]}_{parent[1]}_{stem}"
-    elif parent and parent[-1] == "announcer" and not stem.startswith("announcer"):
-        stem = "announcer_" + stem
+    elif parent and parent[-1].startswith("announcer") and not stem.startswith("announcer"):
+        stem = parent[-1] + "_" + stem
     m = re.match(r"^(.*?)(?:_(\d))?$", stem)
     base, n = m.group(1), (int(m.group(2)) if m.group(2) else None)
-    if base.startswith("announcer_"):
-        ev = base[len("announcer_"):]
-        if ev in ann_events:
-            return ("announcer", ev, n, MAN["announcer"]["radio"])
-        raise ValueError(f"unknown announcer event '{ev}'")
+    for afolder, afac in ann_folders():
+        if base.startswith(afolder + "_"):
+            ev = base[len(afolder) + 1:]
+            if ev in ann_events:
+                return (afolder, ev, n, MAN["announcer"]["radio"])
+            if afolder == "announcer" and any(ev.startswith(o[0][len("announcer_"):] + "_") for o in ann_folders() if o[0] != "announcer"):
+                continue
+            raise ValueError(f"unknown announcer event '{ev}'")
     for (fac, folder), evs in folders.items():
         pre = f"{fac}_{folder}_"
         if base.startswith(pre):
@@ -59,11 +75,29 @@ def loud(path):
     js = r.stderr[r.stderr.rfind("{"):r.stderr.rfind("}") + 1]
     return json.loads(js)
 
-def process(src, dst, radio):
+def style_for(rel):
+    """Radio style key for a destination folder such as 'tpla/rattler' or 'announcer_tpla'."""
+    top = rel.replace("\\", "/").split("/")[0]
+    if top.startswith("announcer"):
+        for afolder, afac in ann_folders():
+            if top == afolder:
+                return "ann_" + afac
+        return "ann_eu"
+    return MAN["factions"].get(top, {}).get("radio_style", "eu")
+
+def process(src, dst, radio, style=None):
+    """radio: True -> unit radio filter of `style` (default EU); False -> clean, or the light
+    announcer colour when style starts with 'ann_'."""
     os.makedirs(os.path.dirname(dst), exist_ok=True)
     with tempfile.TemporaryDirectory() as td:
         a = os.path.join(td, "a.wav")
-        chain = TRIM + ("," + RADIO if radio else "")
+        st = style or "eu"
+        if radio:
+            chain = TRIM + "," + RADIO_STYLES.get(st if not st.startswith("ann_") else "eu", RADIO)
+        elif st.startswith("ann_"):
+            chain = TRIM + "," + RADIO_STYLES[st]
+        else:
+            chain = TRIM
         subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", src, "-ac", "1", "-ar", "48000", "-af", chain, a], check=True)
         dur = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", a], capture_output=True, text=True).stdout.strip() or 0)
         m = loud(a)
@@ -115,7 +149,7 @@ def main(argv):
         used.add(dst)
         if dry:
             print("would import", f, "->", os.path.relpath(dst, ROOT), "radio" if radio else "clean"); ok += 1; continue
-        d = process(f, dst, radio)
+        d = process(f, dst, radio, style_for(rel))
         print("OK", os.path.relpath(dst, ROOT), f"{d:.2f}s", "radio" if radio else "clean"); ok += 1
     print(f"imported {ok}, skipped {bad}. Re-open the Godot project (or run --import) so the new .ogg files are picked up.")
     return 0 if bad == 0 else 1

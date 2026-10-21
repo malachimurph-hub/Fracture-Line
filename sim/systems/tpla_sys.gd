@@ -267,7 +267,7 @@ static func evacuate(w: SimWorld, t: SimEntity) -> void:
 		u.path = []
 		u.path_goal = Vector2i(-1, -1)
 		u.target = 0
-		w.events.append({"t": "unload", "id": u.id, "b": t.id})
+		w.events.append({"t": "evacuate", "id": u.id, "b": t.id})
 		i += 1
 
 static func _tunnel_heal(w: SimWorld) -> void:
