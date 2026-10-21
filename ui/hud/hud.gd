@@ -326,7 +326,7 @@ func blocks(p: Vector2) -> bool:
 	if pause_menu.visible:
 		return true
 	for b in blockers:
-		if b.is_visible_in_tree() and b.get_global_rect().has_point(p):
+		if is_instance_valid(b) and b.is_visible_in_tree() and b.get_global_rect().has_point(p):
 			return true
 	return false
 
@@ -354,6 +354,7 @@ func _process(delta: float) -> void:
 		if a["t"] > 0:
 			keep.append(a)
 		else:
+			blockers.erase(a["node"])
 			a["node"].queue_free()
 	alerts = keep
 
@@ -750,6 +751,12 @@ func alert(key: String, text: String, pos: Vector2i, throttle_s: float = 8.0) ->
 		return
 	_throttle[tk] = now
 	last_alert_pos = pos
+	# one live alert per kind: a newer one replaces the older (no stacked duplicates)
+	for a: Dictionary in alerts.duplicate():
+		if a.get("key", "") == key:
+			alerts.erase(a)
+			blockers.erase(a["node"])
+			a["node"].queue_free()
 	var b := UiTheme.button(text, Vector2(160, 40))
 	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	b.add_theme_font_size_override("font_size", 12)
@@ -758,9 +765,10 @@ func alert(key: String, text: String, pos: Vector2i, throttle_s: float = 8.0) ->
 		back_btn.visible = true)
 	alerts_box.add_child(b)
 	blockers.append(b)
-	alerts.append({"node": b, "t": 6.0})
+	alerts.append({"node": b, "t": 6.0, "key": key})
 	if alerts.size() > 3:
 		var old: Dictionary = alerts.pop_front()
+		blockers.erase(old["node"])
 		old["node"].queue_free()
 	if pos.x >= 0:
 		minimap.ping(Vector2(FX.to_world(pos).x, FX.to_world(pos).z))
