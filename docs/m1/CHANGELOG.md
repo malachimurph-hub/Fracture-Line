@@ -1,5 +1,14 @@
 # FRACTURE LINE: Changelog
 
+## 0.1.1-m1 (2026-10-21), hotfix: blank screen after tapping Skirmish on Android
+APK: `FractureLine-M1.1.apk` (versionCode 2, installs over 0.1.0-m1).
+
+- **Fixed:** tapping **Skirmish** showed an empty screen on the phone. The lobby script called `Image.create()`. That is a deprecated alias of `Image.create_empty()`, and the size-optimized engine used for the APK is built without deprecated APIs (`deprecated=no`). The lobby script therefore failed to compile on the device and the screen came up empty. The HUD minimap and the terrain fog had the same problem, and would have broken the match next. All of them now use `Image.create_empty()`.
+- **New:** scene changes are validated. If a screen fails to load or its scripts fail to compile, the game shows a **"Something went wrong"** panel with the error text instead of a blank screen. The panel has **Copy error log** (clipboard) and **Main menu** buttons, and the log is also saved to `user://last_error.txt`.
+- **New:** engine and script errors are captured in-game for that panel. Godot file logging is enabled, writing to `user://logs/godot.log`.
+- **New test:** a rendered UI flow test runs in the *exported* build on the same stripped engine profile as the APK: main menu, tap Skirmish, lobby, tap Start battle, the match runs. It also checks that every screen's scripts compile on that engine.
+- Version 0.1.1-m1.
+
 ## 0.1.0-m1 (2026-10-21), Milestone 1: playable skirmish vertical slice
 
 This is the first playable build. It is skirmish-only, as decided in GDD v0.5. There is no campaign and no tutorial.

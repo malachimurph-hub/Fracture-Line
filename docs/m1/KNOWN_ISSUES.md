@@ -1,4 +1,6 @@
 # FRACTURE LINE M1: Known issues
+
+> **0.1.1-m1 update:** 0.1.0-m1 showed a blank screen after tapping Skirmish on Android (fixed; see CHANGELOG). The desktop tests missed it because they ran on the full editor engine, which still has deprecated APIs. The exported-build tests were headless and never loaded the UI scripts. A rendered UI flow test on the exported, stripped engine now covers this. The fix is still **not confirmed on the S24 Ultra**: an Android emulator could not run on the box (no KVM access), so there is no logcat. Evidence: the 0.1.1 APK's own assets were run on the matching stripped engine (Linux build, Vulkan Mobile via llvmpipe), and tapping Skirmish then Start battle opens the lobby and the match.
 Build 0.1.0-m1, project commit ac97149 (the APK and web build were exported from 038490e; ac97149 only changes a test cap).
 
 ## Verification results (actual)
