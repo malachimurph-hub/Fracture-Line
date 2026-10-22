@@ -417,6 +417,8 @@ func step() -> void:
 	if prof != null: t = _pt("econ_prod_power", t)
 	# 10 faction mechanics (TPLA: stealth, traps, salvage, holes, tunnels, rust zones)
 	TplaSys.run(self)
+	# M2.4 roster mechanics (transports, heal auras)
+	RosterSys.run(self)
 	if prof != null: t = _pt("tpla", t)
 	# 11 fog (5 Hz)
 	if tick % 4 == 0:
@@ -456,6 +458,8 @@ func _kill(e: SimEntity, attacker: SimEntity) -> void:
 		value = udef(e).cost
 		if e.owner >= 0:
 			players[e.owner].stats["lost"] += 1
+		if udef(e).transport_capacity > 0:
+			RosterSys.unload(self, e, 40)   # passengers bail out of the wreck, stunned 2 s
 		TplaSys.on_unit_death(self, e)
 	elif e.kind == SimEntity.Kind.BUILDING or e.kind == SimEntity.Kind.NEUTRAL:
 		value = bdef(e).cost / 2 + 200

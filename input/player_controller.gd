@@ -357,6 +357,18 @@ func smart_command(screen: Vector2) -> void:
 			issue({"t": "attack", "ids": units, "target": t.id, "q": q})
 			world.marker(t.pos, Color("#ff4a3d"))
 			return
+	elif t != null and t.owner == pid and t.kind == SimEntity.Kind.UNIT and Content.unit(t.def_id).transport_capacity > 0 and not units.has(t.id):
+		# infantry tapped onto an own transport: board it (M2.4)
+		var inf: Array = []
+		for id in _filter(units, "infantry"):
+			if not Content.unit(sim.ents[id].def_id).tags.has("builder"):
+				inf.append(id)
+		if not inf.is_empty():
+			issue({"t": "garrison", "ids": inf, "target": t.id, "q": q})
+			world.marker(t.pos, Color("#7dff8a"))
+			units = _minus(units, inf)
+			if units.is_empty():
+				return
 	elif t != null and t.kind == SimEntity.Kind.BUILDING and not t.built:
 		var b := _filter(units, "builder")
 		if not b.is_empty():

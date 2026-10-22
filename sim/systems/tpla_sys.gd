@@ -24,11 +24,13 @@ const REVEAL_AFTER_FIRE := 60
 static func run(w: SimWorld) -> void:
 	if not w.pending_holes.is_empty():
 		_open_holes(w)
+	if w.tick % 4 == 1:
+		# hidden structures and traps exist for both factions since M2.4 (EU Minefield)
+		_stealth(w)
+		_traps(w)
 	if not w.has_tpla and w.zones.is_empty():
 		return
 	if w.tick % 4 == 1:
-		_stealth(w)
-		_traps(w)
 		_crates(w)
 	if w.tick % 10 == 3 and not w.zones.is_empty():
 		_zones(w)
@@ -39,6 +41,11 @@ static func run(w: SimWorld) -> void:
 # ------------------------------------------------------------------ stealth / traps
 static func _stealth(w: SimWorld) -> void:
 	var nets := {}
+	var dets: Array = []   # detector units (Sentinel Outpost, Earwig Van) see hidden things in sight
+	for id in w.ids:
+		var d: SimEntity = w.ents[id]
+		if d.alive and d.kind == SimEntity.Kind.UNIT and d.res_id >= 0 and d.team >= 0 and w.udef(d).detector:
+			dets.append(d)
 	for id in w.ids:
 		var e: SimEntity = w.ents[id]
 		if e.alive and e.kind == SimEntity.Kind.BUILDING and e.built and Content.btag(e.def_id, "camo"):
@@ -68,6 +75,10 @@ static func _stealth(w: SimWorld) -> void:
 			for u: SimEntity in w.units_in_radius(e.pos, DETECT + e.radius):
 				if u.team >= 0 and w.enemies(u.team, e.team):
 					mask |= 1 << u.team
+			for d: SimEntity in dets:
+				var sr: int = w.udef(d).sight * FX.ONE
+				if w.enemies(d.team, e.team) and FX.dist2(d.pos, e.pos) <= sr * sr:
+					mask |= 1 << d.team
 		e.stealth_mask = mask
 
 static func _traps(w: SimWorld) -> void:
@@ -86,7 +97,8 @@ static func _traps(w: SimWorld) -> void:
 static func detonate_trap(w: SimWorld, t: SimEntity) -> void:
 	if not t.alive:
 		return
-	CombatSys.explode(w, t, t.pos, Content.weapon(&"tpla_demo_charge"), 100)
+	var wid := &"eu_mine_charge" if Content.btag(t.def_id, "mine") else &"tpla_demo_charge"
+	CombatSys.explode(w, t, t.pos, Content.weapon(wid), 100)
 	w._kill(t, null)
 
 # ------------------------------------------------------------------ salvage

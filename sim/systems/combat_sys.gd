@@ -17,6 +17,7 @@ const REPAIR_IDLE_TICKS := 200
 static func run(w: SimWorld) -> void:
 	if w.tick % 20 == 10:
 		_base_repair(w)
+	var js := RosterSys.jammers(w)
 	for id in w.ids:
 		var e: SimEntity = w.ents[id]
 		if not e.alive:
@@ -34,7 +35,7 @@ static func run(w: SimWorld) -> void:
 					t = null
 			if not e.cds.is_empty():
 				_aim(w, e, t)
-			if t != null:
+			if t != null and not RosterSys.is_jammed(w, e, js):
 				_fire_unit(w, e, t)
 			# heroic self-heal 1% / s
 			if e.vet >= 3 and w.tick % 20 == 0 and e.hp < e.max_hp:

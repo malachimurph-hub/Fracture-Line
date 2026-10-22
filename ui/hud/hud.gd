@@ -523,6 +523,10 @@ func _refresh_selection_info() -> void:
 			lines.append(tr("HUD_SALVAGE_TIER") % e.tier)
 		if ud.harvest_capacity > 0:
 			lines.append(tr("HUD_CARRY") % [e.carry, ud.harvest_capacity])
+		if ud.transport_capacity > 0:
+			lines.append(tr("HUD_PASSENGERS") % [RosterSys.passengers(sim, e).size(), ud.transport_capacity])
+		if e.owner >= 0 and RosterSys.is_jammed(sim, e, RosterSys.jammers(sim)):
+			lines.append(tr("HUD_JAMMED"))
 		if not ud.stubs.is_empty():
 			lines.append("[STUB] " + ", ".join(Array(ud.stubs)))
 		if e.owner == pid:
@@ -707,8 +711,10 @@ func _make_card() -> Array:
 				if r != 0:
 					ctl.issue({"t": "harvest", "ids": hv, "target": r})})
 		var ud := Content.unit(e.def_id)
-		if ud.stubs.has("transport"):
-			out.append({"text": tr("CMD_LOAD"), "stub": true, "disabled": true, "tip": tr("STUB_TRANSPORT")})
+		if ud.transport_capacity > 0 and units.size() == 1:
+			var n_in := RosterSys.passengers(sim, e).size()
+			out.append({"text": tr("CMD_UNLOAD"), "sub": "%d / %d" % [n_in, ud.transport_capacity], "disabled": n_in == 0,
+				"act": func(): ctl.issue({"t": "unload", "ids": [e.id]}), "tip": tr("STUB_TRANSPORT"), "accent": Color("#ffd166")})
 		return out
 	if e.kind == SimEntity.Kind.NEUTRAL and e.owner == pid:
 		out.append({"text": tr("CMD_UNLOAD"), "act": func(): ctl.issue({"t": "unload", "ids": [e.id]})})
@@ -735,7 +741,7 @@ func _make_card() -> Array:
 			prog = float(e.q_progress) / float(maxi(1, FX.ms_to_ticks(udf.build_time_ms) * 2))
 		out.append({"text": tr(udf.name_key), "sub": "$%d" % udf.cost, "badge": str(n) if n > 0 else "",
 			"act": ctl.queue_unit.bind(e, StringName(uid), 1), "alt": func(): ctl.dequeue(e, e.queue.rfind(StringName(uid))),
-			"disabled": why2 != "" or e.queue.size() >= 9, "progress": prog, "stub": not udf.stubs.is_empty(),
+			"disabled": why2 != "" or e.queue.size() >= 9 or udf.tags.has("stub"), "progress": prog, "stub": not udf.stubs.is_empty(),
 			"tip": tr(udf.name_key) + ("  [" + tr("HUD_LONGPRESS_CANCEL") + "]"), "accent": UiTheme.GOLD})
 	if not bd2.produces.is_empty():
 		while out.size() < 5:

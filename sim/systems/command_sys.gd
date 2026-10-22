@@ -45,6 +45,12 @@ static func apply(w: SimWorld, c: Dictionary) -> void:
 					u.orders = [{"o": "harvest"}]
 		"garrison":
 			var b := w.get_ent(int(c.get("target", 0)))
+			if RosterSys.capacity(w, b) > 0:
+				if b.owner == pid:
+					for u: SimEntity in _own_units(w, pid, c):
+						if u.id != b.id and RosterSys.can_board(w, u):
+							_push(u, {"o": "garrison", "target": b.id}, bool(c.get("q", false)))
+				return
 			if TplaSys.is_tunnel(w, b) and b.owner == pid and b.built:
 				for u: SimEntity in _own_units(w, pid, c):
 					_push(u, {"o": "garrison", "target": b.id}, bool(c.get("q", false)))
@@ -67,6 +73,9 @@ static func apply(w: SimWorld, c: Dictionary) -> void:
 		"unload":
 			for id in c.get("ids", []):
 				var b3 := w.get_ent(int(id))
+				if RosterSys.capacity(w, b3) > 0 and b3.owner == pid:
+					RosterSys.unload(w, b3)
+					continue
 				if TplaSys.is_tunnel(w, b3) and b3.owner == pid and b3.built:
 					TplaSys.evacuate(w, b3)
 					continue
@@ -252,6 +261,9 @@ static func _queue(w: SimWorld, pid: int, c: Dictionary) -> void:
 	if not bd.produces.has(String(uid)):
 		return
 	var ud: UnitDef = Content.unit(uid)
+	if ud.tags.has("stub"):   # [STUB] aircraft: listed in the build tree, not producible yet
+		w.events.append({"t": "reject", "owner": pid, "reason": "REASON_STUB"})
+		return
 	if w.prereqs_met(pid, ud.prereqs) != "":
 		w.events.append({"t": "reject", "owner": pid, "reason": "REASON_PREREQ"})
 		return

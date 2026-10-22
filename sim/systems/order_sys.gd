@@ -137,6 +137,13 @@ static func _think(w: SimWorld, u: SimEntity) -> void:
 			EconSys.harvest_think(w, u)
 		"garrison":
 			var b := w.get_ent(int(o["target"]))
+			if b != null and b.kind == SimEntity.Kind.UNIT:
+				var r := RosterSys.board(w, u, b)
+				if r < 0:
+					_pop(u)
+				elif r == 0 and (u.goal == NONE or FX.dist2(u.goal, b.pos) > TILE * TILE):
+					_goto(u, b.pos)
+				return
 			if b == null or (b.owner >= 0 and b.owner != u.owner and w.enemies(b.team, u.team)):
 				_pop(u)
 				return
