@@ -158,7 +158,6 @@ func run() -> void:
 		eu_ids.append(_tough(_unit(&"eu_grenadier", 0, u + Vector2i(9 + i * 1, 5))).id)
 		tp_ids.append(_tough(_unit(&"tpla_militia", 1, u + Vector2i(9 + i * 1, 2))).id)
 	await frames(6)
-	sim._kill(dead, null)
 	# let them face off and start shooting
 	m.cam.jump_to(FX.to_world(FX.tile_center(u + Vector2i(7, 4))), false)
 	m.cam.set_level(0)
@@ -169,8 +168,13 @@ func run() -> void:
 	m.cam.set_level(0)
 	await frames(25)
 	await shot("barracks_construction")
+	# destroyed state: killed outside a sim step, so hand the death event to the view directly
+	sim._kill(dead, null)
+	for ev in sim.events:
+		if ev["t"] == "death" and int(ev["id"]) == dead.id:
+			m.world._on_death(ev)
 	m.cam.jump_to(FX.to_world(FX.tile_center(o + Vector2i(9, 6))), false)
-	await frames(25)
+	await frames(12)
 	await shot("barracks_damage")
 	m.cam.jump_to(FX.to_world(FX.tile_center(o + Vector2i(10, 5))), false)
 	m.cam.set_level(1)
