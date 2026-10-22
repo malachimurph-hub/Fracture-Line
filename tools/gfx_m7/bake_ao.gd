@@ -9,7 +9,7 @@ extends SceneTree
 ## pass is idempotent; re-running a generator produces fresh (unbaked) meshes.
 ## Mobile cost: zero (same vertex format and count).
 const SKIP_CLS := [2, 5, 7, 8, 15, 18, 19]
-const STRENGTH := 0.8
+const STRENGTH := 0.75
 const AO_MIN := 0.32
 var dirs: Array = []
 
@@ -104,7 +104,7 @@ func _bake_scene(path: String) -> bool:
 	await physics_frame
 	var space := body.get_world_3d().direct_space_state
 	var size := (hi - lo)
-	var reach := clampf(maxf(size.x, size.z) * 0.16, 0.14, 0.6)
+	var reach := clampf(maxf(size.x, size.z) * 0.11, 0.12, 0.34)
 	var q := PhysicsRayQueryParameters3D.new()
 	q.hit_back_faces = true
 	var tris := 0
