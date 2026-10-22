@@ -158,13 +158,46 @@ static func _unit_orders(w: SimWorld, pid: int, c: Dictionary, t: String) -> voi
 	var slots := formation_slots(w, center_tile, units.size(), w.is_vehicle(units[0]))
 	# assign slots in a stable way: sort units by distance to target
 	units.sort_custom(func(a, b): return FX.dist2(a.pos, pos) < FX.dist2(b.pos, pos) if FX.dist2(a.pos, pos) != FX.dist2(b.pos, pos) else a.id < b.id)
+	var caps := group_speed(w, units)
 	for i in units.size():
 		var u: SimEntity = units[i]
 		var dest := pos if units.size() == 1 else FX.tile_center(slots[i])
 		# harvesters ordered to move simply move
-		_push(u, {"o": t, "pos": dest}, bool(c.get("q", false)))
+		var o := {"o": t, "pos": dest}
+		if caps.has(u.id):
+			o["spd"] = caps[u.id]
+		_push(u, o, bool(c.get("q", false)))
 		if t == "guard":
 			u.home = dest
+
+## Zero Hour-style group move (studied from ZH's AIGroup, reimplemented): a group travels at the
+## speed of its slowest member so it arrives together. Only units within GROUP_RADIUS of the
+## group's centre are capped; stragglers catch up at full speed. Returns id -> cap (fx/tick).
+const GROUP_RADIUS := FX.ONE * 10
+static func group_speed(w: SimWorld, units: Array) -> Dictionary:
+	var out := {}
+	if units.size() < 2:
+		return out
+	var cx := 0
+	var cy := 0
+	for u: SimEntity in units:
+		cx += u.pos.x
+		cy += u.pos.y
+	var cen := Vector2i(cx / units.size(), cy / units.size())
+	var near: Array = []
+	var slow := 1 << 30
+	var fast := 0
+	for u: SimEntity in units:
+		if FX.dist(u.pos, cen) <= GROUP_RADIUS:
+			near.append(u)
+			var s := FX.speed_per_tick(w.udef(u).speed_mtps)
+			slow = mini(slow, s)
+			fast = maxi(fast, s)
+	if near.size() < 2 or slow == fast:
+		return out
+	for u: SimEntity in near:
+		out[u.id] = slow
+	return out
 
 static func formation_slots(w: SimWorld, center: Vector2i, n: int, vehicle: bool) -> Array:
 	var out: Array = []

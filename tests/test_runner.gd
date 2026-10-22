@@ -1066,6 +1066,7 @@ func test_zh() -> void:
 	_zh_weapons()
 	_zh_scatter()
 	_zh_victims()
+	_zh_group()
 
 func _zh_loco() -> void:
 	var r := _zh_runner()
@@ -1234,3 +1235,42 @@ func _zh_victims() -> void:
 	_check(h == 1, "hard AI focus-fires one victim")
 	_check(m >= 2, "medium AI: each unit fights its nearest enemy")
 	_check(e >= 2, "easy AI spreads fire")
+
+## Arrival-tick gap of a Leopold + Wolfhound pair: one group move, or two separate moves to the same slots.
+func _zh_pair_gap(grouped: bool) -> Array:
+	var r := _zh_runner(47)
+	var w := r.sim
+	var c := _zh_open(w, 7)
+	var tank := w.spawn_unit(&"eu_leopold", 0, null, FX.tile_center(c + Vector2i(-1, -6)))
+	tank.pos = FX.tile_center(c + Vector2i(-1, -6))
+	var jeep := w.spawn_unit(&"eu_wolfhound", 0, null, FX.tile_center(c + Vector2i(1, -6)))
+	jeep.pos = FX.tile_center(c + Vector2i(1, -6))
+	r.issue({"p": 0, "t": "move", "ids": [tank.id, jeep.id], "pos": FX.tile_center(c + Vector2i(0, 6))})
+	_ticks(r, 1)
+	var cap := int(jeep.orders[0].get("spd", 0)) if not jeep.orders.is_empty() else 0
+	if not grouped:
+		var tp: Vector2i = tank.orders[0]["pos"]
+		var jp: Vector2i = jeep.orders[0]["pos"]
+		r.issue({"p": 0, "t": "move", "ids": [tank.id], "pos": tp})
+		r.issue({"p": 0, "t": "move", "ids": [jeep.id], "pos": jp})
+	var arrive := {}
+	for i in 400:
+		r.advance()
+		for u: SimEntity in [tank, jeep]:
+			if not arrive.has(u.id) and u.orders.is_empty() and u.goal == Vector2i(-1, -1):
+				arrive[u.id] = i
+		if arrive.size() == 2:
+			break
+	var single_ok := true
+	r.issue({"p": 0, "t": "move", "ids": [jeep.id], "pos": FX.tile_center(c + Vector2i(0, -6))})
+	_ticks(r, 1)
+	single_ok = jeep.orders.is_empty() or not jeep.orders[0].has("spd")
+	return [cap, int(arrive.get(tank.id, 999)) - int(arrive.get(jeep.id, 0)), single_ok]
+
+func _zh_group() -> void:
+	var g := _zh_pair_gap(true)
+	var s := _zh_pair_gap(false)
+	print("  tank-vs-jeep arrival gap: group move %d ticks, separate moves %d ticks" % [g[1], s[1]])
+	_check(int(g[0]) == FX.speed_per_tick(1650), "group move caps the fast unit at the slowest member's speed (%d)" % g[0])
+	_check(absi(int(g[1])) * 2 <= absi(int(s[1])), "mixed group arrives together (gap %d vs %d)" % [g[1], s[1]])
+	_check(bool(g[2]), "single-unit move is not capped")

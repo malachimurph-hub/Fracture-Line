@@ -53,8 +53,10 @@ static func max_step(w: SimWorld, u: SimEntity, d: UnitDef) -> int:
 		step = step * 110 / 100
 	if veh and u.hp * 100 < u.max_hp * DAMAGED_PCT:
 		step = step * DAMAGED_SPEED / 100
-	if u.gspd > 0:
-		step = mini(step, u.gspd)
+	if not u.orders.is_empty():
+		var cap := int(u.orders[0].get("spd", 0))
+		if cap > 0:
+			step = mini(step, cap)
 	return maxi(step, 8)
 
 ## Speed the locomotor wants given heading error `rel` (ANG units) toward the waypoint.

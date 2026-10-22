@@ -73,7 +73,6 @@ var stealth_mask: int = 0               ## bit per team that currently detects i
 # M2.3 locomotion / aiming (fixed-point angles, FX.ANG per turn)
 var face: int = 0                       ## hull heading
 var spd: int = 0                        ## current speed, fx per tick
-var gspd: int = 0                       ## group speed cap for this move (0 = none)
 var tface: int = 0                      ## turret heading (absolute)
 var pre: Array = []                     ## per weapon: pre-attack ticks left (0 = idle)
 var pre_ok: Array = []                  ## per weapon: target id whose pre-attack is done
@@ -93,7 +92,7 @@ const _FIELDS := ["id", "kind", "def_id", "owner", "team", "pos", "hp", "max_hp"
 	"carry", "res_id", "phase", "phase_t", "overcharge_until", "dir", "moving", "aura_tick", "tile", "fp", "rot", "built",
 	"progress", "build_ticks", "queue", "q_progress", "q_paid", "rally", "rally_attack", "repeat", "powered", "gridded", "hold_reason",
 	"amount", "max_amount", "tier", "aux_def", "aux_t", "stealthy", "stealth_mask",
-	"face", "spd", "gspd", "tface", "pre", "pre_ok", "ammo"]
+	"face", "spd", "tface", "pre", "pre_ok", "ammo"]
 
 func to_dict() -> Dictionary:
 	var d := {}

@@ -140,7 +140,6 @@ static func _set_pos(u: SimEntity, np: Vector2i) -> void:
 
 static func _arrive(u: SimEntity) -> void:
 	u.spd = 0
-	u.gspd = 0
 	u.done_goal = u.goal
 	u.goal = NONE
 	u.path = []
