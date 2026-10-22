@@ -72,6 +72,36 @@ def accent(sent, kind):
         s = s.replace(a, b)
     return list(s)
 
+KOKORO = os.environ.get("FL_KOKORO_DIR", "/workspace/tools/tts")
+_kok = None
+
+def kokoro_phonemes(text, kind="me"):
+    """English text -> accented IPA string in Kokoro's phoneme set (no ˤ; ʧ/ʤ; glottal onsets)."""
+    out = []
+    for sent in phonemize_en(text):
+        s = "".join(accent(sent, kind))
+        s = s.replace("ˤ", "").replace("tʃ", "ʧ").replace("dʒ", "ʤ").replace("ɡ", "ɡ")
+        # Arabic speakers start vowel-initial words with a glottal stop (hamza)
+        s = re.sub(r"(^|\s)(ˈ|ˌ)?([aeiouɑɔəɛɪʊʌæ])", lambda m: m.group(1) + "ʔ" + (m.group(2) or "") + m.group(3), s)
+        out.append(s)
+    return " ".join(out)
+
+def synth_kokoro(text, voice_mix, kind="me", speed=0.95):
+    """M2.6 licence-clean prompt speaker: Kokoro-82M (Apache-2.0 weights) male voice(s), driven
+    directly with accented phonemes. voice_mix: "em_alex:0.6,hm_omega:0.4" style blend."""
+    global _kok
+    from kokoro_onnx import Kokoro
+    if _kok is None:
+        _kok = Kokoro(os.path.join(KOKORO, "kokoro-v1.0.onnx"), os.path.join(KOKORO, "voices-v1.0.bin"))
+    vec = None
+    for part in voice_mix.split(","):
+        n, _, w = part.partition(":")
+        v = _kok.get_voice_style(n) * float(w or 1.0)
+        vec = v if vec is None else vec + v
+    a, sr = _kok.create(kokoro_phonemes(text, kind), voice=vec, speed=speed, is_phonemes=True)
+    a = np.asarray(a, np.float32)
+    return a / max(1e-4, float(np.max(np.abs(a)))) * 0.9, sr
+
 def voice(name):
     if name not in _voices:
         from piper import PiperVoice

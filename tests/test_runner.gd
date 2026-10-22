@@ -378,6 +378,8 @@ func run_match(mode: String, seed: int, verbose: bool, max_minutes: int = 40, di
 	var worst_tick_ms := 0.0
 	var sum_ms := 0.0
 	var built := {}   # M2.4: which unit and structure types the AI actually fields
+	var kval := {}    # M2.6 balance telemetry (test-side only): enemy value killed per killer type
+	var snap := ""
 	while not r.sim.game_over and r.sim.tick < max_ticks:
 		var a := Time.get_ticks_usec()
 		r.advance()
@@ -391,10 +393,18 @@ func run_match(mode: String, seed: int, verbose: bool, max_minutes: int = 40, di
 					built[se.def_id] = int(built.get(se.def_id, 0)) + 1
 			if ev["t"] == "attacked" and int(ev["by"]) >= 0 and int(ev["owner"]) >= 0 and int(ev["by"]) != int(ev["owner"]) and not r.sim.enemies(r.sim.player_team(int(ev["by"])), r.sim.player_team(int(ev["owner"]))):
 				friendly_hits += 1
+			if ev["t"] == "death" and int(ev["kind"]) == SimEntity.Kind.UNIT and str(ev["by"]) != "":
+				var vd = Content.units.get(ev["def"])
+				if vd != null:
+					kval[ev["by"]] = int(kval.get(ev["by"], 0)) + int(vd.cost)
 			if ev["t"] == "attacked" and r.sim.ents.has(ev["id"]):
 				var tgt: SimEntity = r.sim.ents[ev["id"]]
 				if tgt.kind == SimEntity.Kind.BUILDING and not first_attack.has(ev["by"]):
 					first_attack[ev["by"]] = r.sim.tick / 20
+		if r.sim.tick == 6000 or r.sim.tick == 12000:
+			snap += " t%d:" % (r.sim.tick / 1200)
+			for p in r.sim.players:
+				snap += " %s h%d" % [p.faction, int(p.stats["harvested"])]
 		if verbose and r.sim.tick % 1200 == 0:
 			_print_state(r)
 	var secs := r.sim.tick / 20
@@ -430,6 +440,16 @@ func run_match(mode: String, seed: int, verbose: bool, max_minutes: int = 40, di
 	for k in bk:
 		parts.append("%s=%d" % [k, built[k]])
 	print("   BUILT " + " ".join(parts))
+	var kv := []
+	for k in kval:
+		kv.append([int(kval[k]), str(k)])
+	kv.sort()
+	kv.reverse()
+	var ks := []
+	for x in kv.slice(0, 12):
+		ks.append("%s=%d" % [x[1], x[0]])
+	print("   KILLVALUE " + " ".join(ks))
+	print("   ECON" + snap)
 	res["built"] = built
 	return res
 
