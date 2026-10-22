@@ -42,6 +42,10 @@ func _run() -> void:
 	print("AO baked %d scenes in %.1f s" % [n_done, (Time.get_ticks_msec() - t0) / 1000.0])
 	quit(0)
 
+## aircraft are not rendered on the ground plane, so it must not occlude them
+const AIR := ["harrier", "wraith", "thunderlance"]
+var _ground := true
+
 func _scan(dir: String, out: Array) -> void:
 	var d := DirAccess.open(dir)
 	if d == null:
@@ -104,6 +108,7 @@ func _bake_scene(path: String) -> bool:
 	await physics_frame
 	var space := body.get_world_3d().direct_space_state
 	var size := (hi - lo)
+	_ground = not (path.get_file().get_basename() in AIR)
 	var reach := clampf(maxf(size.x, size.z) * 0.11, 0.12, 0.34)
 	var q := PhysicsRayQueryParameters3D.new()
 	q.hit_back_faces = true
@@ -180,7 +185,7 @@ func _ao(space: PhysicsDirectSpaceState3D, q: PhysicsRayQueryParameters3D, p: Ve
 	for d: Vector3 in dirs:
 		var w := (t * d.x + b * d.y + n * d.z).normalized()
 		var hit_t := reach
-		if w.y < -0.01 and o.y >= 0.0:
+		if _ground and w.y < -0.01 and o.y >= 0.0:
 			hit_t = minf(hit_t, o.y / -w.y)
 		q.from = o
 		q.to = o + w * reach
