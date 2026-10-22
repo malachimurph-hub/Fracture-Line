@@ -1065,6 +1065,7 @@ func test_zh() -> void:
 	_zh_loco()
 	_zh_weapons()
 	_zh_scatter()
+	_zh_victims()
 
 func _zh_loco() -> void:
 	var r := _zh_runner()
@@ -1193,3 +1194,43 @@ func _zh_scatter() -> void:
 	_check(vs_veh == 100 and rifle == 100, "accurate weapons always hit")
 	_check(vs_inf >= 20 and vs_inf <= 70, "tank cannon often misses infantry (%d%%)" % vs_inf)
 	_check(arty < 100, "artillery scatters (%d%%)" % arty)
+
+## Distinct victims an engaged squad of 6 Grenadiers spreads its fire over, per AI difficulty.
+func _zh_victim_spread(diff: String) -> int:
+	var r := MatchRunner.new()
+	r.record_replay = false
+	r.start(make_cfg("1v1", 43, [diff, diff], ["eu", "tpla"]))
+	var ai: AIPlayer = r.ais[0]
+	r.ais.clear()
+	var w := r.sim
+	var c := _zh_open(w, 7)
+	var ids: Array = []
+	for i in 6:
+		var u := w.spawn_unit(&"eu_grenadier", 0, null, FX.tile_center(c + Vector2i(i - 3, -2)))
+		u.pos = FX.tile_center(c + Vector2i(i - 3, -2))
+		u.face = 0
+		ids.append(u.id)
+	for i in 5:
+		var e := w.spawn_unit(&"tpla_militia", 1, null, FX.tile_center(c + Vector2i(i * 2 - 4, 2)))
+		e.pos = FX.tile_center(c + Vector2i(i * 2 - 4, 2))
+		e.max_hp = 100000
+		e.hp = 100000 - i * 10
+	ai.bb["wave"] = ids
+	_ticks(r, 30)
+	ai._victims()
+	_ticks(r, 30)
+	var tg := {}
+	for id in ids:
+		var u := w.get_ent(id)
+		if u != null and u.target != 0:
+			tg[u.target] = true
+	return tg.size()
+
+func _zh_victims() -> void:
+	var e := _zh_victim_spread("easy")
+	var m := _zh_victim_spread("medium")
+	var h := _zh_victim_spread("hard")
+	print("  distinct victims of a 6-unit squad: easy %d, medium %d, hard %d" % [e, m, h])
+	_check(h == 1, "hard AI focus-fires one victim")
+	_check(m >= 2, "medium AI: each unit fights its nearest enemy")
+	_check(e >= 2, "easy AI spreads fire")

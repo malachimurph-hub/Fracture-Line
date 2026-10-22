@@ -7,9 +7,9 @@ extends RefCounted
 ## retreat), scouting, pump capture, general powers. Allied AIs share a target via team_board.
 
 const DIFF := {
-	"easy":   {"think": 12, "harv_per_hub": 2, "first_wave_s": 420, "wave_mult": 70, "bunkers": 0, "retreat": false, "expand_s": 600, "powers": false, "scout": false, "crawlers": 1, "prod_gap": 3, "capture": false},
-	"medium": {"think": 4, "harv_per_hub": 2, "first_wave_s": 300, "wave_mult": 100, "bunkers": 1, "retreat": true, "expand_s": 330, "powers": true, "scout": true, "crawlers": 1, "prod_gap": 1, "capture": true},
-	"hard":   {"think": 2, "harv_per_hub": 3, "first_wave_s": 225, "wave_mult": 110, "bunkers": 2, "retreat": true, "expand_s": 240, "powers": true, "scout": true, "crawlers": 2, "prod_gap": 0, "capture": true},
+	"easy":   {"think": 12, "harv_per_hub": 2, "first_wave_s": 420, "wave_mult": 70, "bunkers": 0, "retreat": false, "expand_s": 600, "powers": false, "scout": false, "crawlers": 1, "prod_gap": 3, "capture": false, "victim": "random"},
+	"medium": {"think": 4, "harv_per_hub": 2, "first_wave_s": 300, "wave_mult": 100, "bunkers": 1, "retreat": true, "expand_s": 330, "powers": true, "scout": true, "crawlers": 1, "prod_gap": 1, "capture": true, "victim": "nearest"},
+	"hard":   {"think": 2, "harv_per_hub": 3, "first_wave_s": 225, "wave_mult": 110, "bunkers": 2, "retreat": true, "expand_s": 240, "powers": true, "scout": true, "crawlers": 2, "prod_gap": 0, "capture": true, "victim": "focus"},
 }
 
 var r: MatchRunner
@@ -110,6 +110,7 @@ func think() -> void:
 	_build()
 	_production()
 	_army()
+	_victims()
 	if cfg["scout"]:
 		_scout()
 	if cfg["capture"]:
@@ -684,6 +685,67 @@ func _army() -> void:
 			gather.append(u.id)
 	if not gather.is_empty():
 		cmd({"t": "move", "ids": gather, "pos": _staging()})
+
+# ------------------------------------------------------------------ victim selection (M2.3)
+## Zero Hour-style difficulty differences in how a fighting army picks victims (behaviour studied
+## from ZH's AI attack states, reimplemented): Easy spreads fire over random visible enemies,
+## Medium leaves each unit on its nearest enemy (default acquisition), Hard focus-fires the whole
+## engaged group on one victim (the weakest armed enemy) until it dies. Same commands as a human.
+func _victims() -> void:
+	var mode: String = cfg.get("victim", "nearest")
+	if mode == "nearest" or bb["wave"].is_empty():
+		return
+	if not _every("t_victim", 20 if mode == "focus" else 60):
+		return
+	var engaged: Array = []
+	for id in bb["wave"]:
+		var u := w.get_ent(id)
+		if u != null and u.alive and u.target != 0 and not u.cds.is_empty() and w.tick - u.firing_tick < 100:
+			engaged.append(u)
+	if engaged.is_empty():
+		return
+	var cen := _centroid(engaged)
+	var foes: Array = []
+	for e: SimEntity in w.units_in_radius(cen, FX.ONE * 9):
+		if OrderSys.valid_target(w, engaged[0], e):
+			foes.append(e)
+	if foes.is_empty():
+		return
+	var resume := _pick_target()
+	if mode == "focus":
+		var cur := w.get_ent(int(bb.get("victim", 0)))
+		if cur == null or not foes.has(cur):
+			cur = null
+			var best := 1 << 50
+			for e: SimEntity in foes:
+				# weakest armed enemy first (unarmed ones only when nothing shoots back)
+				var sc: int = e.hp + e.shield + (0 if not e.cds.is_empty() else 1 << 30) + FX.dist(e.pos, cen) / 8
+				if sc < best:
+					best = sc
+					cur = e
+		var ids: Array = []
+		for u: SimEntity in engaged:
+			if u.target != cur.id:
+				ids.append(u.id)
+		bb["victim"] = cur.id
+		if not ids.is_empty():
+			cmd({"t": "attack", "ids": ids, "target": cur.id})
+			if resume.x >= 0:
+				cmd({"t": "amove", "ids": ids, "pos": resume, "q": true})
+	else:
+		# easy: a few engaged units switch to a pseudo-random visible enemy (deterministic hash,
+		# never the sim RNG, so replays stay identical)
+		var n := 0
+		for u: SimEntity in engaged:
+			if n >= 6:
+				break
+			var h := FX.fnv_int(FX.fnv_int(2166136261, w.tick), u.id)
+			var e: SimEntity = foes[absi(h) % foes.size()]
+			if e.id != u.target:
+				cmd({"t": "attack", "ids": [u.id], "target": e.id})
+				if resume.x >= 0:
+					cmd({"t": "amove", "ids": [u.id], "pos": resume, "q": true})
+				n += 1
 
 ## True at most once per `period` ticks. AIs think on staggered ticks (tick + pid), so
 ## "w.tick % N == 0" checks never fired for most players - this replaces them.

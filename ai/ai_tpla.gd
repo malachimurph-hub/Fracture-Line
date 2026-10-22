@@ -42,6 +42,7 @@ func think() -> void:
 		_salvage()
 	_tunnels()
 	_army()
+	_victims()
 	_gather_wave()
 	if cfg["scout"]:
 		_scout()
