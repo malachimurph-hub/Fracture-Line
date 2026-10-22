@@ -41,6 +41,16 @@ const SPECS := {
 	"us_sniper": {"file": "Character_Soldier.gltf", "weapon": "Sniper", "keep": ["Body", "Head"],
 		"node_colors": {"Head": {"Black": "team"}},
 		"colors": {"Character_Main": "#5e6243", "Pants": "#585a40", "Grey": "#4d513a", "DarkGrey": "#3a3d2e", "Black": "#2a2c22", "Skin": "#b98a64", "Grey2": "#4c4f3c", "Wood": "#5a4a30", "LightGrey": "#7d7f62"}},
+	# M2.6: the last old procedural squads move to baked soldiers
+	"eu_lancer": {"file": "Character_Soldier.gltf", "weapon": "RocketLauncher", "keep": ["Body", "Head", "ShoulderPad.L", "ShoulderPad.R"],
+		"node_colors": {"Head": {"Black": "team"}},
+		"colors": {"Character_Main": "#56603f", "Pants": "#4a523c", "Grey": "team", "DarkGrey": "#30353a", "Black": "#1c1e20", "Skin": "#d2a681", "Grey2": "#5c6166", "Wood": "#6b5236", "LightGrey": "#9aa0a5"}},
+	"tpla_rocket": {"file": "Character_Enemy.gltf", "weapon": "RocketLauncher", "keep": ["Character_Enemy", "Character_Enemy_Head"],
+		"node_colors": {"Character_Enemy_Head": {"Enemy_Red": "#5e5a4a", "Black": "team"}},
+		"colors": {"Enemy_Red": "#7d7356", "Grey": "#5d5c40", "DarkGrey": "#4b3f2e", "Black": "#4a3f30", "Skin": "#a87c58", "Grey2": "#5a5b4a", "Wood": "#7a5530", "LightGrey": "#a89a80"}},
+	"tpla_laborer": {"file": "Character_Enemy.gltf", "weapon": "Shovel", "keep": ["Character_Enemy", "Character_Enemy_Head"],
+		"node_colors": {"Character_Enemy_Head": {"Enemy_Red": "team", "Black": "#3a3128"}},
+		"colors": {"Enemy_Red": "#8a7a62", "Grey": "#6e6250", "DarkGrey": "#5e4d36", "Black": "#4a3f30", "Skin": "#b98a64", "Grey2": "#5a5b4a", "Wood": "#7a5530", "LightGrey": "#a89a80"}},
 	"wa_rifleman_placeholder": {"file": "Character_Hazmat.gltf", "weapon": "Shotgun", "keep": ["Character_Hazmat", "Character_Hazmat_Head"],
 		"colors": {"Hazmat_Main": "#5d6748", "DarkGrey": "#3a3f33", "Black": "#1e201c", "Grey": "team", "Grey2": "#55594c", "Wood": "#6b5236", "LightGrey": "#9aa08c"}},
 }

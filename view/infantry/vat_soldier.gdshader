@@ -43,7 +43,7 @@ void vertex() {
 }
 
 void fragment() {
-	vec3 base = srgb_to_linear(pcol.rgb);
+	vec3 base = srgb_to_linear(pcol.rgb) * vec3(1.3, 1.3, 1.25);   // M2.6: readable at RTS distance
 	vec3 team = team_color.rgb * (0.55 + 0.45 * dot(base, vec3(0.3, 0.59, 0.11)) / 0.6);
 	vec3 col = mix(base, team, pcol.a);
 	// M2.6 fabric / gear detail: object-space weave + seam darkening so uniforms are not flat
