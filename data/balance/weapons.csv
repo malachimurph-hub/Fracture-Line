@@ -9,7 +9,7 @@ eu_harvester_mg,7,4500,0,800,small_arms,0,0,1,tracer,0
 eu_bunker_cannon,40,8000,0,900,autocannon,0,0,1,tracer_heavy,0
 tpla_carbine,10,4500,0,700,small_arms,0,0,1,tracer,0
 tpla_rpg,62,5500,0,2600,anti_tank,0,0,1,rocket,0
-tpla_hmg,11,5500,0,350,small_arms,0,1,1,tracer_heavy,0
+tpla_hmg,11,5500,0,350,hmg,0,1,1,tracer_heavy,0
 tpla_tech_cannon,45,6000,0,1600,cannon,400,0,1,shell,2
 tpla_quad,9,6500,0,250,quad,0,1,1,tracer_quad,0
 tpla_scrap_cannon,72,6000,0,2300,cannon,500,0,1,shell,0
@@ -17,5 +17,5 @@ tpla_scrap_rockets,50,6500,0,4200,anti_tank,0,0,1,rocket,2
 tpla_buggy_rockets,34,8500,2000,3400,explosive,900,0,1,rocket_salvo,0
 tpla_bomb,520,700,0,1000,demolition,2400,0,1,bomb,0
 tpla_rust_shell,38,10000,3000,4600,corrosive,1300,0,1,rust_shell,0
-tpla_tunnel_mg,13,6000,0,450,small_arms,0,1,1,tracer_heavy,0
+tpla_tunnel_mg,13,6000,0,450,hmg,0,1,1,tracer_heavy,0
 tpla_demo_charge,380,1500,0,1000,demolition,2600,0,1,bomb,0

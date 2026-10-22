@@ -82,12 +82,14 @@ func _builders() -> Array:
 					break
 		if pick != null:
 			keep.append(pick.id)
-			if not pick.is_idle():
-				cmd({"t": "stop", "ids": [pick.id]})
 	bb["builders"] = keep
 	var out: Array = []
 	for id in keep:
-		out.append(by_id[id])
+		var b: SimEntity = by_id[id]
+		out.append(b)
+		# a reserved builder must not drift back to harvesting (idle laborers auto-harvest)
+		if b.phase >= 0 or (not b.orders.is_empty() and b.orders[0].get("o", "") == "harvest"):
+			cmd({"t": "stop", "ids": [b.id]})
 	return out
 
 func _economy() -> void:
@@ -282,6 +284,8 @@ func _pick_unit(bd: BuildingDef) -> StringName:
 			wgt = wgt * 4 if enemy_air > 0 else (wgt * 2 if enemy_inf > enemy_armor else wgt)
 		if sid == &"tpla_militia" and enemy_inf > enemy_armor:
 			wgt = wgt * 3 / 2
+		elif sid == &"tpla_militia" and enemy_armor > enemy_inf:
+			wgt = wgt / 2       # carbines barely scratch vehicles
 		if sid == &"tpla_scrapback" and enemy_armor > enemy_inf:
 			wgt = wgt * 3 / 2
 		if sid == &"tpla_mule" and int(have.get(sid, 0)) >= 1 + n_combat / 14:

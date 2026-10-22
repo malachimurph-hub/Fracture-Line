@@ -132,6 +132,50 @@ func _ready() -> void:
 				print("toward ", FX.to_tile(tw), " prereq=", rt.sim.prereqs_met(1, Content.building(nb2).prereqs), " spot=", ta.find_spot(nb2, tw))
 				for k in 5:
 					print(" can_place ", FX.to_tile(tw) + Vector2i(k * 2, 0), " -> ", rt.sim.can_place(1, nb2, FX.to_tile(tw) + Vector2i(k * 2, 0)))
+		"ediag":
+			# economy / army timeline per player (balance diagnosis)
+			var re := MatchRunner.new()
+			re.record_replay = false
+			var dfs := String(args[3]) if args.size() > 3 else "medium"
+			re.start(make_cfg("1v1", int(args[1]) if args.size() > 1 else 21, [dfs, dfs], ["eu", "tpla"]))
+			var mins := int(args[2]) if args.size() > 2 else 8
+			var deaths := {}
+			for mi in mins:
+				for k in 1200:
+					re.advance()
+					for ev in re.sim.events:
+						if ev["t"] == "death" and ev.get("kind", -1) == SimEntity.Kind.UNIT and ev.get("by", &"") != &"":
+							var kk := "%s<-%s" % [ev["def"], ev["by"]]
+							deaths[kk] = deaths.get(kk, 0) + 1
+					if re.sim.game_over:
+						break
+				for pid in 2:
+					var pl = re.sim.players[pid]
+					var harv := 0
+					var army := 0
+					var nb := 0
+					var bl: Dictionary = {}
+					for id in re.sim.ids:
+						var e: SimEntity = re.sim.ents[id]
+						if e.owner != pid:
+							continue
+						if e.kind == SimEntity.Kind.BUILDING:
+							nb += 1
+							bl[e.def_id] = bl.get(e.def_id, 0) + 1
+						elif e.kind == SimEntity.Kind.UNIT:
+							var ud: UnitDef = Content.unit(e.def_id)
+							if ud.harvest_capacity > 0 and e.phase >= 0:
+								harv += 1
+							elif not ud.tags.has("builder") and not ud.tags.has("harvester"):
+								army += ud.cost
+					print("min %d P%d %s supply=%d harvested=%d harvesting=%d army$=%d bld=%d %s kills=%d lost=%d" % [mi + 1, pid, re.sim.faction_of(pid), pl.supply, pl.stats["harvested"], harv, army, nb, str(bl), pl.stats["kills"], pl.stats["lost"]])
+				if re.sim.game_over:
+					print("game over")
+					break
+			var dk := deaths.keys()
+			dk.sort_custom(func(x, y): return deaths[x] > deaths[y])
+			for k2 in dk.slice(0, 25):
+				print("  death %s x%d" % [k2, deaths[k2]])
 		"aidiag":
 			var r := MatchRunner.new()
 			r.start(make_cfg("1v1", 5))

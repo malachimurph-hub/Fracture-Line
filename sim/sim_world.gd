@@ -436,7 +436,7 @@ func _kill(e: SimEntity, attacker: SimEntity) -> void:
 			ap.stats["structures_killed"] += 1
 		CombatSys.grant_vet_xp(self, attacker, value)
 		_update_rank(ap)
-	events.append({"t": "death", "id": e.id, "kind": e.kind, "def": e.def_id, "pos": e.pos, "owner": e.owner})
+	events.append({"t": "death", "id": e.id, "kind": e.kind, "def": e.def_id, "pos": e.pos, "owner": e.owner, "by": attacker.def_id if attacker != null else &""})
 
 func _eject_garrison(b: SimEntity) -> void:
 	if b.kind == SimEntity.Kind.BUILDING and Content.btag(b.def_id, "tunnel"):

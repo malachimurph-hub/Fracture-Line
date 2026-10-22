@@ -83,6 +83,8 @@ static func apply(w: SimWorld, c: Dictionary) -> void:
 			for u: SimEntity in _own_units(w, pid, c):
 				if w.udef(u).tags.has("builder"):
 					_push(u, {"o": "build", "target": site.id}, bool(c.get("q", false)))
+					if w.udef(u).harvest_capacity > 0:
+						u.phase = -1
 		"cancel_build":
 			var s2 := w.get_ent(int(c.get("target", 0)))
 			if s2 != null and s2.owner == pid and s2.kind == SimEntity.Kind.BUILDING and not s2.built:
@@ -203,6 +205,8 @@ static func _place(w: SimWorld, pid: int, c: Dictionary) -> void:
 	w.events.append({"t": "site", "id": site.id, "owner": pid})
 	for u: SimEntity in builders:
 		_push(u, {"o": "build", "target": site.id}, bool(c.get("q", false)))
+		if w.udef(u).harvest_capacity > 0:
+			u.phase = -1   # a laborer sent to build stays a builder until told to harvest
 
 static func _queue(w: SimWorld, pid: int, c: Dictionary) -> void:
 	var b := w.get_ent(int(c.get("target", 0)))
