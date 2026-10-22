@@ -55,7 +55,7 @@ git -C /workspace/mobile-rts/project merge assets-m26     # merge-tree check: me
 - **Cast reels:** `builds/m2_6/voice_samples/cast_{eu,us,tpla}.mp3`, one line per unit back to back. The contents are listed in `cast_reels.txt`.
 
 ### Voice generation status
-In progress (generation still running in the background; re-run the generator to resume): 520/520 lines regenerated (EU 135/135, US 224/224, TPLA 161/161). Mean Whisper word-match 0.96; 38 line(s) still under 0.8 after all retakes:
+Final: 520/520 lines regenerated (EU 135/135, US 224/224, TPLA 161/161). Mean Whisper word-match 0.97; 30 line(s) still under 0.8 after all retakes:
 
 - `audio/voice_ai/eu/grenadier/select_2.ogg` "Grenadiers.": QA 0.00, heard "and  and use"
 - `audio/voice_ai/eu/grenadier/under_fire_1.ogg` "Contact! We're pinned!": QA 0.67, heard "contact with PINNEDE"
@@ -79,22 +79,14 @@ In progress (generation still running in the background; re-run the generator to
 - `audio/voice_ai/us/dozer/under_fire_1.ogg` "Dozer taking fire!": QA 0.67, heard "Those those are taking fire."
 - `audio/voice_ai/us/grunt/attack_4.ogg` "Light 'em up!": QA 0.67, heard "Light him up."
 - `audio/voice_ai/us/grunt/move_2.ogg` "Oorah, on the move!": QA 0.75, heard "on the move"
-- `audio/voice_ai/us/halberd/attack_3.ogg` "Firing main gun!": QA 0.67, heard ", firing main guns."
-- `audio/voice_ai/us/halberd/created_1.ogg` "Halberd main battle tank, ready.": QA 0.60, heard "How-albert main battle some credit"
-- `audio/voice_ai/us/halberd/under_fire_2.ogg` "Armor under fire!": QA 0.33, heard "I'm going  under the"
-- `audio/voice_ai/us/harrier/created_2.ogg` "Gunship airborne.": QA 0.50, heard "Gunship"
-- `audio/voice_ai/us/harrier/move_2.ogg` "En route.": QA 0.50, heard "On route"
-- `audio/voice_ai/us/lynx/attack_3.ogg` "Hit 'em!": QA 0.50, heard "Hit, hit."
-- `audio/voice_ai/us/lynx/attack_4.ogg` "Fifty's talking!": QA 0.50, heard "50-50s talking"
-- `audio/voice_ai/us/lynx/created_1.ogg` "Lynx reporting.": QA 0.50, heard "Link's reporting...."
-- `audio/voice_ai/us/lynx/select_1.ogg` "Lynx ready.": QA 0.50, heard "Links ready the"
-- `audio/voice_ai/us/picket/attack_2.ogg` "Bird in the air!": QA 0.75, heard "in the air."
-- `audio/voice_ai/us/picket/veteran_1.ogg` "Faster lock-ons now.": QA 0.25, heard "Faster,,"
+- `audio/voice_ai/us/halberd/attack_3.ogg` "Firing main gun!": QA 0.67, heard "Firing main guns."
+- `audio/voice_ai/us/harrier/move_2.ogg` "En route.": QA 0.50, heard "On route."
+- `audio/voice_ai/us/lynx/attack_3.ogg` "Hit 'em!": QA 0.50, heard "Hit M"
+- `audio/voice_ai/us/lynx/attack_4.ogg` "Fifty's talking!": QA 0.50, heard "50's talking"
+- `audio/voice_ai/us/lynx/created_1.ogg` "Lynx reporting.": QA 0.50, heard "renowned for the fact that as well as the other people's life., links reporting."
+- `audio/voice_ai/us/lynx/select_1.ogg` "Lynx ready.": QA 0.50, heard "Link's ready."
 - `audio/voice_ai/us/sniper/select_3.ogg` "In position.": QA 0.50, heard "in possession."
-- `audio/voice_ai/us/thunderlance/attack_2.ogg` "Doors open, releasing!": QA 0.67, heard "Doors Open,,"
-- `audio/voice_ai/us/thunderlance/created_2.ogg` "Bomber armed and ready.": QA 0.75, heard "Bomber armed and reddies."
 - `audio/voice_ai/us/wraith/attack_1.ogg` "Fox three!": QA 0.50, heard "Fox 3"
-- `audio/voice_ai/us/wraith/move_3.ogg` "Copy, en route.": QA 0.67, heard "ny,.  copy on route."
 
 Lines not yet regenerated keep their M2.5 audio, which still works in game. Short invented-name barks ("Hauler here.") are the usual low scorers; listen before re-recording.
 
