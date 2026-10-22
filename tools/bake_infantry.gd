@@ -10,6 +10,13 @@ const OUT := "res://assets/models/infantry/"
 const FPS := 15.0
 const TARGET_TRIS := 1300
 const HEIGHT := 0.5          # model units (old procedural soldiers were 0.5; WorldView scales infantry x1.4)
+## M2.6 realistic proportions (Malachi: "less cartoony infantry"): the toon rig is re-proportioned
+## at bake time in bone space - smaller head, longer legs and arms, taller torso - so soldiers read
+## as adults at RTS distance (head ~1/7 of height instead of ~1/4).
+const PROPORTIONS := {"Head": Vector3(0.66, 0.66, 0.66), "Neck": Vector3(0.9, 1.15, 0.9), "Torso": Vector3(0.95, 1.12, 0.95),
+	"Abdomen": Vector3(0.92, 1.15, 0.92), "UpperLeg.L": Vector3(0.9, 1.32, 0.9), "UpperLeg.R": Vector3(0.9, 1.32, 0.9),
+	"LowerLeg.L": Vector3(0.95, 1.12, 0.95), "LowerLeg.R": Vector3(0.95, 1.12, 0.95),
+	"UpperArm.L": Vector3(0.95, 1.12, 0.95), "UpperArm.R": Vector3(0.95, 1.12, 0.95)}
 const ANIMS := [["idle", "Idle", true], ["run", "Run_Gun", true], ["fire", "Idle_Shoot", true], ["die", "Death", false]]
 
 ## colours are linear-ish sRGB hex; "team" = flagged for the per-player colour
@@ -201,12 +208,16 @@ func _bake(key: String, spec: Dictionary) -> Dictionary:
 	var N2 := PackedVector3Array()
 	var C2 := PackedColorArray()
 	var U2 := PackedVector2Array()
+	var CU := PackedVector2Array()
 	for j in nv:
 		var vi := keep_v[j]
 		V2.append((ref[0][vi] - foot) * scale)
 		N2.append((ref[1][vi] as Vector3).normalized())
 		C2.append(COL[vi])
 		U2.append(Vector2(j % 256, j / 256))
+		# M2.6: part colour + team flag also packed in UV (float32, exact): x = R*256 + G, y = B + 1000 * team
+		var cc: Color = COL[vi]
+		CU.append(Vector2(float(cc.r8 * 256 + cc.g8), float(cc.b8) + (1000.0 if cc.a > 0.5 else 0.0)))
 	var im2 := ImporterMesh.new()
 	var a2 := []
 	a2.resize(Mesh.ARRAY_MAX)
@@ -217,7 +228,14 @@ func _bake(key: String, spec: Dictionary) -> Dictionary:
 	a2[Mesh.ARRAY_INDEX] = idx2
 	im2.add_surface(Mesh.PRIMITIVE_TRIANGLES, a2, [], {}, null, "soldier")
 	im2.generate_lods(25.0, 60.0, [])
-	var mesh := im2.get_mesh()
+	# M2.6: build the ArrayMesh directly so the UV-packed part colour survives uncompressed,
+	# reusing the simplifier's LOD index lists
+	var lods := {}
+	for l in im2.get_surface_lod_count(0):
+		lods[im2.get_surface_lod_size(0, l)] = im2.get_surface_lod_indices(0, l)
+	a2[Mesh.ARRAY_TEX_UV] = CU
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, a2, [], lods)
 	# animations move limbs (and Death lies down forward): generous fixed bounds
 	mesh.custom_aabb = AABB(Vector3(-0.45, -0.05, -0.45), Vector3(0.9, HEIGHT + 0.2, 0.9))
 	var vm := VatModel.new()
@@ -256,6 +274,9 @@ func _pose(player: AnimationPlayer, skel: Skeleton3D, anim: String, t: float, sr
 	for i in nb:
 		var par := skel.get_bone_parent(i)
 		var lp := skel.get_bone_pose(i)
+		var pr: Vector3 = PROPORTIONS.get(skel.get_bone_name(i), Vector3.ONE)
+		if pr != Vector3.ONE:
+			lp = lp * Transform3D(Basis.from_scale(pr), Vector3.ZERO)
 		g[i] = lp if par < 0 else (g[par] as Transform3D) * lp
 	var sk := skel.global_transform
 	var mats := []   # per src: either per-bind skin transforms or one rigid transform

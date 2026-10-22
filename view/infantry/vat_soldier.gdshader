@@ -15,6 +15,7 @@ instance uniform float rust_amt = 0.15;
 instance uniform float wear_amt = 0.5;
 instance uniform float dirt_amt = 0.6;
 varying float vy;
+varying vec4 pcol;
 varying float fade;
 
 vec3 srgb_to_linear(vec3 c) {
@@ -33,13 +34,21 @@ void vertex() {
 	VERTEX = mix(pa, pb, INSTANCE_CUSTOM.z);
 	NORMAL = normalize(mix(na, nb, INSTANCE_CUSTOM.z));
 	vy = VERTEX.y;
+	// M2.6: part colour packed in UV (x = R*256 + G, y = B + 1000*team); COLOR is unreliable on
+	// MultiMesh without per-instance colours in the compatibility renderer (soldiers drew black).
+	float team_f = step(500.0, UV.y);
+	float rr = floor(UV.x / 256.0 + 0.001);
+	pcol = vec4(rr, UV.x - rr * 256.0, UV.y - 1000.0 * team_f, 255.0 * team_f) / 255.0;
 	fade = INSTANCE_CUSTOM.w;
 }
 
 void fragment() {
-	vec3 base = srgb_to_linear(COLOR.rgb);
+	vec3 base = srgb_to_linear(pcol.rgb);
 	vec3 team = team_color.rgb * (0.55 + 0.45 * dot(base, vec3(0.3, 0.59, 0.11)) / 0.6);
-	vec3 col = mix(base, team, COLOR.a);
+	vec3 col = mix(base, team, pcol.a);
+	// M2.6 fabric / gear detail: object-space weave + seam darkening so uniforms are not flat
+	float weave = 0.5 + 0.5 * sin(vy * 220.0) * sin(vy * 37.0 + 1.7);
+	col *= mix(0.93, 1.04, weave);
 	// dust on boots / trousers, slight overall grime
 	float dust = (1.0 - smoothstep(0.0, 0.16, vy)) * dirt_amt;
 	col = mix(col, vec3(0.42, 0.35, 0.26), dust * 0.55);
@@ -47,7 +56,7 @@ void fragment() {
 	// corpses darken as they fade out (no transparency: keeps the opaque pass cheap)
 	col *= 1.0 - 0.6 * fade;
 	ALBEDO = col;
-	ROUGHNESS = mix(0.82, 0.55, COLOR.a);
+	ROUGHNESS = mix(0.84, 0.5, pcol.a);
 	METALLIC = 0.0;
 	SPECULAR = 0.35;
 }
