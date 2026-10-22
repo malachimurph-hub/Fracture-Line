@@ -1,0 +1,20 @@
+# Known issues: 0.2.2 (M2.2 graphics test batch)
+
+- **Style gap vs Zero Hour.** The CC0 soldiers are a toon-proportioned kit (large heads). They read well at RTS zoom but are not ZH's semi-realistic infantry. Vehicles and the barracks are original low-poly procedural models with shader weathering, not hand-sculpted and texture-painted assets. This is a step toward ZH quality, not parity.
+- **Only part of the roster is upgraded.**
+  - Converted: Grenadier, Militia, Leopold, Rattler and the EU Barracks.
+  - Still M2 art: every other unit and structure, including the other infantry squads (Lancer, Rocket Cell, Laborer, …).
+- **[STUB] Western Alliance placeholder.** The rifleman is baked only. There is no WA faction, so it is never shown in game.
+- **Performance was not measured on a device.** The figures come from Godot's render counters on a software renderer (llvmpipe/Xvfb) at 2340x1080:
+  - These are within budget: draw calls, primitives, objects, texture/video memory, and the CPU time of the view code.
+  - Not measurable here: GPU time, real frame time, thermals and battery on the S24 Ultra. llvmpipe frame times of hundreds of ms say nothing about the phone.
+- **Shadow pass not counted separately.** The primitive counts include shadow passes as Godot reports them. The Leopold is about 5.6k tris, so a 40-tank army adds about 225k tris before shadows.
+- **The showcase is a test scene.**
+  - It inflates unit HP so combat continues long enough for the shots.
+  - It forwards spawn and death events to the view directly, because it spawns outside a sim step.
+  - Neither affects the real game.
+- **No cosmetic wreck/rubble collision.** Wrecks and rubble are view-only, and the simulation is unchanged (determinism and saves are identical).
+- **Some effects are fixed or mismatched.**
+  - The Rattler's steering and the tank's tracks scroll at a single speed for both sides. Neither side counter-rotates when turning in place.
+  - Stencil markings are procedural and generic.
+- All M2.1 known issues still apply.
