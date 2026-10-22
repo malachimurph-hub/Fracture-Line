@@ -215,14 +215,15 @@ civ = [free_spot(x, y, 3, 3, taken) for (x, y) in ((51, 56), (43, 56), (51, 58),
 pumps = [free_spot(34, 58, 2, 2, taken), free_spot(56, 30, 2, 2, taken)]
 piles = [free_spot(31, 61, 1, 1, taken)]
 sp = [(14, 14), (N - 18, N - 18), (N - 18, 14), (14, N - 18)]
+# M2.5: supply piles hold 2x their M2.4 amounts (ZH-like long-lasting piles)
 res = []
 def quad(x, y, w=1, h=1):
     return mirror(x, y, w, h)
-for (x, y) in quad(8, 26): res.append(('seam', x, y, 15000))       # home seam
-for (x, y) in quad(27, 9): res.append(('cache', x, y, 3000))       # home supply pile
-for (x, y) in quad(38, 44): res.append(('seam', x, y, 20000))      # contested riverside seam
+for (x, y) in quad(8, 26): res.append(('seam', x, y, 30000))       # home seam
+for (x, y) in quad(27, 9): res.append(('cache', x, y, 6000))       # home supply pile
+for (x, y) in quad(38, 44): res.append(('seam', x, y, 40000))      # contested riverside seam
 for (px, py) in piles:
-    for (x, y) in quad(px, py): res.append(('cache', x, y, 4000))  # supply piles outside the town
+    for (x, y) in quad(px, py): res.append(('cache', x, y, 8000))  # supply piles outside the town
 neu = []
 for (x, y) in pumps:                                                # oil derricks
     for (a, b) in quad(x, y, 2, 2):
