@@ -68,7 +68,8 @@ def words(s):
 
 def _heard(wm, x, pad_s):
     pad = np.zeros(int(16000 * pad_s), np.float32)   # short one-word clips: Whisper needs some context
-    segs, _ = wm.transcribe(np.concatenate([pad, x, pad]), language="en", beam_size=2, condition_on_previous_text=False)
+    segs, _ = wm.transcribe(np.concatenate([pad, x, pad]), language="en", beam_size=2, condition_on_previous_text=False,
+                             no_speech_threshold=None, log_prob_threshold=None)   # radio-filtered barks otherwise get dropped as "no speech"
     return " ".join(s.text for s in segs).strip()
 
 def score(wm, path, text):

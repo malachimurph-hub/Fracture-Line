@@ -84,13 +84,13 @@ US = {"lang": "en-us", "units": {
 
 # TPLA: Arabic-rule ('me') or Persian-rule without w->v ('fa2') phonemes from tools/accent_tts.py.
 TPLA = {"lang": "en-us", "units": {
-    "tpla_laborer":     [dict(v="hm_psi:0.6,am_eric:0.4", acc="me", s=1, st=-0.8, fmt="keep", spd=0.95, fx="grit", rough=0.12,
+    "tpla_laborer":     [dict(v="am_michael:0.45,hm_psi:0.35,am_eric:0.2", acc="me", s=1, st=-0.8, fmt="keep", spd=0.95, fx="grit", rough=0.12,
                               who="Tired, wry scavenger worker")],
     "tpla_militia":     [dict(v="hm_omega:0.6,am_adam:0.4", acc="me", s=1, st=0.3, fmt="keep", spd=1.04, fx="grit", rough=0.1,
                               who="Scrappy volunteer fighter (reference voice)"),
                          dict(v="em_alex:0.5,hm_psi:0.5", acc="me", s=1, st=1.0, fmt="keep", spd=1.06, fx="grit", rough=0.08, who="Militia fighter"),
                          dict(v="pm_santa:0.5,hm_omega:0.5", acc="me", s=1, st=0.6, fmt="keep", spd=1.04, fx="grit", rough=0.12, who="Militia fighter")],
-    "tpla_rocket_cell": [dict(v="hm_psi:0.5,am_liam:0.5", acc="me", s=1, st=-0.3, fmt="keep", spd=1.0, fx="grit", rough=0.08,
+    "tpla_rocket_cell": [dict(v="am_liam:0.6,hm_psi:0.4", acc="me", s=1, st=-0.3, fmt="keep", spd=1.0, fx="grit", rough=0.08,
                               who="Wary, tense insurgent rocket team, low voice"),
                          dict(v="em_santa:0.5,hm_omega:0.5", acc="fa2", s=1, st=0.4, fmt="keep", spd=1.02, fx="grit", rough=0.1, who="Rocket loader")],
     "tpla_rattler":     [dict(v="pm_alex:0.6,am_puck:0.4", acc="me", s=1, st=1.2, fmt="keep", spd=1.12, fx="shout", rough=0.12,
