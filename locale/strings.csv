@@ -373,3 +373,5 @@ HUD_PASSENGERS,Passengers: %d / %d
 HUD_JAMMED,Jammed: cannot fire
 REASON_STUB,Not available yet [STUB]
 REASON_TRANSPORT_FULL,Transport is full.
+CMD_MORE,More
+CMD_MORE_TIP,Show the next page of this command card.

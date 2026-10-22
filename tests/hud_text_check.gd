@@ -66,6 +66,7 @@ static func exercise(m, fac: StringName, tree: SceneTree, check: Callable) -> vo
 	sim.players[pid].supply += 30000
 	var builder := _sel(m, fd["builder"])
 	await _chk(m, tree, check, "%s builder menu" % fac)
+	await _pages(m, tree, check, "%s builder menu" % fac)
 	# every building's card (spawn missing ones next to the HQ so the card can be inspected)
 	var hq := _find(m, pid, fd["hq"])
 	var k := 0
@@ -95,6 +96,7 @@ static func exercise(m, fac: StringName, tree: SceneTree, check: Callable) -> vo
 			m.ctl.queue_unit(b, StringName(uid), 2)
 		m.runner.advance()
 		await _chk(m, tree, check, "%s %s card" % [fac, bid])
+		await _pages(m, tree, check, "%s %s card" % [fac, bid])
 	# multi-selection: one of every unit type
 	var ids: Array = []
 	var at := FX.to_tile(hq.pos) + Vector2i(6, 6) if hq != null else Vector2i(20, 20)
@@ -116,6 +118,23 @@ static func exercise(m, fac: StringName, tree: SceneTree, check: Callable) -> vo
 			check.call("portrait name fits: %s" % uid, m.hud.portrait_fit_ok)
 	if builder != null:
 		m.ctl.set_selection([builder.id])
+
+## M2.4: paged command cards: every page must fit too, and every produced unit / structure
+## must be reachable on some page.
+static func _pages(m, tree: SceneTree, check: Callable, label: String) -> void:
+	var more := -1
+	for i in m.hud.card.size():
+		if m.hud.card[i].get("text", "") == m.hud.tr("CMD_MORE"):
+			more = i
+	if more < 0:
+		return
+	var pages := int(String(m.hud.card[more].get("sub", "1/1")).get_slice("/", 1))
+	for pg in range(1, pages):
+		m.hud.card_page = pg
+		m.hud._refresh_card()
+		await _chk(m, tree, check, "%s page %d" % [label, pg + 1])
+	m.hud.card_page = 0
+	m.hud._refresh_card()
 
 static func _chk(m, tree: SceneTree, check: Callable, label: String) -> void:
 	for _f in 4:

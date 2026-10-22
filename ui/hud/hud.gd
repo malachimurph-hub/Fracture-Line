@@ -619,8 +619,41 @@ func _fill_queue(b: SimEntity) -> void:
 ## Each card entry: {id, text, sub, act, alt, disabled, badge, stub, accent, tip}
 var card: Array = []
 
+var card_page := 0
+var _card_owner := -1
+
+## M2.4: a card with more than 10 entries pages: body entries fill the free slots, a "More"
+## button cycles the pages, and entries marked "pin" (stop, rally, ...) stay on every page.
+func _paginate(full: Array) -> Array:
+	var pe := ctl.primary()
+	var owner_id: int = pe.id if pe != null else -1
+	if owner_id != _card_owner:
+		_card_owner = owner_id
+		card_page = 0
+	if full.size() <= 10:
+		return full
+	var pins: Array = []
+	var body: Array = []
+	for c: Dictionary in full:
+		if c.get("pin", false):
+			pins.append(c)
+		elif c.get("text", "") != "" or c.has("act"):
+			body.append(c)
+	var per := 10 - pins.size() - 1
+	var pages := int(ceil(float(body.size()) / float(per)))
+	card_page = card_page % maxi(1, pages)
+	var out: Array = body.slice(card_page * per, card_page * per + per)
+	while out.size() < per:
+		out.append({"text": "", "disabled": true})
+	out.append({"text": tr("CMD_MORE"), "sub": "%d/%d" % [card_page + 1, pages], "accent": Color("#9fd3ff"), "tip": tr("CMD_MORE_TIP"),
+		"act": func():
+			card_page += 1
+			_refresh_card()})
+	out.append_array(pins)
+	return out
+
 func _refresh_card() -> void:
-	card = _make_card()
+	card = _paginate(_make_card())
 	for i in 10:
 		var b: HudButton = grid_buttons[i]
 		if i < card.size():
@@ -689,15 +722,16 @@ func _make_card() -> Array:
 					"accent": UiTheme.GOLD})
 			var hvb := ctl._filter(units, "harvester")
 			var tail := 2 if not hvb.is_empty() else 1
+			# M2.4: more structures than slots -> the card pages (see _refresh_card); the
+			# harvest / stop commands are pinned to the last slots on every page
 			while out.size() < 10 - tail:
 				out.append({"text": "", "disabled": true})
-			out = out.slice(0, 10 - tail)
 			if not hvb.is_empty():
-				out.append({"text": tr("CMD_HARVEST"), "act": func():
+				out.append({"text": tr("CMD_HARVEST"), "pin": true, "act": func():
 					var r := ctl._nearest_resource(sim.ents[hvb[0]].pos)
 					if r != 0:
 						ctl.issue({"t": "harvest", "ids": hvb, "target": r})})
-			out.append({"text": tr("CMD_STOP"), "act": ctl.simple.bind("stop")})
+			out.append({"text": tr("CMD_STOP"), "pin": true, "act": ctl.simple.bind("stop")})
 			return out
 		out.append({"text": tr("CMD_AMOVE"), "act": ctl.begin_target.bind("amove"), "accent": Color("#ff9a2a"), "tip": tr("CMD_AMOVE_TIP")})
 		out.append({"text": tr("CMD_MOVE"), "act": ctl.begin_target.bind("move"), "accent": Color("#7dff8a")})
@@ -746,10 +780,10 @@ func _make_card() -> Array:
 	if not bd2.produces.is_empty():
 		while out.size() < 5:
 			out.append({"text": "", "disabled": true})
-		out.append({"text": tr("CMD_RALLY"), "act": ctl.begin_target.bind("rally"), "accent": Color("#ffd166"),
+		out.append({"text": tr("CMD_RALLY"), "pin": true, "act": ctl.begin_target.bind("rally"), "accent": Color("#ffd166"),
 			"alt": func(): ctl.issue({"t": "rally", "ids": [e.id], "clear": true})})
-		out.append({"text": tr("CMD_LOOP_ON") if e.repeat else tr("CMD_LOOP"), "act": func(): ctl.issue({"t": "repeat", "target": e.id, "flag": not e.repeat}), "tip": tr("CMD_REPEAT_TIP")})
-		out.append({"text": tr("CMD_CANCEL_LAST"), "act": func(): ctl.dequeue(e, -1), "disabled": e.queue.is_empty()})
+		out.append({"text": tr("CMD_LOOP_ON") if e.repeat else tr("CMD_LOOP"), "pin": true, "act": func(): ctl.issue({"t": "repeat", "target": e.id, "flag": not e.repeat}), "tip": tr("CMD_REPEAT_TIP")})
+		out.append({"text": tr("CMD_CANCEL_LAST"), "pin": true, "act": func(): ctl.dequeue(e, -1), "disabled": e.queue.is_empty()})
 	return out
 
 const TYPE_MAX := 3
