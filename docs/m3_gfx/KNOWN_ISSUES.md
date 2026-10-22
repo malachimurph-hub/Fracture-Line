@@ -18,3 +18,4 @@
   - The Rattler's steering and the tank's tracks scroll at a single speed for both sides. Neither side counter-rotates when turning in place.
   - Stencil markings are procedural and generic.
 - All M2.1 known issues still apply.
+- **Barracks rubble reads poorly.** At default RTS zoom the destroyed Barracks reads mostly as a scorched, smoking pad. The rubble mound is low and dark, and will be raised and given more contrast in the next art pass.
