@@ -81,9 +81,8 @@ func run_map(mid: String) -> void:
 	await frames(20)
 	await shot("minimap_%s_full" % mid)
 	var mm: Control = m.hud.minimap
-	var r := Rect2i(mm.get_global_rect())
-	var scale := get_viewport().get_texture().get_size().x / maxf(1.0, get_viewport().get_visible_rect().size.x)
-	r = Rect2i(Vector2i(r.position * scale), Vector2i(r.size * scale))
+	var gr: Rect2 = mm.get_viewport().get_final_transform() * mm.get_global_transform_with_canvas() * Rect2(Vector2.ZERO, mm.size)
+	var r := Rect2i(gr).intersection(Rect2i(Vector2i.ZERO, get_viewport().get_texture().get_size()))
 	await shot("minimap_%s" % mid, r)
 	var icons := 0
 	for id in sim.ids:

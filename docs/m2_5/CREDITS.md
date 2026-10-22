@@ -21,7 +21,7 @@
   | Concrete | Concrete034 | colour, normal, roughness, AO | 2:1 set tiled to square |
   | Corrugated metal (hangars, sheds) | CorrugatedSteel005 | colour | resized |
   | Rust on models | Rust004 | colour | resized to 512 |
-  | Kessel Pass (winter) | Snow006, Ground054, Snow004, Rock035, Ice002 | colour, normal, roughness, AO | none |
+  | Kessel Pass (winter) | Snow006, Ground054, Snow004, Rock035, Ice002, Snow010A | colour, normal, roughness, AO | Ground054 desaturated, cooled and frost-blended with Snow010A |
   | Harrow Junction (temperate) | Grass001, Ground037, Grass004, Rock023, Gravel035, PavingStones130 | colour, normal, roughness, AO | none |
   | Ochre Wells (arid) | Ground090, Ground102, Ground054, Rock061, Ground079S | colour, normal, roughness, AO | none |
 

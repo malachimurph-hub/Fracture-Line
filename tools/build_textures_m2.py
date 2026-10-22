@@ -98,6 +98,11 @@ def build_terrain_env(env):
             continue
         key, name = layer
         c = square(src(name, "Color"), "RGB")
+        if key == "frozen_dirt":
+            # cold, frost-dusted packed earth (not beach sand): desaturate, cool, blend in frost
+            g = ImageOps.grayscale(c).convert("RGB")
+            cool = Image.merge("RGB", [p.point(lambda v, k=k: min(255, int(v * k))) for p, k in zip(g.split(), (0.86, 0.92, 1.0))])
+            c = Image.blend(Image.blend(c, cool, 0.7), square(src("Snow010A", "Color"), "RGB"), 0.28)
         alb.paste(c, (0, i * S))
         n = square(src(name, "NormalGL"), "RGB")
         r = square(src(name, "Roughness"), "L")
