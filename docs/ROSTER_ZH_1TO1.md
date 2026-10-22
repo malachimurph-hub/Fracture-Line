@@ -131,7 +131,20 @@ Counted from the tables above. Infantry are not counted, except the TPLA Laborer
 | United States | 0 / 0 / 0. Planning only, see below | 0 / 0 / 0 |
 
 ---
-## United States (ZH USA): planning only, not in M2.4
+## United States (ZH USA): implemented in M2.5
+**M2.5 status:** all 11 of Malachi's units plus Dozer and Supply Truck are in and playable, and
+the AI plays them. Details are in docs/US_FACTION_M25.md.
+- Air layer, airfield slots, land/rearm, sniper stealth and one-shot, the JTAC call-in and
+  boost aura, and the 2-soldier Javelin squad are all real.
+- Lynx fire-from-inside is still a [STUB].
+- Unspecified ZH USA buildings were added as **placeholders pending Malachi's list**: Command
+  Center, Fusion Plant (the US uses power), Supply Center, Strategy Center (tech gate only),
+  Bulwark SAM Battery (Patriot slot), Fire Base, and Supply Drop Zone.
+- Generals powers: UAV Recon, Paradrop, Precision Strike, Field Repair.
+- Not done: Paladin, Ambulance, Microwave Tank, Sentry Drone, Chinooks, Stealth Fighter,
+  Burton, Detention Camp, and the Particle Uplink superweapon.
+- The planning notes below are kept for reference.
+
 Source: Malachi's notes, `rts-design/notes/US_FACTION_NOTES_malachi_2026-10-22.md`. Malachi is designing this faction, so the tables below only **map** his units to ZH USA slots and list the gaps and missing mechanics. Nothing is implemented. All in-game names are original "inspired" names; the bold names are working suggestions for Malachi to accept or replace.
 
 ### Malachi's units mapped to ZH USA
