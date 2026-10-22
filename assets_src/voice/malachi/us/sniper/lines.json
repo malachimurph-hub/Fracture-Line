@@ -1,0 +1,203 @@
+{
+ "voice": "Malachi Murphy (own recording)",
+ "lines": [
+  {
+   "file": "audio/voice/us/sniper/created_1.ogg",
+   "event": "created",
+   "text": "Recon ready.",
+   "source": "Troop ready.mp3",
+   "start": "1.30",
+   "end": "2.90",
+   "radio": "us",
+   "lufs": -14.5,
+   "dry": "assets_src/voice/malachi/us/sniper/dry/created_1.wav"
+  },
+  {
+   "file": "audio/voice/us/sniper/created_2.ogg",
+   "event": "created",
+   "text": "Scout in the field.",
+   "source": "Troop ready.mp3",
+   "start": "4.75",
+   "end": "6.28",
+   "radio": "us",
+   "lufs": -14.5,
+   "dry": "assets_src/voice/malachi/us/sniper/dry/created_2.wav"
+  },
+  {
+   "file": "audio/voice/us/sniper/created_3.ogg",
+   "event": "created",
+   "text": "Scope clean and mounted.",
+   "source": "Troop ready.mp3",
+   "start": "7.40",
+   "end": "9.90",
+   "radio": "us",
+   "lufs": -14.5,
+   "dry": "assets_src/voice/malachi/us/sniper/dry/created_3.wav"
+  },
+  {
+   "file": "audio/voice/us/sniper/created_4.ogg",
+   "event": "created",
+   "text": "Ready to serve.",
+   "source": "Troop ready.mp3",
+   "start": "10.68",
+   "end": "12.04",
+   "radio": "us",
+   "lufs": -14.5,
+   "dry": "assets_src/voice/malachi/us/sniper/dry/created_4.wav"
+  },
+  {
+   "file": "audio/voice/us/sniper/move_1.ogg",
+   "event": "move",
+   "text": "Heading over.",
+   "source": "Being moved.mp3",
+   "start": "5.08",
+   "end": "6.14",
+   "radio": "us",
+   "lufs": -14.5,
+   "dry": "assets_src/voice/malachi/us/sniper/dry/move_1.wav"
+  },
+  {
+   "file": "audio/voice/us/sniper/move_2.ogg",
+   "event": "move",
+   "text": "I'll check it out.",
+   "source": "Being moved.mp3",
+   "start": "7.81",
+   "end": "9.01",
+   "radio": "us",
+   "lufs": -14.5,
+   "dry": "assets_src/voice/malachi/us/sniper/dry/move_2.wav"
+  },
+  {
+   "file": "audio/voice/us/sniper/move_3.ogg",
+   "event": "move",
+   "text": "Smooth is fast.",
+   "source": "Being moved.mp3",
+   "start": "10.37",
+   "end": "11.80",
+   "radio": "us",
+   "lufs": -14.5,
+   "dry": "assets_src/voice/malachi/us/sniper/dry/move_3.wav"
+  },
+  {
+   "file": "audio/voice/us/sniper/move_4.ogg",
+   "event": "move",
+   "text": "On the way.",
+   "source": "Being moved.mp3",
+   "start": "12.99",
+   "end": "14.15",
+   "radio": "us",
+   "lufs": -14.5,
+   "dry": "assets_src/voice/malachi/us/sniper/dry/move_4.wav"
+  },
+  {
+   "file": "audio/voice/us/sniper/move_5.ogg",
+   "event": "move",
+   "text": "Undetected.",
+   "source": "Being moved.mp3",
+   "start": "15.52",
+   "end": "16.75",
+   "radio": "us",
+   "lufs": -14.5,
+   "dry": "assets_src/voice/malachi/us/sniper/dry/move_5.wav"
+  },
+  {
+   "file": "audio/voice/us/sniper/select_1.ogg",
+   "event": "select",
+   "text": "Yeah?",
+   "source": "Being selected.mp3",
+   "start": "5.13",
+   "end": "6.02",
+   "radio": "us",
+   "lufs": -14.5,
+   "dry": "assets_src/voice/malachi/us/sniper/dry/select_1.wav"
+  },
+  {
+   "file": "audio/voice/us/sniper/select_2.ogg",
+   "event": "select",
+   "text": "Recon here.",
+   "source": "Being selected.mp3",
+   "start": "8.07",
+   "end": "9.30",
+   "radio": "us",
+   "lufs": -14.5,
+   "dry": "assets_src/voice/malachi/us/sniper/dry/select_2.wav"
+  },
+  {
+   "file": "audio/voice/us/sniper/select_3.ogg",
+   "event": "select",
+   "text": "Huh?",
+   "source": "Being selected.mp3",
+   "start": "10.66",
+   "end": "11.56",
+   "radio": "us",
+   "lufs": -14.5,
+   "dry": "assets_src/voice/malachi/us/sniper/dry/select_3.wav"
+  },
+  {
+   "file": "audio/voice/us/sniper/select_4.ogg",
+   "event": "select",
+   "text": "At your command.",
+   "source": "Being selected.mp3",
+   "start": "13.17",
+   "end": "14.38",
+   "radio": "us",
+   "lufs": -14.5,
+   "dry": "assets_src/voice/malachi/us/sniper/dry/select_4.wav"
+  },
+  {
+   "file": "audio/voice/us/sniper/select_5.ogg",
+   "event": "select",
+   "text": "You called?",
+   "source": "Being selected.mp3",
+   "start": "15.80",
+   "end": "16.83",
+   "radio": "us",
+   "lufs": -14.5,
+   "dry": "assets_src/voice/malachi/us/sniper/dry/select_5.wav"
+  },
+  {
+   "file": "audio/voice/us/sniper/under_fire_1.ogg",
+   "event": "under_fire",
+   "text": "Taking shots!",
+   "source": "Being engaged.mp3",
+   "start": "6.36",
+   "end": "7.76",
+   "radio": "us",
+   "lufs": -14.5,
+   "dry": "assets_src/voice/malachi/us/sniper/dry/under_fire_1.wav"
+  },
+  {
+   "file": "audio/voice/us/sniper/under_fire_2.ogg",
+   "event": "under_fire",
+   "text": "Ah! I'm hit!",
+   "source": "Being engaged.mp3",
+   "start": "11.85",
+   "end": "14.30",
+   "radio": "us",
+   "lufs": -14.5,
+   "dry": "assets_src/voice/malachi/us/sniper/dry/under_fire_2.wav"
+  },
+  {
+   "file": "audio/voice/us/sniper/under_fire_3.ogg",
+   "event": "under_fire",
+   "text": "Not going to plan here.",
+   "source": "Being engaged.mp3",
+   "start": "16.52",
+   "end": "18.50",
+   "radio": "us",
+   "lufs": -14.5,
+   "dry": "assets_src/voice/malachi/us/sniper/dry/under_fire_3.wav"
+  },
+  {
+   "file": "audio/voice/us/sniper/under_fire_4.ogg",
+   "event": "under_fire",
+   "text": "I need immediate support, now!",
+   "source": "Being engaged.mp3",
+   "start": "21.14",
+   "end": "24.06",
+   "radio": "us",
+   "lufs": -14.5,
+   "dry": "assets_src/voice/malachi/us/sniper/dry/under_fire_4.wav"
+  }
+ ]
+}

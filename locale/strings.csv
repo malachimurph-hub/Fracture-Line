@@ -258,6 +258,7 @@ Sound effects and music (""Dust Over Varno"", ""Steel Rain""): original, synthes
 Voices (AI-generated, original lines, no real person's voice cloned):
 • EU and US: Kokoro-82M speech model (hexgrad, Apache-2.0) via kokoro-onnx (MIT); phonemes by eSpeak NG (GPL-3.0 build tool, only audio ships).
 • TPLA (English with Middle Eastern accents): Chatterbox Multilingual (Resemble AI, MIT; output carries Resemble's Perth audio watermark), prompted with synthetic speakers derived from Piper Persian voices amir, ganji and reza_ibrahim (CC0 datasets, but fine-tuned from Piper's research-only ""lessac"" voice — licence not clearly permissive; these TPLA voices will be replaced in a later update; Piper GPL-3.0 build tool only). Checked with faster-whisper / Whisper (MIT).
+US Scout Sniper voiced by Malachi Murphy.
 Your own recordings in audio/voice replace the AI voices.
 Inspired by the classic base-building RTS genre; no names, art, audio or text from any other game are used.
 UI font: Godot's built-in default font."
