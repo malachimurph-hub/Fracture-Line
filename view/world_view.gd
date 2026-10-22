@@ -3,17 +3,13 @@ extends Node3D
 ## Rendering only: builds views from the simulation, interpolates 20 Hz sim positions for
 ## smooth 60+ fps rendering, applies fog visibility, and plays view-only effects.
 
-const VFX_COLORS := {"tracer": Color("#fff2b0"), "tracer_heavy": Color("#ffd166"), "missile": Color("#ff9b54"),
-	"shell": Color("#ffe08a"), "grenade": Color("#c9e86b"), "flak": Color("#f7f7f7"),
-	"rocket": Color("#ffb070"), "rocket_salvo": Color("#ffa060"), "tracer_quad": Color("#ffe9a8"),
-	"bomb": Color("#ffcf7a"), "rust_shell": Color("#b5d64a"), "flame": Color("#ff7a1f")}
-
 var runner: MatchRunner
 var sim: SimWorld
 var local_pid: int = 0
 var local_team: int = 0
 var terrain: TerrainView
 var vfx: Vfx
+var wfx: WeaponFx                ## M2.4 weapon effects (travelling rounds, no beams)
 var views: Dictionary = {}       ## id -> EntityView
 var ghosts: Dictionary = {}      ## dead buildings remembered in fog: id -> EntityView
 var prev: Dictionary = {}        ## id -> Vector3
@@ -31,6 +27,15 @@ var rally_nodes: Array = []
 var alpha: float = 0.0
 var unit_scale: float = 1.0      ## readability scale; infantry squads render ~1.4x (GDD 14.2)
 var icon_mode: bool = false      ## far zoom: models hidden, overlay draws role icons
+var deferred_deaths: Dictionary = {}   ## unit id -> true while its killing round is in flight
+var rigs: Dictionary = {}        ## building id -> ConstructionRig while under construction
+
+## HP fraction for visuals: a structure under construction is measured against the HP its
+## scaffold has reached so far (ProdSys.construction_hp_cap), so only real damage shows.
+static func build_relative_health(e: SimEntity) -> float:
+	if e.built:
+		return clampf(float(e.hp) / float(maxi(1, e.max_hp)), 0.0, 1.0)
+	return clampf(float(e.hp) / float(ProdSys.construction_hp_cap(e.max_hp, e.progress, e.build_ticks)), 0.0, 1.0)
 
 func setup(r: MatchRunner, pid: int) -> void:
 	runner = r
@@ -43,6 +48,9 @@ func setup(r: MatchRunner, pid: int) -> void:
 	vfx = Vfx.new()
 	add_child(vfx)
 	vfx.set_fog(terrain.fog_texture, Vector2(sim.map.w, sim.map.h))
+	wfx = WeaponFx.new()
+	add_child(wfx)
+	wfx.setup(self, vfx)
 	fog_overlay = Palette.flat(Color(0.05, 0.06, 0.08), 0.55)
 	dome_mat = StandardMaterial3D.new()
 	dome_mat.albedo_color = Color(0.43, 0.89, 1.0, 0.10)
@@ -160,6 +168,8 @@ func on_tick(events: Array) -> void:
 				var c := sim.get_ent(int(ev["id"]))
 				if c != null and views.has(c.id):
 					views[c.id].set_team_material(Palette.team_material(sim.players[c.owner].color))
+					if rigs.has(c.id):
+						rigs[c.id].refresh_team()
 			"garrison":
 				var b := sim.get_ent(int(ev["b"]))
 				if b != null and views.has(b.id):
@@ -197,91 +207,87 @@ func _on_fire(ev: Dictionary) -> void:
 	var src := sim.get_ent(int(ev["id"]))
 	if src == null:
 		return
-	var from: Vector3 = (cur.get(src.id, _world_pos(src)) as Vector3)
-	var to := FX.to_world(ev["to"])
 	if not _visible_pos(src.pos) and not _visible_pos(ev["to"]):
 		return
 	var v: EntityView = views.get(src.id)
+	var garrison: SimEntity = null
 	if src.res_id < 0:
-		var b := sim.get_ent(-src.res_id)
-		if b != null:
-			from = FX.to_world(b.pos) + Vector3(0, 1.2, 0)
-			v = null
-	else:
-		from.y += 0.5 if src.kind == SimEntity.Kind.UNIT else 0.9
-	to.y += 0.4
-	if v != null and v.has_method("on_fire"):
-		v.on_fire()
+		garrison = sim.get_ent(-src.res_id)
 	var kind: String = String(ev["vfx"])
-	var col: Color = VFX_COLORS.get(kind, Color.WHITE)
-	var dir := (to - from).normalized()
-	var muzzle := from + dir * 0.45
-	var is_struct := src.kind != SimEntity.Kind.UNIT or src.res_id < 0
+	var cls := WeaponFx.class_of(StringName(ev.get("w", &"")), kind)
+	if cls == "none":
+		return   # bombs / charges: the "explode" event draws the blast
+	var to := FX.to_world(ev["to"])
+	var tgt := sim.get_ent(int(ev.get("tid", 0)))
+	var tv: EntityView = views.get(tgt.id) if tgt != null else null
+	var hitk := -1
+	var off := Vector3.ZERO
+	if not ev.get("miss", false) and tgt != null:
+		if tgt.kind == SimEntity.Kind.UNIT:
+			var inf := Content.unit(tgt.def_id).tags.has("infantry")
+			hitk = 0 if inf else 1
+			off = Vector3(0, 0.22 if inf else 0.35, 0)
+		else:
+			hitk = 2
+	var base: Vector3 = v.position if (v != null and garrison == null) else (cur.get(src.id, _world_pos(src)) as Vector3)
+	if garrison != null:
+		base = FX.to_world(garrison.pos)
+	var dir := to - base
+	dir.y = 0.0
+	dir = dir.normalized() if dir.length() > 0.01 else Vector3.FORWARD
+	if hitk == 2 and tv != null:
+		# rounds strike the facing wall of a structure, not its centre
+		off = -dir * minf(tv.footprint.x, tv.footprint.y) * 0.38 + Vector3(0, tv.bar_height * 0.4, 0)
+	var muzzles := _muzzles(src, v, garrison, base, dir, cls)
+	if v != null and garrison == null and v.has_method("on_fire"):
+		v.on_fire()
+	var aim: Vector3 = (to + off) - (muzzles[0] as Vector3)
+	wfx.fire(cls, muzzles, aim, to, tgt.id if tgt != null else 0, hitk, off)
+	var is_struct := src.kind != SimEntity.Kind.UNIT or garrison != null
 	var snd: String = AudioDirector.weapon_sfx(_faction_of(src), kind, is_struct)
-	AudioDirector.sfx(snd, from, -3.0 if snd == "rifle" else 0.0)
-	if kind in ["shell", "missile", "grenade", "rocket", "rocket_salvo"]:
-		AudioDirector.sfx("expl_small", to, -6.0)
-	match kind:
-		"shell":
-			vfx.tracer(muzzle, to, col, 0.07, 0.1)
-			vfx.muzzle(muzzle + dir * 0.4, dir, 0.32)
-			vfx.explosion(to - Vector3(0, 0.35, 0), 0.45)
-		"missile":
-			vfx.tracer(muzzle, to, col, 0.05, 0.22)
-			vfx.muzzle(muzzle, dir, 0.2)
-			for k in 5:
-				vfx.trail(muzzle.lerp(to, (k + 0.5) / 5.0))
-			vfx.explosion(to - Vector3(0, 0.35, 0), 0.5)
-		"rocket":
-			# unguided RPG: wobbly smoke trail, small blast
-			vfx.tracer(muzzle, to, col, 0.04, 0.18)
-			vfx.muzzle(muzzle, dir, 0.16)
-			for k in 4:
-				vfx.trail(muzzle.lerp(to, (k + 0.5) / 4.0) + Vector3(randf_range(-0.08, 0.08), randf_range(-0.05, 0.08), randf_range(-0.08, 0.08)))
-			vfx.explosion(to - Vector3(0, 0.35, 0), 0.4)
-		"rocket_salvo":
-			# buggy rocket salvo: three staggered rockets around the target
-			for k in 3:
-				var off := Vector3(randf_range(-0.6, 0.6), 0, randf_range(-0.6, 0.6))
-				var top := from.lerp(to + off, 0.5) + Vector3(0, 1.2, 0)
-				vfx.tracer(muzzle, top, col, 0.035, 0.14)
-				vfx.tracer(top, to + off, col, 0.035, 0.16)
-				vfx.trail(top)
-				vfx.explosion(to + off - Vector3(0, 0.35, 0), 0.35)
-			vfx.muzzle(muzzle, dir, 0.2)
-		"tracer_quad":
-			# four-barrel AA: two pairs of fast tracers
-			for k in 2:
-				var o := Vector3(0, 0.05 * k, 0)
-				vfx.tracer(muzzle + o, to + o * 2.0, col, 0.025, 0.05)
-			vfx.muzzle(muzzle, dir, 0.16)
-			vfx.impact(to - Vector3(0, 0.3, 0), 0.18)
-		"rust_shell":
-			# lobbed toxic canister
-			var apex := from.lerp(to, 0.5) + Vector3(0, 2.0, 0)
-			vfx.tracer(muzzle, apex, col, 0.05, 0.2)
-			vfx.tracer(apex, to, col, 0.05, 0.25)
-			vfx.muzzle(muzzle, dir, 0.25)
-			vfx.impact(to - Vector3(0, 0.3, 0), 0.35)
-		"flame":
-			# flame jet: a thick short-lived stream plus a few licks of fire along it
-			vfx.tracer(muzzle, to, col, 0.12, 0.12)
-			vfx.muzzle(muzzle, dir, 0.3)
-			for k in 3:
-				vfx.impact(muzzle.lerp(to, (k + 1) / 3.0) - Vector3(0, 0.2, 0), 0.22)
-		"bomb":
-			pass   # the "explode" event draws the blast
-		"grenade":
-			vfx.tracer(from + Vector3(0, 0.4, 0), to, col, 0.04, 0.2)
-			vfx.explosion(to - Vector3(0, 0.35, 0), 0.4)
-		"flak":
-			vfx.tracer(muzzle, to, col, 0.03, 0.07)
-			vfx.muzzle(muzzle, dir, 0.18)
-			vfx.flak_burst(to + Vector3(randf_range(-0.3, 0.3), randf_range(0.2, 0.6), randf_range(-0.3, 0.3)))
-		_:
-			vfx.tracer(muzzle, to, col, 0.03 if kind == "tracer" else 0.045, 0.06)
-			vfx.muzzle(muzzle, dir, 0.12 if kind == "tracer" else 0.18)
-			vfx.impact(to - Vector3(0, 0.3, 0), 0.25)
+	if cls == "flame":
+		snd = "flame"
+	elif cls == "artillery":
+		snd = "howitzer"
+	AudioDirector.sfx(snd, base, -3.0 if snd in ["rifle", "tpla_carbine"] else 0.0, 0.1)
+
+## Muzzle points for one shot: squads fire from their standing soldiers, articulated vehicles
+## from the barrel tip, turrets from the turret, garrisons from the building's windows.
+func _muzzles(src: SimEntity, v: EntityView, garrison: SimEntity, base: Vector3, dir: Vector3, cls: String) -> Array:
+	if garrison != null:
+		var gv: EntityView = views.get(garrison.id)
+		var r := (minf(gv.footprint.x, gv.footprint.y) * 0.5 if gv != null else 1.0)
+		return [base + dir * r + Vector3(randf_range(-0.3, 0.3), 1.0 + randf() * 0.4, randf_range(-0.3, 0.3))]
+	if v == null:
+		return [base + Vector3(0, 0.5, 0) + dir * 0.4]
+	if v is InfantryView:
+		var iv := v as InfantryView
+		var out: Array = []
+		var up := iv.vat.height * 0.6 if iv.vat != null else 0.25
+		for i in iv.formation.size():
+			if iv._state.size() > i and iv._state[i] != 3:
+				out.append(iv.global_transform * (iv.formation[i] + Vector3(0, up, 0)) + dir * 0.14)
+		out.shuffle()
+		if out.is_empty():
+			out.append(v.position + Vector3(0, 0.35, 0))
+		return out
+	var barrel: Node3D = v.get("barrel") if "barrel" in v else null
+	if barrel != null and is_instance_valid(barrel):
+		if not barrel.has_meta("tip"):
+			var tip := 0.3
+			for c in [barrel] + barrel.get_children():
+				if c is MeshInstance3D and (c as MeshInstance3D).mesh != null:
+					var bb: AABB = (c as MeshInstance3D).transform * (c as MeshInstance3D).mesh.get_aabb() if c != barrel else (c as MeshInstance3D).mesh.get_aabb()
+					tip = maxf(tip, bb.end.z)
+			barrel.set_meta("tip", tip)
+		var bt := barrel.global_transform
+		return [bt * Vector3(0, 0, float(barrel.get_meta("tip")) + 0.02)]
+	if v.turret != null:
+		return [v.turret.global_position + Vector3(0, 0.12, 0) + dir * (0.45 if src.kind == SimEntity.Kind.UNIT else 0.6)]
+	var h := 0.5 if src.kind == SimEntity.Kind.UNIT else 0.9
+	if cls in ["rocket", "missile"] and src.kind == SimEntity.Kind.UNIT and Content.unit(src.def_id).tags.has("infantry"):
+		h = 0.45
+	return [base + Vector3(0, h, 0) + dir * 0.4]
 
 func _faction_of(e: SimEntity) -> String:
 	if e.owner < 0:
@@ -294,6 +300,17 @@ func _faction_of(e: SimEntity) -> String:
 func _on_death(ev: Dictionary) -> void:
 	var id := int(ev["id"])
 	var v: EntityView = views.get(id)
+	# the killing round may still be in the air (the sim resolves hits when it fires): keep the
+	# unit standing until the round lands so the wreck / fall matches the impact (view only)
+	if wfx != null and v != null and ev["kind"] == SimEntity.Kind.UNIT and not ev.get("deferred", false):
+		var wait := minf(wfx.time_to_hit(id), 1.0)
+		if wait > 0.01 and is_inside_tree():
+			var ev2 := ev.duplicate()
+			ev2["deferred"] = true
+			deferred_deaths[id] = true
+			get_tree().create_timer(wait, false).timeout.connect(_on_death.bind(ev2))
+			return
+	deferred_deaths.erase(id)
 	var pos := FX.to_world(ev["pos"])
 	var seen := _visible_pos(ev["pos"]) or int(ev.get("owner", -1)) >= 0 and sim.player_team(int(ev["owner"])) == local_team
 	if seen and not ev.get("silent", false):
@@ -312,6 +329,9 @@ func _on_death(ev: Dictionary) -> void:
 	if shield_domes.has(id):
 		shield_domes[id].queue_free()
 		shield_domes.erase(id)
+	if rigs.has(id):
+		rigs[id].finish()   # the scaffold goes down with the site
+		rigs.erase(id)
 	if rings.has(id):
 		rings[id].queue_free()
 		rings.erase(id)
@@ -389,23 +409,37 @@ func frame(a: float, delta: float) -> void:
 			v.visible = (vis or show_mem) and not (icon_mode and e.kind == SimEntity.Kind.UNIT)
 			if e.kind == SimEntity.Kind.BUILDING:
 				v.set_ghosted(e.stealthy and (e.team == local_team or local_team < 0))
-				var k := 1.0 if e.built else 0.15 + 0.85 * float(e.progress) / float(maxi(1, e.build_ticks))
+				var bk := 1.0 if e.built else float(e.progress) / float(maxi(1, e.build_ticks))
+				# M2.4: under construction = construction site (scaffold, rising structure), never
+				# damage; damage visuals use HP relative to what the scaffold has reached so far
+				var rig: ConstructionRig = rigs.get(id)
+				if not e.built and rig == null:
+					rig = ConstructionRig.new()
+					v.add_child(rig)
+					rig.setup(v, StringName(_faction_of(e)))
+					rigs[id] = rig
+				elif e.built and rig != null:
+					rig.finish()
+					rigs.erase(id)
+					rig = null
+				var hpk := build_relative_health(e)
 				if v.has_method("set_build_progress"):
-					# M2.2 staged construction (scaffold, rising structure) + damage states
-					v.set_build_progress(1.0 if e.built else float(e.progress) / float(maxi(1, e.build_ticks)))
-					v.set_damage(float(e.hp) / float(maxi(1, e.max_hp)))
-				elif v.model:
-					v.model.scale.y = k
+					v.set_build_progress(bk)
+					v.set_damage(hpk, not e.built)
+				if rig != null:
+					rig.update(bk, delta, vfx, vis and not icon_mode)
 				if vis and not icon_mode:
 					var acc2: float = fx_acc.get(id, 0.0) + delta
-					var hpk := float(e.hp) / float(maxi(1, e.max_hp))
-					if not e.built and acc2 > 0.35:
-						acc2 = 0.0   # construction dust around the footprint
+					if rig != null and rig.working() and acc2 > 0.35:
+						acc2 = 0.0   # construction dust around the footprint while a builder works
 						var r := v.footprint * 0.5
 						vfx.dust(v.position + Vector3(randf_range(-r.x, r.x), 0, randf_range(-r.y, r.y)), 0.6, 0.4)
 					elif e.built and hpk < 0.5 and acc2 > (0.22 if hpk < 0.25 else 0.4):
 						acc2 = 0.0   # damaged: smoke column, on fire below 25 %
 						vfx.smoke_puff(v.position + Vector3(randf_range(-0.6, 0.6), v.bar_height * 0.6, randf_range(-0.6, 0.6)), 0.5 if hpk < 0.25 else 0.3, hpk < 0.25)
+					elif not e.built and hpk < 0.5 and acc2 > 0.6:
+						acc2 = 0.0   # a site that took real fire: a thin smoke wisp, never flames
+						vfx.smoke_puff(v.position + Vector3(randf_range(-0.4, 0.4), v.bar_height * 0.4, randf_range(-0.4, 0.4)), 0.15, false)
 					fx_acc[id] = acc2
 				if v.turret != null and e.target != 0:
 					var t2 := sim.get_ent(e.target)

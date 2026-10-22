@@ -51,6 +51,7 @@ common/physics_ticks_per_second=20
 renderer/rendering_method="mobile"
 renderer/rendering_method.mobile="mobile"
 renderer/rendering_method.web="gl_compatibility"
+limits/global_shader_variables/buffer_size=262144
 textures/vram_compression/import_etc2_astc=true
 anti_aliasing/quality/msaa_3d=1
 scaling_3d/scale=0.75

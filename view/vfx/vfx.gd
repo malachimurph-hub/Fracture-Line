@@ -1,6 +1,6 @@
 class_name Vfx
 extends Node3D
-## Pooled, view-only effects: tracers, muzzle flashes, explosions, rings, scorch decals,
+## Pooled, view-only effects (weapon rounds live in WeaponFx): muzzle flashes, explosions, rings, scorch decals,
 ## command markers. Never touches the simulation. Respects the "reduce flashing" idea by
 ## keeping flashes small and short.
 
@@ -13,6 +13,7 @@ var _ring: ArrayMesh
 var smoke: ParticleLayer
 var fire: ParticleLayer
 var debris: ParticleLayer
+var spark_layer: ParticleLayer   ## M2.4: falling bright sparks (welding, bullet strikes on metal)
 var decals: MultiMeshInstance3D
 var decal_mat: ShaderMaterial
 var _decal_next := 0
@@ -55,6 +56,9 @@ func _ready() -> void:
 	debris = ParticleLayer.new()
 	debris.setup(240, chunk, dm, false, 9.8, 0.3)
 	add_child(debris)
+	spark_layer = ParticleLayer.new()
+	spark_layer.setup(260, quad, fm, true, 9.0, 0.8)
+	add_child(spark_layer)
 	decal_mat = ShaderMaterial.new()
 	decal_mat.shader = load("res://view/vfx/decal.gdshader")
 	decal_mat.render_priority = -1
@@ -103,6 +107,17 @@ func impact(p: Vector3, size: float, dusty: bool = true) -> void:
 
 func dust(p: Vector3, size: float, amount: float = 0.55) -> void:
 	smoke.emit(p + Vector3(0, 0.08, 0), Vector3(randf_range(-0.25, 0.25), 0.35, randf_range(-0.25, 0.25)), 1.1, size * 0.5, size * 1.6, Color(DUST, amount), Color(DUST, 0.0))
+
+## Bright sparks spraying from p (welding on a construction site, rounds striking metal).
+func sparks(p: Vector3, dir: Vector3, n: int, speed: float) -> void:
+	for k in n:
+		var v := dir + Vector3(randf_range(-1, 1), randf_range(0.2, 1.2), randf_range(-1, 1)) * speed
+		spark_layer.emit(p, v, randf_range(0.25, 0.5), 0.045, 0.015, Color("#fff4c8"), Color(1.0, 0.55, 0.1, 0.0), 1.0)
+
+## Wood chips / grit kicked up by TPLA labourers on a site.
+func chips(p: Vector3, n: int) -> void:
+	for k in n:
+		debris.emit(p, Vector3(randf_range(-1.2, 1.2), randf_range(1.2, 2.4), randf_range(-1.2, 1.2)), 1.2, 0.035, 0.03, Color("#a88b5c"), Color("#7c5c3b"))
 
 func trail(p: Vector3) -> void:
 	smoke.emit(p, Vector3(0, 0.25, 0), 0.9, 0.12, 0.4, Color(0.8, 0.78, 0.75, 0.55), Color(0.8, 0.78, 0.75, 0.0))
@@ -167,18 +182,6 @@ func _take(kind: String, mesh: Mesh) -> MeshInstance3D:
 
 func _add(kind: String, mi: MeshInstance3D, life: float, data: Dictionary = {}) -> void:
 	items.append({"n": mi, "t": 0.0, "life": life, "k": kind, "d": data})
-
-func tracer(from: Vector3, to: Vector3, col: Color, width: float = 0.05, life: float = 0.09) -> void:
-	if items.size() > 400:
-		return
-	var mi := _take("box", _box)
-	var mid := (from + to) * 0.5
-	var len := from.distance_to(to)
-	if len < 0.01:
-		return
-	mi.transform = Transform3D(Basis.looking_at(to - from, Vector3.UP), mid).scaled_local(Vector3(width, width, len))
-	mi.material_override = Palette.flat(col)
-	_add("box", mi, life)
 
 func flash(p: Vector3, col: Color, size: float, life: float = 0.12) -> void:
 	if items.size() > 400:

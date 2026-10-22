@@ -25,6 +25,8 @@ var _building := false
 var _state := 0          ## 0 ok, 1 light, 2 heavy, 3 destroyed
 var _smoke_t := 0.0
 var _dead_t := 0.0
+var external_scaffold := false   ## M2.4: a ConstructionRig draws the faction's scaffold instead
+var under_construction := false
 
 func _ready() -> void:
 	super._ready()
@@ -83,18 +85,25 @@ func set_build_progress(k: float) -> void:
 		_building = true
 		_swap(hull, MAT_REVEAL)
 		if scaffold:
-			scaffold.visible = true
+			scaffold.visible = not external_scaffold
 			_swap(scaffold, MAT_REVEAL)
+	if scaffold and external_scaffold and scaffold.visible:
+		scaffold.visible = false
 	# stage 1 (0..25 %): scaffold climbs; stage 2 (12..95 %): the structure rises inside it
-	if scaffold:
+	if scaffold and scaffold.visible:
 		scaffold.set_instance_shader_parameter(&"reveal_y", scaffold_top * 1.05 * clampf(k / 0.25, 0.0, 1.0) - 0.02)
 	hull.set_instance_shader_parameter(&"reveal_y", top_y * clampf((k - 0.12) / 0.83, 0.0, 1.0) + 0.02)
 
-## k = hp / max_hp.
-func set_damage(k: float) -> void:
+## k = hp / max_hp, or while under construction hp / the HP the scaffold has reached so far
+## (WorldView), so a healthy site always looks clean. A site that took fire shows at most the
+## light state (soot, a wisp of smoke): no fires or breaches on an unfinished frame.
+func set_damage(k: float, constructing: bool = false) -> void:
 	if _state == 3:
 		return
+	under_construction = constructing
 	var s := 0 if k > 0.75 else (1 if k > 0.4 else 2)
+	if constructing:
+		s = mini(s, 1)
 	if s == _state and _prog >= 0.0:
 		return
 	_state = s

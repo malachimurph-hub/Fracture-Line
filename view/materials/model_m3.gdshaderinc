@@ -22,6 +22,7 @@ instance uniform float steer = 0.0;        // radians, wheels flagged as steerin
 instance uniform float damage_amt = 0.0;   // 0 pristine .. 1 burnt-out
 #ifdef REVEAL
 instance uniform float reveal_y = 10.0;    // construction: object-space height built so far
+instance uniform vec4 reveal_edge = vec4(1.6, 0.9, 0.35, 1.0);   // build-edge colour, a = strength
 #endif
 varying vec3 opos;
 varying vec3 onrm;
@@ -160,7 +161,7 @@ void fragment() {
 	}
 #ifdef REVEAL
 	float edge = 1.0 - smoothstep(0.0, 0.035, reveal_y - opos.y);
-	emit += vec3(1.6, 0.9, 0.35) * edge;
+	emit += reveal_edge.rgb * reveal_edge.a * edge;
 #endif
 	ALBEDO = col;
 	METALLIC = metal;

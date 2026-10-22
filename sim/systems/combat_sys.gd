@@ -176,7 +176,7 @@ static func fire(w: SimWorld, src: SimEntity, t: SimEntity, wd: WeaponDef, dmg_p
 		var hv := FX.dir_of(w.rng.range_int(FX.ANG))
 		impact = t.pos + Vector2i(hv.x * rr / FX.ONE, hv.y * rr / FX.ONE)
 		hit = rr <= t.radius
-	w.events.append({"t": "fire", "id": src.id, "to": impact, "tid": t.id, "vfx": wd.vfx, "miss": not hit})
+	w.events.append({"t": "fire", "id": src.id, "to": impact, "tid": t.id, "vfx": wd.vfx, "w": wd.id, "miss": not hit})
 	if hit:
 		var armor := _armor_of(w, t)
 		var dmg := wd.damage * Content.combat.mult(wd.damage_type, armor) / 100 * dmg_pct / 100

@@ -74,12 +74,18 @@ static func _rot_dir(r: int) -> Vector2i:
 		2: return Vector2i(0, -1)
 	return Vector2i(-1, 0)
 
+## HP a structure under construction has reached at `progress` (10 % at placement, full when
+## complete). The view uses it as the scaffold's current maximum, so damage visuals only show
+## damage actually taken, never the construction ramp (M2.4).
+static func construction_hp_cap(max_hp: int, progress: int, build_ticks: int) -> int:
+	return maxi(1, max_hp / 10 + (max_hp * 9 / 10) * progress / maxi(1, build_ticks))
+
 static func _build_step(w: SimWorld, s: SimEntity) -> void:
 	if s.built:
 		return
 	var d: BuildingDef = w.bdef(s)
 	s.progress += 1
-	var target_hp := maxi(1, d.max_hp / 10 + (d.max_hp * 9 / 10) * s.progress / s.build_ticks)
+	var target_hp := construction_hp_cap(d.max_hp, s.progress, s.build_ticks)
 	if target_hp > s.hp:
 		s.hp = mini(d.max_hp, s.hp + (target_hp - s.hp))
 	if s.progress >= s.build_ticks:

@@ -103,7 +103,10 @@ func _bar(sp: Vector2, w: float, e: SimEntity) -> void:
 	var r := Rect2(sp - Vector2(w * 0.5, 0), Vector2(w, h))
 	draw_rect(r.grow(1), Color(0, 0, 0, 0.7))
 	var k := float(e.hp) / float(maxi(1, e.max_hp))
-	var col := Color("#43d16b") if k > 0.6 else (Color("#f0c23c") if k > 0.3 else Color("#e8432f"))
+	# the bar shows real HP; its colour shows condition (an unfinished structure against the HP
+	# built so far), so a healthy construction site never reads as damaged (M2.4)
+	var ck := WorldView.build_relative_health(e) if e.kind == SimEntity.Kind.BUILDING else k
+	var col := Color("#43d16b") if ck > 0.6 else (Color("#f0c23c") if ck > 0.3 else Color("#e8432f"))
 	draw_rect(Rect2(r.position, Vector2(w * k, h)), col)
 	if e.max_shield > 0 and e.shield > 0:
 		var ks := float(e.shield) / float(maxi(1, e.max_shield))
