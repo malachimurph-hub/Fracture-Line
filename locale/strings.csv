@@ -66,6 +66,7 @@ OPT_HIGH,High
 OPT_MEDIUM,Medium
 SET_HOLD_ACTION,Hold + release does
 SET_HAPTICS,Haptics
+SET_MENU_BATTLE,Battle behind the main menu
 SET_INERTIA,Camera inertia
 SET_EDGE_PAN,Edge panning (mouse)
 PAUSE_TITLE,Paused
@@ -392,12 +393,12 @@ UNIT_US_DOZER,Dozer
 UNIT_US_DOZER_DESC,Armoured bulldozer. Builds and repairs base structures.
 UNIT_US_SUPPLY_TRUCK,Supply Truck
 UNIT_US_SUPPLY_TRUCK_DESC,Hauls supplies from piles and derricks to a Supply Center.
-UNIT_US_GRUNT,Marine Grunt
+UNIT_US_GRUNT,Marine Rifleman
 UNIT_US_GRUNT_DESC,"One Marine with a service rifle. Cheap, flexible, can garrison buildings."
 UNIT_US_JAVELIN,Javelin Team
 UNIT_US_JAVELIN_DESC,"Two-man anti-armour team. Fire-and-forget missiles lock on, then hit vehicles and helicopters hard."
 UNIT_US_JTAC,JTAC Observer
-UNIT_US_JTAC_DESC,"Forward air controller with a carbine: wide sight, 35% stronger than a Grunt. Sends idle aircraft at his target and boosts artillery and air strikes near him (+25% damage, tighter spread)."
+UNIT_US_JTAC_DESC,"Forward air controller with a carbine: wide sight, 35% stronger than a Rifleman. Sends idle aircraft at his target and boosts artillery and air strikes near him (+25% damage, tighter spread)."
 UNIT_US_SNIPER,Scout Sniper
 UNIT_US_SNIPER_DESC,Invisible while standing still. Kills infantry with one shot; useless against vehicles. Needs a Strategy Center.
 UNIT_US_HALBERD,Halberd MBT
@@ -437,7 +438,7 @@ BLD_US_DROP_ZONE_DESC,Receives regular supply drops: passive income (placeholder
 POWER_US_UAV,UAV Recon
 POWER_US_UAV_DESC,A drone reveals a 14-tile area for 20 s.
 POWER_US_PARADROP,Paradrop
-POWER_US_PARADROP_DESC,Five Marine Grunts parachute onto the target.
+POWER_US_PARADROP_DESC,Five Marine Riflemen parachute onto the target.
 POWER_US_STRIKE,Precision Strike
 POWER_US_STRIKE_DESC,Three heavy bombs on the target area (+25% if a JTAC is near).
 POWER_US_REPAIR,Field Repair

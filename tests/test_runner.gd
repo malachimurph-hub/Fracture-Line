@@ -1847,7 +1847,7 @@ func _m25_us_content() -> void:
 		"airfield slots: bomber 4, fighter 2, gunship 0, airfield 6")
 	var g: int = Content.weapon(&"us_m16").damage
 	_check(Content.weapon(&"us_m4").damage * 100 / g >= 135 and Content.unit(&"us_jtac").max_hp * 100 / Content.unit(&"us_grunt").max_hp >= 135 and Content.unit(&"us_jtac").sight > Content.unit(&"us_grunt").sight,
-		"JTAC: 35% stronger than a Grunt, wider sight")
+		"JTAC: 35% stronger than a Rifleman, wider sight")
 
 func _m25_air() -> void:
 	var r := _us_runner(51)
@@ -1969,4 +1969,4 @@ func _m25_sniper_jtac() -> void:
 	var n0 := w.count_owned(0, &"us_grunt")
 	w.players[0].powers["us_paradrop"] = {"ready": w.tick}
 	PowersSys.fire(w, 0, &"us_paradrop", FX.tile_center(c + Vector2i(-8, -6)))
-	_check(w.count_owned(0, &"us_grunt") == n0 + 5, "Paradrop lands five Marine Grunts")
+	_check(w.count_owned(0, &"us_grunt") == n0 + 5, "Paradrop lands five Marine Riflemen")

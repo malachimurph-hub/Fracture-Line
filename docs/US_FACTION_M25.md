@@ -12,9 +12,9 @@ Voices: modern American soldiers + announcer (Kokoro-82M American voices, Apache
 |---|---|---|---|---|
 | Dozer | armoured bulldozer | 1000 | 500 | builder |
 | Supply Truck | logistics truck | 700 | 650 | gatherer (350 per load) |
-| Marine Grunt | Marine rifleman | 225 | 180 | rifle (13 dmg), garrisons |
+| Marine Rifleman | Marine rifleman | 225 | 180 | rifle (13 dmg), garrisons |
 | Javelin Team | Javelin ATGM team | 450 | 260 | **2 soldiers**; fire-and-forget AT missile, hits helicopters |
-| JTAC Observer | joint terminal attack controller | 500 | 243 (= Grunt +35%) | sight 12 (Grunt 7); every 10 s sends an idle aircraft (within 70 tiles) at his target; artillery and air strikes landing within 8 tiles of him do +25% damage with half the scatter |
+| JTAC Observer | joint terminal attack controller | 500 | 243 (= Rifleman +35%) | sight 12 (Rifleman 7); every 10 s sends an idle aircraft (within 70 tiles) at his target; artillery and air strikes landing within 8 tiles of him do +25% damage with half the scatter |
 | Scout Sniper | Marine scout sniper | 600 | 150 | invisible after 2 s standing still (revealed by nearby enemies / detectors); 400-damage rifle one-shots any infantry, ~nothing vs vehicles; needs Strategy Center |
 | Lynx | JLTV | 700 | 550 | fast, roof HMG, carries 5 infantry |
 | Halberd | Abrams | 1100 | 1050 | main battle tank, heavy armour |
@@ -46,7 +46,7 @@ Buildings Malachi did not specify follow the Zero Hour USA equivalents (role onl
 and models) and are marked "placeholder pending Malachi's list" in-game and here.
 
 ## General powers
-UAV Recon (rank 1), Paradrop (rank 2, 5 Grunts), Precision Strike (rank 3, 350 dmg),
+UAV Recon (rank 1), Paradrop (rank 2, 5 Riflemen), Precision Strike (rank 3, 350 dmg),
 Field Repair (rank 4).
 
 ## AI

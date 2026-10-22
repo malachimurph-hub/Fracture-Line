@@ -154,10 +154,10 @@ Source: Malachi's notes, `rts-design/notes/US_FACTION_NOTES_malachi_2026-10-22.m
 | Humvee | JLTV-inspired vehicle | **Lynx JLTV** | Garage | Fast scout / raider. ZH Humvee carries 5 infantry who fire from inside | transport exists (M2.4); fire-from-inside is new |
 | Tomahawk Launcher | M777-inspired howitzer | **Longreach Howitzer** | Garage | Long-range artillery (a towed gun in place of a missile launcher) | artillery exists; JTAC boost is new |
 | Avenger | AN/TWQ-1-inspired SHORAD | **Picket SHORAD** | Garage | Short-range air defence. ZH Avenger also laser-paints targets for bonus damage | AA exists; "paint target" bonus optional |
-| Ranger | Marine Grunt (1 soldier, M16) | **Marine Rifleman** | Barracks | Basic infantry | none new |
+| Ranger | Marine Rifleman (1 soldier, M16; was "Marine Grunt" in M2.5) | **Marine Rifleman** | Barracks | Basic infantry | none new |
 | Missile Defender | Javelin team (1 unit = 2 soldiers) | **Javelin Team** | Barracks | Anti-armour. Two models per unit | multi-model squad view (view only) |
 | Pathfinder | Marine Scout Sniper | **Scout Sniper** | Barracks | Invisible while stationary; one-shot kills on infantry | stealth while stationary; infantry one-shot |
-| (Burton / laser designation, partial) | Forward JTAC Observer | **JTAC Observer** | Barracks | Single soldier, wide sight, M4, 35% stronger than a Grunt. Calls in air support. Boosts artillery and airstrikes near him | air-support call-in; aura that boosts artillery and airstrikes |
+| (Burton / laser designation, partial) | Forward JTAC Observer | **JTAC Observer** | Barracks | Single soldier, wide sight, M4, 35% stronger than a Rifleman. Calls in air support. Boosts artillery and airstrikes near him | air-support call-in; aura that boosts artillery and airstrikes |
 | Aurora Bomber | B-1-inspired heavy bomber | **Thunderlance Bomber** | Airfield | One devastating strike, then lands and reloads (long reload). Uses 4 of 6 airfield slots | air layer; land and rearm; slot capacity |
 | Raptor | F-22-inspired fighter | **Wraith Fighter** | Airfield | Best air-to-air; weak ground strike; short reload. Uses 2 slots | air layer; land and rearm; slot capacity; air-to-air targeting |
 | Comanche | Apache-inspired attack helicopter | **Harrier Gunship** | Airfield | Rockets against vehicles, 20 mm gun against light vehicles and infantry. Uses 0 slots and never lands | air layer (helicopter, hovers); two weapons by target type (existing per-weapon target rules) |
