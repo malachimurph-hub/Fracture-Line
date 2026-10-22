@@ -178,6 +178,40 @@ func _ready() -> void:
 			dk.sort_custom(func(x, y): return deaths[x] > deaths[y])
 			for k2 in dk.slice(0, 25):
 				print("  death %s x%d" % [k2, deaths[k2]])
+		"spike":
+			# worst-tick breakdown (AI think per player + sim systems)
+			var rs := MatchRunner.new()
+			rs.record_replay = false
+			var sdf: String = args[3] if args.size() > 3 else "hard"
+			rs.start(make_cfg("1v1", int(args[1]) if args.size() > 1 else 1002, [sdf, sdf], ["eu", "tpla"]))
+			rs.sim.prof = {}
+			var worst := []
+			for i in 20 * 60 * int(args[2] if args.size() > 2 else "10"):
+				var parts := {}
+				for pid in rs.ais:
+					var ai: AIPlayer = rs.ais[pid]
+					if not rs.sim.players[pid].eliminated and (rs.sim.tick + pid) % ai.think_every == 0:
+						var t0 := Time.get_ticks_usec()
+						ai.think()
+						parts["ai%d" % pid] = Time.get_ticks_usec() - t0
+				var t1 := Time.get_ticks_usec()
+				rs.sim.step()
+				var tot := Time.get_ticks_usec() - t1
+				for k in rs.sim.prof:
+					parts[k] = rs.sim.prof[k]
+				var all := tot
+				for k in parts:
+					if k.begins_with("ai"):
+						all += parts[k]
+				worst.append([all, rs.sim.tick, parts])
+				if worst.size() > 40:
+					worst.sort_custom(func(a, b): return a[0] > b[0])
+					worst.resize(10)
+				if rs.sim.game_over:
+					break
+			worst.sort_custom(func(a, b): return a[0] > b[0])
+			for x in worst.slice(0, 8):
+				print("tick %d total %.1f ms parts %s" % [x[1], x[0] / 1000.0, str(x[2])])
 		"aidiag":
 			var r := MatchRunner.new()
 			r.start(make_cfg("1v1", 5))

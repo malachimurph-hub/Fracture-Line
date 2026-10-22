@@ -351,7 +351,16 @@ func queue_command(c: Dictionary) -> void:
 	pending.append(c)
 
 # ------------------------------------------------------------------ main step
+## Test-only profiling: when non-null, step() records usec per system for the last tick.
+var prof: Variant = null
+
+func _pt(key: String, t0: int) -> int:
+	var t1 := Time.get_ticks_usec()
+	prof[key] = t1 - t0
+	return t1
+
 func step() -> void:
+	var t := Time.get_ticks_usec() if prof != null else 0
 	events.clear()
 	# 1 commands
 	var cmds := pending
@@ -362,15 +371,20 @@ func step() -> void:
 		tick += 1
 		return
 	rebuild_spatial()
+	if prof != null: t = _pt("cmd", t)
 	# 2 orders (+ target acquisition) 3 path requests 4 movement
 	OrderSys.run(self)
+	if prof != null: t = _pt("orders", t)
 	MoveSys.run_paths(self)
+	if prof != null: t = _pt("paths", t)
 	MoveSys.run(self)
 	rebuild_spatial()
+	if prof != null: t = _pt("move", t)
 	# 5 combat 6 damage & death
 	CombatSys.run(self)
 	_reap()
 	rebuild_spatial()
+	if prof != null: t = _pt("combat", t)
 	# 7 economy
 	EconSys.run(self)
 	# 8 production & construction
@@ -379,11 +393,14 @@ func step() -> void:
 	PowerSys.run(self)
 	# 9 powers
 	PowersSys.run(self)
+	if prof != null: t = _pt("econ_prod_power", t)
 	# 10 faction mechanics (TPLA: stealth, traps, salvage, holes, tunnels, rust zones)
 	TplaSys.run(self)
+	if prof != null: t = _pt("tpla", t)
 	# 11 fog (5 Hz)
 	if tick % 4 == 0:
 		FogSys.run(self, false)
+	if prof != null: t = _pt("fog", t)
 	# 12 win/lose
 	if tick % 20 == 0:
 		_check_victory()

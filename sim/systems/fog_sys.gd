@@ -13,12 +13,13 @@ static func run(w: SimWorld, force: bool) -> void:
 			continue
 		if e.kind == SimEntity.Kind.UNIT and e.res_id < 0:
 			continue
+		var sk := str(id)
 		if e.kind == SimEntity.Kind.BUILDING and not e.built:
 			# sites under construction reveal a small radius
-			f.update_stamp(str(id), e.team, FX.to_tile(e.pos), 3)
+			f.update_stamp(sk, e.team, FX.to_tile(e.pos), 3)
 		else:
-			f.update_stamp(str(id), e.team, FX.to_tile(e.pos), e.sight)
-		seen[str(id)] = true
+			f.update_stamp(sk, e.team, FX.to_tile(e.pos), e.sight)
+		seen[sk] = true
 	for tv in w.temp_vision:
 		var key := "tv%d_%d_%d" % [int(tv["until"]), tv["tile"].x, tv["tile"].y]
 		f.update_stamp(key, int(tv["team"]), tv["tile"], int(tv["r"]))
@@ -41,7 +42,10 @@ static func _memory(w: SimWorld) -> void:
 					mem.erase(id)
 				continue
 			if f.is_visible_ent(w, team, e):
-				mem[id] = {"def": e.def_id, "tile": e.tile, "owner": e.owner, "rot": e.rot, "built": e.built, "team": e.team}
+				# only (re)write the memory entry when it changed (def/tile/rot never change)
+				var old = mem.get(id)
+				if old == null or old["built"] != e.built or old["owner"] != e.owner:
+					mem[id] = {"def": e.def_id, "tile": e.tile, "owner": e.owner, "rot": e.rot, "built": e.built, "team": e.team}
 		for id in mem.keys():
 			var m: Dictionary = mem[id]
 			var e2 := w.get_ent(int(id))
