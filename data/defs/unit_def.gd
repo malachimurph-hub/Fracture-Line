@@ -28,4 +28,6 @@ extends Resource
 @export var accel_ms: int = 0                ## time 0 -> full speed (0 = default)
 @export var turret_dps: int = 0              ## turret traverse deg/s; 0 = no turret (hull must face target)
 @export var abilities: PackedStringArray = []
+@export var transport_capacity: int = 0      ## M2.4: infantry slots (transport vehicles)
+@export var detector: bool = false           ## M2.4: reveals stealthed units/structures in sight
 @export var stubs: PackedStringArray = []    ## features listed but not implemented (shown as [STUB])

@@ -37,7 +37,10 @@ for r in rows("units.csv"):
         ("speed_mtps", r["speed_mtps"]), ("move_layer", sn(r["move_layer"])), ("sight", r["sight"]), ("radius_mt", r["radius_mt"]),
         ("shield_aura_radius", r["shield_aura_radius"]), ("shield_aura_pct", r["shield_aura_pct"]),
         ("harvest_capacity", r["harvest_capacity"]), ("role", sn(r["role"])),
-        ("view_scene", s("res://view/units/%s/%s.tscn" % (fac, short))), ("stubs", psa(r["stubs"]))])
+        ("view_scene", s("res://view/units/%s/%s.tscn" % (fac, short))), ("stubs", psa(r["stubs"])),
+        ("loco", sn(r.get("loco", ""))), ("turn_dps", r.get("turn_dps", "0") or "0"), ("accel_ms", r.get("accel_ms", "0") or "0"),
+        ("turret_dps", r.get("turret_dps", "0") or "0"), ("abilities", psa(r.get("abilities", ""))),
+        ("transport_capacity", r.get("transport_capacity", "0") or "0"), ("detector", b(r.get("detector", "0")))])
 
 for r in rows("buildings.csv"):
     short = r["id"].split("_", 1)[1]
@@ -60,7 +63,11 @@ for r in rows("weapons.csv"):
         ("id", sn(r["id"])), ("damage", r["damage"]), ("range_mt", r["range_mt"]), ("min_range_mt", r["min_range_mt"]),
         ("cooldown_ms", r["cooldown_ms"]), ("damage_type", sn(r["damage_type"])), ("splash_mt", r["splash_mt"]),
         ("targets_air", b(r["targets_air"])), ("targets_ground", b(r["targets_ground"])), ("vfx", sn(r["vfx"])),
-        ("min_tier", r.get("min_tier", "0") or "0")])
+        ("min_tier", r.get("min_tier", "0") or "0"),
+        ("pre_attack_ms", r.get("pre_attack_ms", "0") or "0"), ("pre_attack_type", sn(r.get("pre_attack_type", "attack") or "attack")),
+        ("clip_size", r.get("clip_size", "0") or "0"), ("reload_ms", r.get("reload_ms", "0") or "0"),
+        ("aim_deg", r.get("aim_deg", "12") or "12"), ("scatter_mt", r.get("scatter_mt", "0") or "0"),
+        ("scatter_inf_mt", r.get("scatter_inf_mt", "0") or "0")])
 
 for r in rows("powers.csv"):
     write("data/powers/%s.tres" % r["id"], "res://data/defs/power_def.gd", "PowerDef", [
