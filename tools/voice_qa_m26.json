@@ -21,9 +21,9 @@
 "fx": "clean",
 "who": "TPLA underground radio voice, warm and defiant",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
-"take": 0,
-"heard": "in the next video.  Thank you so much for watching."
+"qa": 0.8,
+"take": 1,
+"heard": "Our base is thunder chat  I."
 },
 {
 "file": "audio/voice_ai/announcer_tpla/battle_start_1.ogg",
@@ -34,9 +34,9 @@
 "fx": "clean",
 "who": "TPLA underground radio voice, warm and defiant",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.5,
+"qa": 1.0,
 "take": 0,
-"heard": "The network T."
+"heard": "the network of the network is live"
 },
 {
 "file": "audio/voice_ai/announcer_tpla/building_1.ogg",
@@ -112,9 +112,9 @@
 "fx": "clean",
 "who": "TPLA underground radio voice, warm and defiant",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.67,
-"take": 3,
-"heard": "Let me strike incoming."
+"qa": 1.0,
+"take": 2,
+"heard": "enemy strike incoming"
 },
 {
 "file": "audio/voice_ai/announcer_tpla/general_promoted_1.ogg",
@@ -125,9 +125,9 @@
 "fx": "clean",
 "who": "TPLA underground radio voice, warm and defiant",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
-"take": 0,
-"heard": "..."
+"qa": 1.0,
+"take": 2,
+"heard": "Commander Promoted."
 },
 {
 "file": "audio/voice_ai/announcer_tpla/hole_rebuild_1.ogg",
@@ -138,9 +138,9 @@
 "fx": "clean",
 "who": "TPLA underground radio voice, warm and defiant",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.25,
-"take": 2,
-"heard": "the"
+"qa": 1.0,
+"take": 0,
+"heard": "Rebuilding from the rubber."
 },
 {
 "file": "audio/voice_ai/announcer_tpla/insufficient_funds_1.ogg",
@@ -177,9 +177,9 @@
 "fx": "clean",
 "who": "TPLA underground radio voice, warm and defiant",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.75,
-"take": 1,
-"heard": "The play are it is finished."
+"qa": 1.0,
+"take": 2,
+"heard": "A player is finished."
 },
 {
 "file": "audio/voice_ai/announcer_tpla/salvage_upgrade_1.ogg",
@@ -190,9 +190,9 @@
 "fx": "clean",
 "who": "TPLA underground radio voice, warm and defiant",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
+"qa": 0.5,
 "take": 0,
-"heard": ""
+"heard": "selfish top grade"
 },
 {
 "file": "audio/voice_ai/announcer_tpla/trap_detonated_1.ogg",
@@ -203,9 +203,9 @@
 "fx": "clean",
 "who": "TPLA underground radio voice, warm and defiant",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
-"take": 0,
-"heard": "The, is,-,"
+"qa": 0.5,
+"take": 2,
+"heard": "Drap Sprung"
 },
 {
 "file": "audio/voice_ai/announcer_tpla/tunnel_lost_1.ogg",
@@ -218,7 +218,7 @@
 "engine": "kokoro-82m (Apache-2.0) m26",
 "qa": 0.5,
 "take": 1,
-"heard": "Donald has collapsed"
+"heard": "Jattana has collapsed."
 },
 {
 "file": "audio/voice_ai/announcer_tpla/unit_promoted_1.ogg",
@@ -229,9 +229,9 @@
 "fx": "clean",
 "who": "TPLA underground radio voice, warm and defiant",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.75,
+"qa": 1.0,
 "take": 2,
-"heard": "The fighter\u05d9\u05dc\u05d5 has risen.,"
+"heard": "A fighter has risen."
 },
 {
 "file": "audio/voice_ai/announcer_tpla/unit_ready_1.ogg",
@@ -242,9 +242,9 @@
 "fx": "clean",
 "who": "TPLA underground radio voice, warm and defiant",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.5,
+"qa": 1.0,
 "take": 1,
-"heard": "Fight,"
+"heard": "Fight, are ready."
 },
 {
 "file": "audio/voice_ai/announcer_tpla/units_under_attack_1.ogg",
@@ -255,9 +255,9 @@
 "fx": "clean",
 "who": "TPLA underground radio voice, warm and defiant",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.2,
-"take": 2,
-"heard": "Fighters., fight, fight, fight,, fight, fight,"
+"qa": 0.4,
+"take": 1,
+"heard": "Jawa Fighters start under a chat that"
 },
 {
 "file": "audio/voice_ai/announcer_tpla/units_under_attack_2.ogg",
@@ -283,7 +283,7 @@
 "engine": "kokoro-82m (Apache-2.0) m26",
 "qa": 0.6,
 "take": 1,
-"heard": "the the guitar is and the spears is free.\ufffd"
+"heard": "Fictari, the land is free."
 },
 {
 "file": "audio/voice_ai/announcer_tpla/you_eliminated_1.ogg",
@@ -299,6 +299,136 @@
 "heard": "We are broken."
 },
 {
+"file": "audio/voice_ai/eu/aegis/attack_1.ogg",
+"text": "Covering the assault.",
+"voice": "bm_fable:0.6,am_eric:0.4",
+"accent": "nl",
+"pitch_st": 0.3,
+"fx": "clean",
+"who": "Precise, calm Dutch systems operator",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 1,
+"heard": "Covering the assault."
+},
+{
+"file": "audio/voice_ai/eu/aegis/attack_2.ogg",
+"text": "Shields up, push forward!",
+"voice": "bm_fable:0.6,am_eric:0.4",
+"accent": "nl",
+"pitch_st": 0.3,
+"fx": "clean",
+"who": "Precise, calm Dutch systems operator",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "Shields up, push forward."
+},
+{
+"file": "audio/voice_ai/eu/aegis/attack_3.ogg",
+"text": "Projecting cover.",
+"voice": "bm_fable:0.6,am_eric:0.4",
+"accent": "nl",
+"pitch_st": 0.3,
+"fx": "clean",
+"who": "Precise, calm Dutch systems operator",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 1,
+"heard": "injecting cover"
+},
+{
+"file": "audio/voice_ai/eu/aegis/attack_4.ogg",
+"text": "Keep them inside the dome!",
+"voice": "bm_fable:0.6,am_eric:0.4",
+"accent": "nl",
+"pitch_st": 0.3,
+"fx": "clean",
+"who": "Precise, calm Dutch systems operator",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 3,
+"heard": "Keep them inside the dome."
+},
+{
+"file": "audio/voice_ai/eu/aegis/created_1.ogg",
+"text": "Aegis online. Shields charged.",
+"voice": "bm_fable:0.6,am_eric:0.4",
+"accent": "nl",
+"pitch_st": 0.3,
+"fx": "clean",
+"who": "Precise, calm Dutch systems operator",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 1,
+"heard": "Aegis Online, Shields Charged"
+},
+{
+"file": "audio/voice_ai/eu/aegis/created_2.ogg",
+"text": "Grid shield vehicle ready.",
+"voice": "bm_fable:0.6,am_eric:0.4",
+"accent": "nl",
+"pitch_st": 0.3,
+"fx": "clean",
+"who": "Precise, calm Dutch systems operator",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 2,
+"heard": "Grid shield vehicle ready"
+},
+{
+"file": "audio/voice_ai/eu/aegis/move_1.ogg",
+"text": "Repositioning shield.",
+"voice": "bm_fable:0.6,am_eric:0.4",
+"accent": "nl",
+"pitch_st": 0.3,
+"fx": "clean",
+"who": "Precise, calm Dutch systems operator",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "high positioning shield"
+},
+{
+"file": "audio/voice_ai/eu/aegis/move_2.ogg",
+"text": "Moving the dome.",
+"voice": "bm_fable:0.6,am_eric:0.4",
+"accent": "nl",
+"pitch_st": 0.3,
+"fx": "clean",
+"who": "Precise, calm Dutch systems operator",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 2,
+"heard": "It's moving the dome."
+},
+{
+"file": "audio/voice_ai/eu/aegis/move_3.ogg",
+"text": "Relocating.",
+"voice": "bm_fable:0.6,am_eric:0.4",
+"accent": "nl",
+"pitch_st": 0.3,
+"fx": "clean",
+"who": "Precise, calm Dutch systems operator",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "I locating."
+},
+{
+"file": "audio/voice_ai/eu/aegis/move_4.ogg",
+"text": "Shield follows.",
+"voice": "bm_fable:0.6,am_eric:0.4",
+"accent": "nl",
+"pitch_st": 0.3,
+"fx": "clean",
+"who": "Precise, calm Dutch systems operator",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "Shield follows"
+},
+{
 "file": "audio/voice_ai/eu/aegis/select_1.ogg",
 "text": "Aegis online.",
 "voice": "bm_fable:0.6,am_eric:0.4",
@@ -307,9 +437,9 @@
 "fx": "clean",
 "who": "Precise, calm Dutch systems operator",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
+"qa": 1.0,
 "take": 0,
-"heard": ""
+"heard": "EGIS Online"
 },
 {
 "file": "audio/voice_ai/eu/aegis/select_2.ogg",
@@ -333,9 +463,9 @@
 "fx": "clean",
 "who": "Precise, calm Dutch systems operator",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
-"take": 0,
-"heard": ""
+"qa": 1.0,
+"take": 2,
+"heard": "Grid link stable."
 },
 {
 "file": "audio/voice_ai/eu/aegis/select_4.ogg",
@@ -346,9 +476,165 @@
 "fx": "clean",
 "who": "Precise, calm Dutch systems operator",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
+"qa": 1.0,
 "take": 0,
-"heard": "I'm sorry, but I  I'm sorry, but I'm sorry, but I  I'm sorry, but I am"
+"heard": "Projector standing by."
+},
+{
+"file": "audio/voice_ai/eu/aegis/under_fire_1.ogg",
+"text": "Shield generator under fire!",
+"voice": "bm_fable:0.6,am_eric:0.4",
+"accent": "nl",
+"pitch_st": 0.3,
+"fx": "clean",
+"who": "Precise, calm Dutch systems operator",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 2,
+"heard": "Shield Generator under fire."
+},
+{
+"file": "audio/voice_ai/eu/aegis/under_fire_2.ogg",
+"text": "Projector taking damage!",
+"voice": "bm_fable:0.6,am_eric:0.4",
+"accent": "nl",
+"pitch_st": 0.3,
+"fx": "clean",
+"who": "Precise, calm Dutch systems operator",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "So, how do you do it?  Project, taking damage."
+},
+{
+"file": "audio/voice_ai/eu/aegis/veteran_1.ogg",
+"text": "Shield output improved.",
+"voice": "bm_fable:0.6,am_eric:0.4",
+"accent": "nl",
+"pitch_st": 0.3,
+"fx": "clean",
+"who": "Precise, calm Dutch systems operator",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "Shield Output Impropped"
+},
+{
+"file": "audio/voice_ai/eu/crawler/build_1.ogg",
+"text": "I'll get it built.",
+"voice": "bm_george:0.5,am_fenrir:0.5",
+"accent": "de",
+"pitch_st": -2.0,
+"fx": "gruff",
+"who": "Gruff German combat engineer, dry humour",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "I'll get it built."
+},
+{
+"file": "audio/voice_ai/eu/crawler/build_2.ogg",
+"text": "Laying foundations.",
+"voice": "bm_george:0.5,am_fenrir:0.5",
+"accent": "de",
+"pitch_st": -2.0,
+"fx": "gruff",
+"who": "Gruff German combat engineer, dry humour",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 2,
+"heard": "Laying Foundations"
+},
+{
+"file": "audio/voice_ai/eu/crawler/build_3.ogg",
+"text": "Construction underway.",
+"voice": "bm_george:0.5,am_fenrir:0.5",
+"accent": "de",
+"pitch_st": -2.0,
+"fx": "gruff",
+"who": "Gruff German combat engineer, dry humour",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 1,
+"heard": "destruction under way."
+},
+{
+"file": "audio/voice_ai/eu/crawler/created_1.ogg",
+"text": "Crawler online, ready to build.",
+"voice": "bm_george:0.5,am_fenrir:0.5",
+"accent": "de",
+"pitch_st": -2.0,
+"fx": "gruff",
+"who": "Gruff German combat engineer, dry humour",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 0.8,
+"take": 3,
+"heard": "for all are online ready to build"
+},
+{
+"file": "audio/voice_ai/eu/crawler/created_2.ogg",
+"text": "Engineering unit reporting.",
+"voice": "bm_george:0.5,am_fenrir:0.5",
+"accent": "de",
+"pitch_st": -2.0,
+"fx": "gruff",
+"who": "Gruff German combat engineer, dry humour",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 3,
+"heard": "Engineering Unit Reporting."
+},
+{
+"file": "audio/voice_ai/eu/crawler/move_1.ogg",
+"text": "Rolling.",
+"voice": "bm_george:0.5,am_fenrir:0.5",
+"accent": "de",
+"pitch_st": -2.0,
+"fx": "gruff",
+"who": "Gruff German combat engineer, dry humour",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 1,
+"heard": "HALLING"
+},
+{
+"file": "audio/voice_ai/eu/crawler/move_2.ogg",
+"text": "On my way.",
+"voice": "bm_george:0.5,am_fenrir:0.5",
+"accent": "de",
+"pitch_st": -2.0,
+"fx": "gruff",
+"who": "Gruff German combat engineer, dry humour",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "On my way"
+},
+{
+"file": "audio/voice_ai/eu/crawler/move_3.ogg",
+"text": "Moving the Crawler.",
+"voice": "bm_george:0.5,am_fenrir:0.5",
+"accent": "de",
+"pitch_st": -2.0,
+"fx": "gruff",
+"who": "Gruff German combat engineer, dry humour",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 1,
+"heard": "Moving the caller."
+},
+{
+"file": "audio/voice_ai/eu/crawler/move_4.ogg",
+"text": "Clearing a path.",
+"voice": "bm_george:0.5,am_fenrir:0.5",
+"accent": "de",
+"pitch_st": -2.0,
+"fx": "gruff",
+"who": "Gruff German combat engineer, dry humour",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 2,
+"heard": "Clearing a path"
 },
 {
 "file": "audio/voice_ai/eu/crawler/select_1.ogg",
@@ -359,9 +645,9 @@
 "fx": "gruff",
 "who": "Gruff German combat engineer, dry humour",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.5,
-"take": 1,
-"heard": "Call her here!"
+"qa": 1.0,
+"take": 2,
+"heard": "Crawler here."
 },
 {
 "file": "audio/voice_ai/eu/crawler/select_2.ogg",
@@ -403,6 +689,162 @@
 "heard": "Blades down, standing, standing by."
 },
 {
+"file": "audio/voice_ai/eu/crawler/under_fire_1.ogg",
+"text": "Taking fire at the work site!",
+"voice": "bm_george:0.5,am_fenrir:0.5",
+"accent": "de",
+"pitch_st": -2.0,
+"fx": "gruff",
+"who": "Gruff German combat engineer, dry humour",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 2,
+"heard": "Taking fire at the work site."
+},
+{
+"file": "audio/voice_ai/eu/crawler/under_fire_2.ogg",
+"text": "They're shooting at the engineer!",
+"voice": "bm_george:0.5,am_fenrir:0.5",
+"accent": "de",
+"pitch_st": -2.0,
+"fx": "gruff",
+"who": "Gruff German combat engineer, dry humour",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 0.8,
+"take": 1,
+"heard": "The shooting at the engineer"
+},
+{
+"file": "audio/voice_ai/eu/flakwerk/attack_1.ogg",
+"text": "Flak up!",
+"voice": "am_echo:0.5,bm_lewis:0.5",
+"accent": "sv",
+"pitch_st": -0.6,
+"fx": "grit",
+"who": "Sharp, watchful Swedish air-defence gunner",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 2,
+"heard": "either way, it's  flak up"
+},
+{
+"file": "audio/voice_ai/eu/flakwerk/attack_2.ogg",
+"text": "Filling the sky!",
+"voice": "am_echo:0.5,bm_lewis:0.5",
+"accent": "sv",
+"pitch_st": -0.6,
+"fx": "grit",
+"who": "Sharp, watchful Swedish air-defence gunner",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "Filling the sky."
+},
+{
+"file": "audio/voice_ai/eu/flakwerk/attack_3.ogg",
+"text": "Engaging!",
+"voice": "am_echo:0.5,bm_lewis:0.5",
+"accent": "sv",
+"pitch_st": -0.6,
+"fx": "grit",
+"who": "Sharp, watchful Swedish air-defence gunner",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "and gaying"
+},
+{
+"file": "audio/voice_ai/eu/flakwerk/attack_4.ogg",
+"text": "Air target, firing!",
+"voice": "am_echo:0.5,bm_lewis:0.5",
+"accent": "sv",
+"pitch_st": -0.6,
+"fx": "grit",
+"who": "Sharp, watchful Swedish air-defence gunner",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 1,
+"heard": "Air target firing."
+},
+{
+"file": "audio/voice_ai/eu/flakwerk/created_1.ogg",
+"text": "Flakwerk ready. Nothing flies over us.",
+"voice": "am_echo:0.5,bm_lewis:0.5",
+"accent": "sv",
+"pitch_st": -0.6,
+"fx": "grit",
+"who": "Sharp, watchful Swedish air-defence gunner",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 0.83,
+"take": 0,
+"heard": "Flechwerk ready netting flies over S"
+},
+{
+"file": "audio/voice_ai/eu/flakwerk/created_2.ogg",
+"text": "Air defence on the line.",
+"voice": "am_echo:0.5,bm_lewis:0.5",
+"accent": "sv",
+"pitch_st": -0.6,
+"fx": "grit",
+"who": "Sharp, watchful Swedish air-defence gunner",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 3,
+"heard": "Air defense on the line"
+},
+{
+"file": "audio/voice_ai/eu/flakwerk/move_1.ogg",
+"text": "Moving the flak.",
+"voice": "am_echo:0.5,bm_lewis:0.5",
+"accent": "sv",
+"pitch_st": -0.6,
+"fx": "grit",
+"who": "Sharp, watchful Swedish air-defence gunner",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 2,
+"heard": "Moving the flak."
+},
+{
+"file": "audio/voice_ai/eu/flakwerk/move_2.ogg",
+"text": "Repositioning.",
+"voice": "am_echo:0.5,bm_lewis:0.5",
+"accent": "sv",
+"pitch_st": -0.6,
+"fx": "grit",
+"who": "Sharp, watchful Swedish air-defence gunner",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "Repositioning"
+},
+{
+"file": "audio/voice_ai/eu/flakwerk/move_3.ogg",
+"text": "On the move.",
+"voice": "am_echo:0.5,bm_lewis:0.5",
+"accent": "sv",
+"pitch_st": -0.6,
+"fx": "grit",
+"who": "Sharp, watchful Swedish air-defence gunner",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 1,
+"heard": "On the move"
+},
+{
+"file": "audio/voice_ai/eu/flakwerk/move_4.ogg",
+"text": "Right away.",
+"voice": "am_echo:0.5,bm_lewis:0.5",
+"accent": "sv",
+"pitch_st": -0.6,
+"fx": "grit",
+"who": "Sharp, watchful Swedish air-defence gunner",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 1,
+"heard": "right away"
+},
+{
 "file": "audio/voice_ai/eu/flakwerk/select_1.ogg",
 "text": "Flakwerk.",
 "voice": "am_echo:0.5,bm_lewis:0.5",
@@ -411,9 +853,9 @@
 "fx": "grit",
 "who": "Sharp, watchful Swedish air-defence gunner",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
+"qa": 1.0,
 "take": 0,
-"heard": ""
+"heard": "Flakberg"
 },
 {
 "file": "audio/voice_ai/eu/flakwerk/select_2.ogg",
@@ -450,9 +892,204 @@
 "fx": "grit",
 "who": "Sharp, watchful Swedish air-defence gunner",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.5,
+"qa": 1.0,
+"take": 2,
+"heard": "Radars clean."
+},
+{
+"file": "audio/voice_ai/eu/flakwerk/under_fire_1.ogg",
+"text": "Flak battery under fire!",
+"voice": "am_echo:0.5,bm_lewis:0.5",
+"accent": "sv",
+"pitch_st": -0.6,
+"fx": "grit",
+"who": "Sharp, watchful Swedish air-defence gunner",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 3,
+"heard": "Flak battery! Under fire!"
+},
+{
+"file": "audio/voice_ai/eu/flakwerk/under_fire_2.ogg",
+"text": "We can't take much more!",
+"voice": "am_echo:0.5,bm_lewis:0.5",
+"accent": "sv",
+"pitch_st": -0.6,
+"fx": "grit",
+"who": "Sharp, watchful Swedish air-defence gunner",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
 "take": 0,
-"heard": "Radosk.  Clean."
+"heard": "We can't take much more"
+},
+{
+"file": "audio/voice_ai/eu/flakwerk/veteran_1.ogg",
+"text": "Flak crew promoted.",
+"voice": "am_echo:0.5,bm_lewis:0.5",
+"accent": "sv",
+"pitch_st": -0.6,
+"fx": "grit",
+"who": "Sharp, watchful Swedish air-defence gunner",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "Flak crew promoted."
+},
+{
+"file": "audio/voice_ai/eu/grenadier/attack_1.ogg",
+"text": "Engaging!",
+"voice": "bm_daniel:0.6,pm_alex:0.4",
+"accent": "fr",
+"pitch_st": -0.8,
+"fx": "shout",
+"who": "French squad sergeant, clipped and hard",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "Engaging."
+},
+{
+"file": "audio/voice_ai/eu/grenadier/attack_2.ogg",
+"text": "Open fire!",
+"voice": "bm_lewis:0.5,im_nicola:0.5",
+"accent": "fr",
+"pitch_st": 0.6,
+"fx": "shout",
+"who": "Younger French grenadier",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "Open fire."
+},
+{
+"file": "audio/voice_ai/eu/grenadier/attack_3.ogg",
+"text": "Target in sight!",
+"voice": "bm_daniel:0.6,pm_alex:0.4",
+"accent": "fr",
+"pitch_st": -0.8,
+"fx": "shout",
+"who": "French squad sergeant, clipped and hard",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "Target in sight."
+},
+{
+"file": "audio/voice_ai/eu/grenadier/attack_4.ogg",
+"text": "Light them up!",
+"voice": "bm_lewis:0.5,im_nicola:0.5",
+"accent": "fr",
+"pitch_st": 0.6,
+"fx": "shout",
+"who": "Younger French grenadier",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 2,
+"heard": "Light them up."
+},
+{
+"file": "audio/voice_ai/eu/grenadier/created_1.ogg",
+"text": "Grenadier squad reporting.",
+"voice": "bm_daniel:0.6,pm_alex:0.4",
+"accent": "fr",
+"pitch_st": -0.8,
+"fx": "shout",
+"who": "French squad sergeant, clipped and hard",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 2,
+"heard": "Grenadier Squad reporting."
+},
+{
+"file": "audio/voice_ai/eu/grenadier/created_2.ogg",
+"text": "Boots on the ground.",
+"voice": "bm_lewis:0.5,im_nicola:0.5",
+"accent": "fr",
+"pitch_st": 0.6,
+"fx": "shout",
+"who": "Younger French grenadier",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 1,
+"heard": "Boots on, on the ground."
+},
+{
+"file": "audio/voice_ai/eu/grenadier/garrison_1.ogg",
+"text": "Taking the building.",
+"voice": "bm_daniel:0.6,pm_alex:0.4",
+"accent": "fr",
+"pitch_st": -0.8,
+"fx": "shout",
+"who": "French squad sergeant, clipped and hard",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 2,
+"heard": "Taking the building."
+},
+{
+"file": "audio/voice_ai/eu/grenadier/garrison_2.ogg",
+"text": "Fortify inside!",
+"voice": "bm_lewis:0.5,im_nicola:0.5",
+"accent": "fr",
+"pitch_st": 0.6,
+"fx": "shout",
+"who": "Younger French grenadier",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 2,
+"heard": "Fortify inside."
+},
+{
+"file": "audio/voice_ai/eu/grenadier/move_1.ogg",
+"text": "Moving.",
+"voice": "bm_daniel:0.6,pm_alex:0.4",
+"accent": "fr",
+"pitch_st": -0.8,
+"fx": "shout",
+"who": "French squad sergeant, clipped and hard",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "Moving in."
+},
+{
+"file": "audio/voice_ai/eu/grenadier/move_2.ogg",
+"text": "On the double!",
+"voice": "bm_lewis:0.5,im_nicola:0.5",
+"accent": "fr",
+"pitch_st": 0.6,
+"fx": "shout",
+"who": "Younger French grenadier",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 1,
+"heard": "On the double"
+},
+{
+"file": "audio/voice_ai/eu/grenadier/move_3.ogg",
+"text": "Squad, with me.",
+"voice": "bm_daniel:0.6,pm_alex:0.4",
+"accent": "fr",
+"pitch_st": -0.8,
+"fx": "shout",
+"who": "French squad sergeant, clipped and hard",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 2,
+"heard": "Squad with me."
+},
+{
+"file": "audio/voice_ai/eu/grenadier/move_4.ogg",
+"text": "Advancing.",
+"voice": "bm_lewis:0.5,im_nicola:0.5",
+"accent": "fr",
+"pitch_st": 0.6,
+"fx": "shout",
+"who": "Younger French grenadier",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 1,
+"heard": "Advancing."
 },
 {
 "file": "audio/voice_ai/eu/grenadier/select_1.ogg",
@@ -463,9 +1100,9 @@
 "fx": "shout",
 "who": "French squad sergeant, clipped and hard",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
+"qa": 1.0,
 "take": 0,
-"heard": ""
+"heard": "Squad heady."
 },
 {
 "file": "audio/voice_ai/eu/grenadier/select_2.ogg",
@@ -478,7 +1115,7 @@
 "engine": "kokoro-82m (Apache-2.0) m26",
 "qa": 0.0,
 "take": 0,
-"heard": "G'hainna Diaz"
+"heard": "and  and use"
 },
 {
 "file": "audio/voice_ai/eu/grenadier/select_3.ogg",
@@ -507,6 +1144,149 @@
 "heard": "Standing by sir."
 },
 {
+"file": "audio/voice_ai/eu/grenadier/under_fire_1.ogg",
+"text": "Contact! We're pinned!",
+"voice": "bm_daniel:0.6,pm_alex:0.4",
+"accent": "fr",
+"pitch_st": -0.8,
+"fx": "shout",
+"who": "French squad sergeant, clipped and hard",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 0.67,
+"take": 1,
+"heard": "contact with PINNEDE"
+},
+{
+"file": "audio/voice_ai/eu/grenadier/under_fire_2.ogg",
+"text": "Taking heavy fire!",
+"voice": "bm_lewis:0.5,im_nicola:0.5",
+"accent": "fr",
+"pitch_st": 0.6,
+"fx": "shout",
+"who": "Younger French grenadier",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 2,
+"heard": "Taking the heavy I fire."
+},
+{
+"file": "audio/voice_ai/eu/grenadier/veteran_1.ogg",
+"text": "Squad's battle-hardened now.",
+"voice": "bm_daniel:0.6,pm_alex:0.4",
+"accent": "fr",
+"pitch_st": -0.8,
+"fx": "shout",
+"who": "French squad sergeant, clipped and hard",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 2,
+"heard": "Squad's battle hardened now"
+},
+{
+"file": "audio/voice_ai/eu/harvester/created_1.ogg",
+"text": "Hauler ready to roll.",
+"voice": "em_alex:0.7,bm_lewis:0.3",
+"accent": "es",
+"pitch_st": 0.5,
+"fx": "grit",
+"who": "Upbeat Spanish supply driver",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 0.75,
+"take": 0,
+"heard": "Goal at ready to roll."
+},
+{
+"file": "audio/voice_ai/eu/harvester/created_2.ogg",
+"text": "Supplies coming right up.",
+"voice": "em_alex:0.7,bm_lewis:0.3",
+"accent": "es",
+"pitch_st": 0.5,
+"fx": "grit",
+"who": "Upbeat Spanish supply driver",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "Supplies coming right up."
+},
+{
+"file": "audio/voice_ai/eu/harvester/harvest_1.ogg",
+"text": "Going to fetch supplies.",
+"voice": "em_alex:0.7,bm_lewis:0.3",
+"accent": "es",
+"pitch_st": 0.5,
+"fx": "grit",
+"who": "Upbeat Spanish supply driver",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "Going to fetch supplies. spe the"
+},
+{
+"file": "audio/voice_ai/eu/harvester/harvest_2.ogg",
+"text": "Loading up.",
+"voice": "em_alex:0.7,bm_lewis:0.3",
+"accent": "es",
+"pitch_st": 0.5,
+"fx": "grit",
+"who": "Upbeat Spanish supply driver",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 2,
+"heard": "... Loading up."
+},
+{
+"file": "audio/voice_ai/eu/harvester/move_1.ogg",
+"text": "Driving.",
+"voice": "em_alex:0.7,bm_lewis:0.3",
+"accent": "es",
+"pitch_st": 0.5,
+"fx": "grit",
+"who": "Upbeat Spanish supply driver",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "DRIVING"
+},
+{
+"file": "audio/voice_ai/eu/harvester/move_2.ogg",
+"text": "Heading out.",
+"voice": "em_alex:0.7,bm_lewis:0.3",
+"accent": "es",
+"pitch_st": 0.5,
+"fx": "grit",
+"who": "Upbeat Spanish supply driver",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "Reading out"
+},
+{
+"file": "audio/voice_ai/eu/harvester/move_3.ogg",
+"text": "On the road.",
+"voice": "em_alex:0.7,bm_lewis:0.3",
+"accent": "es",
+"pitch_st": 0.5,
+"fx": "grit",
+"who": "Upbeat Spanish supply driver",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "On the road, and the, on the road."
+},
+{
+"file": "audio/voice_ai/eu/harvester/move_4.ogg",
+"text": "Moving the load.",
+"voice": "em_alex:0.7,bm_lewis:0.3",
+"accent": "es",
+"pitch_st": 0.5,
+"fx": "grit",
+"who": "Upbeat Spanish supply driver",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 2,
+"heard": "Moving the load"
+},
+{
 "file": "audio/voice_ai/eu/harvester/select_1.ogg",
 "text": "Hauler here.",
 "voice": "em_alex:0.7,bm_lewis:0.3",
@@ -517,7 +1297,7 @@
 "engine": "kokoro-82m (Apache-2.0) m26",
 "qa": 0.5,
 "take": 1,
-"heard": "here."
+"heard": "Hold on here."
 },
 {
 "file": "audio/voice_ai/eu/harvester/select_2.ogg",
@@ -528,9 +1308,9 @@
 "fx": "grit",
 "who": "Upbeat Spanish supply driver",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
-"take": 0,
-"heard": ""
+"qa": 1.0,
+"take": 2,
+"heard": "apply run"
 },
 {
 "file": "audio/voice_ai/eu/harvester/select_3.ogg",
@@ -559,6 +1339,188 @@
 "heard": "Logistics."
 },
 {
+"file": "audio/voice_ai/eu/harvester/under_fire_1.ogg",
+"text": "The supply truck's under fire!",
+"voice": "em_alex:0.7,bm_lewis:0.3",
+"accent": "es",
+"pitch_st": 0.5,
+"fx": "grit",
+"who": "Upbeat Spanish supply driver",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 0.8,
+"take": 2,
+"heard": "The supply trucks and the fire"
+},
+{
+"file": "audio/voice_ai/eu/harvester/under_fire_2.ogg",
+"text": "They're hitting the convoy!",
+"voice": "em_alex:0.7,bm_lewis:0.3",
+"accent": "es",
+"pitch_st": 0.5,
+"fx": "grit",
+"who": "Upbeat Spanish supply driver",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 2,
+"heard": "They're, hitting the convoy"
+},
+{
+"file": "audio/voice_ai/eu/lancer/attack_1.ogg",
+"text": "Rocket away!",
+"voice": "am_liam:0.5,bm_fable:0.5",
+"accent": "pl",
+"pitch_st": -1.0,
+"fx": "grit",
+"who": "Calm, cocky Polish anti-tank gunner",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "Rockets away"
+},
+{
+"file": "audio/voice_ai/eu/lancer/attack_2.ogg",
+"text": "Target the armour!",
+"voice": "am_liam:0.5,bm_fable:0.5",
+"accent": "pl",
+"pitch_st": -1.0,
+"fx": "grit",
+"who": "Calm, cocky Polish anti-tank gunner",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 2,
+"heard": "Target the armor."
+},
+{
+"file": "audio/voice_ai/eu/lancer/attack_3.ogg",
+"text": "Fire the lance!",
+"voice": "am_liam:0.5,bm_fable:0.5",
+"accent": "pl",
+"pitch_st": -1.0,
+"fx": "grit",
+"who": "Calm, cocky Polish anti-tank gunner",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 2,
+"heard": "Fire the Lance  I'm not going to be a"
+},
+{
+"file": "audio/voice_ai/eu/lancer/attack_4.ogg",
+"text": "Tank in the sights!",
+"voice": "am_liam:0.5,bm_fable:0.5",
+"accent": "pl",
+"pitch_st": -1.0,
+"fx": "grit",
+"who": "Calm, cocky Polish anti-tank gunner",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 1,
+"heard": "Tank  Tank in the sites"
+},
+{
+"file": "audio/voice_ai/eu/lancer/created_1.ogg",
+"text": "Lancer squad, ready to hunt tanks.",
+"voice": "am_liam:0.5,bm_fable:0.5",
+"accent": "pl",
+"pitch_st": -1.0,
+"fx": "grit",
+"who": "Calm, cocky Polish anti-tank gunner",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 1,
+"heard": "Lancer Squad, ready to hunt tanks."
+},
+{
+"file": "audio/voice_ai/eu/lancer/created_2.ogg",
+"text": "Anti-tank team reporting.",
+"voice": "am_liam:0.5,bm_fable:0.5",
+"accent": "pl",
+"pitch_st": -1.0,
+"fx": "grit",
+"who": "Calm, cocky Polish anti-tank gunner",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 1,
+"heard": "Anti-Tank team reporting"
+},
+{
+"file": "audio/voice_ai/eu/lancer/garrison_1.ogg",
+"text": "Into the building.",
+"voice": "am_liam:0.5,bm_fable:0.5",
+"accent": "pl",
+"pitch_st": -1.0,
+"fx": "grit",
+"who": "Calm, cocky Polish anti-tank gunner",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "into the building"
+},
+{
+"file": "audio/voice_ai/eu/lancer/garrison_2.ogg",
+"text": "Rocket nest set.",
+"voice": "am_liam:0.5,bm_fable:0.5",
+"accent": "pl",
+"pitch_st": -1.0,
+"fx": "grit",
+"who": "Calm, cocky Polish anti-tank gunner",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 1,
+"heard": "Rocket Nest Set"
+},
+{
+"file": "audio/voice_ai/eu/lancer/move_1.ogg",
+"text": "Relocating.",
+"voice": "am_liam:0.5,bm_fable:0.5",
+"accent": "pl",
+"pitch_st": -1.0,
+"fx": "grit",
+"who": "Calm, cocky Polish anti-tank gunner",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 2,
+"heard": "Relocating."
+},
+{
+"file": "audio/voice_ai/eu/lancer/move_2.ogg",
+"text": "Moving up.",
+"voice": "am_liam:0.5,bm_fable:0.5",
+"accent": "pl",
+"pitch_st": -1.0,
+"fx": "grit",
+"who": "Calm, cocky Polish anti-tank gunner",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 2,
+"heard": "Moving up"
+},
+{
+"file": "audio/voice_ai/eu/lancer/move_3.ogg",
+"text": "Changing position.",
+"voice": "am_liam:0.5,bm_fable:0.5",
+"accent": "pl",
+"pitch_st": -1.0,
+"fx": "grit",
+"who": "Calm, cocky Polish anti-tank gunner",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "Changing position."
+},
+{
+"file": "audio/voice_ai/eu/lancer/move_4.ogg",
+"text": "Right away.",
+"voice": "am_liam:0.5,bm_fable:0.5",
+"accent": "pl",
+"pitch_st": -1.0,
+"fx": "grit",
+"who": "Calm, cocky Polish anti-tank gunner",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "...right away."
+},
+{
 "file": "audio/voice_ai/eu/lancer/select_1.ogg",
 "text": "Lancers.",
 "voice": "am_liam:0.5,bm_fable:0.5",
@@ -580,9 +1542,9 @@
 "fx": "grit",
 "who": "Calm, cocky Polish anti-tank gunner",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.5,
-"take": 2,
-"heard": "to you, too-  to you loaded"
+"qa": 1.0,
+"take": 1,
+"heard": "Tubes loaded."
 },
 {
 "file": "audio/voice_ai/eu/lancer/select_3.ogg",
@@ -593,9 +1555,9 @@
 "fx": "grit",
 "who": "Calm, cocky Polish anti-tank gunner",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.67,
+"qa": 1.0,
 "take": 1,
-"heard": "Show me."
+"heard": "Show, me armor"
 },
 {
 "file": "audio/voice_ai/eu/lancer/select_4.ogg",
@@ -611,6 +1573,175 @@
 "heard": "Ready?"
 },
 {
+"file": "audio/voice_ai/eu/lancer/under_fire_1.ogg",
+"text": "We're exposed here!",
+"voice": "am_liam:0.5,bm_fable:0.5",
+"accent": "pl",
+"pitch_st": -1.0,
+"fx": "grit",
+"who": "Calm, cocky Polish anti-tank gunner",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 2,
+"heard": "We're exposed here."
+},
+{
+"file": "audio/voice_ai/eu/lancer/under_fire_2.ogg",
+"text": "Lancers taking fire!",
+"voice": "am_liam:0.5,bm_fable:0.5",
+"accent": "pl",
+"pitch_st": -1.0,
+"fx": "grit",
+"who": "Calm, cocky Polish anti-tank gunner",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 1,
+"heard": ", Lance is taking... taking fire."
+},
+{
+"file": "audio/voice_ai/eu/lancer/veteran_1.ogg",
+"text": "Lancers promoted. Bring more tanks.",
+"voice": "am_liam:0.5,bm_fable:0.5",
+"accent": "pl",
+"pitch_st": -1.0,
+"fx": "grit",
+"who": "Calm, cocky Polish anti-tank gunner",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 1,
+"heard": "Lances promote it bring more tanks"
+},
+{
+"file": "audio/voice_ai/eu/leopold/attack_1.ogg",
+"text": "Main gun, fire!",
+"voice": "am_onyx:0.5,bm_george:0.5",
+"accent": "de",
+"pitch_st": -2.6,
+"fx": "intercom",
+"who": "Rough veteran German tank commander, measured and heavy",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "Main gun fire."
+},
+{
+"file": "audio/voice_ai/eu/leopold/attack_2.ogg",
+"text": "Target acquired!",
+"voice": "am_onyx:0.5,bm_george:0.5",
+"accent": "de",
+"pitch_st": -2.6,
+"fx": "intercom",
+"who": "Rough veteran German tank commander, measured and heavy",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 2,
+"heard": "Target acquired."
+},
+{
+"file": "audio/voice_ai/eu/leopold/attack_3.ogg",
+"text": "Engaging armour!",
+"voice": "am_onyx:0.5,bm_george:0.5",
+"accent": "de",
+"pitch_st": -2.6,
+"fx": "intercom",
+"who": "Rough veteran German tank commander, measured and heavy",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "Engaging armor"
+},
+{
+"file": "audio/voice_ai/eu/leopold/attack_4.ogg",
+"text": "Bring them down!",
+"voice": "am_onyx:0.5,bm_george:0.5",
+"accent": "de",
+"pitch_st": -2.6,
+"fx": "intercom",
+"who": "Rough veteran German tank commander, measured and heavy",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 2,
+"heard": "Bring them down."
+},
+{
+"file": "audio/voice_ai/eu/leopold/created_1.ogg",
+"text": "Leopold ready for combat.",
+"voice": "am_onyx:0.5,bm_george:0.5",
+"accent": "de",
+"pitch_st": -2.6,
+"fx": "intercom",
+"who": "Rough veteran German tank commander, measured and heavy",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 2,
+"heard": "Leopold ready for combat."
+},
+{
+"file": "audio/voice_ai/eu/leopold/created_2.ogg",
+"text": "Main battle tank on the line.",
+"voice": "am_onyx:0.5,bm_george:0.5",
+"accent": "de",
+"pitch_st": -2.6,
+"fx": "intercom",
+"who": "Rough veteran German tank commander, measured and heavy",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "Main battle tank on the line,"
+},
+{
+"file": "audio/voice_ai/eu/leopold/move_1.ogg",
+"text": "Rolling out.",
+"voice": "am_onyx:0.5,bm_george:0.5",
+"accent": "de",
+"pitch_st": -2.6,
+"fx": "intercom",
+"who": "Rough veteran German tank commander, measured and heavy",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "Hulling out."
+},
+{
+"file": "audio/voice_ai/eu/leopold/move_2.ogg",
+"text": "Advancing.",
+"voice": "am_onyx:0.5,bm_george:0.5",
+"accent": "de",
+"pitch_st": -2.6,
+"fx": "intercom",
+"who": "Rough veteran German tank commander, measured and heavy",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "the  video.  Thank you.  Thank you.  Thank you in advance."
+},
+{
+"file": "audio/voice_ai/eu/leopold/move_3.ogg",
+"text": "Tracks moving.",
+"voice": "am_onyx:0.5,bm_george:0.5",
+"accent": "de",
+"pitch_st": -2.6,
+"fx": "intercom",
+"who": "Rough veteran German tank commander, measured and heavy",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 3,
+"heard": "Attracts moving"
+},
+{
+"file": "audio/voice_ai/eu/leopold/move_4.ogg",
+"text": "Understood.",
+"voice": "am_onyx:0.5,bm_george:0.5",
+"accent": "de",
+"pitch_st": -2.6,
+"fx": "intercom",
+"who": "Rough veteran German tank commander, measured and heavy",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "Understood."
+},
+{
 "file": "audio/voice_ai/eu/leopold/select_1.ogg",
 "text": "Leopold.",
 "voice": "am_onyx:0.5,bm_george:0.5",
@@ -619,9 +1750,9 @@
 "fx": "intercom",
 "who": "Rough veteran German tank commander, measured and heavy",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
+"qa": 1.0,
 "take": 0,
-"heard": ""
+"heard": "LeaPold"
 },
 {
 "file": "audio/voice_ai/eu/leopold/select_2.ogg",
@@ -663,6 +1794,175 @@
 "heard": "Give the order"
 },
 {
+"file": "audio/voice_ai/eu/leopold/under_fire_1.ogg",
+"text": "Armour's taking hits!",
+"voice": "am_onyx:0.5,bm_george:0.5",
+"accent": "de",
+"pitch_st": -2.6,
+"fx": "intercom",
+"who": "Rough veteran German tank commander, measured and heavy",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 2,
+"heard": "Armors taking hits"
+},
+{
+"file": "audio/voice_ai/eu/leopold/under_fire_2.ogg",
+"text": "We're under fire, need support!",
+"voice": "am_onyx:0.5,bm_george:0.5",
+"accent": "de",
+"pitch_st": -2.6,
+"fx": "intercom",
+"who": "Rough veteran German tank commander, measured and heavy",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 0.8,
+"take": 0,
+"heard": "We are under fire need support"
+},
+{
+"file": "audio/voice_ai/eu/leopold/veteran_1.ogg",
+"text": "Leopold crew promoted.",
+"voice": "am_onyx:0.5,bm_george:0.5",
+"accent": "de",
+"pitch_st": -2.6,
+"fx": "intercom",
+"who": "Rough veteran German tank commander, measured and heavy",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 3,
+"heard": "Le  Leopold crew promoted"
+},
+{
+"file": "audio/voice_ai/eu/wolfhound/attack_1.ogg",
+"text": "Hitting them!",
+"voice": "im_nicola:0.8,am_puck:0.2",
+"accent": "it",
+"pitch_st": 0.8,
+"fx": "intercom",
+"who": "Fast-talking Italian recon driver",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 2,
+"heard": "Hitting them"
+},
+{
+"file": "audio/voice_ai/eu/wolfhound/attack_2.ogg",
+"text": "Autocannon firing!",
+"voice": "im_nicola:0.8,am_puck:0.2",
+"accent": "it",
+"pitch_st": 0.8,
+"fx": "intercom",
+"who": "Fast-talking Italian recon driver",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "Auto Cannon Firing"
+},
+{
+"file": "audio/voice_ai/eu/wolfhound/attack_3.ogg",
+"text": "Engaging target!",
+"voice": "im_nicola:0.8,am_puck:0.2",
+"accent": "it",
+"pitch_st": 0.8,
+"fx": "intercom",
+"who": "Fast-talking Italian recon driver",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "Engaging target.  The end.  The end.  The end.  The end."
+},
+{
+"file": "audio/voice_ai/eu/wolfhound/attack_4.ogg",
+"text": "Run them down!",
+"voice": "im_nicola:0.8,am_puck:0.2",
+"accent": "it",
+"pitch_st": 0.8,
+"fx": "intercom",
+"who": "Fast-talking Italian recon driver",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "Run them down."
+},
+{
+"file": "audio/voice_ai/eu/wolfhound/created_1.ogg",
+"text": "Wolfhound ready for recon.",
+"voice": "im_nicola:0.8,am_puck:0.2",
+"accent": "it",
+"pitch_st": 0.8,
+"fx": "intercom",
+"who": "Fast-talking Italian recon driver",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "We found the ready for recon"
+},
+{
+"file": "audio/voice_ai/eu/wolfhound/created_2.ogg",
+"text": "Armoured car on the line.",
+"voice": "im_nicola:0.8,am_puck:0.2",
+"accent": "it",
+"pitch_st": 0.8,
+"fx": "intercom",
+"who": "Fast-talking Italian recon driver",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 0.8,
+"take": 0,
+"heard": "I'm at the car on the line."
+},
+{
+"file": "audio/voice_ai/eu/wolfhound/move_1.ogg",
+"text": "Fast as we can!",
+"voice": "im_nicola:0.8,am_puck:0.2",
+"accent": "it",
+"pitch_st": 0.8,
+"fx": "intercom",
+"who": "Fast-talking Italian recon driver",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 1,
+"heard": "as fast, fast as we can."
+},
+{
+"file": "audio/voice_ai/eu/wolfhound/move_2.ogg",
+"text": "Moving out.",
+"voice": "im_nicola:0.8,am_puck:0.2",
+"accent": "it",
+"pitch_st": 0.8,
+"fx": "intercom",
+"who": "Fast-talking Italian recon driver",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "Moving out"
+},
+{
+"file": "audio/voice_ai/eu/wolfhound/move_3.ogg",
+"text": "On it.",
+"voice": "im_nicola:0.8,am_puck:0.2",
+"accent": "it",
+"pitch_st": 0.8,
+"fx": "intercom",
+"who": "Fast-talking Italian recon driver",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 1,
+"heard": "On it."
+},
+{
+"file": "audio/voice_ai/eu/wolfhound/move_4.ogg",
+"text": "Wheels rolling.",
+"voice": "im_nicola:0.8,am_puck:0.2",
+"accent": "it",
+"pitch_st": 0.8,
+"fx": "intercom",
+"who": "Fast-talking Italian recon driver",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "Wheels rolling"
+},
+{
 "file": "audio/voice_ai/eu/wolfhound/select_1.ogg",
 "text": "Wolfhound.",
 "voice": "im_nicola:0.8,am_puck:0.2",
@@ -671,9 +1971,9 @@
 "fx": "intercom",
 "who": "Fast-talking Italian recon driver",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
-"take": 0,
-"heard": ""
+"qa": 1.0,
+"take": 1,
+"heard": "We'll found it."
 },
 {
 "file": "audio/voice_ai/eu/wolfhound/select_2.ogg",
@@ -684,9 +1984,9 @@
 "fx": "intercom",
 "who": "Fast-talking Italian recon driver",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.5,
-"take": 1,
-"heard": "Already"
+"qa": 1.0,
+"take": 0,
+"heard": "Recon ready"
 },
 {
 "file": "audio/voice_ai/eu/wolfhound/select_3.ogg",
@@ -715,6 +2015,45 @@
 "heard": "Where to"
 },
 {
+"file": "audio/voice_ai/eu/wolfhound/under_fire_1.ogg",
+"text": "Wolfhound taking hits!",
+"voice": "im_nicola:0.8,am_puck:0.2",
+"accent": "it",
+"pitch_st": 0.8,
+"fx": "intercom",
+"who": "Fast-talking Italian recon driver",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 3,
+"heard": "Will found taking hits  I hope"
+},
+{
+"file": "audio/voice_ai/eu/wolfhound/under_fire_2.ogg",
+"text": "We need to pull back!",
+"voice": "im_nicola:0.8,am_puck:0.2",
+"accent": "it",
+"pitch_st": 0.8,
+"fx": "intercom",
+"who": "Fast-talking Italian recon driver",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 1,
+"heard": "We need to pull back."
+},
+{
+"file": "audio/voice_ai/eu/wolfhound/veteran_1.ogg",
+"text": "Wolfhound crew promoted.",
+"voice": "im_nicola:0.8,am_puck:0.2",
+"accent": "it",
+"pitch_st": 0.8,
+"fx": "intercom",
+"who": "Fast-talking Italian recon driver",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 2,
+"heard": "will found crew promoted."
+},
+{
 "file": "audio/voice_ai/tpla/blight/attack_1.ogg",
 "text": "Rust them.",
 "voice": "hm_omega:0.7,bm_fable:0.3",
@@ -723,9 +2062,9 @@
 "fx": "close",
 "who": "Quiet, eerie chemist-gunner",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
-"take": 0,
-"heard": "3, 4, 3, 2,"
+"qa": 1.0,
+"take": 2,
+"heard": "Rust them."
 },
 {
 "file": "audio/voice_ai/tpla/blight/attack_2.ogg",
@@ -736,9 +2075,9 @@
 "fx": "close",
 "who": "Quiet, eerie chemist-gunner",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
-"take": 0,
-"heard": "I'm..."
+"qa": 1.0,
+"take": 2,
+"heard": "Canister away."
 },
 {
 "file": "audio/voice_ai/tpla/blight/attack_3.ogg",
@@ -788,9 +2127,9 @@
 "fx": "close",
 "who": "Quiet, eerie chemist-gunner",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
-"take": 0,
-"heard": "to the world., the world is a place to be.  Let's start with,  this is the same as I did before"
+"qa": 1.0,
+"take": 1,
+"heard": "Rust Artillery Tanline."
 },
 {
 "file": "audio/voice_ai/tpla/blight/move_1.ogg",
@@ -866,9 +2205,9 @@
 "fx": "close",
 "who": "Quiet, eerie chemist-gunner",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
-"take": 0,
-"heard": ""
+"qa": 1.0,
+"take": 2,
+"heard": "Banisters ready"
 },
 {
 "file": "audio/voice_ai/tpla/blight/select_3.ogg",
@@ -905,9 +2244,9 @@
 "fx": "close",
 "who": "Quiet, eerie chemist-gunner",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.67,
-"take": 1,
-"heard": "Launcher, Kandar, fire."
+"qa": 1.0,
+"take": 2,
+"heard": "Launcher under fire."
 },
 {
 "file": "audio/voice_ai/tpla/blight/under_fire_2.ogg",
@@ -931,9 +2270,9 @@
 "fx": "close",
 "who": "Quiet, eerie chemist-gunner",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
-"take": 0,
-"heard": "a"
+"qa": 1.0,
+"take": 2,
+"heard": "It's thicker rust now"
 },
 {
 "file": "audio/voice_ai/tpla/hailstorm/attack_1.ogg",
@@ -970,9 +2309,9 @@
 "fx": "grit",
 "who": "Gruff heavy gunner on the quad gun",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.67,
-"take": 1,
-"heard": "Shred that blame."
+"qa": 1.0,
+"take": 0,
+"heard": "Shred that plane."
 },
 {
 "file": "audio/voice_ai/tpla/hailstorm/attack_4.ogg",
@@ -1009,9 +2348,9 @@
 "fx": "grit",
 "who": "Gruff heavy gunner on the quad gun",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.6,
+"qa": 0.8,
 "take": 0,
-"heard": "The Quad-Gantt on the"
+"heard": "Quad Gantt on the line."
 },
 {
 "file": "audio/voice_ai/tpla/hailstorm/move_1.ogg",
@@ -1100,9 +2439,9 @@
 "fx": "grit",
 "who": "Gruff heavy gunner on the quad gun",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
+"qa": 0.67,
 "take": 0,
-"heard": ""
+"heard": "Four bottles ready."
 },
 {
 "file": "audio/voice_ai/tpla/hailstorm/select_4.ogg",
@@ -1152,74 +2491,74 @@
 "fx": "grit",
 "who": "Gruff heavy gunner on the quad gun",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.33,
+"qa": 0.67,
 "take": 3,
-"heard": "First, now-"
+"heard": "I do bursts now it"
 },
 {
 "file": "audio/voice_ai/tpla/laborer/build_1.ogg",
 "text": "We'll knock it together.",
-"voice": "hm_psi:0.6,am_eric:0.4",
+"voice": "am_michael:0.45,hm_psi:0.35,am_eric:0.2",
 "accent": "me",
 "pitch_st": -0.8,
 "fx": "grit",
 "who": "Tired, wry scavenger worker",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.75,
-"take": 3,
-"heard": "We'll knock it."
+"qa": 1.0,
+"take": 2,
+"heard": "We'll knock it together."
 },
 {
 "file": "audio/voice_ai/tpla/laborer/build_2.ogg",
 "text": "Scrap and sweat, coming up.",
-"voice": "hm_psi:0.6,am_eric:0.4",
+"voice": "am_michael:0.45,hm_psi:0.35,am_eric:0.2",
 "accent": "me",
 "pitch_st": -0.8,
 "fx": "grit",
 "who": "Tired, wry scavenger worker",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
-"take": 0,
-"heard": ""
+"qa": 0.4,
+"take": 1,
+"heard": "Scrapped in sweat, come in."
 },
 {
 "file": "audio/voice_ai/tpla/laborer/build_3.ogg",
 "text": "I'll build it.",
-"voice": "hm_psi:0.6,am_eric:0.4",
+"voice": "am_michael:0.45,hm_psi:0.35,am_eric:0.2",
 "accent": "me",
 "pitch_st": -0.8,
 "fx": "grit",
 "who": "Tired, wry scavenger worker",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
-"take": 0,
-"heard": ""
+"qa": 1.0,
+"take": 2,
+"heard": "I'll build it"
 },
 {
 "file": "audio/voice_ai/tpla/laborer/created_1.ogg",
 "text": "Another pair of hands.",
-"voice": "hm_psi:0.6,am_eric:0.4",
+"voice": "am_michael:0.45,hm_psi:0.35,am_eric:0.2",
 "accent": "me",
 "pitch_st": -0.8,
 "fx": "grit",
 "who": "Tired, wry scavenger worker",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
-"take": 0,
-"heard": ""
+"qa": 1.0,
+"take": 2,
+"heard": "Another pair of hands."
 },
 {
 "file": "audio/voice_ai/tpla/laborer/created_2.ogg",
 "text": "Laborer ready to work.",
-"voice": "hm_psi:0.6,am_eric:0.4",
+"voice": "am_michael:0.45,hm_psi:0.35,am_eric:0.2",
 "accent": "me",
 "pitch_st": -0.8,
 "fx": "grit",
 "who": "Tired, wry scavenger worker",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
-"take": 0,
-"heard": ""
+"qa": 1.0,
+"take": 2,
+"heard": "Laborer ready to work."
 },
 {
 "file": "audio/voice_ai/tpla/laborer/harvest_1.ogg",
@@ -1237,15 +2576,15 @@
 {
 "file": "audio/voice_ai/tpla/laborer/harvest_2.ogg",
 "text": "Back to the pile.",
-"voice": "hm_psi:0.6,am_eric:0.4",
+"voice": "am_michael:0.45,hm_psi:0.35,am_eric:0.2",
 "accent": "me",
 "pitch_st": -0.8,
 "fx": "grit",
 "who": "Tired, wry scavenger worker",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.75,
-"take": 0,
-"heard": "Back to the ball"
+"qa": 1.0,
+"take": 2,
+"heard": "Back to the pile."
 },
 {
 "file": "audio/voice_ai/tpla/laborer/move_1.ogg",
@@ -1263,41 +2602,41 @@
 {
 "file": "audio/voice_ai/tpla/laborer/move_2.ogg",
 "text": "On my way.",
-"voice": "hm_psi:0.6,am_eric:0.4",
+"voice": "am_michael:0.45,hm_psi:0.35,am_eric:0.2",
 "accent": "me",
 "pitch_st": -0.8,
 "fx": "grit",
 "who": "Tired, wry scavenger worker",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.67,
-"take": 3,
-"heard": "my way"
+"qa": 1.0,
+"take": 0,
+"heard": "It's on my way."
 },
 {
 "file": "audio/voice_ai/tpla/laborer/move_3.ogg",
 "text": "Khalas! Okay, I'm going.",
-"voice": "hm_psi:0.6,am_eric:0.4",
+"voice": "am_michael:0.45,hm_psi:0.35,am_eric:0.2",
 "accent": "me",
 "pitch_st": -0.8,
 "fx": "grit",
 "who": "Tired, wry scavenger worker",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
-"take": 0,
-"heard": ""
+"qa": 1.0,
+"take": 2,
+"heard": "Kahla's okay, I'm going."
 },
 {
 "file": "audio/voice_ai/tpla/laborer/move_4.ogg",
 "text": "Heading over.",
-"voice": "hm_psi:0.6,am_eric:0.4",
+"voice": "am_michael:0.45,hm_psi:0.35,am_eric:0.2",
 "accent": "me",
 "pitch_st": -0.8,
 "fx": "grit",
 "who": "Tired, wry scavenger worker",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.5,
-"take": 1,
-"heard": "Heading to Far."
+"qa": 1.0,
+"take": 2,
+"heard": "Heading over."
 },
 {
 "file": "audio/voice_ai/tpla/laborer/select_1.ogg",
@@ -1315,28 +2654,28 @@
 {
 "file": "audio/voice_ai/tpla/laborer/select_2.ogg",
 "text": "Got my shovel.",
-"voice": "hm_psi:0.6,am_eric:0.4",
+"voice": "am_michael:0.45,hm_psi:0.35,am_eric:0.2",
 "accent": "me",
 "pitch_st": -0.8,
 "fx": "grit",
 "who": "Tired, wry scavenger worker",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.67,
-"take": 0,
-"heard": "Got my shuffle"
+"qa": 1.0,
+"take": 2,
+"heard": "Got my shovel."
 },
 {
 "file": "audio/voice_ai/tpla/laborer/select_3.ogg",
 "text": "Laborer here.",
-"voice": "hm_psi:0.6,am_eric:0.4",
+"voice": "am_michael:0.45,hm_psi:0.35,am_eric:0.2",
 "accent": "me",
 "pitch_st": -0.8,
 "fx": "grit",
 "who": "Tired, wry scavenger worker",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
-"take": 0,
-"heard": ""
+"qa": 1.0,
+"take": 2,
+"heard": "laborer here"
 },
 {
 "file": "audio/voice_ai/tpla/laborer/select_4.ogg",
@@ -1354,28 +2693,28 @@
 {
 "file": "audio/voice_ai/tpla/laborer/under_fire_1.ogg",
 "text": "They're shooting at the workers!",
-"voice": "hm_psi:0.6,am_eric:0.4",
+"voice": "am_michael:0.45,hm_psi:0.35,am_eric:0.2",
 "accent": "me",
 "pitch_st": -0.8,
 "fx": "grit",
 "who": "Tired, wry scavenger worker",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.6,
-"take": 1,
-"heard": "They are shooting Tatda workers."
+"qa": 1.0,
+"take": 0,
+"heard": "They are shooting at the workers."
 },
 {
 "file": "audio/voice_ai/tpla/laborer/under_fire_2.ogg",
 "text": "Cover! We're just diggers!",
-"voice": "hm_psi:0.6,am_eric:0.4",
+"voice": "am_michael:0.45,hm_psi:0.35,am_eric:0.2",
 "accent": "me",
 "pitch_st": -0.8,
 "fx": "grit",
 "who": "Tired, wry scavenger worker",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
-"take": 0,
-"heard": ""
+"qa": 0.75,
+"take": 3,
+"heard": "We're just diggers"
 },
 {
 "file": "audio/voice_ai/tpla/mule/attack_1.ogg",
@@ -1451,9 +2790,9 @@
 "fx": "close",
 "who": "Unnervingly calm demolition driver",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.33,
-"take": 0,
-"heard": "Demilition"
+"qa": 1.0,
+"take": 2,
+"heard": "Demolition truck ready"
 },
 {
 "file": "audio/voice_ai/tpla/mule/move_1.ogg",
@@ -1503,9 +2842,9 @@
 "fx": "close",
 "who": "Unnervingly calm demolition driver",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.67,
-"take": 0,
-"heard": "A slow-done study."
+"qa": 1.0,
+"take": 3,
+"heard": "A, slow and steady."
 },
 {
 "file": "audio/voice_ai/tpla/mule/select_1.ogg",
@@ -1516,9 +2855,9 @@
 "fx": "close",
 "who": "Unnervingly calm demolition driver",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
+"qa": 1.0,
 "take": 0,
-"heard": ""
+"heard": "A Mule."
 },
 {
 "file": "audio/voice_ai/tpla/mule/select_2.ogg",
@@ -1529,9 +2868,9 @@
 "fx": "close",
 "who": "Unnervingly calm demolition driver",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.75,
-"take": 0,
-"heard": "with the cargo"
+"qa": 1.0,
+"take": 2,
+"heard": "Careful with the cargo."
 },
 {
 "file": "audio/voice_ai/tpla/mule/select_3.ogg",
@@ -1607,9 +2946,9 @@
 "fx": "shout",
 "who": "Reckless grinning technical driver",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
-"take": 0,
-"heard": ""
+"qa": 1.0,
+"take": 2,
+"heard": "Spray them."
 },
 {
 "file": "audio/voice_ai/tpla/rattler/attack_2.ogg",
@@ -1620,9 +2959,9 @@
 "fx": "shout",
 "who": "Reckless grinning technical driver",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.67,
-"take": 3,
-"heard": "Gunner open ups."
+"qa": 1.0,
+"take": 2,
+"heard": "Gunner open up"
 },
 {
 "file": "audio/voice_ai/tpla/rattler/attack_3.ogg",
@@ -1633,9 +2972,9 @@
 "fx": "shout",
 "who": "Reckless grinning technical driver",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
-"take": 0,
-"heard": ""
+"qa": 1.0,
+"take": 2,
+"heard": "Shoot as we pass."
 },
 {
 "file": "audio/voice_ai/tpla/rattler/attack_4.ogg",
@@ -1646,9 +2985,9 @@
 "fx": "shout",
 "who": "Reckless grinning technical driver",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.5,
-"take": 1,
-"heard": "I told them"
+"qa": 1.0,
+"take": 2,
+"heard": "Rattle them."
 },
 {
 "file": "audio/voice_ai/tpla/rattler/created_1.ogg",
@@ -1672,9 +3011,9 @@
 "fx": "shout",
 "who": "Reckless grinning technical driver",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.25,
-"take": 1,
-"heard": "track,-f"
+"qa": 1.0,
+"take": 2,
+"heard": "Fresh truck, fresh gun."
 },
 {
 "file": "audio/voice_ai/tpla/rattler/move_1.ogg",
@@ -1725,8 +3064,8 @@
 "who": "Reckless grinning technical driver",
 "engine": "kokoro-82m (Apache-2.0) m26",
 "qa": 0.75,
-"take": 2,
-"heard": "Kick up the it does"
+"take": 1,
+"heard": "kick chub the dust"
 },
 {
 "file": "audio/voice_ai/tpla/rattler/select_1.ogg",
@@ -1737,9 +3076,9 @@
 "fx": "shout",
 "who": "Reckless grinning technical driver",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
-"take": 0,
-"heard": ""
+"qa": 1.0,
+"take": 2,
+"heard": "Rappler here."
 },
 {
 "file": "audio/voice_ai/tpla/rattler/select_2.ogg",
@@ -1750,9 +3089,9 @@
 "fx": "shout",
 "who": "Reckless grinning technical driver",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.75,
-"take": 1,
-"heard": "She's coughing, but ready."
+"qa": 1.0,
+"take": 2,
+"heard": "Engine's coughing but ready."
 },
 {
 "file": "audio/voice_ai/tpla/rattler/select_3.ogg",
@@ -1763,9 +3102,9 @@
 "fx": "shout",
 "who": "Reckless grinning technical driver",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.75,
-"take": 0,
-"heard": "Gents on the back"
+"qa": 1.0,
+"take": 2,
+"heard": "Guns on the back."
 },
 {
 "file": "audio/voice_ai/tpla/rattler/select_4.ogg",
@@ -1841,9 +3180,9 @@
 "fx": "grit",
 "who": "Rocket loader",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.67,
+"qa": 1.0,
 "take": 2,
-"heard": "Hit the, Hit the"
+"heard": "Hit the armor."
 },
 {
 "file": "audio/voice_ai/tpla/rocket_cell/attack_3.ogg",
@@ -1867,9 +3206,9 @@
 "fx": "grit",
 "who": "Rocket loader",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.67,
+"qa": 1.0,
 "take": 2,
-"heard": "Burned that tank"
+"heard": "Burn that tank!"
 },
 {
 "file": "audio/voice_ai/tpla/rocket_cell/created_1.ogg",
@@ -1893,9 +3232,9 @@
 "fx": "grit",
 "who": "Rocket loader",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.75,
+"qa": 1.0,
 "take": 2,
-"heard": "Anti-Arma team here."
+"heard": "anti-armor team here."
 },
 {
 "file": "audio/voice_ai/tpla/rocket_cell/garrison_1.ogg",
@@ -1945,9 +3284,9 @@
 "fx": "grit",
 "who": "Rocket loader",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.67,
+"qa": 1.0,
 "take": 1,
-"heard": "Keep the love move"
+"heard": "Keep low move."
 },
 {
 "file": "audio/voice_ai/tpla/rocket_cell/move_3.ogg",
@@ -1973,20 +3312,20 @@
 "engine": "kokoro-82m (Apache-2.0) m26",
 "qa": 0.0,
 "take": 0,
-"heard": ""
+"heard": "Go Inke!"
 },
 {
 "file": "audio/voice_ai/tpla/rocket_cell/select_1.ogg",
 "text": "Rocket cell.",
-"voice": "hm_psi:0.5,am_liam:0.5",
+"voice": "am_liam:0.6,hm_psi:0.4",
 "accent": "me",
 "pitch_st": -0.3,
 "fx": "grit",
 "who": "Wary, tense insurgent rocket team, low voice",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
-"take": 0,
-"heard": ""
+"qa": 1.0,
+"take": 1,
+"heard": "Rocket Cell"
 },
 {
 "file": "audio/voice_ai/tpla/rocket_cell/select_2.ogg",
@@ -2004,15 +3343,15 @@
 {
 "file": "audio/voice_ai/tpla/rocket_cell/select_3.ogg",
 "text": "Point us at steel.",
-"voice": "hm_psi:0.5,am_liam:0.5",
+"voice": "am_liam:0.6,hm_psi:0.4",
 "accent": "me",
 "pitch_st": -0.3,
 "fx": "grit",
 "who": "Wary, tense insurgent rocket team, low voice",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.25,
-"take": 2,
-"heard": "Boy, it has that steel."
+"qa": 1.0,
+"take": 3,
+"heard": "Point us at steel."
 },
 {
 "file": "audio/voice_ai/tpla/rocket_cell/select_4.ogg",
@@ -2023,22 +3362,22 @@
 "fx": "grit",
 "who": "Rocket loader",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
+"qa": 1.0,
 "take": 0,
-"heard": ""
+"heard": "loaded"
 },
 {
 "file": "audio/voice_ai/tpla/rocket_cell/under_fire_1.ogg",
 "text": "We're spotted!",
-"voice": "hm_psi:0.5,am_liam:0.5",
+"voice": "am_liam:0.6,hm_psi:0.4",
 "accent": "me",
 "pitch_st": -0.3,
 "fx": "grit",
 "who": "Wary, tense insurgent rocket team, low voice",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
-"take": 0,
-"heard": ""
+"qa": 1.0,
+"take": 1,
+"heard": "We're spotted."
 },
 {
 "file": "audio/voice_ai/tpla/rocket_cell/under_fire_2.ogg",
@@ -2049,9 +3388,9 @@
 "fx": "grit",
 "who": "Rocket loader",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.75,
-"take": 2,
-"heard": "Rocket team pin down."
+"qa": 1.0,
+"take": 0,
+"heard": "Rocket team pinged down."
 },
 {
 "file": "audio/voice_ai/tpla/rocket_cell/veteran_1.ogg",
@@ -2207,7 +3546,7 @@
 "engine": "kokoro-82m (Apache-2.0) m26",
 "qa": 0.0,
 "take": 0,
-"heard": "Scrubbog"
+"heard": ""
 },
 {
 "file": "audio/voice_ai/tpla/scrapback/select_2.ogg",
@@ -2218,9 +3557,9 @@
 "fx": "intercom",
 "who": "Proud, stubborn old scrap-tank commander",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.33,
-"take": 1,
-"heard": "Stand ready."
+"qa": 1.0,
+"take": 2,
+"heard": "Patched and ready."
 },
 {
 "file": "audio/voice_ai/tpla/scrapback/select_3.ogg",
@@ -2231,9 +3570,9 @@
 "fx": "intercom",
 "who": "Proud, stubborn old scrap-tank commander",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.4,
-"take": 3,
-"heard": "or choose, it is."
+"qa": 1.0,
+"take": 2,
+"heard": "Armour such as it is."
 },
 {
 "file": "audio/voice_ai/tpla/scrapback/select_4.ogg",
@@ -2270,9 +3609,9 @@
 "fx": "intercom",
 "who": "Proud, stubborn old scrap-tank commander",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.5,
-"take": 1,
-"heard": "I'm not taking heavy heat."
+"qa": 1.0,
+"take": 2,
+"heard": "Scrapbook taking heavy hits"
 },
 {
 "file": "audio/voice_ai/tpla/scrapback/veteran_1.ogg",
@@ -2439,9 +3778,9 @@
 "fx": "grit",
 "who": "Cocky young buggy driver",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.5,
-"take": 2,
-"heard": "Rex loaded"
+"qa": 1.0,
+"take": 0,
+"heard": "Racks load either."
 },
 {
 "file": "audio/voice_ai/tpla/shrike/select_3.ogg",
@@ -2452,9 +3791,9 @@
 "fx": "grit",
 "who": "Cocky young buggy driver",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.33,
+"qa": 1.0,
 "take": 0,
-"heard": "incident light"
+"heard": "Fast and light."
 },
 {
 "file": "audio/voice_ai/tpla/shrike/select_4.ogg",
@@ -2465,9 +3804,9 @@
 "fx": "grit",
 "who": "Cocky young buggy driver",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
+"qa": 1.0,
 "take": 0,
-"heard": ""
+"heard": "ready to sting"
 },
 {
 "file": "audio/voice_ai/tpla/shrike/under_fire_1.ogg",
@@ -2478,9 +3817,9 @@
 "fx": "grit",
 "who": "Cocky young buggy driver",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.5,
-"take": 0,
-"heard": "Shlikes,"
+"qa": 1.0,
+"take": 1,
+"heard": "Shrikes, hit it!"
 },
 {
 "file": "audio/voice_ai/tpla/shrike/under_fire_2.ogg",
@@ -2491,9 +3830,9 @@
 "fx": "grit",
 "who": "Cocky young buggy driver",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.5,
+"qa": 0.75,
 "take": 3,
-"heard": "To hard pulling out"
+"heard": "Too hard pulling out"
 },
 {
 "file": "audio/voice_ai/tpla/shrike/veteran_1.ogg",
@@ -2558,7 +3897,7 @@
 "engine": "kokoro-82m (Apache-2.0) m26",
 "qa": 0.75,
 "take": 0,
-"heard": "Those are Ready, to Work  Ready,  to work.,"
+"heard": "Those are ready to work"
 },
 {
 "file": "audio/voice_ai/us/dozer/created_2.ogg",
@@ -2569,9 +3908,9 @@
 "fx": "grit",
 "who": "Easygoing Southern Seabee operator",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.75,
-"take": 2,
-"heard": "construction on site"
+"qa": 1.0,
+"take": 0,
+"heard": "Construction crew on site."
 },
 {
 "file": "audio/voice_ai/us/dozer/move_1.ogg",
@@ -2621,9 +3960,9 @@
 "fx": "grit",
 "who": "Easygoing Southern Seabee operator",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.33,
-"take": 2,
-"heard": "Copy a"
+"qa": 1.0,
+"take": 0,
+"heard": "Copy head in there  the"
 },
 {
 "file": "audio/voice_ai/us/dozer/select_1.ogg",
@@ -2635,7 +3974,7 @@
 "who": "Easygoing Southern Seabee operator",
 "engine": "kokoro-82m (Apache-2.0) m26",
 "qa": 0.5,
-"take": 0,
+"take": 1,
 "heard": "Those are here."
 },
 {
@@ -2687,8 +4026,8 @@
 "who": "Easygoing Southern Seabee operator",
 "engine": "kokoro-82m (Apache-2.0) m26",
 "qa": 0.67,
-"take": 3,
-"heard": "taking fire"
+"take": 0,
+"heard": "Those those are taking fire."
 },
 {
 "file": "audio/voice_ai/us/dozer/under_fire_2.ogg",
@@ -2753,7 +4092,7 @@
 "engine": "kokoro-82m (Apache-2.0) m26",
 "qa": 0.67,
 "take": 0,
-"heard": "Light  Light him up"
+"heard": "Light him up."
 },
 {
 "file": "audio/voice_ai/us/grunt/created_1.ogg",
@@ -2831,7 +4170,7 @@
 "engine": "kokoro-82m (Apache-2.0) m26",
 "qa": 0.75,
 "take": 0,
-"heard": "We the  We're on the move."
+"heard": "on the move"
 },
 {
 "file": "audio/voice_ai/us/grunt/move_3.ogg",
@@ -2881,9 +4220,9 @@
 "fx": "shout",
 "who": "Young Marine rifleman",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.67,
-"take": 1,
-"heard": "Ready to"
+"qa": 1.0,
+"take": 0,
+"heard": "Ready to go."
 },
 {
 "file": "audio/voice_ai/us/grunt/select_3.ogg",
@@ -3596,9 +4935,9 @@
 "fx": "grit",
 "who": "Assistant gunner, quicker",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.33,
+"qa": 1.0,
 "take": 0,
-"heard": "We've"
+"heard": "We've got tubes."
 },
 {
 "file": "audio/voice_ai/us/javelin/under_fire_1.ogg",
@@ -4636,9 +5975,9 @@
 "fx": "close",
 "who": "Calm, quiet scout sniper, almost a murmur",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.5,
-"take": 3,
-"heard": "Taking the"
+"qa": 1.0,
+"take": 0,
+"heard": "Taking the high window."
 },
 {
 "file": "audio/voice_ai/us/sniper/garrison_2.ogg",
@@ -4742,7 +6081,7 @@
 "engine": "kokoro-82m (Apache-2.0) m26",
 "qa": 0.5,
 "take": 1,
-"heard": "in possession"
+"heard": "in possession."
 },
 {
 "file": "audio/voice_ai/us/sniper/select_4.ogg",
@@ -4792,9 +6131,9 @@
 "fx": "close",
 "who": "Calm, quiet scout sniper, almost a murmur",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
+"qa": 1.0,
 "take": 0,
-"heard": "either.  you"
+"heard": "Steady hands now."
 },
 {
 "file": "audio/voice_ai/us/supply_truck/created_1.ogg",
@@ -4831,9 +6170,9 @@
 "fx": "grit",
 "who": "Laid-back motor-pool driver",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
-"take": 0,
-"heard": "Q&"
+"qa": 1.0,
+"take": 1,
+"heard": "Heading to the supply dump."
 },
 {
 "file": "audio/voice_ai/us/supply_truck/harvest_2.ogg",
@@ -4883,9 +6222,9 @@
 "fx": "grit",
 "who": "Laid-back motor-pool driver",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.67,
+"qa": 1.0,
 "take": 0,
-"heard": "Roger on route"
+"heard": "Roger en route."
 },
 {
 "file": "audio/voice_ai/us/supply_truck/move_4.ogg",
@@ -4909,9 +6248,9 @@
 "fx": "grit",
 "who": "Laid-back motor-pool driver",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.0,
-"take": 0,
-"heard": "..."
+"qa": 1.0,
+"take": 2,
+"heard": "supply truckie"
 },
 {
 "file": "audio/voice_ai/us/supply_truck/select_2.ogg",
@@ -4979,6 +6318,136 @@
 "heard": "They're hitting, the conv."
 },
 {
+"file": "audio/voice_ai/us/thunderlance/attack_1.ogg",
+"text": "Bombs away!",
+"voice": "am_onyx:0.6,am_santa:0.4",
+"accent": "none",
+"pitch_st": -2.2,
+"fx": "mask",
+"who": "Deep, deadpan bomber pilot",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "Bombs away"
+},
+{
+"file": "audio/voice_ai/us/thunderlance/attack_2.ogg",
+"text": "Doors open, releasing!",
+"voice": "am_onyx:0.6,am_santa:0.4",
+"accent": "none",
+"pitch_st": -2.2,
+"fx": "mask",
+"who": "Deep, deadpan bomber pilot",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 0.67,
+"take": 1,
+"heard": "Doors Open,,"
+},
+{
+"file": "audio/voice_ai/us/thunderlance/attack_3.ogg",
+"text": "Payload away!",
+"voice": "am_onyx:0.6,am_santa:0.4",
+"accent": "none",
+"pitch_st": -2.2,
+"fx": "mask",
+"who": "Deep, deadpan bomber pilot",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 2,
+"heard": "-Payload away."
+},
+{
+"file": "audio/voice_ai/us/thunderlance/attack_4.ogg",
+"text": "Weapons release!",
+"voice": "am_onyx:0.6,am_santa:0.4",
+"accent": "none",
+"pitch_st": -2.2,
+"fx": "mask",
+"who": "Deep, deadpan bomber pilot",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "Weapons Release"
+},
+{
+"file": "audio/voice_ai/us/thunderlance/created_1.ogg",
+"text": "Thunderlance on the flight line.",
+"voice": "am_onyx:0.6,am_santa:0.4",
+"accent": "none",
+"pitch_st": -2.2,
+"fx": "mask",
+"who": "Deep, deadpan bomber pilot",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "Th... Thunder  Thunderlands on the flight line"
+},
+{
+"file": "audio/voice_ai/us/thunderlance/created_2.ogg",
+"text": "Bomber armed and ready.",
+"voice": "am_onyx:0.6,am_santa:0.4",
+"accent": "none",
+"pitch_st": -2.2,
+"fx": "mask",
+"who": "Deep, deadpan bomber pilot",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 0.75,
+"take": 3,
+"heard": "Bomber armed and reddies."
+},
+{
+"file": "audio/voice_ai/us/thunderlance/move_1.ogg",
+"text": "Moving.",
+"voice": "am_onyx:0.6,am_santa:0.4",
+"accent": "none",
+"pitch_st": -2.2,
+"fx": "mask",
+"who": "Deep, deadpan bomber pilot",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "Moving!"
+},
+{
+"file": "audio/voice_ai/us/thunderlance/move_2.ogg",
+"text": "Heading out.",
+"voice": "am_onyx:0.6,am_santa:0.4",
+"accent": "none",
+"pitch_st": -2.2,
+"fx": "mask",
+"who": "Deep, deadpan bomber pilot",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 1,
+"heard": "Heading out"
+},
+{
+"file": "audio/voice_ai/us/thunderlance/move_3.ogg",
+"text": "Copy, on our way.",
+"voice": "am_onyx:0.6,am_santa:0.4",
+"accent": "none",
+"pitch_st": -2.2,
+"fx": "mask",
+"who": "Deep, deadpan bomber pilot",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 3,
+"heard": "Copy on our way."
+},
+{
+"file": "audio/voice_ai/us/thunderlance/move_4.ogg",
+"text": "Wheels up.",
+"voice": "am_onyx:0.6,am_santa:0.4",
+"accent": "none",
+"pitch_st": -2.2,
+"fx": "mask",
+"who": "Deep, deadpan bomber pilot",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "Heels up"
+},
+{
 "file": "audio/voice_ai/us/thunderlance/select_1.ogg",
 "text": "Thunderlance.",
 "voice": "am_onyx:0.6,am_santa:0.4",
@@ -5029,6 +6498,45 @@
 "qa": 1.0,
 "take": 0,
 "heard": "Standing by"
+},
+{
+"file": "audio/voice_ai/us/thunderlance/under_fire_1.ogg",
+"text": "We're taking flak!",
+"voice": "am_onyx:0.6,am_santa:0.4",
+"accent": "none",
+"pitch_st": -2.2,
+"fx": "mask",
+"who": "Deep, deadpan bomber pilot",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "We're taking flak"
+},
+{
+"file": "audio/voice_ai/us/thunderlance/under_fire_2.ogg",
+"text": "Bomber under fire!",
+"voice": "am_onyx:0.6,am_santa:0.4",
+"accent": "none",
+"pitch_st": -2.2,
+"fx": "mask",
+"who": "Deep, deadpan bomber pilot",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 1.0,
+"take": 0,
+"heard": "bomber under the fire"
+},
+{
+"file": "audio/voice_ai/us/thunderlance/veteran_1.ogg",
+"text": "Tightest drops in the wing.",
+"voice": "am_onyx:0.6,am_santa:0.4",
+"accent": "none",
+"pitch_st": -2.2,
+"fx": "mask",
+"who": "Deep, deadpan bomber pilot",
+"engine": "kokoro-82m (Apache-2.0) m26",
+"qa": 0.8,
+"take": 1,
+"heard": "Tightest drops in the way."
 },
 {
 "file": "audio/voice_ai/us/wraith/attack_1.ogg",
