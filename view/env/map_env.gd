@@ -24,8 +24,8 @@ const ENVS := {
 	&"arid": {
 		"albedo": "res://assets/textures/terrain/terrain_albedo_arid.png", "nrao": "res://assets/textures/terrain/terrain_nrao_arid.png",
 		"dry": 1.0, "tint": 0.0,
-		"sun_rot": Vector3(-30, 120, 0), "sun_energy": 1.45, "sun_col": Color("#ffcf96"),
-		"ambient": Color("#a99a8a"), "ambient_energy": 0.58, "fog_col": Color("#d9b48a"), "fog_density": 0.0042,
+		"sun_rot": Vector3(-38, 120, 0), "sun_energy": 1.5, "sun_col": Color("#ffcf96"),
+		"ambient": Color("#a99a8a"), "ambient_energy": 0.58, "fog_col": Color("#d9b48a"), "fog_density": 0.003,
 		"saturation": 1.1, "contrast": 1.08, "exposure": 1.0,
 		"water_deep": Color(0.10, 0.26, 0.24), "water_shallow": Color(0.30, 0.44, 0.36), "prop_tint": Color(1.06, 1.0, 0.9),
 	},

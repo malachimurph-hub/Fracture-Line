@@ -21,6 +21,8 @@ func _ready() -> void:
 	if part in ["all", "maps"]:
 		for mid in ["kessel_pass", "harrow_junction", "ochre_wells", "varno_crossing"]:
 			await run_map(mid)
+	elif part.begins_with("map:"):
+		await run_map(part.substr(4))
 	if part in ["all", "us"]:
 		await run_us()
 	var failed := false
