@@ -774,7 +774,7 @@ static func _skirt(h, x: float, z0: float, z1: float, y0: float, y1: float, n: i
 	for i in n:
 		var zc := z0 + seg * (float(i) + 0.5)
 		h.color(col, Geo.PAINT)
-		h.cbox(Vector3(x, (y0 + y1) * 0.5, zc), Vector3(0.035, y1 - y0, seg - 0.012), 0.008)
+		h.box(Vector3(x, (y0 + y1) * 0.5, zc), Vector3(0.035, y1 - y0, seg - 0.012))
 		if i % 2 == 0:
 			h.color(US_S, Geo.STEEL)
 			h.rivets(Vector3(x + s * 0.018, y1 - 0.02, zc - seg * 0.3), Vector3(x + s * 0.018, y1 - 0.02, zc + seg * 0.3), 2, Vector3(s, 0, 0), 0.006)
