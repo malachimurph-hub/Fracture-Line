@@ -44,8 +44,8 @@ COLOR_YELLOW,Yellow
 COLOR_PURPLE,Purple
 COLOR_GREEN,Green
 COLOR_ORANGE,Orange
-STUB_SUPERWEAPONS,[STUB] No superweapon structures exist in M1; this toggle is saved but has no effect yet.
-STUB_TRANSPORT,[STUB] Wolfhound transport (carry infantry) is not implemented in M1.
+STUB_SUPERWEAPONS,[STUB] No superweapon structures exist yet; this toggle is saved but has no effect.
+STUB_TRANSPORT,[STUB] Wolfhound transport (carry infantry) is not implemented yet.
 DIFF_EASY,Easy
 DIFF_MEDIUM,Medium
 DIFF_HARD,Hard
@@ -195,7 +195,7 @@ REASON_POP_CAP,Unit limit reached
 REASON_PREREQ,Requirements not met
 REASON_RANK,Needs a higher General rank
 REASON_RESOURCE,Too close to a supply seam
-REASON_STUB,[STUB] Not available in M1
+REASON_STUB,[STUB] Not available yet
 REASON_TERRAIN,Can't build on that ground
 UNIT_EU_CRAWLER,Crawler
 UNIT_EU_HARVESTER,Supply Hauler
@@ -242,12 +242,12 @@ POWER_LOGISTICS_DESC,Instant supply drop.
 POWER_OVERCHARGE,Shield Overcharge
 POWER_OVERCHARGE_DESC,Your units in the area gain a strong temporary shield.
 POWER_BLACKOUT,Grid Blackout
-POWER_BLACKOUT_DESC,[STUB] Not implemented in M1.
-CREDITS_BODY,"FRACTURE LINE — Milestone 1.2 (skirmish).
-Design, code, procedural 3D models, shaders, effects, UI and text: original work made for Malachi Murphy with Grok Bot.
-Textures: ambientCG (ambientcg.com), CC0 1.0 public domain — Ground097, Ground109, Grass004, Rock063, Asphalt033, Gravel035, Concrete034, CorrugatedSteel005.
+POWER_BLACKOUT_DESC,[STUB] Not implemented yet.
+CREDITS_BODY,"FRACTURE LINE — Milestone 2 (skirmish: EU Alliance and TPLA).
+Design, code, procedural 3D models, weathering, decals, shaders, effects, UI and text: original work made for Malachi Murphy with Grok Bot.
+Textures: ambientCG (ambientcg.com), CC0 1.0 public domain — Ground097, Ground109, Grass004, Rock063, Asphalt033, Gravel035, Concrete034, CorrugatedSteel005, Rust004.
 Sound effects and music (""Dust Over Varno"", ""Steel Rain""): original, synthesized for this game.
-Voices: to be recorded by Malachi Murphy; until then robotic placeholder lines are generated with eSpeak NG (GPL-3.0 program; only its audio output ships).
+Voices: AI-generated with the Kokoro-82M speech model (hexgrad, Apache-2.0) via kokoro-onnx (MIT); phonemes by eSpeak NG (GPL-3.0 build tool, only audio ships). Your own recordings in audio/voice replace them.
 Inspired by the classic base-building RTS genre; no names, art, audio or text from any other game are used.
 UI font: Godot's built-in default font."
 CREDITS_ENGINE,"Built with Godot Engine %s (MIT license, see below)."
