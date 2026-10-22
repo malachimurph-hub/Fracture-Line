@@ -27,6 +27,8 @@ func _ready() -> void:
 			await run_m2()
 		"m2g":
 			await _m2_gallery()
+		"m21":
+			await run_m21()
 		"perf":
 			await run_perf(int(args[1]) if args.size() > 1 else 20)
 	for c in checks:
@@ -619,6 +621,56 @@ func run_m2() -> void:
 	m3.queue_free()
 	await frames(3)
 	await _m2_gallery()
+
+## M2.1: lobby with the Difficulty column; HUD with the collapsed groups arrow (badge) and
+## the X deselect button; HUD text-fit across every card for both factions.
+func run_m21() -> void:
+	GameSession.setup = {}
+	var cfg := lobby_cfg(3)
+	cfg["slots"][1]["difficulty"] = "easy"
+	cfg["slots"][2]["faction"] = "tpla"
+	cfg["slots"][2]["team"] = 1
+	cfg["slots"][3]["kind"] = "closed"
+	GameSession.setup = cfg
+	var lobby: Node = (load("res://ui/skirmish_setup.tscn") as PackedScene).instantiate()
+	add_child(lobby)
+	await frames(6)
+	var lp: Array = HudTextCheck.lobby_problems(lobby)
+	check("lobby fits 2340x1080 with full texts", lp.is_empty(), lp.slice(0, 6) if not lp.is_empty() else null)
+	await shot("m21_lobby_difficulty")
+	lobby.queue_free()
+	await frames(2)
+	var c2 := lobby_cfg(1)
+	c2["slots"][1]["faction"] = "tpla"
+	var m := await start_match(c2)
+	fast_forward(m, 20 * 200)
+	var sel: Array = []
+	for id in m.runner.sim.ids:
+		var e: SimEntity = m.runner.sim.ents[id]
+		if e.owner == 0 and e.kind == SimEntity.Kind.UNIT and not Content.unit(e.def_id).tags.has("harvester"):
+			sel.append(id)
+	m.ctl.set_selection(sel)
+	m.ctl.group_assign(1)
+	var hq := _first(m, 0, &"eu_hq")
+	if hq:
+		m.cam.jump_to(FX.to_world(hq.pos) + Vector3(4, 0, 3), false)
+	m.hud._refresh()
+	await frames(20)
+	check("groups arrow collapsed with badge", m.hud.groups_btn.is_visible_in_tree() and not m.hud.group_btns[0].is_visible_in_tree())
+	check("X deselect visible", m.hud.deselect_btn.is_visible_in_tree())
+	await _hud_check(m, "M2.1 selection")
+	await shot("m21_hud_groups_x")
+	await _hud_states(m, &"eu")
+	m.queue_free()
+	await frames(3)
+	var c3 := lobby_cfg(1)
+	c3["slots"][0]["faction"] = "tpla"
+	c3["slots"][1]["faction"] = "eu"
+	var m3 := await start_match(c3)
+	fast_forward(m3, 20 * 200)
+	await _hud_states(m3, &"tpla")
+	m3.queue_free()
+	await frames(3)
 
 func _m2_gallery() -> void:
 	# 5. units gallery: every TPLA + EU unit (TPLA salvage tiers 0-3) and TPLA buildings

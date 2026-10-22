@@ -317,7 +317,7 @@ func _layout() -> void:
 	var res: Control = bar.get_node("Res")
 	res.position = Vector2(bar.size.x - res_w - pad, pad)
 	res.size = Vector2(res_w, bh - pad * 2)
-	grid.position = Vector2(res.position.x - grid_w - pad, pad + 2)
+	grid.position = Vector2(res.position.x - grid_w - pad, pad)
 	var sx := minimap.position.x + minimap.size.x + 8
 	var sw := grid.position.x - sx - 8
 	sel_panel.position = Vector2(sx, pad)
@@ -429,7 +429,8 @@ func _refresh() -> void:
 			power_bar.modulate = Color("#ff5a4a") if p.low_power else Color("#6fe3ff")
 			power_lbl.text = tr("HUD_POWER") % [p.power_used, p.power_prod] + (" " + tr("HUD_LOW_POWER") if p.low_power else "") + "  " + tr("HUD_POP") % [p.pop, p.pop_cap]
 		else:
-			power_lbl.text = tr("HUD_NO_POWER_NEEDED") + "\n" + tr("HUD_POP") % [p.pop, p.pop_cap]
+			# one line (M2.1 smaller bar): TPLA shows no power bar, so only the population
+			power_lbl.text = tr("HUD_POP") % [p.pop, p.pop_cap]
 		power_lbl.add_theme_color_override("font_color", Color("#ff7a6a") if p.low_power else UiTheme.TEXT)
 		var next: int = SimPlayer.RANK_XP[p.rank + 1] if p.rank + 1 < SimPlayer.RANK_XP.size() else -1
 		rank_lbl.text = tr("HUD_RANK") % p.rank + ("  XP %d/%d" % [p.xp, next] if next > 0 else "  XP %d" % p.xp)

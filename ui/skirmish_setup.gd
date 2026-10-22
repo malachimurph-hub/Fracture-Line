@@ -7,7 +7,7 @@ extends ScreenBase
 const KIND_ITEMS := ["ai", "closed"]          ## slots 2-4 (slot 1 is always You)
 const DIFFS := ["easy", "medium", "hard"]
 ## column widths (M2.1: 10% smaller UI, difficulty split out of the player column)
-const COLS := {"player": 100, "diff": 100, "faction": 118, "color": 100, "team": 58, "start": 82}
+const COLS := {"player": 84, "diff": 92, "faction": 112, "color": 92, "team": 48, "start": 90}
 const FACTIONS := [["eu", "FACTION_EU", true], ["tpla", "FACTION_TPLA", true], ["us", "FACTION_US", false], ["wa", "FACTION_WA", false]]
 
 var cfg: Dictionary
@@ -47,7 +47,7 @@ func build() -> void:
 	_build_rows()
 	var right := VBoxContainer.new()
 	right.custom_minimum_size = Vector2(172, 0)
-	right.add_theme_constant_override("separation", 6)
+	right.add_theme_constant_override("separation", 4)
 	main.add_child(right)
 	right.add_child(UiTheme.label(tr("MAP_VARNO_CROSSING") + "  (4)", 13, UiTheme.CYAN))
 	preview = Control.new()
@@ -74,13 +74,15 @@ func build() -> void:
 	sw.custom_minimum_size = Vector2(172, 44)
 	sw.toggled.connect(func(on): cfg["options"]["superweapons"] = on)
 	right.add_child(sw)
+	# M2.1: Start sits under the slot rows so the lobby fits 2340x1080 (384 dp tall)
 	var foot := HBoxContainer.new()
-	v.add_child(foot)
+	foot.add_theme_constant_override("separation", 8)
+	left.add_child(foot)
 	err_lbl = UiTheme.label("", 13, Color("#ff8a7a"))
 	err_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	err_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	foot.add_child(err_lbl)
-	start_btn = UiTheme.button(tr("LOBBY_START_GAME"), Vector2(180, 54))
+	start_btn = UiTheme.button(tr("LOBBY_START_GAME"), Vector2(170, 50))
 	start_btn.add_theme_font_size_override("font_size", 17)
 	start_btn.pressed.connect(_start)
 	foot.add_child(start_btn)
