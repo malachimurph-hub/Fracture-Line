@@ -540,14 +540,14 @@ func test_audio() -> void:
 				missing.append("%s/%s" % [afolders[f], ev])
 			elif int(av[1]) == 2:
 				not_ai.append("%s/%s" % [afolders[f], ev])
-	for fac in ["eu", "tpla"]:
+	for fac in ["eu", "tpla", "us"]:
 		for uid in ad.manifest["factions"][fac]["units"]:
 			var ud2: Dictionary = ad.manifest["factions"][fac]["units"][uid]
 			for ev in ud2["events"]:
 				if int(ad.variants(fac, ud2["folder"], ev)[1]) == 2:
 					not_ai.append("%s/%s" % [uid, ev])
 	_check(missing.is_empty(), "every manifest line has a voice %s" % [missing])
-	_check(not_ai.is_empty(), "every EU + TPLA line has a recorded or AI voice (no robotic fallback) %s" % [not_ai.slice(0, 8)])
+	_check(not_ai.is_empty(), "every EU + TPLA + US line has a recorded or AI voice (no robotic fallback) %s" % [not_ai.slice(0, 8)])
 	_check(ad.manifest["factions"]["tpla"]["units"].size() == Content.TPLA_UNIT_ORDER.size(), "manifest has every TPLA unit")
 	var st: Dictionary = ad.voice_status()
 	print("voice status: %d of %d lines recorded, %d AI, %d placeholder, %d missing" % [st["recorded"], st["total"], st["ai"], st["placeholder"], st["missing"]])
@@ -574,8 +574,15 @@ func test_audio() -> void:
 	ad._announcer.stop()
 	_check(ad.announce("victory"), "TPLA announcer plays")
 	_check(String(ad._announcer.stream.resource_path).contains("announcer_tpla"), "TPLA announcer uses its own voice: " + String(ad._announcer.stream.resource_path))
+	ad.announcer_faction = "us"
+	ad._announcer.stop()
+	_check(ad.announce("defeat"), "US announcer plays")
+	_check(String(ad._announcer.stream.resource_path).contains("announcer_us"), "US announcer uses its own voice: " + String(ad._announcer.stream.resource_path))
 	ad.announcer_faction = "eu"
 	_check(ad.unit_voice("tpla", "tpla_rattler", "select"), "TPLA unit voice plays")
+	ad._unit_voice.stop()
+	ad._unit_prio = 0
+	_check(ad.unit_voice("us", "us_jtac", "select"), "US unit voice plays")
 	_check(ad.weapon_sfx("tpla", "rocket", false) == "tpla_rpg" and ad.stream(ad.SFX["tpla_rpg"]) != null, "TPLA weapon SFX mapped and loadable")
 
 func _check(ok: bool, what: String) -> void:

@@ -402,8 +402,154 @@
   "us": {
    "label": "United States",
    "radio": true,
-   "units": {},
-   "later": true
+   "radio_style": "us",
+   "units": {
+    "us_dozer": {
+     "folder": "dozer",
+     "events": [
+      "select",
+      "move",
+      "build",
+      "under_fire",
+      "created"
+     ]
+    },
+    "us_supply_truck": {
+     "folder": "supply_truck",
+     "events": [
+      "select",
+      "move",
+      "harvest",
+      "under_fire",
+      "created"
+     ]
+    },
+    "us_grunt": {
+     "folder": "grunt",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran",
+      "garrison"
+     ]
+    },
+    "us_javelin": {
+     "folder": "javelin",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran",
+      "garrison"
+     ]
+    },
+    "us_jtac": {
+     "folder": "jtac",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran",
+      "garrison"
+     ]
+    },
+    "us_sniper": {
+     "folder": "sniper",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran",
+      "garrison"
+     ]
+    },
+    "us_lynx": {
+     "folder": "lynx",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ]
+    },
+    "us_halberd": {
+     "folder": "halberd",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ]
+    },
+    "us_picket": {
+     "folder": "picket",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ]
+    },
+    "us_longreach": {
+     "folder": "longreach",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ]
+    },
+    "us_harrier": {
+     "folder": "harrier",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ]
+    },
+    "us_wraith": {
+     "folder": "wraith",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ]
+    },
+    "us_thunderlance": {
+     "folder": "thunderlance",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ]
+    }
+   }
   },
   "wa": {
    "label": "Western Alliance",
@@ -416,7 +562,8 @@
   "folder": "announcer",
   "folders": {
    "eu": "announcer",
-   "tpla": "announcer_tpla"
+   "tpla": "announcer_tpla",
+   "us": "announcer_us"
   },
   "radio": false,
   "events": {
@@ -503,6 +650,14 @@
    "tunnel_lost": {
     "priority": 3,
     "cooldown": 10.0
+   },
+   "airfield_full": {
+    "priority": 2,
+    "cooldown": 6.0
+   },
+   "air_support": {
+    "priority": 2,
+    "cooldown": 8.0
    }
   },
   "faction_events": {
@@ -547,6 +702,27 @@
     "salvage_upgrade",
     "trap_detonated",
     "tunnel_lost"
+   ],
+   "us": [
+    "unit_ready",
+    "construction_complete",
+    "building",
+    "base_under_attack",
+    "units_under_attack",
+    "low_power",
+    "insufficient_funds",
+    "cannot_build",
+    "building_captured",
+    "unit_promoted",
+    "general_promoted",
+    "enemy_power_detected",
+    "player_eliminated",
+    "you_eliminated",
+    "victory",
+    "defeat",
+    "battle_start",
+    "airfield_full",
+    "air_support"
    ]
   }
  },

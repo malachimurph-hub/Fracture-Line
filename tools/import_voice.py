@@ -21,6 +21,9 @@ EXTS = (".wav", ".m4a", ".mp3", ".ogg", ".flac", ".aac", ".opus", ".3gp", ".amr"
 RADIO_STYLES = {
     "eu": "highpass=f=320,lowpass=f=3300,acompressor=threshold=-20dB:ratio=5:attack=4:release=80:makeup=4,asoftclip=type=tanh,highpass=f=300,lowpass=f=3500",
     "tpla": "highpass=f=420,lowpass=f=2900,acompressor=threshold=-22dB:ratio=6:attack=3:release=60:makeup=5,asoftclip=type=tanh:threshold=0.6,acrusher=bits=11:mix=0.18:mode=log,highpass=f=380,lowpass=f=3100",
+    # M2.5 US: modern digital tactical radio - wider and cleaner than the EU handset, light squelch grit
+    "us": "highpass=f=260,lowpass=f=3900,acompressor=threshold=-20dB:ratio=4.5:attack=4:release=70:makeup=4,asoftclip=type=tanh:threshold=0.8,highpass=f=240,lowpass=f=4100",
+    "ann_us": "highpass=f=80,acompressor=threshold=-18dB:ratio=2.5:attack=8:release=110:makeup=2,equalizer=f=3000:t=q:w=1.2:g=2",
     "ann_eu": "highpass=f=90,acompressor=threshold=-18dB:ratio=2.5:attack=8:release=120:makeup=2",
     "ann_tpla": "highpass=f=160,lowpass=f=6500,acompressor=threshold=-20dB:ratio=3:attack=6:release=100:makeup=2.5,aecho=0.8:0.5:22:0.12",
 }

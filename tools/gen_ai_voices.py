@@ -74,9 +74,12 @@ def main(argv):
                 print("...", n_new, flush=True)
     ip = os.path.join(OUT, "voice_ai_index.json")
     old = json.load(open(ip)) if os.path.exists(ip) else {"lines": []}
-    keep = [l for l in old["lines"] if l.get("engine", "kokoro") != "kokoro"]
+    mine = {l["file"] for l in log}
+    # keep other engines' lines, and (with --only) other factions' Kokoro lines
+    keep = [l for l in old["lines"] if l["file"] not in mine and (l.get("engine", "kokoro") != "kokoro"
+            or (only and not l["file"].replace("\\", "/").split("/")[2].startswith(only) and "/announcer_" + only + "/" not in l["file"]))]
     with open(ip, "w") as fh:
-        json.dump({"generator": "EU: Kokoro-82M v1.0 (Apache-2.0) via kokoro-onnx (MIT); TPLA: see engine per line", "lines": log + keep}, fh, indent=0)
+        json.dump({"generator": "EU + US: Kokoro-82M v1.0 (Apache-2.0) via kokoro-onnx (MIT); TPLA: see engine per line", "lines": log + keep}, fh, indent=0)
     print(f"AI voices: {len(log)} lines ({n_new} generated now) -> {os.path.relpath(OUT, ROOT)}")
 
 if __name__ == "__main__":
