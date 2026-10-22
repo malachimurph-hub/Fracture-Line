@@ -2,7 +2,7 @@
 """Loudness / energy check for the M2.7 combat intensity pass: compares each unit's combat lines
 (attack, under_fire; announcer alarms) with its calm lines (select, move, created; announcer
 battle_start / unit_ready / construction_complete) in res://audio/voice_ai.
-Per file: integrated loudness (EBU R128 LUFS), active-speech RMS (dBFS), median f0 (pYIN, Hz),
+Per file: integrated loudness (EBU R128 LUFS), active-speech RMS (dBFS), approximate median f0 (YIN on loud frames, Hz),
 spectral centroid (Hz, vocal effort / brightness), speech rate (words/s), and for TPLA the Whisper
 language-ID probabilities (Arabic + Persian vs Russian: accent drift check).
   /workspace/tools/tts/venv_cb/bin/python tools/voice_intensity_metrics_m27.py [--root <voice dir>] [--json out.json]"""
@@ -29,8 +29,9 @@ def feats(p, nwords):
     fr = librosa.feature.rms(y=x, frame_length=512, hop_length=160)[0]
     act = fr > fr.max() * 0.1
     rms = 20 * np.log10(np.sqrt(np.mean(fr[act] ** 2)) + 1e-9)
-    f0, vf, _ = librosa.pyin(x, fmin=60, fmax=450, sr=16000, frame_length=1024, hop_length=160)
-    f0 = np.nanmedian(f0) if np.any(vf) else float("nan")
+    y = librosa.yin(x, fmin=65, fmax=330, sr=16000, frame_length=2048, hop_length=160)   # radio band: pYIN finds no voicing; YIN on loud frames
+    r2 = librosa.feature.rms(y=x, frame_length=2048, hop_length=160)[0][:len(y)]
+    f0 = float(np.median(y[r2 > r2.max() * 0.2]))
     cen = librosa.feature.spectral_centroid(y=x, sr=16000, n_fft=512, hop_length=160)[0]
     cen = float(np.median(cen[act])) if act.any() else float("nan")
     idx = np.where(act)[0]

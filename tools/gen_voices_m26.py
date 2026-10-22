@@ -173,7 +173,11 @@ def main(argv):
     rep = {r["file"]: r for r in (json.load(open(rep_p)) if os.path.exists(rep_p) else [])}
     event = argv[argv.index("--event") + 1] if "--event" in argv else None
     retake = "--retake" in argv     # re-render lines that stayed under the threshold
-    js = [j for j in jobs(only, unit, out) if (event is None or j[3] in event.split(",")) and (force or os.path.relpath(j[7], ROOT) not in rep
+    # M2.7: combat lines re-voiced by tools/gen_voices_intensity_m27.py are not overwritten here
+    ip = os.path.join(ROOT, "tools", "voice_qa_intensity_m27.json")
+    keep = set() if "--include-intensity" in argv or not os.path.exists(ip) else {r["file"] for r in json.load(open(ip))}
+    js = [j for j in jobs(only, unit, out) if os.path.relpath(j[7], ROOT) not in keep]
+    js = [j for j in js if (event is None or j[3] in event.split(",")) and (force or os.path.relpath(j[7], ROOT) not in rep
           or (retake and rep[os.path.relpath(j[7], ROOT)]["qa"] < THR))]
     print("lines to render:", len(js), flush=True)
     import multiprocessing as mp

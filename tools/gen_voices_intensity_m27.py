@@ -32,6 +32,7 @@ ROOT = iv.ROOT
 OUT = os.path.join(ROOT, "audio", "voice_ai")
 REP = os.path.join(ROOT, "tools", "voice_qa_intensity_m27.json")
 PROMPTS = "/workspace/vw/int/prompts"
+DRY = "/workspace/vw/int/dry"
 THR = 0.8
 UNIT_EV = ("attack", "under_fire")
 ANN_EV = ("base_under_attack", "units_under_attack", "enemy_power_detected", "tunnel_lost")
@@ -41,7 +42,7 @@ ACC_LANG = {"de": "de", "fr": "fr", "it": "it", "pl": "pl", "nl": "nl", "sv": "s
 CALM_PEOPLE = {"us_sniper", "us_jtac", "eu_aegis", "tpla_mule", "tpla_blight", "us_thunderlance", "eu_lancer"}
 # (exaggeration, cfg_weight, target words/s, loudness offset LU, extra gravel)
 INTENSITY = {"attack": (1.0, 0.3, 3.0, 3.0, 0.04), "under_fire": (1.2, 0.25, 3.4, 4.0, 0.06),
-             "ann": (0.85, 0.35, 2.9, 3.0, 0.0)}
+             "ann": (1.0, 0.3, 2.9, 3.0, 0.0)}
 COMBAT_FX = "acompressor=threshold=-26dB:ratio=4:attack=2:release=70:makeup=4,asoftclip=type=tanh:threshold=0.7"
 RADIO_CLIP = "volume=3dB,asoftclip=type=atan:threshold=0.75"
 _m = None
@@ -130,7 +131,7 @@ def render(job):
     ann = uid == "announcer"
     ex, cfg, wps_t, dl, erough = INTENSITY["ann" if ann else ev]
     if uid in CALM_PEOPLE:
-        ex, cfg, wps_t, dl = ex - 0.25, cfg + 0.1, wps_t - 0.3, dl - 1.0
+        ex, cfg, wps_t, dl = ex - 0.15, cfg + 0.05, wps_t - 0.3, dl - 1.0
     militia = uid == "tpla_militia"
     if militia:
         import gen_ai_voices_me as gm
@@ -161,6 +162,8 @@ def render(job):
             spd = (s1 - s0) / sr
             wps = nw / max(0.3, spd)
             tempo = float(np.clip(wps_t / wps, 1.0, 1.18)) if nw > 2 else float(np.clip(wps_t / wps, 1.0, 1.08))
+            dry = os.path.join(DRY, rel, f"{ev}_{n}_t{i}.wav")
+            os.makedirs(os.path.dirname(dry), exist_ok=True); sf.write(dry, w, sr)     # pre-FX take, for the pitch check
             w = g.roughen(w, sr, rough + erough, seed) if not ann else w
             pad = np.zeros(int(sr * 0.08), np.float32)
             w0 = os.path.join(td, f"{i}.wav"); sf.write(w0, np.concatenate([pad, w, pad]), sr)
@@ -173,9 +176,17 @@ def render(job):
             dur = process(src, cand, radio, rstyle, pre, RADIO_CLIP if radio else "", lufs)
             sc, heard = g.score(wm, cand, text)
             extra = len(g.words(heard)) - nw
-            bad_len = dur > 1.0 + 0.55 * nw or extra > 3          # babble / long tail
-            eff = sc - (0.3 if bad_len else 0)
-            info = {"exag": round(e, 2), "cfg": round(c, 2), "lang": lg, "tempo": round(tempo, 3), "dur": round(dur, 2), "wps": round(nw / max(0.3, spd / tempo), 2)}
+            bad_len = dur > 0.9 + 0.45 * nw or extra >= 2          # babble / long tail
+            eff = sc - (0.3 if bad_len else 0.2 if extra >= 1 else 0)
+            lid = None
+            if fac == "tpla":     # accent drift guard: Whisper language-ID must not lean Russian
+                x = subprocess.run(["ffmpeg", "-v", "quiet", "-i", cand, "-f", "f32le", "-ac", "1", "-ar", "16000", "-"], capture_output=True).stdout
+                x = np.frombuffer(x, np.float32); z = np.zeros(8000, np.float32)
+                d = dict(wm.detect_language(np.concatenate([z, x, z]))[2])
+                lid = {"en": round(d.get("en", 0), 3), "ar_fa": round(d.get("ar", 0) + d.get("fa", 0), 3), "ru": round(d.get("ru", 0), 3)}
+                if lid["ru"] > max(0.1, lid["ar_fa"]):
+                    eff -= 0.25
+            info = {"exag": round(e, 2), "cfg": round(c, 2), "lang": lg, "tempo": round(tempo, 3), "dur": round(dur, 2), "wps": round(nw / max(0.3, spd / tempo), 2), "lid": lid}
             if eff > best[0]:
                 best = (eff, cand, heard, i, info, sc)
             if eff >= THR:
