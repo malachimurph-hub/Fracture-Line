@@ -26,6 +26,15 @@ static func build(only: Array) -> void:
 	var all := only.is_empty() or "all" in only
 	var jobs := {
 		"us_reactor": func() -> void: _make("reactor", Vector2(3, 3), 2.1, _reactor),
+		"us_command": func() -> void: _make("command", Vector2(4, 4), 1.9, _command),
+		"us_supply_center": func() -> void: _make("supply_center", Vector2(3, 3), 1.4, _supply_center),
+		"us_barracks": func() -> void: _make("barracks", Vector2(3, 3), 1.3, _barracks),
+		"us_garage": func() -> void: _make("garage", Vector2(4, 4), 1.55, _garage),
+		"us_airfield": func() -> void: _make("airfield", Vector2(4, 4), 1.5, _airfield),
+		"us_strategy": func() -> void: _make("strategy", Vector2(3, 3), 2.0, _strategy),
+		"us_patriot": func() -> void: _make("patriot", Vector2(2, 2), 0.95, _patriot, _patriot_turret, Vector3(0, 0.32, 0)),
+		"us_firebase": func() -> void: _make("firebase", Vector2(2, 2), 1.0, _firebase, _firebase_turret, Vector3(0, 0.55, 0)),
+		"us_drop_zone": func() -> void: _make("drop_zone", Vector2(3, 3), 1.7, _drop_zone),
 	}
 	for k in jobs:
 		if all or k in only:
@@ -154,7 +163,10 @@ static func _reactor(g) -> void:
 	g.color(CON_D, Geo.CONCRETE)
 	g.lathe([[1.62, 0.46], [1.68, 0.46]], 20, tt, false, false)
 	g.color("#2a2b2a", Geo.DARK)   # inner shell + deep floor (reads as a hollow tower)
-	g.lathe([[1.25, 0.37], [1.64, 0.435]], 20, tt, true, false)
+	g.cyl(0.39, 0.39, 0.01, 16, Transform3D(Basis.IDENTITY, tc + Vector3(0, 1.25, 0)))
+	for i in 16:   # inner wall as thin slabs (each a closed solid, so the inside faces render)
+		var a0 := TAU * float(i) / 16.0
+		g.box(Vector3.ZERO, Vector3(0.02, 0.4, 0.17), tt * Transform3D(Basis(Vector3.UP, -a0) * Basis(Vector3.FORWARD, -0.08), Vector3(cos(a0) * 0.41, 1.45, sin(a0) * 0.41)))
 	g.color("#ffffff", Geo.TEAM)
 	g.band(0.44, 1.48, 0.04, 0.012, 20, tt)
 	g.color(CON_D, Geo.CONCRETE)
@@ -218,3 +230,506 @@ static func _reactor(g) -> void:
 	g.color("#1d1e1d", Geo.STEEL)
 	g.tube(Vector3(-1.41, Y0 + 0.86, 0.42), Vector3(-1.15, Y0 + 0.38, 0.92), 0.004, 3)
 	g.tube(Vector3(-1.09, Y0 + 0.86, 0.42), Vector3(-0.73, Y0 + 0.38, 0.92), 0.004, 3)
+
+# ------------------------------------------------------------------ shared building bits
+static func _flag(g, p: Vector3, hgt: float) -> void:
+	g.color("#c9ccce", Geo.STEEL)
+	g.tube(p, p + Vector3(0, hgt, 0), 0.01, 4)
+	g.cbox(p + Vector3(0, hgt + 0.01, 0), Vector3(0.03, 0.02, 0.03), 0.006)
+	g.color("#ffffff", Geo.TEAM)
+	g.rbox(p + Vector3(0.14, hgt - 0.08, 0), Vector3(0.26, 0.15, 0.01), Vector3(0, -12, 0))
+
+static func _ac_unit(g, c: Vector3) -> void:
+	g.color("#9a9d96", Geo.STEEL)
+	g.cbox(c + Vector3(0, 0.06, 0), Vector3(0.26, 0.12, 0.2), 0.012)
+	g.fan(c + Vector3(0, 0.12, 0), 0.075, 4, 9.0)
+
+static func _floodlight(g, p: Vector3, hgt: float, yaw: float) -> void:
+	g.color(US_S, Geo.STEEL)
+	g.tube(p, p + Vector3(0, hgt, 0), 0.012, 4)
+	var d := Vector3(sin(deg_to_rad(yaw)), 0, cos(deg_to_rad(yaw)))
+	g.box(p + Vector3(0, hgt, 0), Vector3(0.16, 0.015, 0.015) if absf(d.x) < 0.5 else Vector3(0.015, 0.015, 0.16))
+	g.color("#fff3c4", Geo.LAMP)
+	for k in [-0.05, 0.05]:
+		var o := Vector3(k, 0, 0) if absf(d.x) < 0.5 else Vector3(0, 0, k)
+		g.box(p + Vector3(0, hgt + 0.02, 0) + o + d * 0.012, Vector3(0.04, 0.035, 0.04))
+
+static func _jersey(g, c: Vector3, l: float, yaw: float) -> void:
+	g.color(CON_L, Geo.CONCRETE)
+	var t := Transform3D(Basis(Vector3.UP, deg_to_rad(yaw)), c)
+	g.prism_x([Vector2(-0.05, 0.0), Vector2(0.05, 0.0), Vector2(0.03, 0.04), Vector2(0.015, 0.11), Vector2(-0.015, 0.11), Vector2(-0.03, 0.04)], -l * 0.5, l * 0.5, t)
+
+static func _crates(g, c: Vector3, n: int, seed_i: int) -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed_i
+	var cols := ["#7c6a45", "#6b5a3a", "#5d6650", "#8a7650"]
+	for i in n:
+		var p := c + Vector3((i % 2) * 0.27, 0.0, ((i / 2) % 2) * 0.3) + Vector3(0, (i / 4) * 0.22, 0)
+		g.color(cols[rng.randi() % 4], Geo.WOOD)
+		g.rcbox(p + Vector3(0, 0.11, 0), Vector3(0.24, 0.21, 0.27), 0.015, Vector3(0, rng.randf_range(-8, 8), 0))
+		g.color("#3d3f37", Geo.CANVAS)
+		g.box(p + Vector3(0, 0.11, 0), Vector3(0.25, 0.02, 0.28))
+
+# ================================================================== Command Center (HQ)
+static func _command(g) -> void:
+	var c := Vector3(-0.35, Y0, -0.35)
+	# ground floor with recessed window band and chamfered corners
+	g.color(CON, Geo.CONCRETE)
+	g.cbox(c + Vector3(0, 0.36, 0), Vector3(2.5, 0.72, 2.3), 0.06)
+	g.windows(c + Vector3(-0.35, 0.42, 1.152), 1.5, 0.16, 10)
+	g.windows(c + Vector3(0, 0.42, 0), 1.6, 0.16, 10, Transform3D(Basis(Vector3.UP, PI * 0.5), Vector3(1.252, 0, 0)))
+	g.color(US, Geo.PAINT)
+	g.cbox(c + Vector3(0, 0.74, 0), Vector3(2.58, 0.06, 2.38), 0.02)   # parapet band
+	g.color("#ffffff", Geo.TEAM)
+	g.box(c + Vector3(0.55, 0.6, 1.153), Vector3(0.7, 0.07, 0.01))
+	# upper operations deck: sloped glass
+	g.color(CON_D, Geo.CONCRETE)
+	g.cbox(c + Vector3(-0.2, 0.98, -0.25), Vector3(1.6, 0.44, 1.4), 0.05)
+	g.color("#2a3a46", Geo.GLASS)
+	g.faces([[Vector3(-0.98, 0.78, 0.47), Vector3(0.58, 0.78, 0.47), Vector3(0.58, 1.18, 0.4), Vector3(-0.98, 1.18, 0.4)],
+		[Vector3(-0.98, 0.78, 0.5), Vector3(0.58, 0.78, 0.5), Vector3(0.58, 1.18, 0.43), Vector3(-0.98, 1.18, 0.43)]], Transform3D(Basis.IDENTITY, c))
+	g.color(US_S, Geo.STEEL)
+	for k in 7:
+		g.box(c + Vector3(-0.96 + k * 0.255, 0.98, 0.47), Vector3(0.018, 0.4, 0.04))
+	g.color(US, Geo.PAINT)
+	g.cbox(c + Vector3(-0.2, 1.22, -0.25), Vector3(1.66, 0.05, 1.46), 0.015)
+	# roof: radar on a pedestal, AC units, comms mast, hatch
+	g.color(CON_L, Geo.CONCRETE)
+	g.ccyl(0.18, 0.18, 0.03, 12, Transform3D(Basis.IDENTITY, c + Vector3(-0.6, 1.24, -0.55)))
+	g.dish(c + Vector3(-0.6, 1.52, -0.55), 0.3, 25, 0.9)
+	_ac_unit(g, c + Vector3(0.25, 1.245, -0.6))
+	_ac_unit(g, c + Vector3(0.25, 1.245, -0.25))
+	g.color(US_S, Geo.STEEL)
+	g.hatch(c + Vector3(-0.2, 1.245, 0.15), 0.14)
+	g.lattice(c + Vector3(0.75, 0.77, -0.85), 1.0, 0.07, 5)
+	for y in [1.35, 1.55]:
+		g.box(c + Vector3(0.75, y, -0.85), Vector3(0.22, 0.012, 0.012))
+	_lamp(g, c + Vector3(0.75, 1.8, -0.85))
+	g.color(WHITE, Geo.PAINT)
+	g.dome(0.16, 0.14, 3, 12, Transform3D(Basis.IDENTITY, c + Vector3(-1.0, 0.77, 0.8)))   # satcom radome
+	g.color(US_S, Geo.STEEL)
+	g.rail([c + Vector3(-1.2, 0.77, 1.1), c + Vector3(1.2, 0.77, 1.1), c + Vector3(1.2, 0.77, -1.1)], 0.09, 0.25, 0.005)
+	# entrance canopy with columns and steps
+	g.color(US, Geo.PAINT)
+	g.cbox(c + Vector3(-0.35, 0.5, 1.33), Vector3(0.7, 0.04, 0.36), 0.01)
+	g.color(CON_L, Geo.CONCRETE)
+	for x in [-0.64, -0.06]:
+		g.box(c + Vector3(x, 0.25, 1.46), Vector3(0.04, 0.5, 0.04))
+	for k in 3:
+		g.box(c + Vector3(-0.35, 0.015 + k * 0.03, 1.38 + 0.08 * (2 - k)), Vector3(0.6, 0.03, 0.12 + 0.08 * k))
+	g.color("#3a3c3a", Geo.DARK)
+	g.box(c + Vector3(-0.35, 0.22, 1.153), Vector3(0.34, 0.4, 0.012))
+	# helipad (east) with H and edge lights
+	var hp := Vector3(1.25, Y0, 1.15)
+	g.color("#5a5750", Geo.CONCRETE)
+	g.ccyl(0.62, 0.035, 0.012, 20, Transform3D(Basis.IDENTITY, hp))
+	g.color("#e4e0d6", Geo.PAINT)
+	g.lathe([[0.036, 0.56], [0.04, 0.56]], 20, Transform3D(Basis.IDENTITY, hp), false, true)
+	g.color("#5a5750", Geo.CONCRETE)
+	g.cyl(0.52, 0.52, 0.042, 20, Transform3D(Basis.IDENTITY, hp))
+	g.color("#e4e0d6", Geo.PAINT)
+	for x in [-0.15, 0.15]:
+		g.box(hp + Vector3(x, 0.045, 0), Vector3(0.06, 0.004, 0.42))
+	g.box(hp + Vector3(0, 0.045, 0), Vector3(0.3, 0.004, 0.06))
+	g.color("#ffd27a", Geo.LAMP)
+	for i in 8:
+		var a := TAU * i / 8.0
+		g.box(hp + Vector3(cos(a) * 0.6, 0.05, sin(a) * 0.6), Vector3(0.03, 0.02, 0.03))
+	_flag(g, Vector3(1.65, Y0, -1.6), 1.2)
+	for k in 3:
+		_jersey(g, Vector3(-1.5 + k * 0.42, Y0, 1.7), 0.38, 0)
+	_floodlight(g, Vector3(-1.75, Y0, -1.7), 0.9, 45)
+	g.color(US_D, Geo.PAINT)   # generator skid
+	g.cbox(Vector3(1.55, Y0 + 0.12, -0.6), Vector3(0.3, 0.24, 0.5), 0.02)
+	g.color("#2b2d2c", Geo.DARK)
+	g.vent(Vector3(1.55, Y0 + 0.14, -0.34), 0.2, 0.14, 4)
+	g.color(US_S, Geo.STEEL)
+	g.tube(Vector3(1.6, Y0 + 0.24, -0.75), Vector3(1.6, Y0 + 0.45, -0.75), 0.02, 6)
+
+# ================================================================== Supply Center
+static func _supply_center(g) -> void:
+	var c := Vector3(-0.3, Y0, -0.35)
+	g.color(CON, Geo.CONCRETE)
+	g.cbox(c + Vector3(0, 0.36, 0), Vector3(2.1, 0.72, 1.5), 0.04)
+	# barrel-vault corrugated roof
+	g.color(US, Geo.CORR)
+	var prof: Array = []
+	for i in 9:
+		var a := PI * float(i) / 8.0
+		prof.append(Vector2(cos(a) * 0.78, 0.72 + sin(a) * 0.32))
+	g.prism_x(prof, -1.08, 1.08, Transform3D(Basis.IDENTITY, c))
+	g.color(US_D, Geo.PAINT)
+	for x in [-1.08, 1.08]:
+		g.box(c + Vector3(x, 0.82, 0), Vector3(0.03, 0.2, 1.56))
+	# roof vents / skylights
+	g.color("#9a9d96", Geo.STEEL)
+	for x in [-0.6, 0.0, 0.6]:
+		g.cyl(0.06, 0.05, 0.1, 8, Transform3D(Basis.IDENTITY, c + Vector3(x, 1.02, 0.0)))
+		g.cyl(0.08, 0.0, 0.05, 8, Transform3D(Basis.IDENTITY, c + Vector3(x, 1.12, 0.0)))
+	for x in [-0.75, -0.25, 0.25]:
+		g.rollup(c + Vector3(x, 0.27, 0.752), 0.36, 0.48)
+	g.hazard(c + Vector3(-0.25, 0.56, 0.754), 1.4, 0.04, 14)
+	g.color("#ffffff", Geo.TEAM)
+	g.box(c + Vector3(0.75, 0.55, 0.753), Vector3(0.42, 0.12, 0.01))
+	g.windows(c + Vector3(0.75, 0.35, 0.752), 0.4, 0.12, 3)
+	# loading dock with ramp, bumpers
+	g.color(CON_D, Geo.CONCRETE)
+	g.cbox(c + Vector3(-0.25, 0.07, 0.95), Vector3(1.5, 0.14, 0.4), 0.015)
+	g.prism_x([Vector2(1.15, 0.0), Vector2(1.45, 0.0), Vector2(1.15, 0.14)], -0.25 - 0.2, -0.25 + 0.2, Transform3D(Basis(Vector3.UP, PI * 0.5), c + Vector3(0, 0, 0)))
+	g.color("#1d1c1b", Geo.RUBBER)
+	for x in [-0.75, -0.25, 0.25]:
+		for s in [-0.2, 0.2]:
+			g.box(c + Vector3(x + s, 0.1, 1.155), Vector3(0.04, 0.07, 0.02))
+	# fuel tank on cradles + pallets + forklift-ish pallet jack
+	g.color(WHITE, Geo.PAINT)
+	g.tube(Vector3(1.0, Y0 + 0.2, -1.2), Vector3(1.0, Y0 + 0.2, -0.45), 0.17, 12)
+	g.color(US_S, Geo.STEEL)
+	for z in [-1.05, -0.6]:
+		g.box(Vector3(1.0, Y0 + 0.06, z), Vector3(0.3, 0.12, 0.05))
+	g.color("#d8a531", Geo.PAINT)
+	g.lathe([[0.0, 0.172], [0.04, 0.172]], 12, Transform3D(Basis(Vector3.RIGHT, PI * 0.5), Vector3(1.0, Y0 + 0.2, -0.85)), false, false)
+	_crates(g, Vector3(0.95, Y0, 0.3), 6, 7)
+	_crates(g, Vector3(-1.35, Y0, 0.95), 3, 9)
+	_floodlight(g, Vector3(1.35, Y0, 1.3), 0.85, 200)
+	_flag(g, Vector3(-1.35, Y0, -1.3), 0.9)
+
+# ================================================================== Barracks
+static func _barracks(g) -> void:
+	var c := Vector3(-0.25, Y0, -0.35)
+	g.color(CON, Geo.CONCRETE)
+	g.cbox(c + Vector3(0, 0.3, 0), Vector3(2.2, 0.6, 1.2), 0.04)
+	g.color(US_D, Geo.CORR)
+	g.prism_x([Vector2(-0.66, 0.6), Vector2(0.66, 0.6), Vector2(0.0, 0.95)], -1.15, 1.15, Transform3D(Basis.IDENTITY, c))
+	g.color(US_S, Geo.STEEL)
+	g.box(c + Vector3(0, 0.955, 0), Vector3(2.32, 0.03, 0.05))   # ridge cap
+	for x in [-0.7, 0.0, 0.7]:   # ridge vents
+		g.cbox(c + Vector3(x, 0.99, 0), Vector3(0.16, 0.06, 0.12), 0.01)
+	g.windows(c + Vector3(-0.6, 0.38, 0.602), 0.7, 0.16, 4)
+	g.windows(c + Vector3(0.65, 0.38, 0.602), 0.6, 0.16, 3)
+	g.windows(c + Vector3(0, 0.38, -0.602), 1.8, 0.16, 9, Transform3D(Basis(Vector3.UP, PI), Vector3.ZERO))
+	# entrance porch
+	g.color(US, Geo.PAINT)
+	g.prism_x([Vector2(0.6, 0.5), Vector2(0.95, 0.42), Vector2(0.95, 0.45), Vector2(0.6, 0.55)], -0.3, 0.3, Transform3D(Basis.IDENTITY, c + Vector3(0.05, 0, 0)))
+	g.color(CON_L, Geo.CONCRETE)
+	for x in [-0.22, 0.32]:
+		g.box(c + Vector3(x, 0.22, 0.92), Vector3(0.035, 0.44, 0.035))
+	g.color("#3a3c3a", Geo.DARK)
+	g.box(c + Vector3(0.05, 0.22, 0.603), Vector3(0.3, 0.42, 0.012))
+	g.color("#ffffff", Geo.TEAM)
+	g.box(c + Vector3(0.05, 0.5, 0.605), Vector3(0.8, 0.05, 0.01))
+	# sandbag fighting position + obstacle course + water tank
+	for k in 5:
+		var a := PI * (0.15 + 0.7 * k / 4.0)
+		g.sandbag(Vector3(1.05 + cos(a) * 0.3, Y0, 0.85 + sin(a) * 0.3), 0.22, rad_to_deg(-a + PI * 0.5))
+		g.sandbag(Vector3(1.05 + cos(a) * 0.3, Y0 + 0.07, 0.85 + sin(a) * 0.3), 0.2, rad_to_deg(-a + PI * 0.5))
+	g.color("#6b5236", Geo.WOOD)
+	for x in [-1.25, -0.85, -0.45]:
+		g.tube(Vector3(x, Y0, 1.1), Vector3(x, Y0 + 0.45, 1.1), 0.02, 4)
+	g.tube(Vector3(-1.25, Y0 + 0.45, 1.1), Vector3(-0.45, Y0 + 0.45, 1.1), 0.018, 4)
+	g.tube(Vector3(-1.25, Y0 + 0.25, 1.1), Vector3(-0.85, Y0 + 0.25, 1.1), 0.014, 4)
+	g.color("#3d3f37", Geo.CANVAS)   # cargo net
+	g.rbox(Vector3(-0.65, Y0 + 0.22, 1.18), Vector3(0.38, 0.4, 0.01), Vector3(-18, 0, 0))
+	g.color(US_S, Geo.STEEL)
+	for p in [Vector3(1.0, Y0, -1.15), Vector3(1.3, Y0, -1.15), Vector3(1.0, Y0, -0.85), Vector3(1.3, Y0, -0.85)]:
+		g.tube(p, p + Vector3(0, 0.55, 0), 0.012, 4)
+	g.color(US_D, Geo.PAINT)
+	g.ccyl(0.22, 0.32, 0.03, 12, Transform3D(Basis.IDENTITY, Vector3(1.15, Y0 + 0.55, -1.0)))
+	g.cyl(0.22, 0.0, 0.08, 12, Transform3D(Basis.IDENTITY, Vector3(1.15, Y0 + 0.87, -1.0)))
+	_ac_unit(g, c + Vector3(-1.32, 0.0, 0.0))
+	_flag(g, Vector3(1.35, Y0, -0.4), 1.15)
+	V4._antenna(g, c + Vector3(-0.9, 0.85, -0.3), 0.45)
+
+# ================================================================== Garage (war factory)
+static func _garage(g) -> void:
+	var c := Vector3(0.0, Y0, -0.55)
+	g.color(CON, Geo.CONCRETE)
+	g.cbox(c + Vector3(0, 0.5, 0), Vector3(3.4, 1.0, 2.3), 0.05)
+	# saw-tooth roof with north glazing
+	for k in 4:
+		var z0 := -1.12 + k * 0.56
+		g.color(US, Geo.CORR)
+		g.prism_x([Vector2(z0, 1.0), Vector2(z0 + 0.56, 1.0), Vector2(z0, 1.28)], -1.68, 1.68, Transform3D(Basis.IDENTITY, c))
+		g.color("#2a3a46", Geo.GLASS)
+		g.box(c + Vector3(0, 1.14, z0 - 0.006), Vector3(3.2, 0.22, 0.01))
+	g.color(US_S, Geo.STEEL)
+	for k in 4:
+		g.box(c + Vector3(0, 1.29, -1.12 + k * 0.56), Vector3(3.38, 0.025, 0.03))
+	for x in [-1.1, 0.0, 1.1]:
+		g.rollup(c + Vector3(x, 0.4, 1.152), 0.86, 0.76)
+		g.hazard(c + Vector3(x, 0.84, 1.155), 0.9, 0.05, 9)
+		g.color("#ffd27a", Geo.LAMP)
+		g.box(c + Vector3(x, 0.92, 1.17), Vector3(0.1, 0.03, 0.03))
+	g.color(CON_D, Geo.CONCRETE)
+	for x in [-1.65, -0.55, 0.55, 1.65]:   # pilasters between bays
+		g.cbox(c + Vector3(x, 0.5, 1.17), Vector3(0.12, 1.0, 0.08), 0.015)
+	g.color("#ffffff", Geo.TEAM)
+	g.box(c + Vector3(0, 0.96, 1.156), Vector3(2.0, 0.06, 0.01))
+	# side annex with fans and stacks
+	g.color(CON_D, Geo.CONCRETE)
+	g.cbox(c + Vector3(-1.2, 1.12, -0.7), Vector3(0.7, 0.24, 0.6), 0.02)
+	_ac_unit(g, c + Vector3(-1.35, 1.24, -0.7))
+	_ac_unit(g, c + Vector3(-1.02, 1.24, -0.7))
+	g.color(US_S, Geo.STEEL)
+	for x in [1.2, 1.45]:
+		g.tube(c + Vector3(x, 1.0, -0.85), c + Vector3(x, 1.6, -0.85), 0.05, 8)
+		g.tube(c + Vector3(x, 1.56, -0.85), c + Vector3(x, 1.62, -0.85), 0.06, 8)
+	g.ladder(c + Vector3(1.71, 0.0, -0.3), 1.0, Vector3.BACK)
+	# gantry crane over the yard
+	var y := Vector3(0, Y0, 1.45)
+	g.color("#d8a531", Geo.PAINT)
+	for x in [-1.75, 1.75]:
+		g.cbox(y + Vector3(x, 0.55, 0), Vector3(0.08, 1.1, 0.08), 0.01)
+		g.cbox(y + Vector3(x, 0.03, 0), Vector3(0.12, 0.06, 0.4), 0.01)
+	g.cbox(y + Vector3(0, 1.1, 0), Vector3(3.6, 0.09, 0.12), 0.012)
+	g.color(US_S, Geo.STEEL)
+	g.cbox(y + Vector3(0.45, 1.02, 0), Vector3(0.22, 0.1, 0.18), 0.012)
+	g.tube(y + Vector3(0.45, 0.98, 0), y + Vector3(0.45, 0.55, 0), 0.006, 3)
+	g.cbox(y + Vector3(0.45, 0.53, 0), Vector3(0.06, 0.04, 0.06), 0.008)
+	# fuel pumps + parts
+	g.color(US, Geo.PAINT)
+	for x in [-1.5, -1.25]:
+		g.cbox(Vector3(x, Y0 + 0.12, 1.85), Vector3(0.14, 0.24, 0.1), 0.012)
+	_crates(g, Vector3(1.3, Y0, -1.75), 2, 3)
+	g.color("#1d1c1b", Geo.RUBBER)   # tyre stack
+	for k in 3:
+		g.cyl(0.1, 0.1, 0.06, 10, Transform3D(Basis.IDENTITY, Vector3(-1.65, Y0 + k * 0.06, -1.75)))
+
+# ================================================================== Airfield
+static func _airfield(g) -> void:
+	# apron in concrete panels (parking stands stay clear: AirSys.parking_pos 3 x 2)
+	g.color("#6a665e", Geo.CONCRETE)
+	g.box(Vector3(0, Y0 + 0.01, 0), Vector3(3.9, 0.02, 3.9))
+	g.color("#55524b", Geo.CONCRETE)
+	for k in range(1, 6):
+		g.box(Vector3(-1.95 + k * 0.65, Y0 + 0.021, 0), Vector3(0.012, 0.003, 3.86))
+		g.box(Vector3(0, Y0 + 0.021, -1.95 + k * 0.65), Vector3(3.86, 0.003, 0.012))
+	for r in 2:
+		for cc in 3:
+			var p := Vector3(-1.333 + cc * 1.333, Y0 + 0.024, -1.0 + r * 2.0)
+			g.color("#e4e0d6", Geo.PAINT)
+			g.box(p + Vector3(-0.45, 0, 0), Vector3(0.035, 0.004, 1.4))
+			g.box(p + Vector3(0.45, 0, 0), Vector3(0.035, 0.004, 1.4))
+			g.box(p + Vector3(0, 0, -0.7), Vector3(0.9, 0.004, 0.035))
+			g.color("#d8a531", Geo.PAINT)
+			g.box(p + Vector3(0, 0, 0.05), Vector3(0.03, 0.004, 1.1))   # lead-in line
+			g.cyl(0.08, 0.08, 0.004, 10, Transform3D(Basis.IDENTITY, p + Vector3(0, 0, -0.35)))
+			g.color("#ffffff", Geo.TEAM)
+			g.box(p + Vector3(0, 0, 0.62), Vector3(0.3, 0.004, 0.06))
+	g.color("#d8a531", Geo.PAINT)
+	g.box(Vector3(0, Y0 + 0.024, 0.0), Vector3(3.8, 0.004, 0.06))
+	g.color("#ffd27a", Geo.LAMP)
+	for i in 8:
+		for z in [1.92, -1.92]:
+			g.cbox(Vector3(-1.85 + i * 0.53, Y0 + 0.035, z), Vector3(0.035, 0.03, 0.035), 0.008)
+	g.color("#4fa0ff", Geo.LAMP)
+	for i in 6:
+		g.box(Vector3(-1.92, Y0 + 0.035, -1.6 + i * 0.64), Vector3(0.03, 0.025, 0.03))
+	# blast walls (chamfered) along the west edge
+	g.color(CON_L, Geo.CONCRETE)
+	for z in [-1.0, 1.0]:
+		g.prism_x([Vector2(-0.6, 0.0), Vector2(0.6, 0.0), Vector2(0.55, 0.42), Vector2(-0.55, 0.42)], -0.05, 0.05, Transform3D(Basis.IDENTITY, Vector3(-1.9, Y0, z)))
+	# control tower (NE corner) with cab, radar and antenna
+	var tc := Vector3(1.72, Y0, 1.72)
+	g.color(CON, Geo.CONCRETE)
+	g.cbox(tc + Vector3(0, 0.5, 0), Vector3(0.32, 1.0, 0.32), 0.03)
+	g.color(US_S, Geo.STEEL)
+	g.ladder(tc + Vector3(-0.17, 0.0, 0.0), 1.0, Vector3.BACK)
+	g.color(US, Geo.PAINT)
+	g.cbox(tc + Vector3(0, 1.02, 0), Vector3(0.5, 0.05, 0.5), 0.012)
+	g.color("#2a3a46", Geo.GLASS)
+	g.plan_loft([Vector2(-0.22, -0.22), Vector2(0.22, -0.22), Vector2(0.22, 0.22), Vector2(-0.22, 0.22)], 1.045, 1.22, Vector2(1.12, 1.12), Vector2.ZERO, Transform3D(Basis.IDENTITY, tc))
+	g.color(US, Geo.PAINT)
+	g.cbox(tc + Vector3(0, 1.24, 0), Vector3(0.56, 0.05, 0.56), 0.015)
+	g.color("#ffffff", Geo.TEAM)
+	g.box(tc + Vector3(0, 0.82, -0.163), Vector3(0.22, 0.07, 0.01))
+	g.color(US_S, Geo.STEEL)
+	g.tube(tc + Vector3(0, 1.26, 0), tc + Vector3(0, 1.34, 0), 0.02, 6)
+	g.dish(tc + Vector3(0, 1.36, 0), 0.16, 10, 1.6, "#cfd2cc")
+	V4._antenna(g, tc + Vector3(0.2, 1.26, 0.2), 0.35)
+	_lamp(g, tc + Vector3(-0.2, 1.3, -0.2))
+	# fuel bowser + tug parked off the stands
+	g.color(US_D, Geo.PAINT)
+	g.cbox(Vector3(1.75, Y0 + 0.12, -0.05), Vector3(0.24, 0.16, 0.5), 0.02)
+	g.color(WHITE, Geo.PAINT)
+	g.tube(Vector3(1.75, Y0 + 0.24, -0.25), Vector3(1.75, Y0 + 0.24, 0.12), 0.09, 10)
+	g.color("#1d1c1b", Geo.RUBBER)
+	for z in [-0.22, 0.14]:
+		for s in [-0.13, 0.13]:
+			g.cyl(0.05, 0.05, 0.04, 8, Transform3D(Basis(Vector3.FORWARD, PI * 0.5), Vector3(1.75 + s - 0.02, Y0 + 0.05, z)))
+	g.color("#ff8a2a", Geo.CANVAS)   # windsock
+	g.color(US_S, Geo.STEEL)
+	g.tube(Vector3(-1.82, Y0, -1.82), Vector3(-1.82, Y0 + 0.62, -1.82), 0.01, 4)
+	g.color("#ff8a2a", Geo.CANVAS)
+	g.tube(Vector3(-1.82, Y0 + 0.6, -1.82), Vector3(-1.62, Y0 + 0.56, -1.8), 0.04, 6, 0.02)
+
+# ================================================================== Strategy Center
+static func _strategy(g) -> void:
+	g.color(CON, Geo.CONCRETE)
+	g.plan_loft([Vector2(-1.2, -1.0), Vector2(1.2, -1.0), Vector2(1.3, 0.6), Vector2(0.8, 1.1), Vector2(-0.8, 1.1), Vector2(-1.3, 0.6)], Y0, Y0 + 0.7, Vector2(0.84, 0.84))
+	g.color(CON_D, Geo.CONCRETE)
+	g.plan_loft([Vector2(-1.22, -1.02), Vector2(1.22, -1.02), Vector2(1.32, 0.61), Vector2(0.81, 1.12), Vector2(-0.81, 1.12), Vector2(-1.32, 0.61)], Y0, Y0 + 0.08, Vector2(1, 1))
+	g.color(US_D, Geo.PAINT)
+	g.cbox(Vector3(0, Y0 + 0.88, -0.05), Vector3(1.2, 0.36, 0.95), 0.04)
+	g.windows(Vector3(0, Y0 + 0.9, 0.428), 1.0, 0.12, 8)
+	g.color(US, Geo.PAINT)
+	g.cbox(Vector3(0, Y0 + 1.08, -0.05), Vector3(1.28, 0.04, 1.03), 0.012)
+	g.color("#ffffff", Geo.TEAM)
+	g.box(Vector3(0, Y0 + 0.45, 0.93), Vector3(0.9, 0.08, 0.01))
+	g.color("#2a3a46", Geo.GLASS)
+	g.rbox(Vector3(0, Y0 + 0.45, 0.88), Vector3(1.2, 0.1, 0.01), Vector3(-17, 0, 0))
+	# big slow-turning satellite dish on a drum mount
+	g.color(CON_L, Geo.CONCRETE)
+	g.ccyl(0.22, 0.32, 0.03, 14, Transform3D(Basis.IDENTITY, Vector3(-0.72, Y0 + 0.7, -0.55)))
+	g.dish(Vector3(-0.72, Y0 + 1.32, -0.55), 0.5, 35, 0.35)
+	# antenna farm
+	g.color(US_S, Geo.STEEL)
+	g.lattice(Vector3(0.8, Y0 + 0.7, -0.5), 1.15, 0.08, 6)
+	for y in [1.3, 1.55, 1.75]:
+		g.box(Vector3(0.8, Y0 + y, -0.5), Vector3(0.26, 0.012, 0.012))
+	_lamp(g, Vector3(0.8, Y0 + 1.88, -0.5))
+	for p in [Vector3(0.3, Y0 + 1.1, -0.35), Vector3(-0.3, Y0 + 1.1, -0.35)]:
+		V4._antenna(g, p, 0.42)
+	g.color(WHITE, Geo.PAINT)
+	g.dome(0.14, 0.12, 3, 12, Transform3D(Basis.IDENTITY, Vector3(0.35, Y0 + 1.1, 0.2)))
+	g.color(US_S, Geo.STEEL)
+	g.rail([Vector3(-0.6, Y0 + 1.1, 0.46), Vector3(0.6, Y0 + 1.1, 0.46)], 0.08, 0.2, 0.005)
+	g.color("#3a3c3a", Geo.DARK)
+	g.box(Vector3(0.0, Y0 + 0.25, 1.06), Vector3(0.3, 0.34, 0.02))
+	_floodlight(g, Vector3(1.25, Y0, 0.95), 0.8, 210)
+
+# ================================================================== Bulwark SAM battery
+static func _patriot(g) -> void:
+	g.color(CON_L, Geo.CONCRETE)   # chamfered revetment walls
+	for a in 6:
+		var ang := TAU * (a + 0.5) / 6.0
+		if a == 1:
+			continue
+		g.prism_x([Vector2(-0.09, 0.0), Vector2(0.09, 0.0), Vector2(0.05, 0.2), Vector2(-0.05, 0.2)], -0.28, 0.28, Transform3D(Basis(Vector3.UP, -ang + PI * 0.5), Vector3(cos(ang) * 0.84, Y0, sin(ang) * 0.84)))
+	g.color(US_D, Geo.PAINT)
+	g.cbox(Vector3(0, Y0 + 0.1, 0), Vector3(0.66, 0.2, 0.66), 0.03)
+	g.color(US_S, Geo.STEEL)
+	g.grille(Vector3(0, Y0 + 0.2, 0.0), 0.5, 0.5, 8)
+	# phased-array radar trailer
+	g.color(US, Geo.PAINT)
+	g.cbox(Vector3(-0.55, Y0 + 0.18, -0.55), Vector3(0.36, 0.2, 0.3), 0.02)
+	g.color("#2f3330", Geo.DARK)
+	g.rbox(Vector3(-0.6, Y0 + 0.4, -0.6), Vector3(0.34, 0.3, 0.04), Vector3(-25, 45, 0))
+	g.color("#53584f", Geo.STEEL)
+	g.rbox(Vector3(-0.588, Y0 + 0.4, -0.588), Vector3(0.28, 0.24, 0.02), Vector3(-25, 45, 0))
+	g.color("#1d1c1b", Geo.RUBBER)
+	for s in [-0.12, 0.12]:
+		g.cyl(0.06, 0.06, 0.04, 8, Transform3D(Basis(Vector3.FORWARD, PI * 0.5), Vector3(-0.55 + s, Y0 + 0.06, -0.42)))
+	# generator
+	g.color(US_D, Geo.PAINT)
+	g.cbox(Vector3(0.6, Y0 + 0.1, -0.55), Vector3(0.24, 0.18, 0.3), 0.02)
+	g.color(US_S, Geo.STEEL)
+	g.tube(Vector3(0.66, Y0 + 0.19, -0.62), Vector3(0.66, Y0 + 0.36, -0.62), 0.015, 6)
+	g.color("#1d1e1d", Geo.STEEL)
+	g.tube(Vector3(0.48, Y0 + 0.1, -0.5), Vector3(0.2, Y0 + 0.03, -0.2), 0.008, 3)
+
+static func _patriot_turret(g) -> void:
+	g.color(US_S, Geo.STEEL)
+	g.ccyl(0.25, 0.06, 0.015, 14, Transform3D.IDENTITY)
+	g.color(US_D, Geo.PAINT)
+	for s in [-0.3, 0.3]:   # elevating frame arms
+		g.rcbox(Vector3(s, 0.14, 0.0), Vector3(0.04, 0.2, 0.3), 0.01, Vector3(35, 0, 0))
+	g.color(US, Geo.PAINT)
+	for k in 4:   # four canisters in a 2 x 2 box, raised 35 degrees
+		var s := -0.13 + (k % 2) * 0.26
+		var y := 0.3 + (k / 2) * 0.13
+		g.rcbox(Vector3(s, y, -0.04 + (k / 2) * -0.08), Vector3(0.24, 0.12, 0.82), 0.02, Vector3(35, 0, 0))
+	g.color("#1d1f1e", Geo.DARK)
+	for k in 4:
+		var s2 := -0.13 + (k % 2) * 0.26
+		var y2 := 0.3 + (k / 2) * 0.13
+		g.rbox(Vector3(s2, y2 + 0.24, 0.3 + (k / 2) * -0.08), Vector3(0.2, 0.09, 0.02), Vector3(35, 0, 0))
+	g.color("#ffffff", Geo.TEAM)
+	g.rbox(Vector3(0, 0.22, -0.15), Vector3(0.52, 0.04, 0.3), Vector3(35, 0, 0))
+
+# ================================================================== Fire Base
+static func _firebase(g) -> void:
+	g.color(CON, Geo.CONCRETE)
+	g.lathe([[0.0, 0.95], [0.06, 0.95], [0.42, 0.82], [0.5, 0.76]], 16, Transform3D(Basis.IDENTITY, Vector3(0, Y0, 0)))
+	g.color("#2b2d2c", Geo.DARK)
+	for a in 6:   # firing slits
+		var ang := TAU * a / 6.0 + 0.3
+		g.box(Vector3.ZERO, Vector3(0.05, 0.06, 0.22), Transform3D(Basis(Vector3.UP, -ang), Vector3(cos(ang) * 0.86, Y0 + 0.3, sin(ang) * 0.86)))
+	g.color("#ffffff", Geo.TEAM)
+	g.band(0.77, Y0 + 0.44, 0.03, 0.01, 16, Transform3D.IDENTITY)
+	g.color(US_S, Geo.STEEL)
+	g.rail_ring(0.7, Y0 + 0.5, 12, 0.08)
+	for a in 4:
+		var ang2 := TAU * a / 4.0 + 0.78
+		g.sandbag(Vector3(cos(ang2) * 1.0, Y0, sin(ang2) * 1.0), 0.32, rad_to_deg(-ang2 + PI * 0.5))
+	_crates(g, Vector3(0.62, Y0, 0.62), 1, 4)
+	g.color(US_D, Geo.PAINT)
+	g.cbox(Vector3(-0.72, Y0 + 0.08, 0.62), Vector3(0.26, 0.16, 0.14), 0.015)   # ammo boxes
+
+static func _firebase_turret(g) -> void:
+	g.color(US_D, Geo.PAINT)
+	g.lathe([[0.0, 0.42], [0.2, 0.4], [0.26, 0.34]], 14, Transform3D.IDENTITY)
+	g.color(US, Geo.PAINT)
+	g.cbox(Vector3(0, 0.36, 0.05), Vector3(0.44, 0.22, 0.48), 0.04)   # gun house
+	g.color(US_S, Geo.STEEL)
+	g.hatch(Vector3(-0.1, 0.47, -0.08), 0.12)
+	g.color(US, Geo.PAINT)
+	g.tube(Vector3(0, 0.36, 0.25), Vector3(0, 0.42, 1.15), 0.05, 10, 0.042)
+	g.color(US_D, Geo.PAINT)
+	g.tube(Vector3(0, 0.38, 0.55), Vector3(0, 0.385, 0.68), 0.06, 10)
+	g.color(US_S, Geo.STEEL)
+	g.cbox(Vector3(0, 0.425, 1.17), Vector3(0.12, 0.09, 0.12), 0.012)
+	for s in [-0.08, 0.08]:
+		g.tube(Vector3(s, 0.33, 0.3), Vector3(s, 0.35, 0.6), 0.018, 6)
+	g.color("#ffffff", Geo.TEAM)
+	g.box(Vector3(0.223, 0.36, 0.05), Vector3(0.01, 0.06, 0.3))
+	g.box(Vector3(-0.223, 0.36, 0.05), Vector3(0.01, 0.06, 0.3))
+
+# ================================================================== Supply Drop Zone
+static func _drop_zone(g) -> void:
+	g.color("#6a665e", Geo.CONCRETE)
+	g.box(Vector3(0, Y0 + 0.01, 0), Vector3(2.8, 0.02, 2.8))
+	g.color("#d8a531", Geo.PAINT)
+	for s in [-1.0, 1.0]:
+		g.box(Vector3(s * 1.3, Y0 + 0.022, 0), Vector3(0.12, 0.004, 2.7))
+		g.box(Vector3(0, Y0 + 0.022, s * 1.3), Vector3(2.7, 0.004, 0.12))
+	g.color("#e4e0d6", Geo.PAINT)
+	g.rbox(Vector3(0, Y0 + 0.024, 0), Vector3(1.4, 0.004, 0.12), Vector3(0, 45, 0))
+	g.rbox(Vector3(0, Y0 + 0.024, 0), Vector3(1.4, 0.004, 0.12), Vector3(0, -45, 0))
+	g.color("#ffffff", Geo.TEAM)
+	g.lathe([[0.022, 0.55], [0.026, 0.55]], 20, Transform3D(Basis.IDENTITY, Vector3(0, Y0, 0)), false, true)
+	g.color("#6a665e", Geo.CONCRETE)
+	g.cyl(0.48, 0.48, 0.028, 20, Transform3D(Basis.IDENTITY, Vector3(0, Y0, 0)))
+	# beacon lattice mast with strobe
+	g.color(US_S, Geo.STEEL)
+	g.lattice(Vector3(1.15, Y0, -1.15), 1.5, 0.09, 6)
+	g.pulse_color("#ffb02a", 1.0)
+	g.cbox(Vector3(1.15, Y0 + 1.55, -1.15), Vector3(0.07, 0.07, 0.07), 0.015)
+	g.end_pulse()
+	g.color("#ffffff", Geo.TEAM)
+	g.box(Vector3(1.15, Y0 + 1.3, -1.15), Vector3(0.1, 0.2, 0.012))
+	# dropped pallets with parachutes and straps
+	var cols := ["#7c6a45", "#5d6650", "#6b5a3a"]
+	for i in 3:
+		var p := Vector3(-0.75 + i * 0.5, Y0, 0.7 - (i % 2) * 0.32)
+		g.color("#5a4630", Geo.WOOD)
+		g.cbox(p + Vector3(0, 0.025, 0), Vector3(0.4, 0.05, 0.4), 0.008)
+		g.color(cols[i], Geo.WOOD)
+		g.cbox(p + Vector3(0, 0.2, 0), Vector3(0.34, 0.3, 0.34), 0.02)
+		g.color("#2e2f2b", Geo.CANVAS)
+		g.box(p + Vector3(0, 0.2, 0), Vector3(0.35, 0.3, 0.03))
+		g.box(p + Vector3(0, 0.2, 0), Vector3(0.03, 0.3, 0.35))
+		g.color("#d9d9d4", Geo.CANVAS)
+		g.rbox(p + Vector3(0.05, 0.02, 0.32), Vector3(0.45, 0.025, 0.26), Vector3(4, 20 * i + 10, 3))
+	# control hut + smoke pot + floodlight
+	g.color(CON, Geo.CONCRETE)
+	g.cbox(Vector3(-1.0, Y0 + 0.22, -1.0), Vector3(0.6, 0.44, 0.5), 0.03)
+	g.color(US, Geo.CORR)
+	g.cbox(Vector3(-1.0, Y0 + 0.46, -1.0), Vector3(0.66, 0.04, 0.56), 0.01)
+	g.windows(Vector3(-1.0, Y0 + 0.28, -0.748), 0.4, 0.1, 2)
+	V4._antenna(g, Vector3(-1.2, Y0 + 0.48, -1.15), 0.5)
+	_ac_unit(g, Vector3(-0.85, Y0 + 0.48, -1.05))
+	g.color("#3a3c3a", Geo.STEEL)
+	g.ccyl(0.06, 0.1, 0.01, 8, Transform3D(Basis.IDENTITY, Vector3(0.9, Y0, 1.0)))
+	g.color("#ff6a2a", Geo.LAMP)
+	g.cyl(0.04, 0.04, 0.02, 8, Transform3D(Basis.IDENTITY, Vector3(0.9, Y0 + 0.1, 1.0)))
+	_floodlight(g, Vector3(-1.3, Y0, 1.25), 0.9, 135)

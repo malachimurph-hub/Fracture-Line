@@ -10,7 +10,7 @@ extends SceneTree
 ## Mobile cost: zero (same vertex format and count).
 const SKIP_CLS := [2, 5, 7, 8, 15, 18, 19]
 const STRENGTH := 0.75
-const AO_MIN := 0.32
+const AO_MIN := 0.42
 var dirs: Array = []
 
 func _initialize() -> void:
@@ -115,22 +115,40 @@ func _bake_scene(path: String) -> bool:
 		var verts: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
 		var nrms: PackedVector3Array = arr[Mesh.ARRAY_NORMAL]
 		var cols: PackedColorArray = arr[Mesh.ARRAY_COLOR]
+		# sample each triangle corner pulled 35% toward the triangle centre (big flat faces
+		# would otherwise inherit full corner darkness across the whole face), average per vertex
+		var idx: PackedInt32Array = arr[Mesh.ARRAY_INDEX] if arr[Mesh.ARRAY_INDEX] != null else PackedInt32Array(range(verts.size()))
+		var acc := PackedFloat32Array()
+		acc.resize(verts.size())
+		var cnt := PackedInt32Array()
+		cnt.resize(verts.size())
 		var cache := {}
-		for i in verts.size():
-			var c := cols[i]
-			var cls := int(c.a * 20.0 + 0.5)
+		for ti in idx.size() / 3:
+			var i0 := idx[ti * 3]
+			var cls := int(cols[i0].a * 20.0 + 0.5)
 			if cls in SKIP_CLS:
 				continue
-			var p: Vector3 = xf2 * verts[i]
-			var nn: Vector3 = (xf2.basis * nrms[i]).normalized()
-			var key := Vector3i((p * 500.0).round()) * 1000 + Vector3i((nn * 50.0).round())
-			var ao: float
-			if cache.has(key):
-				ao = cache[key]
-			else:
-				ao = _ao(space, q, p, nn, reach)
-				cache[key] = ao
-			cols[i] = Color(c.r * ao, c.g * ao, c.b * ao, c.a)
+			var ctr: Vector3 = (verts[i0] + verts[idx[ti * 3 + 1]] + verts[idx[ti * 3 + 2]]) / 3.0
+			for k in 3:
+				var vi := idx[ti * 3 + k]
+				var pl: Vector3 = verts[vi].lerp(ctr, 0.35)
+				var p: Vector3 = xf2 * pl
+				var nn: Vector3 = (xf2.basis * nrms[vi]).normalized()
+				var key := Vector3i((p * 400.0).round()) * 1000 + Vector3i((nn * 50.0).round())
+				var ao: float
+				if cache.has(key):
+					ao = cache[key]
+				else:
+					ao = _ao(space, q, p, nn, reach)
+					cache[key] = ao
+				acc[vi] += ao
+				cnt[vi] += 1
+		for i in verts.size():
+			if cnt[i] == 0:
+				continue
+			var ao2 := acc[i] / float(cnt[i])
+			var c := cols[i]
+			cols[i] = Color(c.r * ao2, c.g * ao2, c.b * ao2, c.a)
 		arr[Mesh.ARRAY_COLOR] = cols
 		tris += (arr[Mesh.ARRAY_INDEX] as PackedInt32Array).size() / 3 if arr[Mesh.ARRAY_INDEX] != null else verts.size() / 3
 		mi.mesh = _rebuild(arr, m.surface_get_material(0), m.get_surface_count() > 0 and _had_lods(m))
