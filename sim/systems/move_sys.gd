@@ -34,7 +34,9 @@ static func run(w: SimWorld) -> void:
 		if not u.alive or u.kind != SimEntity.Kind.UNIT or u.res_id < 0:
 			continue
 		u.moving = false
-		if u.goal != NONE and not u.path_pending:
+		if u.goal == NONE:
+			u.spd = 0
+		elif not u.path_pending:
 			_follow(w, u)
 	_separate(w)
 
@@ -62,18 +64,47 @@ static func _follow(w: SimWorld, u: SimEntity) -> void:
 		else:
 			_arrive(u)
 			return
-	var step := FX.speed_per_tick(d.speed_mtps) * w.map.speed_pct(cur_t, veh) / 100
-	if u.vet >= 2:
-		step = step * 110 / 100
-	step = maxi(step, 8)
-	var np := FX.step_toward(u.pos, wp, step)
-	if np == wp:
-		if u.path_i < u.path.size():
-			u.path_i += 1
-		elif wp == u.goal:
-			_set_pos(u, np)
-			_arrive(u)
-			return
+	var lp := Loco.params(d)
+	var kind: StringName = lp["kind"]
+	var maxs := Loco.max_step(w, u, d)
+	var final := wp == u.goal and u.path_i >= u.path.size() - 1
+	var dist := FX.dist(u.pos, wp)
+	# intermediate waypoints are cut once close: smooth cornering instead of stop-and-turn
+	if not final and dist <= maxi(u.spd, 300) and u.path_i < u.path.size():
+		u.path_i += 1
+		return _follow_again(w, u)
+	var want := FX.iatan2(wp.x - u.pos.x, wp.y - u.pos.y)
+	var rate: int = lp["turn"]
+	if kind == Loco.WHEELS and u.spd == 0:
+		rate = maxi(1, rate / 3)
+	u.face = Loco.turn(u.face, want, rate)
+	var rel := FX.adiff(u.face, want)
+	var gs := Loco.goal_speed(kind, maxs, rel)
+	var brake_pt := maxi(1, maxs * 50 / maxi(1, int(lp["brake_ms"])))
+	var accel_pt := maxi(1, maxs * 50 / maxi(1, int(lp["accel_ms"])))
+	if final:
+		# brake into the destination: v^2 = 2 * b * d
+		gs = mini(gs, maxi(16, FX.isqrt(2 * brake_pt * dist)))
+	elif kind == Loco.WHEELS and dist < FX.ONE and absi(rel) > FX.ANG / 8:
+		gs = mini(gs, maxs / 4)
+	if u.spd < gs:
+		u.spd = mini(gs, u.spd + accel_pt)
+	else:
+		u.spd = maxi(gs, u.spd - brake_pt)
+	u.dir = FX.dir_of(u.face)
+	if u.spd <= 0:
+		u.spd = 0
+		return
+	var np: Vector2i
+	if dist <= u.spd and absi(rel) <= FX.ANG / 16:
+		np = wp
+	else:
+		var hv := FX.dir_of(u.face)
+		np = u.pos + Vector2i(hv.x * u.spd / FX.ONE, hv.y * u.spd / FX.ONE)
+	if np == wp and final:
+		_set_pos(u, np)
+		_arrive(u)
+		return
 	var nt := FX.to_tile(np)
 	if nt != cur_t and not w.map.passable(nt, veh):
 		var alt1 := Vector2i(np.x, u.pos.y)
@@ -84,6 +115,7 @@ static func _follow(w: SimWorld, u: SimEntity) -> void:
 			np = alt2
 		else:
 			np = u.pos
+		u.spd = u.spd / 2
 	if np == u.pos:
 		u.stuck += 1
 		if u.stuck > 12:
@@ -96,14 +128,19 @@ static func _follow(w: SimWorld, u: SimEntity) -> void:
 		u.stuck = maxi(0, u.stuck - 1)
 		_set_pos(u, np)
 
+## Re-run follow after advancing a waypoint (bounded: each call consumes one waypoint).
+static func _follow_again(w: SimWorld, u: SimEntity) -> void:
+	_follow(w, u)
+
 static func _set_pos(u: SimEntity, np: Vector2i) -> void:
 	var dv := np - u.pos
 	if dv != Vector2i.ZERO:
-		u.dir = dv
 		u.moving = true
 	u.pos = np
 
 static func _arrive(u: SimEntity) -> void:
+	u.spd = 0
+	u.gspd = 0
 	u.done_goal = u.goal
 	u.goal = NONE
 	u.path = []

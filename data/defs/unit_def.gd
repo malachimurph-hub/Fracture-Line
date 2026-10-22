@@ -21,5 +21,11 @@ extends Resource
 @export var harvest_capacity: int = 0
 @export var role: StringName = &"infantry"   ## role icon key for far zoom
 @export var view_scene: String = ""
+## M2.3 locomotor (ZH-style movement feel; our own tuning values). "" = derived from tags:
+## infantry -> legs, tank / builder / shield -> treads, other vehicles -> wheels.
+@export var loco: StringName = &""
+@export var turn_dps: int = 0                ## hull turn rate, deg/s (0 = locomotor default)
+@export var accel_ms: int = 0                ## time 0 -> full speed (0 = default)
+@export var turret_dps: int = 0              ## turret traverse deg/s; 0 = no turret (hull must face target)
 @export var abilities: PackedStringArray = []
 @export var stubs: PackedStringArray = []    ## features listed but not implemented (shown as [STUB])

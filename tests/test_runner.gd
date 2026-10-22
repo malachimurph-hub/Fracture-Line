@@ -76,6 +76,8 @@ func _ready() -> void:
 			test_content()
 		"tpla":
 			test_tpla()
+		"zh":
+			test_zh()
 		"stall":
 			var r2 := MatchRunner.new()
 			r2.record_replay = false
@@ -1024,3 +1026,87 @@ func test_tpla() -> void:
 		if e6.alive and e6.owner == 0 and e6.kind == SimEntity.Kind.BUILDING and e6.stealthy:
 			hidden += 1
 	_check(net != null and hidden >= 1, "Camo Net hides structures under it (%d hidden)" % hidden)
+
+
+# ---------------------------------------------------------------- M2.3 Zero Hour feel
+## Scripted world for ZH-feel tests: no AI, map fully explored for player 0.
+func _zh_runner(seed: int = 31) -> MatchRunner:
+	var r := MatchRunner.new()
+	r.record_replay = false
+	r.start(make_cfg("1v1", seed, [], ["eu", "tpla"]))
+	r.ais.clear()
+	return r
+
+## A tile with a clear, full-speed vehicle corridor of `n` tiles going +y (and 3 wide).
+func _zh_open(w: SimWorld, n: int) -> Vector2i:
+	for rr in 40:
+		for dx in range(-rr, rr + 1):
+			for dy in [-rr, rr]:
+				var t := Vector2i(w.map.w / 2 + dx, w.map.h / 2 + dy)
+				var ok := true
+				for k in range(-n, n + 1):
+					for side in range(-2, 3):
+						var tt := t + Vector2i(side, k)
+						if not w.map.passable(tt, true) or w.map.speed_pct(tt, true) != 100 or w.map.occ[tt.y * w.map.w + tt.x] != 0:
+							ok = false
+				if ok:
+					return t
+	return Vector2i(-1, -1)
+
+func _zh_move_ticks(r: MatchRunner, u: SimEntity, dest: Vector2i, limit: int = 400) -> int:
+	r.issue({"p": u.owner, "t": "move", "ids": [u.id], "pos": dest})
+	for i in limit:
+		r.advance()
+		if u.goal == Vector2i(-1, -1) and u.orders.is_empty():
+			return i + 1
+	return limit
+
+func test_zh() -> void:
+	_zh_loco()
+
+func _zh_loco() -> void:
+	var r := _zh_runner()
+	var w := r.sim
+	var c := _zh_open(w, 7)
+	_check(c.x >= 0, "found an open test corridor %s" % [c])
+	var res := {}
+	for def in ["eu_leopold", "eu_grenadier", "tpla_rattler"]:
+		var u := w.spawn_unit(StringName(def), 0, null, FX.tile_center(c + Vector2i(0, -5)))
+		u.pos = FX.tile_center(c + Vector2i(0, -5))
+		var d := Content.unit(StringName(def))
+		var full := FX.speed_per_tick(d.speed_mtps)
+		# 1) acceleration from rest straight ahead (+y = initial heading)
+		r.issue({"p": 0, "t": "move", "ids": [u.id], "pos": FX.tile_center(c + Vector2i(0, 5))})
+		_ticks(r, 5)
+		var early := u.spd
+		var arrive := 0
+		for i in 400:
+			r.advance()
+			if u.goal == Vector2i(-1, -1) and u.orders.is_empty():
+				arrive = i + 6
+				break
+		# 2) reverse direction: must turn 180 degrees first
+		var back := _zh_move_ticks(r, u, FX.tile_center(c + Vector2i(0, -5)))
+		var ideal := 10 * FX.ONE / full
+		res[def] = {"early": early, "full": full, "fwd": arrive, "back": back, "ideal": ideal, "face": u.face}
+		print("  loco %s kind=%s: speed after 5 ticks %d/%d, 10 tiles fwd %d ticks, reverse+10 tiles %d ticks (instant-turn ideal %d)" % [def, Loco.params(d)["kind"], early, full, arrive, back, ideal])
+		u.hp = 0
+		_ticks(r, 2)
+	var tk: Dictionary = res["eu_leopold"]
+	var inf: Dictionary = res["eu_grenadier"]
+	var wh: Dictionary = res["tpla_rattler"]
+	_check(tk["early"] < tk["full"], "tank accelerates over time (%d < %d after 5 ticks)" % [tk["early"], tk["full"]])
+	_check(inf["early"] >= inf["full"] * 9 / 10, "infantry reaches speed almost instantly")
+	_check(tk["back"] - tk["fwd"] >= 25, "tank pivots before reversing (+%d ticks)" % [tk["back"] - tk["fwd"]])
+	_check(inf["back"] - inf["fwd"] <= 8, "infantry turns on the spot (+%d ticks)" % [inf["back"] - inf["fwd"]])
+	_check(wh["back"] > wh["fwd"], "wheeled unit loses time turning around (+%d ticks)" % [wh["back"] - wh["fwd"]])
+	_check(absi(FX.adiff(tk["face"], 512)) <= 8, "tank ends facing its travel direction (face=%d)" % tk["face"])
+	# damaged vehicles are slower
+	var u2 := w.spawn_unit(&"eu_leopold", 0, null, FX.tile_center(c))
+	var m_ok := Loco.max_step(w, u2, Content.unit(&"eu_leopold"))
+	u2.hp = u2.max_hp / 4
+	var m_dmg := Loco.max_step(w, u2, Content.unit(&"eu_leopold"))
+	_check(m_dmg < m_ok, "damaged vehicle moves slower (%d < %d)" % [m_dmg, m_ok])
+	# fixed-point angle helpers
+	_check(FX.iatan2(0, 100) == 0 and FX.iatan2(100, 0) == 256 and FX.iatan2(0, -100) == 512 and FX.iatan2(-100, 0) == 768, "iatan2 cardinal directions")
+	_check(FX.dir_of(256) == Vector2i(1024, 0) and FX.adiff(1000, 20) == 44, "dir_of / adiff")
