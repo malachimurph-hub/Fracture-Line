@@ -3,16 +3,16 @@
 [ext_resource type="Script" path="res://view/infantry/infantry_view.gd" id="1_e6g1p"]
 [ext_resource type="Resource" path="res://assets/models/infantry/eu_rifleman.res" id="2_7vxph"]
 
-[node name="View" type="Node3D" unique_id=1290625032]
+[node name="View" type="Node3D" unique_id=10304776]
 script = ExtResource("1_e6g1p")
 vat = ExtResource("2_7vxph")
 formation = PackedVector3Array(-0.2, 0, -0.17, 0.21, 0, -0.14, -0.17, 0, 0.2, 0.2, 0, 0.21)
 selection_radius = 0.42
 bar_height = 0.78
 
-[node name="Model" type="Node3D" parent="." unique_id=1747324555]
+[node name="Model" type="Node3D" parent="." unique_id=2549897]
 
-[node name="Squad" type="MultiMeshInstance3D" parent="Model" unique_id=52110263]
+[node name="Squad" type="MultiMeshInstance3D" parent="Model" unique_id=1952652193]
 
-[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=1133361845]
+[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=1684284268]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.78, 0)

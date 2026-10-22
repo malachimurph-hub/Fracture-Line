@@ -13,11 +13,14 @@ const HEIGHT := 0.5          # model units (old procedural soldiers were 0.5; Wo
 const ANIMS := [["idle", "Idle", true], ["run", "Run_Gun", true], ["fire", "Idle_Shoot", true], ["die", "Death", false]]
 
 ## colours are linear-ish sRGB hex; "team" = flagged for the per-player colour
+const WEAPON_COLORS := {"Grey": "#3d4043", "Grey2": "#2b2d2f", "DarkGrey": "#1d1e20", "LightGrey": "#6a6e72", "Red": "#5a2a22"}
 const SPECS := {
 	"eu_rifleman": {"file": "Character_Soldier.gltf", "weapon": "SMG", "keep": ["Body", "Head", "ShoulderPad.L", "ShoulderPad.R"],
-		"colors": {"Character_Main": "#56606a", "Pants": "#454c55", "Grey": "team", "DarkGrey": "#30353a", "Black": "#1c1e20", "Skin": "#c79a76", "Grey2": "#5c6166", "Wood": "#6b5236", "LightGrey": "#9aa0a5"}},
+		"node_colors": {"Head": {"Black": "team"}},
+		"colors": {"Character_Main": "#5d6849", "Pants": "#4f5742", "Grey": "team", "DarkGrey": "#30353a", "Black": "#1c1e20", "Skin": "#c79a76", "Grey2": "#5c6166", "Wood": "#6b5236", "LightGrey": "#9aa0a5"}},
 	"tpla_rifleman": {"file": "Character_Enemy.gltf", "weapon": "AK", "keep": ["Character_Enemy", "Character_Enemy_Head"],
-		"colors": {"Enemy_Red": "team", "Grey": "#b9a27a", "DarkGrey": "#6b5a40", "Black": "#2b2620", "Skin": "#b98a64", "Grey2": "#5a5b4a", "Wood": "#7a5530", "LightGrey": "#a89a80"}},
+		"node_colors": {"Character_Enemy_Head": {"Enemy_Red": "#8f7d56", "Black": "team"}},
+		"colors": {"Enemy_Red": "#a48c5f", "Grey": "#6b6a45", "DarkGrey": "#5e4d36", "Black": "#5a4c38", "Skin": "#b98a64", "Grey2": "#5a5b4a", "Wood": "#7a5530", "LightGrey": "#a89a80"}},
 	"wa_rifleman_placeholder": {"file": "Character_Hazmat.gltf", "weapon": "Shotgun", "keep": ["Character_Hazmat", "Character_Hazmat_Head"],
 		"colors": {"Hazmat_Main": "#5d6748", "DarkGrey": "#3a3f33", "Black": "#1e201c", "Grey": "team", "Grey2": "#55594c", "Wood": "#6b5236", "LightGrey": "#9aa08c"}},
 }
@@ -80,7 +83,15 @@ func _bake(key: String, spec: Dictionary) -> Dictionary:
 			var arr: Array = mi.mesh.surface_get_arrays(s)
 			var mat: Material = mi.get_active_material(s)
 			var mname := String(mat.resource_name) if mat != null else ""
-			var cspec: String = spec["colors"].get(mname, "")
+			# per-part overrides: the weapon keeps gunmetal colours (never team), the head can
+			# carry its own (e.g. TPLA team-coloured head wrap)
+			var cmap: Dictionary = spec["colors"].duplicate()
+			var nname := String(mi.name)
+			if nname == spec["weapon"] or nname.begins_with(spec["weapon"]):
+				cmap.merge(WEAPON_COLORS, true)
+			elif spec.has("node_colors") and spec["node_colors"].has(nname):
+				cmap.merge(spec["node_colors"][nname], true)
+			var cspec: String = cmap.get(mname, "")
 			var team := cspec == "team"
 			var c := Color.WHITE
 			if cspec != "" and not team:

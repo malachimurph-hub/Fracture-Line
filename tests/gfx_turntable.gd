@@ -32,7 +32,8 @@ func _ready() -> void:
 	gm.roughness = 1.0
 	g.material_override = gm
 	add_child(g)
-	var x := -(scenes.size() - 1) * 1.1
+	var sp := 3.4 if scenes[0].contains("/buildings/") else 2.2
+	var x := -(scenes.size() - 1) * sp * 0.5
 	var ctr := Vector3.ZERO
 	var i := 0
 	for s in scenes:
@@ -48,8 +49,11 @@ func _ready() -> void:
 			for kv in parts[1].split(","):
 				var p := kv.split("=")
 				if v.has_method(p[0]):
-					v.call(p[0], float(p[1]))
-		x += 2.2
+					if p.size() > 1:
+						v.call(p[0], float(p[1]))
+					else:
+						v.call(p[0])
+		x += sp
 		i += 1
 	var cam := Camera3D.new()
 	cam.fov = 30

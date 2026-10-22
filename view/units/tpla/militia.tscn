@@ -3,16 +3,16 @@
 [ext_resource type="Script" path="res://view/infantry/infantry_view.gd" id="1_tubpy"]
 [ext_resource type="Resource" path="res://assets/models/infantry/tpla_rifleman.res" id="2_mcy3o"]
 
-[node name="View" type="Node3D" unique_id=390523045]
+[node name="View" type="Node3D" unique_id=1962000406]
 script = ExtResource("1_tubpy")
 vat = ExtResource("2_mcy3o")
 formation = PackedVector3Array(-0.2, 0, -0.16, 0.2, 0, -0.13, -0.15, 0, 0.21, 0.21, 0, 0.19)
 selection_radius = 0.42
 bar_height = 0.78
 
-[node name="Model" type="Node3D" parent="." unique_id=945408161]
+[node name="Model" type="Node3D" parent="." unique_id=932029714]
 
-[node name="Squad" type="MultiMeshInstance3D" parent="Model" unique_id=1311980585]
+[node name="Squad" type="MultiMeshInstance3D" parent="Model" unique_id=936186681]
 
-[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=23284423]
+[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=1239272506]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.78, 0)

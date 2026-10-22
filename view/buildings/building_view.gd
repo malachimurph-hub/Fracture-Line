@@ -1,0 +1,139 @@
+class_name BuildingView
+extends EntityView
+## Staged structure view (M2.2): construction in stages (foundation + scaffold going up, the
+## structure rising inside it with a glowing build edge, scaffold struck on completion), damage
+## states (light: soot, debris, a smoke wisp; heavy: scorched breaches, fallen sheeting, fires
+## at the Fire* anchors) and a destroyed state (smouldering rubble that lingers, then sinks).
+## Meshes use view/materials/model_m3.gdshader; the reveal variant is swapped in only while
+## building (discard is costly on tile GPUs).
+const MAT := preload("res://view/materials/m3.tres")
+const MAT_REVEAL := preload("res://view/materials/m3_reveal.tres")
+const KEEP := [&"team_color", &"rust_amt", &"wear_amt", &"dirt_amt", &"damage_amt"]
+@export var top_y: float = 1.6          ## structure height (object space) for the reveal
+@export var scaffold_top: float = 1.35
+@export var rubble_s: float = 14.0      ## destroyed rubble lingers this long
+
+var hull: GeometryInstance3D
+var scaffold: GeometryInstance3D
+var dmg_light: Node3D
+var dmg_heavy: Node3D
+var rubble: Node3D
+var anchors: Array = []
+var _geos: Array = []
+var _prog := -1.0
+var _building := false
+var _state := 0          ## 0 ok, 1 light, 2 heavy, 3 destroyed
+var _smoke_t := 0.0
+var _dead_t := 0.0
+
+func _ready() -> void:
+	super._ready()
+	hull = get_node_or_null("Model/Hull")
+	scaffold = get_node_or_null("Model/Scaffold")
+	dmg_light = get_node_or_null("Model/DamageLight")
+	dmg_heavy = get_node_or_null("Model/DamageHeavy")
+	rubble = get_node_or_null("Model/Rubble")
+	for c in get_node("Model").get_children():
+		if c is Marker3D and String(c.name).begins_with("Fire"):
+			anchors.append(c)
+	_gather(self)
+
+func _gather(n: Node) -> void:
+	for c in n.get_children():
+		if c is GeometryInstance3D:
+			_geos.append(c)
+		_gather(c)
+
+func _each(param: StringName, v: Variant) -> void:
+	for g in _geos:
+		(g as GeometryInstance3D).set_instance_shader_parameter(param, v)
+
+func set_team_material(mat: Material) -> void:
+	var c := Color(0.6, 0.6, 0.6)
+	if mat is ShaderMaterial:
+		c = (mat as ShaderMaterial).get_shader_parameter("albedo")
+	_each(&"team_color", c)
+
+## Swaps a mesh between the normal and the clipping material, keeping its instance values.
+func _swap(g: GeometryInstance3D, mat: Material) -> void:
+	if g == null or g.material_override == mat:
+		return
+	var keep := {}
+	for p in KEEP:
+		keep[p] = g.get_instance_shader_parameter(p)
+	g.material_override = mat
+	for p in keep:
+		if keep[p] != null:
+			g.set_instance_shader_parameter(p, keep[p])
+
+## k = construction progress 0..1 (1 = complete).
+func set_build_progress(k: float) -> void:
+	if is_equal_approx(k, _prog):
+		return
+	_prog = k
+	var done := k >= 1.0
+	if done:
+		if _building or scaffold == null or scaffold.visible:
+			_building = false
+			_swap(hull, null)
+			if scaffold:
+				scaffold.visible = false
+		return
+	if not _building:
+		_building = true
+		_swap(hull, MAT_REVEAL)
+		if scaffold:
+			scaffold.visible = true
+			_swap(scaffold, MAT_REVEAL)
+	# stage 1 (0..25 %): scaffold climbs; stage 2 (12..95 %): the structure rises inside it
+	if scaffold:
+		scaffold.set_instance_shader_parameter(&"reveal_y", scaffold_top * 1.05 * clampf(k / 0.25, 0.0, 1.0) - 0.02)
+	hull.set_instance_shader_parameter(&"reveal_y", top_y * clampf((k - 0.12) / 0.83, 0.0, 1.0) + 0.02)
+
+## k = hp / max_hp.
+func set_damage(k: float) -> void:
+	if _state == 3:
+		return
+	var s := 0 if k > 0.75 else (1 if k > 0.4 else 2)
+	if s == _state and _prog >= 0.0:
+		return
+	_state = s
+	if dmg_light:
+		dmg_light.visible = s >= 1
+	if dmg_heavy:
+		dmg_heavy.visible = s >= 2
+	_each(&"damage_amt", [0.0, 0.22, 0.5][s])
+
+func play_death() -> float:
+	_state = 3
+	for n in [hull, scaffold, dmg_light, dmg_heavy]:
+		if n:
+			n.visible = false
+	if rubble:
+		rubble.visible = true
+	_each(&"damage_amt", 0.85)
+	return rubble_s
+
+func _process(delta: float) -> void:
+	if _state == 0 or not is_visible_in_tree():
+		return
+	var wv = get_parent()
+	if wv == null or not ("vfx" in wv) or wv.vfx == null:
+		return
+	if _state == 3:
+		_dead_t += delta
+		if _dead_t > rubble_s - 2.5:
+			position.y -= delta * 0.12
+	_smoke_t += delta
+	var every := 0.9 if _state == 1 else 0.28
+	if _state == 3 and _dead_t > 9.0:
+		every = 0.8
+	if _smoke_t < every or anchors.is_empty():
+		return
+	_smoke_t = 0.0
+	if _state == 1:   # one thin, dark wisp
+		wv.vfx.smoke_puff((anchors[0] as Node3D).global_position, 0.22, false)
+		return
+	for a in anchors:
+		if randf() < 0.6:
+			wv.vfx.smoke_puff((a as Node3D).global_position, 0.45, _state >= 2 and (_state == 2 or _dead_t < 9.0))
