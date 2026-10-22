@@ -16,6 +16,10 @@ var _down_pos := Vector2.ZERO
 var _long_done: bool = false
 var _redraw_t: float = 0.0
 var pings: Array = []   ## [{p: Vector2 tile, t}]
+## M2.5 (ZH-style): every supply seam / pile is marked on the minimap from the start (map
+## knowledge, like Zero Hour's radar) with its own icon drawn above the shroud. Its fill level is
+## what this player last saw: it dims as the pile empties and disappears once seen depleted.
+var res_known: Dictionary = {}   ## resource id -> last seen fraction (1.0 = full, never seen)
 
 func setup(w: WorldView, c: CameraRig, p: PlayerController) -> void:
 	world = w
@@ -95,6 +99,8 @@ func _draw() -> void:
 		var e: SimEntity = sim.ents[id]
 		if e.kind == SimEntity.Kind.UNIT and e.res_id < 0:
 			continue
+		if e.kind == SimEntity.Kind.RESOURCE:
+			continue   # drawn as supply icons above the fog
 		var vis := world._is_visible(e, mem) or mem.has(id)
 		if not vis:
 			continue
@@ -111,6 +117,7 @@ func _draw() -> void:
 		else:
 			draw_rect(Rect2(Vector2(e.tile) * k, Vector2(e.fp) * k).grow(0.5), col)
 	draw_texture_rect(fog_tex, r, false)
+	_draw_supply(k)
 	# camera frame
 	var cs := cam.view_corners()
 	var pts := PackedVector2Array()
@@ -122,6 +129,36 @@ func _draw() -> void:
 		var a: float = 1.0 - p["t"] / 2.0
 		draw_arc(p["p"] * k, 4.0 + p["t"] * 10.0, 0, TAU, 20, Color(1, 0.3, 0.2, a), 2.0)
 	draw_rect(r, Color("#c9a24a"), false, 1.0)
+
+## Last-seen fill level of a resource for the local player (1.0 until scouted).
+func supply_fraction(e: SimEntity) -> float:
+	var sim := world.sim
+	var seen := world.local_team < 0 or sim.fog.disabled or sim.fog.visible_tile(world.local_team, e.tile) \
+		or sim.fog.visible_tile(world.local_team, FX.to_tile(e.pos))
+	if seen:
+		res_known[e.id] = float(e.amount) / float(maxi(1, e.max_amount))
+	return res_known.get(e.id, 1.0)
+
+func _draw_supply(k: Vector2) -> void:
+	var sim := world.sim
+	for id in sim.ids:
+		var e: SimEntity = sim.ents[id]
+		if e.kind != SimEntity.Kind.RESOURCE:
+			continue
+		var f := supply_fraction(e)
+		if f <= 0.0:
+			continue
+		var big := e.def_id == &"seam"   # supply dock-sized seam vs. small pile
+		var c := (Vector2(e.tile) + Vector2(0.5, 0.5)) * k
+		var rr := (4.2 if big else 3.2) * clampf(k.x / 1.2, 0.8, 1.6)
+		var a := 0.45 + 0.55 * f
+		var dia := PackedVector2Array([c + Vector2(0, -rr), c + Vector2(rr, 0), c + Vector2(0, rr), c + Vector2(-rr, 0)])
+		var out := PackedVector2Array([c + Vector2(0, -rr - 1.2), c + Vector2(rr + 1.2, 0), c + Vector2(0, rr + 1.2), c + Vector2(-rr - 1.2, 0)])
+		draw_colored_polygon(out, Color(0.05, 0.05, 0.04, 0.85 * a))
+		draw_colored_polygon(dia, Color(0.98, 0.78, 0.22, a) if big else Color(0.45, 0.9, 0.78, a))
+		# fill gauge: inner pip shrinks as the pile empties
+		var ir := rr * 0.45 * clampf(f, 0.25, 1.0)
+		draw_colored_polygon(PackedVector2Array([c + Vector2(0, -ir), c + Vector2(ir, 0), c + Vector2(0, ir), c + Vector2(-ir, 0)]), Color(1, 1, 1, 0.8 * a))
 
 func _gui_input(ev: InputEvent) -> void:
 	if ev is InputEventMouseButton and ev.button_index == MOUSE_BUTTON_LEFT:
