@@ -57,18 +57,18 @@ _surfaces = [{
 "vertex_data": PackedByteArray("Zmamv3qqYT8h14E/mpmZPnqqYT8h14E/Zmamv1wnWj++CoE/mpmZPlwnWj++CoE/mpmZPoUfhj+cbG0+Zmamv4Ufhj+cbG0+mpmZPvZdgj+ICWc+Zmamv/Zdgj+ICWc+mpmZPnqqYT8h14E/mpmZPoUfhj+cbG0+mpmZPlwnWj++CoE/mpmZPvZdgj+ICWc+Zmamv4Ufhj+cbG0+Zmamv3qqYT8h14E/Zmamv/Zdgj+ICWc+Zmamv1wnWj++CoE/mpmZPnqqYT8h14E/Zmamv3qqYT8h14E/mpmZPoUfhj+cbG0+Zmamv4Ufhj+cbG0+Zmamv1wnWj++CoE/mpmZPlwnWj++CoE/Zmamv/Zdgj+ICWc+mpmZPvZdgj+ICWc+Pgr3vwrXE0DiepS+wvXIvwrXE0DiepS+Pgr3v5DCBUDiepS+wvXIv5DCBUDiepS+wvXIvwrXE0BSuJ6+Pgr3vwrXE0BSuJ6+wvXIv5DCBUBSuJ6+Pgr3v5DCBUBSuJ6+wvXIvwrXE0DiepS+wvXIvwrXE0BSuJ6+wvXIv5DCBUDiepS+wvXIv5DCBUBSuJ6+Pgr3vwrXE0BSuJ6+Pgr3vwrXE0DiepS+Pgr3v5DCBUBSuJ6+Pgr3v5DCBUDiepS+wvXIvwrXE0DiepS+Pgr3vwrXE0DiepS+wvXIvwrXE0BSuJ6+Pgr3vwrXE0BSuJ6+Pgr3v5DCBUDiepS+wvXIv5DCBUDiepS+Pgr3v5DCBUBSuJ6+wvXIv5DCBUBSuJ6+/3+PacRlS4L/f49pxGVLgv9/j2nEZUuC/3+PacRlS4KO6f//xGVMgo7p///EZUyCjun//8RlTIKO6f//xGVMgv7/AID/f/+//v8AgP9//7/+/wCA/3//v/7/AID/f/+/AAAAgP9//78AAACA/3//vwAAAID/f/+/AAAAgP9//7//f4/pOhqyvf9/j+k6GrK9/3+P6Toasr3/f4/pOhqyvW+WAAA7GrK9b5YAADsasr1vlgAAOxqyvW+WAAA7GrK9/3//fwCAAID/f/9/AIAAgP9//38AgACA/3//fwCAAID//////38AgP//////fwCA//////9/AID//////38AgP//AIAAgP+///8AgACA/7///wCAAID/v///AIAAgP+/AAAAgP9//78AAACA/3//vwAAAID/f/+/AAAAgP9//78AgP//AAD/vwCA//8AAP+/AID//wAA/78AgP//AAD/vwCAAAAAAP+/AIAAAAAA/78AgAAAAAD/vwCAAAAAAP+/")
 }]
 
-[node name="View" type="Node3D" unique_id=1767351216]
+[node name="View" type="Node3D" unique_id=1810404366]
 script = ExtResource("1_wd658")
 selection_radius = 2.0
 bar_height = 2.65
 footprint = Vector2(4, 4)
 is_structure = true
 
-[node name="Model" type="Node3D" parent="." unique_id=742090519]
+[node name="Model" type="Node3D" parent="." unique_id=565042022]
 
-[node name="Body" type="MeshInstance3D" parent="Model" unique_id=330587619]
+[node name="Body" type="MeshInstance3D" parent="Model" unique_id=767343228]
 mesh = SubResource("ArrayMesh_cbtfi")
 metadata/team_surface = 3
 
-[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=1550550376]
+[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=80349691]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.65, 0)

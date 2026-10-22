@@ -59,21 +59,21 @@ _surfaces = [{
 "vertex_data": PackedByteArray("rkdhPoXrUT8K16M8k/uJPoXrUT8AvAO6rkdhPlyPQj8K16M8k/uJPlyPQj8AvAO64XqUPoXrUT/NzEy94XqUPlyPQj/NzEy9k/uJPoXrUT9Vxcu9k/uJPlyPQj9Vxcu9rkdhPoXrUT+QwvW9rkdhPlyPQj+QwvW9N5guPoXrUT9Vxcu9N5guPlyPQj9Vxcu9mpkZPoXrUT/NzEy9mpkZPlyPQj/NzEy9N5guPoXrUT8AvAO6N5guPlyPQj8AvAO6rkdhPoXrUT8K16M8rkdhPlyPQj8K16M8rkdhPjMzMz8K16M8k/uJPjMzMz8AvAO64XqUPjMzMz/NzEy9k/uJPjMzMz9Vxcu9rkdhPjMzMz+QwvW9N5guPjMzMz9Vxcu9mpkZPjMzMz/NzEy9N5guPjMzMz8AvAO6rkdhPjMzMz8K16M8rkdhPoXrUT/NzEy9k/uJPoXrUT8AvAO6rkdhPoXrUT8K16M84XqUPoXrUT/NzEy9k/uJPoXrUT9Vxcu9rkdhPoXrUT+QwvW9N5guPoXrUT9Vxcu9mpkZPoXrUT/NzEy9N5guPoXrUT8AvAO6rkdhPjMzMz/NzEy9rkdhPjMzMz8K16M8k/uJPjMzMz8AvAO64XqUPjMzMz/NzEy9k/uJPjMzMz9Vxcu9rkdhPjMzMz+QwvW9N5guPjMzMz9Vxcu9mpkZPjMzMz/NzEy9N5guPjMzMz8AvAO6FK5HPryfgz+AKoM8SOF6Pryfgz+AKoM8FK5HPq6lez+gIhg9SOF6Pq6lez+gIhg9SOF6Ph4nUT8h0d++FK5HPh4nUT8h0d++SOF6PlSNRT91/9S+FK5HPlSNRT91/9S+SOF6Pryfgz+AKoM8SOF6Ph4nUT8h0d++SOF6Pq6lez+gIhg9SOF6PlSNRT91/9S+FK5HPh4nUT8h0d++FK5HPryfgz+AKoM8FK5HPlSNRT91/9S+FK5HPq6lez+gIhg9SOF6Pryfgz+AKoM8FK5HPryfgz+AKoM8SOF6Ph4nUT8h0d++FK5HPh4nUT8h0d++FK5HPq6lez+gIhg9SOF6Pq6lez+gIhg9FK5HPlSNRT91/9S+SOF6PlSNRT91/9S+/3//fwCAAID/v/9/VVWpqv9//38AgACA/7//f1VVqar//wCAAID/v///AIAAgP+/////v6qqqqr///+/qqqqqv//////fwCA//////9/AIAAAP+/VFWqqgAA/79UVaqqAAAAgP9//78AAACA/3//v/8//3+qqqqq/z//f6qqqqr/f/9/AIAAgP9//38AgACA/3//fwCAAID/v/9/VVWpqv//AIAAgP+/////v6qqqqr//////38AgAAA/79UVaqqAAAAgP9//7//P/9/qqqqqv9//38AgACAAID//wAA/78AgP//AAD/vwCA//8AAP+/AID//wAA/78AgP//AAD/vwCA//8AAP+/AID//wAA/78AgP//AAD/vwCA//8AAP+/AIAAAAAA/78AgAAAAAD/vwCAAAAAAP+/AIAAAAAA/78AgAAAAAD/vwCAAAAAAP+/AIAAAAAA/78AgAAAAAD/vwCAAAAAAP+//3+zqHhv/Jn/f7OoeG/8mf9/s6h4b/yZ/3+zqHhv/JlK1wAAd2/8mUrXAAB3b/yZStcAAHdv/JlK1wAAd2/8mf7//n//f/+//v/+f/9//7/+//5//3//v/7//n//f/+/AAD+f/9//78AAP5//3//vwAA/n//f/+/AAD+f/9//7+0qP//hxABprSo//+HEAGmtKj//4cQAaa0qP//hxABpv9/tCiHEAKm/3+0KIcQAqb/f7QohxACpv9/tCiHEAKm")
 }]
 
-[node name="View" type="Node3D" unique_id=1878484154]
+[node name="View" type="Node3D" unique_id=869315328]
 script = ExtResource("1_tspuv")
 selection_radius = 0.8
 bar_height = 1.2500000149011612
 
-[node name="Model" type="Node3D" parent="." unique_id=2115166668]
+[node name="Model" type="Node3D" parent="." unique_id=1016637992]
 
-[node name="Body" type="MeshInstance3D" parent="Model" unique_id=1810428518]
+[node name="Body" type="MeshInstance3D" parent="Model" unique_id=1062428257]
 mesh = SubResource("ArrayMesh_wp6bd")
 metadata/team_surface = 2
 
-[node name="TurretPivot" type="Node3D" parent="Model" unique_id=1722918018]
+[node name="TurretPivot" type="Node3D" parent="Model" unique_id=1840944111]
 
-[node name="Turret" type="MeshInstance3D" parent="Model/TurretPivot" unique_id=1856263410]
+[node name="Turret" type="MeshInstance3D" parent="Model/TurretPivot" unique_id=1163794573]
 mesh = SubResource("ArrayMesh_l72cg")
 
-[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=1235203160]
+[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=1728058491]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)

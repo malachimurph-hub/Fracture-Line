@@ -1,12 +1,25 @@
-[gd_resource type="StandardMaterial3D" format=3]
+[gd_resource type="ShaderMaterial" format=3]
 
-[ext_resource type="Texture2D" path="res://assets/textures/materials/concrete.png" id="1_igqto"]
+[ext_resource type="Shader" path="res://view/materials/weathered.gdshader" id="1_4tpvx"]
+[ext_resource type="Texture2D" path="res://assets/textures/materials/concrete.png" id="2_ew1aw"]
+[ext_resource type="Texture2D" path="res://assets/textures/materials/rust.png" id="3_de7bv"]
+[ext_resource type="Texture2D" path="res://assets/textures/materials/stencils.png" id="4_djwwe"]
+[ext_resource type="Texture2D" path="res://assets/textures/materials/weather.png" id="5_dw7ff"]
 
 [resource]
-vertex_color_use_as_albedo = true
-vertex_color_is_srgb = true
-albedo_color = Color(1.25, 1.25, 1.25, 1)
-albedo_texture = ExtResource("1_igqto")
-roughness = 0.95
-uv1_scale = Vector3(0.6, 0.6, 0.6)
-uv1_triplanar = true
+render_priority = 0
+shader = ExtResource("1_4tpvx")
+shader_parameter/base_tex = ExtResource("2_ew1aw")
+shader_parameter/base_tex_amount = 1.0
+shader_parameter/base_tex_scale = 0.6
+shader_parameter/weather_tex = ExtResource("5_dw7ff")
+shader_parameter/rust_tex = ExtResource("3_de7bv")
+shader_parameter/stencil_tex = ExtResource("4_djwwe")
+shader_parameter/albedo = Color(1, 1, 1, 1)
+shader_parameter/use_vertex_color = true
+shader_parameter/metallic_v = 0.0
+shader_parameter/roughness_v = 0.95
+shader_parameter/panel_amount = 0.25
+shader_parameter/stencil_amount = 0.0
+shader_parameter/emission_v = 0.0
+shader_parameter/emission_color = Color(0, 0, 0, 1)

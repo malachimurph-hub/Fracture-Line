@@ -2,9 +2,9 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://we447fml70jk"
-path.s3tc="res://.godot/imported/riverbed.png-b8b21b0701f3b294c40e82e438b8e390.s3tc.ctex"
-path.etc2="res://.godot/imported/riverbed.png-b8b21b0701f3b294c40e82e438b8e390.etc2.ctex"
+uid="uid://j4gr6vq5pqni"
+path.s3tc="res://.godot/imported/terrain_macro.png-07f9a69c3ec11047b89c4bc52edd7673.s3tc.ctex"
+path.etc2="res://.godot/imported/terrain_macro.png-07f9a69c3ec11047b89c4bc52edd7673.etc2.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
@@ -12,8 +12,8 @@ metadata={
 
 [deps]
 
-source_file="res://assets/textures/terrain/riverbed.png"
-dest_files=["res://.godot/imported/riverbed.png-b8b21b0701f3b294c40e82e438b8e390.s3tc.ctex", "res://.godot/imported/riverbed.png-b8b21b0701f3b294c40e82e438b8e390.etc2.ctex"]
+source_file="res://assets/textures/terrain/terrain_macro.png"
+dest_files=["res://.godot/imported/terrain_macro.png-07f9a69c3ec11047b89c4bc52edd7673.s3tc.ctex", "res://.godot/imported/terrain_macro.png-07f9a69c3ec11047b89c4bc52edd7673.etc2.ctex"]
 
 [params]
 

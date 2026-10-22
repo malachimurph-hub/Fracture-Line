@@ -26,6 +26,7 @@ var prop_detail_material: ShaderMaterial
 var m: SimMap
 var biome: PackedStringArray = PackedStringArray()
 var heights: PackedFloat32Array
+var ground_decal_count := 0
 
 func build(map: SimMap, tiles_path: String = "") -> void:
 	m = map
@@ -37,9 +38,10 @@ func build(map: SimMap, tiles_path: String = "") -> void:
 	material.shader = load("res://view/terrain/terrain.gdshader")
 	material.set_shader_parameter("fog_tex", fog_texture)
 	material.set_shader_parameter("map_size", Vector2(m.w, m.h))
-	for k in ["sand", "dirt", "grass", "asphalt", "rock", "riverbed"]:
-		material.set_shader_parameter("t_" + k, load(TEX + "terrain/%s.png" % k))
-	material.set_shader_parameter("t_concrete", load(TEX + "materials/concrete.png"))
+	material.set_shader_parameter("t_albedo", load(TEX + "terrain/terrain_albedo.png"))
+	material.set_shader_parameter("t_nrao", load(TEX + "terrain/terrain_nrao.png"))
+	material.set_shader_parameter("t_detail", load(TEX + "terrain/terrain_detail.png"))
+	material.set_shader_parameter("t_macro", load(TEX + "terrain/terrain_macro.png"))
 	_build_splats()
 	water_material = ShaderMaterial.new()
 	water_material.shader = load("res://view/terrain/water.gdshader")
@@ -55,6 +57,7 @@ func build(map: SimMap, tiles_path: String = "") -> void:
 	_build_water()
 	_build_bridges()
 	_build_lane_markings()
+	_build_ground_decals()
 	_build_props(tiles_path)
 	var skirt := MeshInstance3D.new()
 	var pm := PlaneMesh.new()
@@ -373,3 +376,86 @@ func update_fog(fog: SimFog, team: int) -> void:
 static func minimap_color(tt: int) -> Color:
 	var c: Color = COLORS[tt]
 	return c.lightened(0.05)
+
+## M2: static ground decals scattered deterministically from the map: tire tracks along roads
+## and around resource fields, cracks on asphalt / concrete, oil stains on roads and where
+## harvesters work, sand drifting onto roads, rubble at cliff feet. Flat tiles only.
+func _build_ground_decals() -> void:
+	var xf: Array = []
+	var cust: Array = []
+	var flat := func(x: int, y: int) -> bool:
+		for d: Vector2i in [Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)]:
+			if absf(heights[(y + d.y) * (m.w + 1) + x + d.x]) > 0.01:
+				return false
+		return true
+	var tt := func(x: int, y: int) -> int: return m.ttype(Vector2i(x, y)) if m.in_bounds(Vector2i(x, y)) else SimMap.T.CLIFF
+	var near := func(x: int, y: int, kind: int, r: int) -> bool:
+		for dy in range(-r, r + 1):
+			for dx in range(-r, r + 1):
+				if tt.call(x + dx, y + dy) == kind:
+					return true
+		return false
+	for y in range(1, m.h - 1):
+		for x in range(1, m.w - 1):
+			var t: int = tt.call(x, y)
+			if t == SimMap.T.WATER or t == SimMap.T.FORD or t == SimMap.T.BRIDGE or t == SimMap.T.CLIFF or not flat.call(x, y):
+				continue
+			var r1 := _h(x * 3 + 11, y * 7 + 5)
+			var r2 := _h(x * 5 + 2, y * 3 + 17)
+			var bc := biome[y][x] if y < biome.size() and x < biome[y].length() else "s"
+			var res_near := m.nobuild[y * m.w + x] == 1
+			var kind := -1
+			var size := 1.6
+			var rot := r2 * TAU
+			var stretch := 1.0
+			if t == SimMap.T.ROAD:
+				var horiz: bool = tt.call(x - 1, y) == SimMap.T.ROAD and tt.call(x + 1, y) == SimMap.T.ROAD
+				if r1 < 0.14:
+					kind = int(r2 * 4.0) % 4                       # tire tracks along the road
+					rot = (PI * 0.5 if horiz else 0.0) + (r2 - 0.5) * 0.3
+					size = 1.5; stretch = 1.6
+				elif r1 < 0.24:
+					kind = 4 + int(r2 * 4.0) % 4                   # cracks
+				elif r1 < 0.28:
+					kind = 8 + int(r2 * 3.0) % 3; size = 1.3        # oil
+				elif r1 < 0.36 and (near.call(x, y, SimMap.T.GRASS, 1) or near.call(x, y, SimMap.T.ROUGH, 1)):
+					kind = 11; size = 2.0                           # sand drifting onto asphalt
+			elif bc == "c" and r1 < 0.2:
+				kind = 4 + int(r2 * 4.0) % 4
+			elif res_near and r1 < 0.12:
+				kind = int(r2 * 4.0) % 4 if r1 < 0.08 else 8 + int(r2 * 3.0) % 3
+				size = 1.8; stretch = 1.3 if kind < 4 else 1.0
+			elif near.call(x, y, SimMap.T.CLIFF, 1) and r1 < 0.22:
+				kind = 12 + int(r2 * 4.0) % 4; size = 1.2 + r2 * 0.6
+			if kind < 0:
+				continue
+			var b := Basis(Vector3.UP, rot).scaled(Vector3(size, 1.0, size * stretch))
+			var jx := (_h(x + 91, y) - 0.5) * 0.5
+			var jy := (_h(x, y + 37) - 0.5) * 0.5
+			xf.append(Transform3D(b, Vector3(x + 0.5 + jx, 0.012 + 0.001 * float(kind % 4), y + 0.5 + jy)))
+			cust.append(Color(float(kind), 0.65 + 0.35 * r1, 0, 0))
+	if xf.is_empty():
+		return
+	var pm := PlaneMesh.new()
+	pm.size = Vector2.ONE
+	var mm := MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.use_custom_data = true
+	mm.mesh = pm
+	mm.instance_count = xf.size()
+	for i in xf.size():
+		mm.set_instance_transform(i, xf[i])
+		mm.set_instance_custom_data(i, cust[i])
+	var mat := ShaderMaterial.new()
+	mat.shader = load("res://view/terrain/ground_decal.gdshader")
+	mat.set_shader_parameter("atlas", load(TEX + "decals/ground_decals.png"))
+	mat.set_shader_parameter("fog_tex", fog_texture)
+	mat.set_shader_parameter("map_size", Vector2(m.w, m.h))
+	mat.render_priority = -2
+	var mmi := MultiMeshInstance3D.new()
+	mmi.name = "GroundDecals"
+	mmi.multimesh = mm
+	mmi.material_override = mat
+	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(mmi)
+	ground_decal_count = xf.size()

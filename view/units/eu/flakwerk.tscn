@@ -58,22 +58,22 @@ _surfaces = [{
 "vertex_data": PackedByteArray("16NwvvYofD8M16M816NwPvYofD8M16M816NwvnA9aj8M16M816NwPnA9aj8M16M816NwPvYofD/sUTi+16NwvvYofD/sUTi+16NwPnA9aj/sUTi+16NwvnA9aj/sUTi+16NwPvYofD8M16M816NwPvYofD/sUTi+16NwPnA9aj8M16M816NwPnA9aj/sUTi+16NwvvYofD/sUTi+16NwvvYofD8M16M816NwvnA9aj/sUTi+16NwvnA9aj8M16M816NwPvYofD8M16M816NwvvYofD8M16M816NwPvYofD/sUTi+16NwvvYofD/sUTi+16NwvnA9aj8M16M816NwPnA9aj8M16M816NwvnA9aj/sUTi+16NwPnA9aj/sUTi+/3//fwCAAID/f/9/AIAAgP9//38AgACA/3//fwCAAID//////38AgP//////fwCA//////9/AID//////38AgP//AIAAgP+///8AgACA/7///wCAAID/v///AIAAgP+/AAAAgP9//78AAACA/3//vwAAAID/f/+/AAAAgP9//78AgP//AAD/vwCA//8AAP+/AID//wAA/78AgP//AAD/vwCAAAAAAP+/AIAAAAAA/78AgAAAAAD/vwCAAAAAAP+/")
 }]
 
-[node name="View" type="Node3D" unique_id=1696375159]
+[node name="View" type="Node3D" unique_id=1866106658]
 script = ExtResource("1_4i1p5")
 selection_radius = 0.8
 bar_height = 1.645
 
-[node name="Model" type="Node3D" parent="." unique_id=743051950]
+[node name="Model" type="Node3D" parent="." unique_id=1467556340]
 
-[node name="Body" type="MeshInstance3D" parent="Model" unique_id=1113422415]
+[node name="Body" type="MeshInstance3D" parent="Model" unique_id=1078225471]
 mesh = SubResource("ArrayMesh_yrx6d")
 metadata/team_surface = 1
 
-[node name="TurretPivot" type="Node3D" parent="Model" unique_id=1328670666]
+[node name="TurretPivot" type="Node3D" parent="Model" unique_id=729009356]
 
-[node name="Turret" type="MeshInstance3D" parent="Model/TurretPivot" unique_id=676981919]
+[node name="Turret" type="MeshInstance3D" parent="Model/TurretPivot" unique_id=545455133]
 mesh = SubResource("ArrayMesh_2i7c2")
 metadata/team_surface = 1
 
-[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=1017840635]
+[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=951194290]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.645, 0)

@@ -11,15 +11,10 @@ static var _flat: Dictionary = {}
 static func color(i: int) -> Color:
 	return NEUTRAL if i < 0 else COLORS[i % COLORS.size()]
 
-static func team_material(i: int) -> StandardMaterial3D:
+static func team_material(i: int) -> Material:
 	if _team_mats.has(i):
 		return _team_mats[i]
-	var m := StandardMaterial3D.new()
-	m.albedo_color = color(i)
-	m.roughness = 0.5
-	m.emission_enabled = true
-	m.emission = color(i)
-	m.emission_energy_multiplier = 0.25
+	var m := Weathering.team_material(color(i))
 	_team_mats[i] = m
 	return m
 

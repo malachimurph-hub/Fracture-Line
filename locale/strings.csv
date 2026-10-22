@@ -59,6 +59,9 @@ SET_DEADZONE,Drag dead-zone (dp)
 SET_GHOST_OFFSET,Finger offset for ghosts/box (mm)
 SET_RENDER_SCALE,3D render scale
 SET_FPS,Frame-rate cap
+SET_TEX_QUALITY,Texture quality
+OPT_HIGH,High
+OPT_MEDIUM,Medium
 SET_HOLD_ACTION,Hold + release does
 SET_HAPTICS,Haptics
 SET_INERTIA,Camera inertia

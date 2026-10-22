@@ -2,9 +2,9 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dmvajahd52vgj"
-path.s3tc="res://.godot/imported/asphalt.png-cfe5addd17b3e91655c11fb2533f0b3a.s3tc.ctex"
-path.etc2="res://.godot/imported/asphalt.png-cfe5addd17b3e91655c11fb2533f0b3a.etc2.ctex"
+uid="uid://ifkvklg7e7u2"
+path.s3tc="res://.godot/imported/stencils.png-109b0e055df864ef0a46bd0a6b2bc6c9.s3tc.ctex"
+path.etc2="res://.godot/imported/stencils.png-109b0e055df864ef0a46bd0a6b2bc6c9.etc2.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
@@ -12,8 +12,8 @@ metadata={
 
 [deps]
 
-source_file="res://assets/textures/terrain/asphalt.png"
-dest_files=["res://.godot/imported/asphalt.png-cfe5addd17b3e91655c11fb2533f0b3a.s3tc.ctex", "res://.godot/imported/asphalt.png-cfe5addd17b3e91655c11fb2533f0b3a.etc2.ctex"]
+source_file="res://assets/textures/materials/stencils.png"
+dest_files=["res://.godot/imported/stencils.png-109b0e055df864ef0a46bd0a6b2bc6c9.s3tc.ctex", "res://.godot/imported/stencils.png-109b0e055df864ef0a46bd0a6b2bc6c9.etc2.ctex"]
 
 [params]
 

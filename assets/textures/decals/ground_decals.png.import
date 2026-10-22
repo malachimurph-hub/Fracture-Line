@@ -2,9 +2,9 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cf2xp6uf3amij"
-path.s3tc="res://.godot/imported/rock.png-6fd2e985e4c17866aa31a92f6096a3ad.s3tc.ctex"
-path.etc2="res://.godot/imported/rock.png-6fd2e985e4c17866aa31a92f6096a3ad.etc2.ctex"
+uid="uid://dknlb8x1vjfdl"
+path.s3tc="res://.godot/imported/ground_decals.png-e8a0494040d2fd17a9a5217a719e2e3f.s3tc.ctex"
+path.etc2="res://.godot/imported/ground_decals.png-e8a0494040d2fd17a9a5217a719e2e3f.etc2.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
@@ -12,8 +12,8 @@ metadata={
 
 [deps]
 
-source_file="res://assets/textures/terrain/rock.png"
-dest_files=["res://.godot/imported/rock.png-6fd2e985e4c17866aa31a92f6096a3ad.s3tc.ctex", "res://.godot/imported/rock.png-6fd2e985e4c17866aa31a92f6096a3ad.etc2.ctex"]
+source_file="res://assets/textures/decals/ground_decals.png"
+dest_files=["res://.godot/imported/ground_decals.png-e8a0494040d2fd17a9a5217a719e2e3f.s3tc.ctex", "res://.godot/imported/ground_decals.png-e8a0494040d2fd17a9a5217a719e2e3f.etc2.ctex"]
 
 [params]
 

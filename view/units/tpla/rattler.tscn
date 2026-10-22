@@ -117,36 +117,36 @@ _surfaces = [{
 "vertex_data": PackedByteArray("UrievjMzUz+F65E+UriePjMzUz+F65E+UrievmdmRj+F65E+UriePmdmRj+F65E+UriePjMzUz/Wo3A+UrievjMzUz/Wo3A+UriePmdmRj/Wo3A+UrievmdmRj/Wo3A+UriePjMzUz+F65E+UriePjMzUz/Wo3A+UriePmdmRj+F65E+UriePmdmRj/Wo3A+UrievjMzUz/Wo3A+UrievjMzUz+F65E+UrievmdmRj/Wo3A+UrievmdmRj+F65E+UriePjMzUz+F65E+UrievjMzUz+F65E+UriePjMzUz/Wo3A+UrievjMzUz/Wo3A+UrievmdmRj+F65E+UriePmdmRj+F65E+UrievmdmRj/Wo3A+UriePmdmRj/Wo3A+PgqXvszMTD+F65E+SOF6vszMTD+F65E+PgqXvv///z6F65E+SOF6vv///z6F65E+SOF6vszMTD/Wo3A+PgqXvszMTD/Wo3A+SOF6vv///z7Wo3A+PgqXvv///z7Wo3A+SOF6vszMTD+F65E+SOF6vszMTD/Wo3A+SOF6vv///z6F65E+SOF6vv///z7Wo3A+PgqXvszMTD/Wo3A+PgqXvszMTD+F65E+PgqXvv///z7Wo3A+PgqXvv///z6F65E+SOF6vszMTD+F65E+PgqXvszMTD+F65E+SOF6vszMTD/Wo3A+PgqXvszMTD/Wo3A+PgqXvv///z6F65E+SOF6vv///z6F65E+PgqXvv///z7Wo3A+SOF6vv///z7Wo3A+SOF6PszMTD+F65E+PgqXPszMTD+F65E+SOF6Pv///z6F65E+PgqXPv///z6F65E+PgqXPszMTD/Wo3A+SOF6PszMTD/Wo3A+PgqXPv///z7Wo3A+SOF6Pv///z7Wo3A+PgqXPszMTD+F65E+PgqXPszMTD/Wo3A+PgqXPv///z6F65E+PgqXPv///z7Wo3A+SOF6PszMTD/Wo3A+SOF6PszMTD+F65E+SOF6Pv///z7Wo3A+SOF6Pv///z6F65E+PgqXPszMTD+F65E+SOF6PszMTD+F65E+PgqXPszMTD/Wo3A+SOF6PszMTD/Wo3A+SOF6Pv///z6F65E+PgqXPv///z6F65E+SOF6Pv///z7Wo3A+PgqXPv///z7Wo3A+AACAvlyPAj97FC4/AACAPlyPAj97FC4/AACAvoXr0T57FC4/AACAPoXr0T57FC4/AACAPlyPAj/D9Sg/AACAvlyPAj/D9Sg/AACAPoXr0T7D9Sg/AACAvoXr0T7D9Sg/AACAPlyPAj97FC4/AACAPlyPAj/D9Sg/AACAPoXr0T57FC4/AACAPoXr0T7D9Sg/AACAvlyPAj/D9Sg/AACAvlyPAj97FC4/AACAvoXr0T7D9Sg/AACAvoXr0T57FC4/AACAPlyPAj97FC4/AACAvlyPAj97FC4/AACAPlyPAj/D9Sg/AACAvlyPAj/D9Sg/AACAvoXr0T57FC4/AACAPoXr0T57FC4/AACAvoXr0T7D9Sg/AACAPoXr0T7D9Sg/AAAAAFK4Hj7D9Si/AAAAAFK4Hj7D9Si/AAAAAEZuFD72KBy/sKRMPUZuFD7Gmh6/AAAAAFK4Hj7D9Si/V4+lPUZuFD4tASW/AAAAAFK4Hj7D9Si/V4+lPUZuFD5Z6iy/AAAAAFK4Hj7D9Si/sKRMPUZuFD7AUDO/AAAAAFK4Hj7D9Si/dwVAI0ZuFD6QwjW/AAAAAFK4Hj7D9Si/s6RMvUZuFD7AUDO/AAAAAFK4Hj7D9Si/V4+lvUZuFD5Z6iy/AAAAAFK4Hj7D9Si/V4+lvUZuFD4tASW/AAAAAFK4Hj7D9Si/s6RMvUZuFD7Gmh6/AAAAAFK4Hj7D9Si/AAAAAEZuFD72KBy/AAAAANaj8D0tyhK/7zmxPdaj8D0eBhe/DWEPPtaj8D3pGyK/DGEPPtaj8D2dzy+/7zmxPdaj8D1o5Tq/nkumI9aj8D1ZIT+/8jmxvdaj8D1o5Tq/DGEPvtaj8D2dzy+/DGEPvtaj8D3pGyK/8jmxvdaj8D0eBhe/AAAAANaj8D0tyhK/AAAAAArXoz0pXA+/sKTMPQrXoz3KPxS/V48lPgrXoz2XDCG/V48lPgrXoz3w3jC/sKTMPQrXoz28qz2/dwXAIwrXoz1dj0K/s6TMvQrXoz28qz2/V48lvgrXoz3w3jC/V48lvgrXoz2WDCG/s6TMvQrXoz3KPxS/AAAAAArXoz0pXA+/AAAAAHkULj0uyhK/7zmxPXkULj0eBhe/DGEPPnkULj3pGyK/DGEPPnkULj2dzy+/7zmxPXkULj1o5Tq/nUumI3kULj1YIT+/8TmxvXkULj1o5Tq/DGEPvnkULj2dzy+/DGEPvnkULj3pGyK/8TmxvXkULj0eBhe/AAAAAHkULj0uyhK/AAAAAEiMdjz2KBy/sqRMPUiMdjzGmh6/WY+lPUiMdjwtASW/WI+lPUiMdjxZ6iy/sqRMPUiMdjzAUDO/eQVAI0iMdjyQwjW/tKRMvUiMdjzAUDO/WI+lvUiMdjxZ6iy/WI+lvUiMdjwtASW/tKRMvUiMdjzGmh6/AAAAAEiMdjz2KBy/AAAAAADXozvD9Si/AAAAAADXozvD9Si/AAAAAADXozvD9Si/AAAAAADXozvD9Si/AAAAAADXozvD9Si/AAAAAADXozvD9Si/AAAAAADXozvD9Si/AAAAAADXozvD9Si/AAAAAADXozvD9Si/AAAAAADXozvD9Si/AAAAAADXozvD9Si//3//fwCAAID/f/9/AIAAgP9//38AgACA/3//fwCAAID//////38AgP//////fwCA//////9/AID//////38AgP//AIAAgP+///8AgACA/7///wCAAID/v///AIAAgP+/AAAAgP9//78AAACA/3//vwAAAID/f/+/AAAAgP9//78AgP//AAD/vwCA//8AAP+/AID//wAA/78AgP//AAD/vwCAAAAAAP+/AIAAAAAA/78AgAAAAAD/vwCAAAAAAP+//3//fwCAAID/f/9/AIAAgP9//38AgACA/3//fwCAAID//////38AgP//////fwCA//////9/AID//////38AgP//AIAAgP+///8AgACA/7///wCAAID/v///AIAAgP+/AAAAgP9//78AAACA/3//vwAAAID/f/+/AAAAgP9//78AgP//AAD/vwCA//8AAP+/AID//wAA/78AgP//AAD/vwCAAAAAAP+/AIAAAAAA/78AgAAAAAD/vwCAAAAAAP+//3//fwCAAID/f/9/AIAAgP9//38AgACA/3//fwCAAID//////38AgP//////fwCA//////9/AID//////38AgP//AIAAgP+///8AgACA/7///wCAAID/v///AIAAgP+/AAAAgP9//78AAACA/3//vwAAAID/f/+/AAAAgP9//78AgP//AAD/vwCA//8AAP+/AID//wAA/78AgP//AAD/vwCAAAAAAP+/AIAAAAAA/78AgAAAAAD/vwCAAAAAAP+//3//fwCAAID/f/9/AIAAgP9//38AgACA/3//fwCAAID//////38AgP//////fwCA//////9/AID//////38AgP//AIAAgP+///8AgACA/7///wCAAID/v///AIAAgP+/AAAAgP9//78AAACA/3//vwAAAID/f/+/AAAAgP9//78AgP//AAD/vwCA//8AAP+/AID//wAA/78AgP//AAD/vwCAAAAAAP+/AIAAAAAA/78AgAAAAAD/vwCAAAAAAP+//3///wAA/7//f///AAD/v/9/UdkDMZe4xYxT1TsjL8H/f///AAD/v4eWA93QJOfJ/3///wAA/7/5onbpqhYfz/9///8AAP+/qao486gCb9H/f///AAD/v6ym///PDn2n/3///wAA/79UVTjzGRXAqP9///8AAP+/BF116VkYT7D/f///AAD/v3ZpA93MKEa0/3///wAA/784c1PV2TMMtf9///8AAP+//39R2QMxl7j/f6y35F/npP2WMbNCSJWztasjvKtE+8zYw0nURT/X2cvM/+hAKaGQUsj//y42DZAyM//oUTNPmCU8SNRPOFynSFQjvBtcf6kAaTGzu2ssov9/rLfkX+ek/3/+fwCAAIBSpv5/BV4+mHPS/n/vWXu1//+KrQ+mfLX//6vZ+aE/mP//////fwCAAACr2QVeP5gAAIqt71l8tYot/n8Ppn21q1n+f/qhP5j/f/5/AIAAgP9/UUgtNg2Q/ZbMTFEzT5i1q9lDTjhcp9jDtSsYXICpy8z+FrhrLqJSyAAA41/opDIz/hZBSJazJDy1K6tE+8xJVNlDRz/X2QBpzExCKaCQ/39RSC02DZD/f6wmzg5+p8WMqioZFcCoh5b6IlgYTrD5oogWyihGtKmqxgzYMw21rKYAAAIxl7hUVcYMOyMvwQRdiBbQJOfJdmn6IqoWH884c6oqqAJv0f9/rCbODn6n/38AAAAA/7//fwAAAAD/v/9/AAAAAP+//38AAAAA/7//fwAAAAD/v/9/AAAAAP+//38AAAAA/7//fwAAAAD/v/9/AAAAAP+//38AAAAA/7//fwAAAAD/vw==")
 }]
 
-[node name="View" type="Node3D" unique_id=767645009]
+[node name="View" type="Node3D" unique_id=761180352]
 script = ExtResource("1_7teok")
 selection_radius = 0.8
 bar_height = 1.23
 
-[node name="Model" type="Node3D" parent="." unique_id=1533080953]
+[node name="Model" type="Node3D" parent="." unique_id=599515413]
 
-[node name="Body" type="MeshInstance3D" parent="Model" unique_id=1746677272]
+[node name="Body" type="MeshInstance3D" parent="Model" unique_id=86503707]
 mesh = SubResource("ArrayMesh_kofmh")
 metadata/team_surface = 2
 
-[node name="TurretPivot" type="Node3D" parent="Model" unique_id=1360891732]
+[node name="TurretPivot" type="Node3D" parent="Model" unique_id=197793518]
 
-[node name="Turret" type="MeshInstance3D" parent="Model/TurretPivot" unique_id=48757168]
+[node name="Turret" type="MeshInstance3D" parent="Model/TurretPivot" unique_id=1755758534]
 mesh = SubResource("ArrayMesh_u4mhh")
 
-[node name="TurretTier2" type="MeshInstance3D" parent="Model/TurretPivot" unique_id=1128092095]
+[node name="TurretTier2" type="MeshInstance3D" parent="Model/TurretPivot" unique_id=2022940840]
 visible = false
 mesh = SubResource("ArrayMesh_5wl7r")
 metadata/tier = 2
 
-[node name="Tier1" type="MeshInstance3D" parent="Model" unique_id=663091787]
+[node name="Tier1" type="MeshInstance3D" parent="Model" unique_id=1234621004]
 visible = false
 mesh = SubResource("ArrayMesh_bnr6b")
 metadata/tier = 1
 
-[node name="Tier3" type="MeshInstance3D" parent="Model" unique_id=1796342256]
+[node name="Tier3" type="MeshInstance3D" parent="Model" unique_id=1632143415]
 visible = false
 mesh = SubResource("ArrayMesh_2mnq3")
 metadata/tier = 3
 
-[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=872902960]
+[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=1494812321]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.23, 0)

@@ -25,6 +25,8 @@ func _ready() -> void:
 			await run_gallery()
 		"m2":
 			await run_m2()
+		"m2g":
+			await _m2_gallery()
 		"perf":
 			await run_perf(int(args[1]) if args.size() > 1 else 20)
 	for c in checks:
@@ -548,6 +550,9 @@ func run_m2() -> void:
 	await shot("m2_eu_hud_full_names")
 	m3.queue_free()
 	await frames(3)
+	await _m2_gallery()
+
+func _m2_gallery() -> void:
 	# 5. units gallery: every TPLA + EU unit (TPLA salvage tiers 0-3) and TPLA buildings
 	var cfg4 := lobby_cfg(1)
 	cfg4["options"]["fog"] = false
@@ -563,6 +568,7 @@ func run_m2() -> void:
 			v.position = base + Vector3(x, 0.02, 0)
 			v.rotation_degrees.y = 25.0
 			v.set_team_material(Palette.team_material(1))
+			Weathering.apply(v, &"tpla")
 			x += 4.8
 	var ux := 0.0
 	for fac in ["tpla", "eu"]:
@@ -576,6 +582,7 @@ func run_m2() -> void:
 				v2.position = base + Vector3(ux, 0.02, 6.0 if fac == "tpla" else 9.0)
 				v2.rotation_degrees.y = 30.0
 				v2.set_team_material(Palette.team_material(1 if fac == "tpla" else 0))
+				Weathering.apply(v2, StringName(fac))
 				if v2.has_method("set_tier"):
 					v2.set_tier(t)
 				if f.get_basename() in ["laborer", "militia", "rocket_cell", "grenadier", "lancer", "crawler"]:
@@ -588,6 +595,12 @@ func run_m2() -> void:
 		m4.cam.set_level(spec[1])
 		await frames(30)
 		await shot(spec[2])
+	m4.cam.jump_to(base + Vector3(4, 0, 7.5), false)
+	m4.cam.set_level(0)
+	m4.cam.target_dist = 9.0
+	m4.cam.dist = 9.0
+	await frames(30)
+	await shot("m2_closeup_weathering")
 	# TPLA effects: rust cloud, bomb blast, salvage sparkle, rocket salvo
 	var vf: Vfx = m4.world.vfx
 	var c := base + Vector3(10, 0, 13)

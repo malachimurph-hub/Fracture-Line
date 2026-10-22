@@ -77,11 +77,17 @@ func _std(name: String, tex: String = "", emit: float = 0.0, rough: float = 0.75
 	ResourceSaver.save(m, M + name + ".tres")
 	mats[name] = load(M + name + ".tres")
 
+## M2: weathered model surface (panel lines, wear, rust, grime, base dirt, stencils).
+func _weathered(name: String, tex: String, rough: float, metal: float, tex_amt: float, panels: float, stencil: float) -> void:
+	var m := Weathering.make_material(tex, rough, metal, tex_amt, panels, stencil)
+	ResourceSaver.save(m, M + name + ".tres")
+	mats[name] = load(M + name + ".tres")
+
 func _make_mats() -> void:
 	DirAccess.make_dir_recursive_absolute("res://view/materials")
-	_std("base", "", 0.0, 0.72, 0.15)
-	_std("concrete", "res://assets/textures/materials/concrete.png", 0.0, 0.95)
-	_std("metal", "res://assets/textures/materials/corrugated.png", 0.0, 0.6, 0.35)
+	_weathered("base", "", 0.72, 0.15, 0.0, 1.0, 1.0)
+	_weathered("concrete", "res://assets/textures/materials/concrete.png", 0.95, 0.0, 1.0, 0.25, 0.0)
+	_weathered("metal", "res://assets/textures/materials/corrugated.png", 0.6, 0.35, 1.0, 0.6, 0.0)
 	_std("glow", "", 1.8, 0.3)
 	var t := StandardMaterial3D.new()
 	t.albedo_color = Color.WHITE

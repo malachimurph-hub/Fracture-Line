@@ -31,16 +31,16 @@ _surfaces = [{
 "vertex_data": PackedByteArray("jIZ4vmDG0z6uR2E9ZY+svQwt3z6uR2E9YmZxvo5suj6uR2E9D0+evTrTxT6uR2E9ZY+svQwt3z7sUTi9jIZ4vmDG0z7sUTi9D0+evTrTxT7sUTi9YmZxvo5suj7sUTi9ZY+svQwt3z6uR2E9ZY+svQwt3z7sUTi9D0+evTrTxT6uR2E9D0+evTrTxT7sUTi9jIZ4vmDG0z7sUTi9jIZ4vmDG0z6uR2E9YmZxvo5suj7sUTi9YmZxvo5suj6uR2E9ZY+svQwt3z6uR2E9jIZ4vmDG0z6uR2E9ZY+svQwt3z7sUTi9jIZ4vmDG0z7sUTi9YmZxvo5suj6uR2E9D0+evTrTxT6uR2E9YmZxvo5suj7sUTi9D0+evTrTxT7sUTi900THPWDG0z5cj8I9ovCCPgwt3z5cj8I9KYXVPY5suj5cj8I9t4CGPjrTxT5cj8I9ovCCPgwt3z4I16O700THPWDG0z4I16O7t4CGPjrTxT4I16O7KYXVPY5suj4I16O7ovCCPgwt3z5cj8I9ovCCPgwt3z4I16O7t4CGPjrTxT5cj8I9t4CGPjrTxT4I16O700THPWDG0z4I16O700THPWDG0z5cj8I9KYXVPY5suj4I16O7KYXVPY5suj5cj8I9ovCCPgwt3z5cj8I900THPWDG0z5cj8I9ovCCPgwt3z4I16O700THPWDG0z4I16O7KYXVPY5suj5cj8I9t4CGPjrTxT5cj8I9KYXVPY5suj4I16O7t4CGPjrTxT4I16O7/3/+fwCAAID/f/5/AIAAgP9//n8AgACA/3/+fwCAAID//////38AgP//////fwCA//////9/AID//////38AgDnwxY/Sfb/HOfDFj9J9v8c58MWP0n2/xznwxY/Sfb/HxQ85cNF9v8fFDzlw0X2/x8UPOXDRfb/HxQ85cNF9v8c5cDnwrhE+uDlwOfCuET64OXA58K4RPrg5cDnwrhE+uMWPxQ+vET64xY/FD68RPrjFj8UPrxE+uMWPxQ+vET64/3/+fwCAAID/f/5/AIAAgP9//n8AgACA/3/+fwCAAID//////38AgP//////fwCA//////9/AID//////38AgDnwxY/Sfb/HOfDFj9J9v8c58MWP0n2/xznwxY/Sfb/HxQ85cNF9v8fFDzlw0X2/x8UPOXDRfb/HxQ85cNF9v8c5cDnwrhE+uDlwOfCuET64OXA58K4RPrg5cDnwrhE+uMWPxQ+vET64xY/FD68RPrjFj8UPrxE+uMWPxQ+vET64")
 }]
 
-[node name="View" type="Node3D" unique_id=2042048264]
+[node name="View" type="Node3D" unique_id=1215367869]
 script = ExtResource("1_xd1v5")
 selection_radius = 0.8
 bar_height = 0.9100000113248825
 
-[node name="Model" type="Node3D" parent="." unique_id=560076593]
+[node name="Model" type="Node3D" parent="." unique_id=1576190704]
 
-[node name="Body" type="MeshInstance3D" parent="Model" unique_id=730176932]
+[node name="Body" type="MeshInstance3D" parent="Model" unique_id=650545022]
 mesh = SubResource("ArrayMesh_da0uf")
 metadata/team_surface = 1
 
-[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=529282440]
+[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=1741870998]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.91, 0)

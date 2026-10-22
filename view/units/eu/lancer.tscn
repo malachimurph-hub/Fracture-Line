@@ -31,16 +31,16 @@ _surfaces = [{
 "vertex_data": PackedByteArray("7FGYvilczz4Vrge+hesRvilczz4Vrge+7FGYvo/CtT4Vrge+hesRvo/CtT4Vrge+hesRvilczz7D9Wi+7FGYvilczz7D9Wi+hesRvo/CtT7D9Wi+7FGYvo/CtT7D9Wi+hesRvilczz4Vrge+hesRvilczz7D9Wi+hesRvo/CtT4Vrge+hesRvo/CtT7D9Wi+7FGYvilczz7D9Wi+7FGYvilczz4Vrge+7FGYvo/CtT7D9Wi+7FGYvo/CtT4Vrge+hesRvilczz4Vrge+7FGYvilczz4Vrge+hesRvilczz7D9Wi+7FGYvilczz7D9Wi+7FGYvo/CtT4Vrge+hesRvo/CtT4Vrge+7FGYvo/CtT7D9Wi+hesRvo/CtT7D9Wi+hesRPilczz5mZua97FGYPilczz5mZua9hesRPo/CtT5mZua97FGYPo/CtT5mZua97FGYPilczz7helS+hesRPilczz7helS+7FGYPo/CtT7helS+hesRPo/CtT7helS+7FGYPilczz5mZua97FGYPilczz7helS+7FGYPo/CtT5mZua97FGYPo/CtT7helS+hesRPilczz7helS+hesRPilczz5mZua9hesRPo/CtT7helS+hesRPo/CtT5mZua97FGYPilczz5mZua9hesRPilczz5mZua97FGYPilczz7helS+hesRPilczz7helS+hesRPo/CtT5mZua97FGYPo/CtT5mZua9hesRPo/CtT7helS+7FGYPo/CtT7helS+CteDvilczz7C9Yg+huvRvSlczz7C9Yg+CteDvo/CtT7C9Yg+huvRvY/CtT7C9Yg+huvRvSlczz7XozA+CteDvilczz7XozA+huvRvY/CtT7XozA+CteDvo/CtT7XozA+huvRvSlczz7C9Yg+huvRvSlczz7XozA+huvRvY/CtT7C9Yg+huvRvY/CtT7XozA+CteDvilczz7XozA+CteDvilczz7C9Yg+CteDvo/CtT7XozA+CteDvo/CtT7C9Yg+huvRvSlczz7C9Yg+CteDvilczz7C9Yg+huvRvSlczz7XozA+CteDvilczz7XozA+CteDvo/CtT7C9Yg+huvRvY/CtT7C9Yg+CteDvo/CtT7XozA+huvRvY/CtT7XozA+/3//fwCAAID/f/9/AIAAgP9//38AgACA/3//fwCAAID//////38AgP//////fwCA//////9/AID//////38AgP//AIAAgP+///8AgACA/7///wCAAID/v///AIAAgP+/AAAAgP9//78AAACA/3//vwAAAID/f/+/AAAAgP9//78AgP//AAD/vwCA//8AAP+/AID//wAA/78AgP//AAD/vwCAAAAAAP+/AIAAAAAA/78AgAAAAAD/vwCAAAAAAP+//3//fwCAAID/f/9/AIAAgP9//38AgACA/3//fwCAAID//////38AgP//////fwCA//////9/AID//////38AgP//AIAAgP+///8AgACA/7///wCAAID/v///AIAAgP+/AAAAgP9//78AAACA/3//vwAAAID/f/+/AAAAgP9//78AgP//AAD/vwCA//8AAP+/AID//wAA/78AgP//AAD/vwCAAAAAAP+/AIAAAAAA/78AgAAAAAD/vwCAAAAAAP+//3//fwCAAID/f/9/AIAAgP9//38AgACA/3//fwCAAID//////38AgP//////fwCA//////9/AID//////38AgP//AIAAgP+///8AgACA/7///wCAAID/v///AIAAgP+/AAAAgP9//78AAACA/3//vwAAAID/f/+/AAAAgP9//78AgP//AAD/vwCA//8AAP+/AID//wAA/78AgP//AAD/vwCAAAAAAP+/AIAAAAAA/78AgAAAAAD/vwCAAAAAAP+/")
 }]
 
-[node name="View" type="Node3D" unique_id=101704369]
+[node name="View" type="Node3D" unique_id=1023686798]
 script = ExtResource("1_c6pl1")
 selection_radius = 0.8
 bar_height = 0.8900000005960464
 
-[node name="Model" type="Node3D" parent="." unique_id=1346043165]
+[node name="Model" type="Node3D" parent="." unique_id=271425246]
 
-[node name="Body" type="MeshInstance3D" parent="Model" unique_id=1097242922]
+[node name="Body" type="MeshInstance3D" parent="Model" unique_id=559483427]
 mesh = SubResource("ArrayMesh_if5x4")
 metadata/team_surface = 1
 
-[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=2075146394]
+[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=1986950048]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.89, 0)

@@ -90,6 +90,8 @@ func _ensure_view(e: SimEntity) -> EntityView:
 	var v: EntityView = ps.instantiate()
 	add_child(v)
 	v.set_team_material(Palette.team_material(sim.players[e.owner].color if e.owner >= 0 else -1))
+	var did := String(e.def_id)
+	Weathering.apply(v, &"tpla" if did.begins_with("tpla_") else (&"eu" if did.begins_with("eu_") else &"neutral"))
 	v.position = _world_pos(e)
 	if e.kind == SimEntity.Kind.BUILDING or e.kind == SimEntity.Kind.NEUTRAL:
 		v.rotation.y = [0.0, PI * 0.5, PI, -PI * 0.5][e.rot]

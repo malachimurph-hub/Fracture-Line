@@ -44,18 +44,18 @@ _surfaces = [{
 "vertex_data": PackedByteArray("zMyMP8zMLD8AAEC/zMyMP9DMzDxmZqa/zcyMP9DMzDzMzEy+zMxMPszMLD8AAEC/zsxMPtDMzDzMzEy+ysxMPtDMzDxmZqa/zMyMP8zMLD8AAEC/zMxMPszMLD8AAEC/zMyMP9DMzDxmZqa/ysxMPtDMzDxmZqa/zMxMPszMLD8AAEC/zMyMP8zMLD8AAEC/zsxMPtDMzDzMzEy+zcyMP9DMzDzMzEy+zcyMP9DMzDzMzEy+zMyMP9DMzDxmZqa/zsxMPtDMzDzMzEy+ysxMPtDMzDxmZqa/FK6nP1yPwj+4HqW/kMLVP1yPwj+4HqW/FK6nP2Zmpj+4HqW/kMLVP2Zmpj+4HqW/kMLVP1yPwj8Urqe/FK6nP1yPwj8Urqe/kMLVP2Zmpj8Urqe/FK6nP2Zmpj8Urqe/kMLVP1yPwj+4HqW/kMLVP1yPwj8Urqe/kMLVP2Zmpj+4HqW/kMLVP2Zmpj8Urqe/FK6nP1yPwj8Urqe/FK6nP1yPwj+4HqW/FK6nP2Zmpj8Urqe/FK6nP2Zmpj+4HqW/kMLVP1yPwj+4HqW/FK6nP1yPwj+4HqW/kMLVP1yPwj8Urqe/FK6nP1yPwj8Urqe/FK6nP2Zmpj+4HqW/kMLVP2Zmpj+4HqW/FK6nP2Zmpj8Urqe/kMLVP2Zmpj8Urqe//v//f/9//7/+//9//3//v/7//3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/VcX9//Ux4ZFVxf3/9THhkVXF/f/1MeGRVcX9//Ux4ZEAgKm6O1wEpwCAqbo7XASnAICpujtcBKcAgKm6O1wEp/9/AAAAAP+//38AAAAA/7//fwAAAAD/v/9/AAAAAP+//3//fwCAAID/f/9/AIAAgP9//38AgACA/3//fwCAAID//////38AgP//////fwCA//////9/AID//////38AgP//AIAAgP+///8AgACA/7///wCAAID/v///AIAAgP+/AAAAgP9//78AAACA/3//vwAAAID/f/+/AAAAgP9//78AgP//AAD/vwCA//8AAP+/AID//wAA/78AgP//AAD/vwCAAAAAAP+/AIAAAAAA/78AgAAAAAD/vwCAAAAAAP+/")
 }]
 
-[node name="View" type="Node3D" unique_id=1604376015]
+[node name="View" type="Node3D" unique_id=1915661513]
 script = ExtResource("1_3oa30")
 selection_radius = 1.5
 bar_height = 1.800000011920929
 footprint = Vector2(3, 3)
 is_structure = true
 
-[node name="Model" type="Node3D" parent="." unique_id=1957991998]
+[node name="Model" type="Node3D" parent="." unique_id=1438561871]
 
-[node name="Body" type="MeshInstance3D" parent="Model" unique_id=1315166575]
+[node name="Body" type="MeshInstance3D" parent="Model" unique_id=1271877919]
 mesh = SubResource("ArrayMesh_7hun7")
 metadata/team_surface = 2
 
-[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=1143782021]
+[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=348634135]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)

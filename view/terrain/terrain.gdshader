@@ -1,18 +1,19 @@
 shader_type spatial;
 render_mode diffuse_burley, specular_schlick_ggx;
-// FRACTURE LINE terrain v1 (M1.2): 8 CC0 ground layers (ambientCG) blended by two splat
-// maps (1 texel per tile, bilinear) with noise breakup, slope-based rock, macro variation
-// against tiling, and the fog-of-war texture (0 = shroud, ~0.47 explored, 1 = visible).
+// FRACTURE LINE terrain v2 (M2): 7 CC0 PBR ground layers (ambientCG 1K: colour + NormalGL +
+// roughness + AO, packed in two Texture2DArrays, ETC2 / ASTC with mipmaps) blended by two
+// splat maps with noise breakup and slope rock, plus a close-range detail layer (micro
+// albedo + normal), a baked macro variation map against tiling, and fog of war.
+// Texture quality (Settings): global fl_tex_quality 1 = High (normals, detail), 0 = Medium
+// (albedo only + one mip of bias; no normal/detail fetches).
+global uniform float fl_tex_quality;
 uniform sampler2D fog_tex : filter_linear, repeat_disable;
 uniform sampler2D splat_a : filter_linear, repeat_disable; // sand, dirt, dry scrub, green
 uniform sampler2D splat_b : filter_linear, repeat_disable; // asphalt, rock, riverbed, concrete
-uniform sampler2D t_sand : source_color, filter_linear_mipmap, repeat_enable;
-uniform sampler2D t_dirt : source_color, filter_linear_mipmap, repeat_enable;
-uniform sampler2D t_grass : source_color, filter_linear_mipmap, repeat_enable;
-uniform sampler2D t_asphalt : source_color, filter_linear_mipmap, repeat_enable;
-uniform sampler2D t_rock : source_color, filter_linear_mipmap, repeat_enable;
-uniform sampler2D t_riverbed : source_color, filter_linear_mipmap, repeat_enable;
-uniform sampler2D t_concrete : source_color, filter_linear_mipmap, repeat_enable;
+uniform sampler2DArray t_albedo : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform sampler2DArray t_nrao : hint_default_white, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform sampler2D t_detail : hint_default_white, filter_linear_mipmap, repeat_enable;
+uniform sampler2D t_macro : hint_default_white, filter_linear_mipmap, repeat_enable;
 uniform vec2 map_size = vec2(128.0, 128.0);
 varying vec3 wpos;
 varying vec3 wnrm;
@@ -29,37 +30,70 @@ void vertex() {
 	wnrm = normalize((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
 }
 
+
 void fragment() {
 	vec2 p = wpos.xz;
+	bool hi = fl_tex_quality > 0.5;
+	float bias = hi ? 0.0 : 1.0;
 	float n1 = vnoise(p * 0.9);
-	float n2 = vnoise(p * 0.21 + 7.3);
 	vec2 jitter = (vec2(n1, vnoise(p * 0.9 + 3.1)) - 0.5) * 0.9;
 	vec2 suv = (p + jitter) / map_size;
 	vec4 a = texture(splat_a, suv);
 	vec4 b = texture(splat_b, (p + jitter * 0.25) / map_size);
-	// cliffs: steep faces are rock
 	float steep = smoothstep(0.92, 0.7, wnrm.y);
 	b.g = max(b.g, steep);
-	// sharpen transitions (height-blend-like)
 	a = pow(a, vec4(1.6)); b = pow(b, vec4(1.6));
-	b.r = pow(texture(splat_b, suv * 0.0 + p / map_size).r, 1.0); // asphalt stays crisp
+	b.r = texture(splat_b, p / map_size).r; // asphalt stays crisp
 	float sum = a.r + a.g + a.b + a.a + b.r + b.g + b.b + b.a + 1e-4;
 	a /= sum; b /= sum;
-	vec2 uv = p * 0.25;
+	float w[7] = float[](a.r, a.g, a.b + a.a, b.r, b.g, b.b, b.a);
+	float sc[7] = float[](0.16, 0.2, 0.3, 0.3, 0.14, 0.32, 0.22);
+	vec3 tint[7] = vec3[](vec3(1.02, 0.97, 0.88), vec3(1.05, 0.95, 0.85), vec3(1.0), vec3(1.12, 1.08, 1.04),
+		vec3(1.08, 1.0, 0.88), vec3(0.85, 0.85, 0.8), vec3(0.98, 0.95, 0.9));
 	vec3 col = vec3(0.0);
-	if (a.r > 0.01) col += a.r * texture(t_sand, uv * 0.8).rgb * vec3(1.06, 0.98, 0.86);
-	if (a.g > 0.01) col += a.g * texture(t_dirt, uv).rgb * vec3(1.05, 0.95, 0.85);
-	if (a.b > 0.01) {
-		vec3 g = texture(t_grass, uv * 1.3).rgb;
-		float l = dot(g, vec3(0.3, 0.59, 0.11));
-		col += a.b * mix(vec3(l), g, 0.35) * vec3(1.45, 1.22, 0.72); // sun-dried scrub
+	vec4 nr = vec4(0.0);
+	for (int i = 0; i < 7; i++) {
+		if (w[i] > 0.01) {
+			vec2 uv = p * sc[i];
+			if (i == 4) uv += vec2(0.0, wpos.y * 0.25);
+			vec3 c = texture(t_albedo, vec3(uv, float(i)), bias).rgb * tint[i];
+			if (i == 2) { // grass: green layer vs sun-dried scrub
+				float l = dot(c, vec3(0.3, 0.59, 0.11));
+				vec3 dry = mix(vec3(l), c, 0.35) * vec3(1.45, 1.22, 0.72);
+				c = mix(dry, c * vec3(0.95, 1.08, 0.78), a.a / max(1e-4, a.b + a.a));
+			}
+			col += w[i] * c;
+			if (hi) nr += w[i] * texture(t_nrao, vec3(uv, float(i)));
+		}
 	}
-	if (a.a > 0.01) col += a.a * texture(t_grass, uv * 1.3 + 0.37).rgb * vec3(0.95, 1.08, 0.78);
-	if (b.r > 0.01) col += b.r * texture(t_asphalt, uv * 1.5).rgb * vec3(1.15, 1.1, 1.05);
-	if (b.g > 0.01) col += b.g * texture(t_rock, uv * 0.7 + vec2(0.0, wpos.y * 0.25)).rgb * vec3(1.12, 1.0, 0.86);
-	if (b.b > 0.01) col += b.b * texture(t_riverbed, uv).rgb * vec3(0.8, 0.82, 0.78);
-	if (b.a > 0.01) col += b.a * texture(t_concrete, uv * 0.9).rgb * vec3(0.98, 0.95, 0.9);
-	col *= mix(0.86, 1.1, n2); // macro variation against visible tiling
+	// macro variation (baked, ~64 m period) against visible tiling
+	vec3 mac = texture(t_macro, p / 64.0, bias).rgb;
+	col *= mix(0.84, 1.1, mac.r);
+	col *= mix(vec3(1.04, 0.99, 0.92), vec3(0.95, 0.99, 1.04), mac.g * 0.6);
+	col = mix(col, col * vec3(1.08, 1.0, 0.86), (mac.b - 0.5) * 0.35 * (a.r + a.g));
+	vec3 n_t = vec3(0.0, 0.0, 1.0);
+	float rough = 0.92 - b.r * 0.12;
+	float ao = 1.0;
+	if (hi) {
+		n_t = vec3(nr.rg * 2.0 - 1.0, 0.0);
+		rough = mix(rough, nr.b, 0.85);
+		ao = mix(1.0, nr.a, 0.7);
+		// detail layer: fades in near the camera
+		float dist = length(wpos - CAMERA_POSITION_WORLD);
+		float df = smoothstep(42.0, 16.0, dist);
+		if (df > 0.01) {
+			vec3 d = texture(t_detail, p * 1.1).rgb;
+			col *= mix(1.0, 0.75 + d.r * 0.5, df * 0.55);
+			n_t.xy += (d.gb * 2.0 - 1.0) * 0.45 * df;
+		}
+		n_t.z = sqrt(max(0.0, 1.0 - dot(n_t.xy, n_t.xy)));
+		// tangent frame from world axes (terrain UVs are planar world XZ)
+		vec3 N = normalize(wnrm);
+		vec3 T = normalize(vec3(1.0, 0.0, 0.0) - N * N.x);
+		vec3 B = cross(N, T);
+		vec3 nw = normalize(T * n_t.x - B * n_t.y + N * n_t.z);
+		NORMAL = normalize((VIEW_MATRIX * vec4(nw, 0.0)).xyz);
+	}
 	// fog of war
 	float f = texture(fog_tex, p / map_size).r;
 	float vis = smoothstep(0.55, 0.95, f);
@@ -67,6 +101,8 @@ void fragment() {
 	vec3 grey = vec3(dot(col, vec3(0.3, 0.59, 0.11)));
 	vec3 fogged = mix(grey, col, 0.45) * 0.5;
 	ALBEDO = mix(vec3(0.0), mix(fogged, col, vis), expl);
-	ROUGHNESS = 0.92 - b.r * 0.12;
+	ROUGHNESS = rough;
+	AO = ao;
+	AO_LIGHT_AFFECT = 0.4;
 	SPECULAR = 0.25;
 }

@@ -9,6 +9,7 @@ var data := {
 	"ghost_offset_mm": 12.0,
 	"hold_action": "attack_move",   # attack_move | move
 	"render_scale": 0.75,
+	"texture_quality": "high",      # high | medium (M2)
 	"fps_cap": 60,
 	"perf_overlay": false,
 	"always_health_bars": false,
@@ -49,6 +50,9 @@ func save_settings() -> void:
 
 func apply() -> void:
 	Engine.max_fps = int(data["fps_cap"])
+	# High: terrain normal/roughness/AO maps, close-range detail layer, model scratches and
+	# stencils. Medium: albedo only, one mip level of bias (less bandwidth, cheaper shaders).
+	RenderingServer.global_shader_parameter_set(&"fl_tex_quality", 1.0 if data["texture_quality"] == "high" else 0.0)
 	var vp := get_viewport()
 	if vp:
 		vp.scaling_3d_scale = float(data["render_scale"])

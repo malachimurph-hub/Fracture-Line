@@ -44,18 +44,18 @@ _surfaces = [{
 "vertex_data": PackedByteArray("AACAv65HIT+amZm+zMzMvq5HIT+amZm+AACAv/YoHD+amZm+zMzMvvYoHD+amZm+zMzMvq5HIT8zMzO/AACAv65HIT8zMzO/zMzMvvYoHD8zMzO/AACAv/YoHD8zMzO/zMzMvq5HIT+amZm+zMzMvq5HIT8zMzO/zMzMvvYoHD+amZm+zMzMvvYoHD8zMzO/AACAv65HIT8zMzO/AACAv65HIT+amZm+AACAv/YoHD8zMzO/AACAv/YoHD+amZm+zMzMvq5HIT+amZm+AACAv65HIT+amZm+zMzMvq5HIT8zMzO/AACAv65HIT8zMzO/AACAv/YoHD+amZm+zMzMvvYoHD+amZm+AACAv/YoHD8zMzO/zMzMvvYoHD8zMzO/SOGaP8L1qD9I4Zo/xPXIP8L1qD9I4Zo/SOGaP8zMjD9I4Zo/xPXIP8zMjD9I4Zo/xPXIP8L1qD/sUZg/SOGaP8L1qD/sUZg/xPXIP8zMjD/sUZg/SOGaP8zMjD/sUZg/xPXIP8L1qD9I4Zo/xPXIP8L1qD/sUZg/xPXIP8zMjD9I4Zo/xPXIP8zMjD/sUZg/SOGaP8L1qD/sUZg/SOGaP8L1qD9I4Zo/SOGaP8zMjD/sUZg/SOGaP8zMjD9I4Zo/xPXIP8L1qD9I4Zo/SOGaP8L1qD9I4Zo/xPXIP8L1qD/sUZg/SOGaP8L1qD/sUZg/SOGaP8zMjD9I4Zo/xPXIP8zMjD9I4Zo/SOGaP8zMjD/sUZg/xPXIP8zMjD/sUZg//3//fwCAAID/f/9/AIAAgP9//38AgACA/3//fwCAAID//////38AgP//////fwCA//////9/AID//////38AgP//AIAAgP+///8AgACA/7///wCAAID/v///AIAAgP+/AAAAgP9//78AAACA/3//vwAAAID/f/+/AAAAgP9//78AgP//AAD/vwCA//8AAP+/AID//wAA/78AgP//AAD/vwCAAAAAAP+/AIAAAAAA/78AgAAAAAD/vwCAAAAAAP+//3//fwCAAID/f/9/AIAAgP9//38AgACA/3//fwCAAID//////38AgP//////fwCA//////9/AID//////38AgP//AIAAgP+///8AgACA/7///wCAAID/v///AIAAgP+/AAAAgP9//78AAACA/3//vwAAAID/f/+/AAAAgP9//78AgP//AAD/vwCA//8AAP+/AID//wAA/78AgP//AAD/vwCAAAAAAP+/AIAAAAAA/78AgAAAAAD/vwCAAAAAAP+/")
 }]
 
-[node name="View" type="Node3D" unique_id=735302068]
+[node name="View" type="Node3D" unique_id=1258008681]
 script = ExtResource("1_kk0r5")
 selection_radius = 1.5
 bar_height = 1.5999999642372131
 footprint = Vector2(3, 3)
 is_structure = true
 
-[node name="Model" type="Node3D" parent="." unique_id=1211320586]
+[node name="Model" type="Node3D" parent="." unique_id=1047099206]
 
-[node name="Body" type="MeshInstance3D" parent="Model" unique_id=527762907]
+[node name="Body" type="MeshInstance3D" parent="Model" unique_id=290298116]
 mesh = SubResource("ArrayMesh_f8ckc")
 metadata/team_surface = 2
 
-[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=450869886]
+[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=1907856060]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5999999, 0)
