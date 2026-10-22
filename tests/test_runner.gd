@@ -959,9 +959,16 @@ func test_tpla() -> void:
 	TplaSys.spawn_crate(w, rat.pos, 150)
 	_ticks(r, 25)
 	TplaSys.spawn_crate(w, rat.pos, 150)
+	# count only the crate's cash (Laborers keep harvesting in the background, so the raw
+	# Supply delta also contains harvest income)
+	var cash := 0
 	var s0: int = p0.supply
-	_ticks(r, 25)
-	_check(rat.tier == 3 and p0.supply == s0 + 150, "tier caps at 3, extra crates become Supply (tier %d, +%d)" % [rat.tier, p0.supply - s0])
+	for i in 25:
+		r.advance()
+		for ev in w.events:
+			if ev["t"] == "crate_cash" and int(ev["id"]) == rat.id:
+				cash += int(ev["amount"])
+	_check(rat.tier == 3 and cash == 150 and p0.supply - s0 >= 150, "tier caps at 3, extra crates become Supply (tier %d, crate +%d, Supply +%d incl. harvest)" % [rat.tier, cash, p0.supply - s0])
 	var eu_tank := w.spawn_unit(&"eu_leopold", 1, null, FX.tile_center(base + Vector2i(8, 8)))
 	_ticks(r, 1)
 	var crates0 := 0
