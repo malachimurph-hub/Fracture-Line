@@ -4326,7 +4326,7 @@
 "engine": "kokoro-82m (Apache-2.0) m26",
 "qa": 0.67,
 "take": 1,
-"heard": ", firing main guns."
+"heard": "Firing main guns."
 },
 {
 "file": "audio/voice_ai/us/halberd/attack_4.ogg",
@@ -4350,9 +4350,9 @@
 "fx": "intercom",
 "who": "Rough veteran tank commander, gravel voice",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.6,
-"take": 0,
-"heard": "How-albert main battle some credit"
+"qa": 1.0,
+"take": 2,
+"heard": "Helbert, main battle tank, ready."
 },
 {
 "file": "audio/voice_ai/us/halberd/created_2.ogg",
@@ -4493,9 +4493,9 @@
 "fx": "intercom",
 "who": "Rough veteran tank commander, gravel voice",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.33,
+"qa": 1.0,
 "take": 1,
-"heard": "I'm going  under the"
+"heard": "Armor under fire."
 },
 {
 "file": "audio/voice_ai/us/halberd/veteran_1.ogg",
@@ -4584,9 +4584,9 @@
 "fx": "helmet",
 "who": "Cool attack-helicopter pilot",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.5,
-"take": 1,
-"heard": "Gunship"
+"qa": 1.0,
+"take": 0,
+"heard": "Gunship Airborne"
 },
 {
 "file": "audio/voice_ai/us/harrier/move_1.ogg",
@@ -4612,7 +4612,7 @@
 "engine": "kokoro-82m (Apache-2.0) m26",
 "qa": 0.5,
 "take": 1,
-"heard": "On route"
+"heard": "On route."
 },
 {
 "file": "audio/voice_ai/us/harrier/move_3.ogg",
@@ -5483,7 +5483,7 @@
 "engine": "kokoro-82m (Apache-2.0) m26",
 "qa": 0.5,
 "take": 0,
-"heard": "Hit, hit."
+"heard": "Hit M"
 },
 {
 "file": "audio/voice_ai/us/lynx/attack_4.ogg",
@@ -5496,7 +5496,7 @@
 "engine": "kokoro-82m (Apache-2.0) m26",
 "qa": 0.5,
 "take": 0,
-"heard": "50-50s talking"
+"heard": "50's talking"
 },
 {
 "file": "audio/voice_ai/us/lynx/created_1.ogg",
@@ -5509,7 +5509,7 @@
 "engine": "kokoro-82m (Apache-2.0) m26",
 "qa": 0.5,
 "take": 0,
-"heard": "Link's reporting...."
+"heard": "renowned for the fact that as well as the other people's life., links reporting."
 },
 {
 "file": "audio/voice_ai/us/lynx/created_2.ogg",
@@ -5587,7 +5587,7 @@
 "engine": "kokoro-82m (Apache-2.0) m26",
 "qa": 0.5,
 "take": 0,
-"heard": "Links ready the"
+"heard": "Link's ready."
 },
 {
 "file": "audio/voice_ai/us/lynx/select_2.ogg",
@@ -5689,9 +5689,9 @@
 "fx": "helmet",
 "who": "Crisp, alert air-defence gunner",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.75,
-"take": 1,
-"heard": "in the air."
+"qa": 1.0,
+"take": 0,
+"heard": "Bird in the air."
 },
 {
 "file": "audio/voice_ai/us/picket/attack_3.ogg",
@@ -5884,9 +5884,9 @@
 "fx": "helmet",
 "who": "Crisp, alert air-defence gunner",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.25,
-"take": 0,
-"heard": "Faster,,"
+"qa": 1.0,
+"take": 2,
+"heard": "Faster lock-ons and now"
 },
 {
 "file": "audio/voice_ai/us/sniper/attack_1.ogg",
@@ -6339,9 +6339,9 @@
 "fx": "mask",
 "who": "Deep, deadpan bomber pilot",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.67,
-"take": 1,
-"heard": "Doors Open,,"
+"qa": 1.0,
+"take": 0,
+"heard": "doors open releasing"
 },
 {
 "file": "audio/voice_ai/us/thunderlance/attack_3.ogg",
@@ -6391,9 +6391,9 @@
 "fx": "mask",
 "who": "Deep, deadpan bomber pilot",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.75,
-"take": 3,
-"heard": "Bomber armed and reddies."
+"qa": 1.0,
+"take": 1,
+"heard": "Bomber armed and ready."
 },
 {
 "file": "audio/voice_ai/us/thunderlance/move_1.ogg",
@@ -6651,9 +6651,9 @@
 "fx": "mask",
 "who": "Cocky fighter pilot in an oxygen mask",
 "engine": "kokoro-82m (Apache-2.0) m26",
-"qa": 0.67,
-"take": 0,
-"heard": "ny,.  copy on route."
+"qa": 1.0,
+"take": 2,
+"heard": "Copy en route."
 },
 {
 "file": "audio/voice_ai/us/wraith/move_4.ogg",
