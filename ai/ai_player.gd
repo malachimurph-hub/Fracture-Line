@@ -928,15 +928,37 @@ func _knows_enemy_structure() -> bool:
 	return false
 
 func _hunt_points() -> Array:
+	# M2.6: the sweep used to visit only spawns + 9 coarse points, so a lone expansion Supply
+	# Hub or barracks off that path could survive to the 40:00 cap. Order now: enemy spawns,
+	# then every resource site (where expansions are built), then a ~20-tile grid; each group
+	# sorted by distance from the target enemy's spawn so the likely hideouts are checked first.
 	var out: Array = []
 	var map_def: MapDef = Content.maps[w.map_id]
+	var anchor := base_pos()
+	for p in w.players:
+		if not p.eliminated and w.enemies(me().team, p.team):
+			anchor = _spawn_of(p.id)
+			break
 	for sp in map_def.spawns:
 		out.append(FX.tile_center(sp + Vector2i(2, 2)))
+	var res_pts: Array = []
+	for rd: Dictionary in map_def.resources:
+		res_pts.append(FX.tile_center(rd["tile"]))
+	res_pts.sort_custom(func(a: Vector2i, b: Vector2i) -> bool: return FX.dist2(a, anchor) < FX.dist2(b, anchor))
+	out.append_array(res_pts)
 	var W := w.map.w
 	var H := w.map.h
-	for f: Vector2 in [Vector2(0.5, 0.5), Vector2(0.25, 0.25), Vector2(0.75, 0.25), Vector2(0.25, 0.75), Vector2(0.75, 0.75), Vector2(0.5, 0.15), Vector2(0.5, 0.85), Vector2(0.15, 0.5), Vector2(0.85, 0.5)]:
-		var t := w.map.nearest_passable(Vector2i(int(W * f.x), int(H * f.y)), false)
-		out.append(FX.tile_center(t))
+	var grid: Array = []
+	var step := 20
+	var y := step / 2
+	while y < H:
+		var x := step / 2
+		while x < W:
+			grid.append(FX.tile_center(w.map.nearest_passable(Vector2i(x, y), false)))
+			x += step
+		y += step
+	grid.sort_custom(func(a: Vector2i, b: Vector2i) -> bool: return FX.dist2(a, anchor) < FX.dist2(b, anchor))
+	out.append_array(grid)
 	return out
 
 func _spawn_of(p_id: int) -> Vector2i:

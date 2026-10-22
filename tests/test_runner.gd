@@ -401,7 +401,7 @@ func run_match(mode: String, seed: int, verbose: bool, max_minutes: int = 40, di
 				var tgt: SimEntity = r.sim.ents[ev["id"]]
 				if tgt.kind == SimEntity.Kind.BUILDING and not first_attack.has(ev["by"]):
 					first_attack[ev["by"]] = r.sim.tick / 20
-		if r.sim.tick == 36000 or (r.sim.tick == max_ticks - 1):
+		if (r.sim.tick >= 36000 and r.sim.tick % 2400 == 0) or (r.sim.tick == max_ticks - 1):
 			_stall_diag(r)
 		if r.sim.tick == 6000 or r.sim.tick == 12000:
 			snap += " t%d:" % (r.sim.tick / 1200)
@@ -485,6 +485,11 @@ func _stall_diag(r: MatchRunner) -> void:
 					wl.append(we)
 			ai_s = " wave_n=%d wave=%d at %s idle=%d knows=%s" % [int(ai.bb["wave_n"]), wl.size(), FX.to_tile(ai._centroid(wl)) if not wl.is_empty() else Vector2i(-1, -1),
 				wl.filter(func(x): return x.is_idle()).size(), ai._knows_enemy_structure()]
+			var oc := {}
+			for we: SimEntity in wl:
+				var o: String = we.orders[0].get("o", "?") if not we.orders.is_empty() else "idle"
+				oc[o] = int(oc.get(o, 0)) + 1
+			ai_s += " orders=%s threat_age=%d hunt_i=%d" % [oc, s.tick - int(ai.bb["threat_tick"]), int(ai.bb.get("hunt_i", 0))]
 		print("     P%d %s $%d pop %d/%d units %d army$%d keep=%s%s" % [p.id, p.faction, p.supply, p.pop, p.pop_cap, units, army, keep, ai_s])
 
 func _print_state(r: MatchRunner) -> void:
