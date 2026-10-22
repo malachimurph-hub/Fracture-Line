@@ -13,7 +13,7 @@ tpla_den,BLD_TPLA_DEN,base,2500,45000,4,4,4600,0,0,10,,tpla_laborer,1,0,0,,0,,0,
 tpla_stash,BLD_TPLA_STASH,base,1500,14000,3,3,1300,0,0,6,,tpla_laborer,0,1,0,tpla_laborer,0,,0,0,0,0,1,,,0
 tpla_camp,BLD_TPLA_CAMP,production,500,9000,3,3,1100,0,0,6,,tpla_militia|tpla_rocket_cell,0,0,0,,0,,0,0,0,0,1,,,0
 tpla_chop_shop,BLD_TPLA_CHOP_SHOP,production,1600,16000,4,4,1700,0,0,6,tpla_camp,tpla_rattler|tpla_scrapback|tpla_hailstorm|tpla_shrike|tpla_mule|tpla_blight,0,0,0,,0,,0,0,0,0,1,,,0
-tpla_tunnel,BLD_TPLA_TUNNEL,defense,800,10000,2,2,1000,0,0,8,tpla_camp,,0,0,0,,0,tpla_tunnel_mg,0,10,0,0,1,,tunnel,0
+tpla_tunnel,BLD_TPLA_TUNNEL,defense,600,8000,2,2,1000,0,0,8,tpla_camp,,0,0,0,,0,tpla_tunnel_mg,0,10,0,0,1,,tunnel,0
 tpla_workshop,BLD_TPLA_WORKSHOP,tech,1500,15000,3,3,1500,0,0,6,tpla_chop_shop,,0,0,0,,0,,0,0,0,0,1,,,0
 tpla_bazaar,BLD_TPLA_BAZAAR,tech,2500,18000,3,3,1300,0,0,6,tpla_workshop,,0,0,6,,0,,0,0,0,0,1,,,0
 tpla_demo_trap,BLD_TPLA_DEMO_TRAP,defense,200,4000,1,1,150,0,0,3,tpla_camp,,0,0,0,,0,,0,0,0,0,1,,trap|stealth|no_hole,0

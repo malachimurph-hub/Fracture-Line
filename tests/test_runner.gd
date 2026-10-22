@@ -146,7 +146,9 @@ func _ready() -> void:
 			var re := MatchRunner.new()
 			re.record_replay = false
 			var dfs := String(args[3]) if args.size() > 3 else "medium"
-			re.start(make_cfg("1v1", int(args[1]) if args.size() > 1 else 21, [dfs, dfs], ["eu", "tpla"]))
+			# arg 4: spawn rotation as in soak (seed pair index); arg 5: "swap" puts TPLA in slot 0
+			var efacs := ["tpla", "eu"] if args.size() > 5 and args[5] == "swap" else ["eu", "tpla"]
+			re.start(make_cfg("1v1", int(args[1]) if args.size() > 1 else 21, [dfs, dfs], efacs, int(args[4]) if args.size() > 4 else 0))
 			var mins := int(args[2]) if args.size() > 2 else 8
 			var deaths := {}
 			for mi in mins:

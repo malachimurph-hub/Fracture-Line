@@ -281,8 +281,10 @@ func _pick_unit(bd: BuildingDef) -> StringName:
 			wgt = 0
 		if ud.tags.has("at") and enemy_armor > enemy_inf:
 			wgt *= 2
+		elif ud.tags.has("at") and enemy_inf > enemy_armor * 2:
+			wgt = wgt / 2       # rockets are wasted on infantry; grenadiers shred slow AT teams
 		if sid == &"tpla_hailstorm":
-			wgt = wgt * 4 if enemy_air > 0 else (wgt * 2 if enemy_inf > enemy_armor else wgt)
+			wgt = wgt * 4 if enemy_air > 0 else (wgt * 3 if enemy_inf > enemy_armor else wgt)   # the quad gun is the GLA answer to infantry
 		if sid == &"tpla_militia" and enemy_inf > enemy_armor:
 			wgt = wgt * 3 / 2
 		elif sid == &"tpla_militia" and enemy_armor > enemy_inf:
