@@ -188,16 +188,18 @@ static func formation_slots(w: SimWorld, center: Vector2i, n: int, vehicle: bool
 static func _place(w: SimWorld, pid: int, c: Dictionary) -> void:
 	var def_id := StringName(c.get("def", ""))
 	var t: Vector2i = c.get("tile", Vector2i.ZERO)
-	var reason := w.can_place(pid, def_id, t)
-	if reason != "":
-		w.events.append({"t": "reject", "owner": pid, "reason": reason})
-		return
 	var builders: Array = []
+	var bids: Array = []
 	for u: SimEntity in _own_units(w, pid, c):
 		if w.udef(u).tags.has("builder"):
 			builders.append(u)
+			bids.append(u.id)
 	if builders.is_empty():
 		w.events.append({"t": "reject", "owner": pid, "reason": "REASON_NO_BUILDER"})
+		return
+	var reason := w.can_place(pid, def_id, t, true, bids)
+	if reason != "":
+		w.events.append({"t": "reject", "owner": pid, "reason": reason})
 		return
 	var d: BuildingDef = Content.building(def_id)
 	w.players[pid].supply -= d.cost

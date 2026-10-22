@@ -467,7 +467,7 @@ func move_ghost_tile(t: Vector2i) -> void:
 	_revalidate()
 
 func _revalidate() -> void:
-	place_reason = sim.can_place(pid, place_def, place_tile)
+	place_reason = sim.can_place(pid, place_def, place_tile, true, place_builders)
 	world.show_ghost(place_def, place_tile, place_rot, place_reason == "", pid)
 	mode_changed.emit()
 

@@ -64,6 +64,8 @@ func _ready() -> void:
 			test_replay()
 		"saveload":
 			test_saveload()
+		"corners":
+			test_corners()
 		"placement":
 			test_placement()
 		"audio":
@@ -570,7 +572,7 @@ func test_placement() -> void:
 	_check(w.can_place(0, &"eu_reactor", water) in ["REASON_TERRAIN", "REASON_BLOCKED", "REASON_RESOURCE"], "water is not buildable (%s)" % w.can_place(0, &"eu_reactor", water))
 	# 3. overlapping the HQ -> blocked
 	_check(w.can_place(0, &"eu_reactor", hq.tile) == "REASON_BLOCKED", "overlapping a building is blocked")
-	# 4. black shroud -> forbidden (ZH)
+	# 4. unexplored shroud is buildable too (user rule: no build range of any kind)
 	var r2 := MatchRunner.new()
 	r2.record_replay = false
 	r2.start(make_cfg("1v1", 3))
@@ -578,10 +580,11 @@ func test_placement() -> void:
 	var sh := Vector2i(-1, -1)
 	for i in w2.map.w * w2.map.h:
 		var t3 := Vector2i(i % w2.map.w, i / w2.map.w)
-		if not w2.fog.explored_tile(0, t3) and SimMap.BUILD_OK[w2.map.tiles[i]] and w2.map.nobuild[i] == 0 and t3.x > 2 and t3.y > 2 and t3.x < w2.map.w - 6 and t3.y < w2.map.h - 6:
+		if not w2.fog.explored_tile(0, t3) and SimMap.BUILD_OK[w2.map.tiles[i]] and w2.map.nobuild[i] == 0 and t3.x > 2 and t3.y > 2 and t3.x < w2.map.w - 6 and t3.y < w2.map.h - 6 \
+				and w2.can_place(0, &"eu_reactor", t3) == "":
 			sh = t3
 			break
-	_check(w2.can_place(0, &"eu_reactor", sh) == "REASON_SHROUD", "unexplored shroud is not buildable (%s)" % w2.can_place(0, &"eu_reactor", sh))
+	_check(sh.x >= 0, "unexplored shroud is buildable (%s)" % sh)
 	# 5. a placed far site is actually built by the Crawler driving there
 	var crawler: SimEntity = null
 	for id in w.ids:
@@ -598,6 +601,71 @@ func test_placement() -> void:
 			built = true
 			break
 	_check(built, "Crawler drives %d tiles and finishes a Reactor away from the base" % int((site - ht).length()))
+	print("=== RESULT: %s" % ("FAIL" if failed else "PASS"))
+
+## No build range at all: from the start of a match, with fog on, a builder of each faction
+## can be sent to all four far corners of the map (black shroud); one far-corner site is then
+## actually driven to and finished. Unreachable spots report REASON_UNREACHABLE.
+func test_corners() -> void:
+	for fac in ["eu", "tpla"]:
+		var r := MatchRunner.new()
+		r.record_replay = false
+		r.start(make_cfg("1v1", 5, ["medium", "medium"], [fac, "eu"]))
+		r.ais.clear()   # no AI on either side: this checks placement and driving, not survival
+		var w := r.sim
+		var bid: StringName = &"eu_reactor" if fac == "eu" else &"tpla_camp"
+		var builder: SimEntity = null
+		var home := Vector2i.ZERO
+		for id in w.ids:
+			var e: SimEntity = w.ents[id]
+			if e.owner == 0 and e.kind == SimEntity.Kind.UNIT and w.udef(e).tags.has("builder"):
+				builder = e
+			if e.owner == 0 and e.kind == SimEntity.Kind.BUILDING:
+				home = e.tile
+		var fp: Vector2i = Content.building(bid).footprint
+		var corners := [Vector2i(2, 2), Vector2i(w.map.w - 3 - fp.x, 2), Vector2i(2, w.map.h - 3 - fp.y), Vector2i(w.map.w - 3 - fp.x, w.map.h - 3 - fp.y)]
+		var far_site := Vector2i(-1, -1)
+		var far_d := -1.0
+		for c: Vector2i in corners:
+			# nearest valid spot to the corner (corners can hold a cliff, river or decor)
+			var spot := Vector2i(-1, -1)
+			var reason := ""
+			for rr in 14:
+				for yy in range(-rr, rr + 1):
+					for xx in range(-rr, rr + 1):
+						if spot.x >= 0 or maxi(absi(xx), absi(yy)) != rr:
+							continue
+						var t := c + Vector2i(xx, yy)
+						var why := w.can_place(0, bid, t, true, [builder.id])
+						if why == "":
+							spot = t
+						elif reason == "":
+							reason = why
+			var shroud := spot.x >= 0 and not w.fog.explored_tile(w.players[0].team, spot)
+			_check(spot.x >= 0 and shroud, "%s: %s placeable in black shroud near corner %s at %s, %d tiles from base (first reject seen: %s)" % [fac, bid, c, spot, int((spot - home).length()), reason])
+			if spot.x >= 0 and (spot - home).length() > far_d:
+				far_d = (spot - home).length()
+				far_site = spot
+		# drive to the farthest corner and build it
+		w.players[0].supply = 50000
+		r.issue({"p": 0, "t": "place", "ids": [builder.id], "def": String(bid), "tile": far_site, "rot": 0})
+		var built := false
+		for i in 20 * 600:
+			r.advance()
+			var occ := w.map.occ[w.map.idx(far_site)]
+			if occ != 0 and w.get_ent(occ) != null and w.get_ent(occ).owner == 0 and w.get_ent(occ).built:
+				built = true
+				print("  built after %d s" % (i / 20))
+				break
+		_check(built, "%s builder drives %d tiles into the far corner and finishes the %s (builder alive=%s at %s, orders=%s)" % [fac, int(far_d), bid, builder.alive, FX.to_tile(builder.pos), builder.orders])
+		# a water tile reports a reason, never silently refuses
+		var water := Vector2i(-1, -1)
+		for i in w.map.w * w.map.h:
+			if w.map.tiles[i] == SimMap.T.WATER:
+				water = Vector2i(i % w.map.w, i / w.map.w)
+				break
+		var wr := w.can_place(0, bid, water, true, [builder.id])
+		_check(wr != "" and TranslationServer.translate(wr) != wr, "%s: water gives a readable reason (%s = '%s')" % [fac, wr, tr(wr)])
 	print("=== RESULT: %s" % ("FAIL" if failed else "PASS"))
 
 func test_content() -> void:

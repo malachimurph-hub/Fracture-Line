@@ -267,7 +267,7 @@ func edge_dist(a: SimEntity, b: SimEntity) -> int:
 
 # ------------------------------------------------------------------ placement
 ## Returns "" if valid, else a localization key with the reason.
-func can_place(pid: int, def_id: StringName, t: Vector2i, check_cost: bool = true) -> String:
+func can_place(pid: int, def_id: StringName, t: Vector2i, check_cost: bool = true, builder_ids: Array = []) -> String:
 	var d: BuildingDef = Content.building(def_id)
 	if d == null or not d.buildable:
 		return "REASON_INVALID"
@@ -294,43 +294,64 @@ func can_place(pid: int, def_id: StringName, t: Vector2i, check_cost: bool = tru
 	for u: SimEntity in units_in_radius(center, maxi(d.footprint.x, d.footprint.y) * FX.ONE):
 		if enemies(u.team, p.team):
 			return "REASON_ENEMY"
-	# Zero Hour rules: no build radius - a dozer builds anywhere it can drive to, on
-	# terrain the player has explored (never in black shroud).
-	if fog != null and not fog.disabled:
-		for yy in d.footprint.y:
-			for xx in d.footprint.x:
-				if not fog.explored_tile(p.team, Vector2i(t.x + xx, t.y + yy)):
-					return "REASON_SHROUD"
-	if not d.is_hq and not _builder_can_reach(pid, t, d.footprint):
+	# Zero Hour rules: no build radius and no explored-ground rule. A builder can be sent
+	# anywhere it can physically get to, shroud included; it drives there itself.
+	if not d.is_hq and not _builder_can_reach(pid, t, d.footprint, builder_ids):
 		return "REASON_UNREACHABLE"
 	return ""
 
-## True if one of the player's builders shares a drivable region with the footprint's edge.
-## Builder regions are cached per tick (placement searches call this hundreds of times).
+## True if one of the player's builders (or of builder_ids when given) shares a region with the
+## footprint's border, using foot regions for foot builders and vehicle regions otherwise.
+## The player's builder regions are cached per tick (AI placement searches call this a lot).
 var _reach_tick := -1
-var _reach: Dictionary = {}   ## pid -> {region: true}, or {-1: true} when the player has no builder
-func _builder_can_reach(pid: int, t: Vector2i, fp: Vector2i) -> bool:
-	if _reach_tick != tick:
-		_reach_tick = tick
-		_reach.clear()
-	if not _reach.has(pid):
-		var rs := {}
-		for id in ids:
-			var e: SimEntity = ents[id]
-			if e.alive and e.owner == pid and e.kind == SimEntity.Kind.UNIT and udef(e).tags.has("builder"):
-				var bt := FX.to_tile(e.pos)
-				if map.in_bounds(bt):
-					rs[map.region[map.idx(bt)]] = true
-					rs[-2] = true
-		if rs.is_empty():
-			rs[-1] = true
-		_reach[pid] = rs
-	var mine: Dictionary = _reach[pid]
-	if mine.has(-1):
-		return true   # no builder alive: the command itself is rejected (REASON_NO_BUILDER)
-	for r in map.footprint_regions(t, fp):
-		if mine.has(r):
-			return true
+var _reach: Dictionary = {}   ## pid -> {"v3": true, "f1": true}, or {"none": true}
+func _builder_regions(ids_in: Array) -> Dictionary:
+	var rs := {}
+	for id in ids_in:
+		var e: SimEntity = ents.get(int(id))
+		if e == null or not e.alive or e.kind != SimEntity.Kind.UNIT or not udef(e).tags.has("builder"):
+			continue
+		var foot := udef(e).move_layer == &"foot"
+		var rg := map.region_near(FX.to_tile(e.pos), foot)
+		if rg != 0:
+			rs[("f" if foot else "v") + str(rg)] = true
+		else:
+			rs["stuck"] = true
+	if rs.is_empty():
+		rs["none"] = true
+	return rs
+
+func _builder_can_reach(pid: int, t: Vector2i, fp: Vector2i, builder_ids: Array = []) -> bool:
+	var mine: Dictionary
+	if not builder_ids.is_empty():
+		mine = _builder_regions(builder_ids)
+	else:
+		if _reach_tick != tick:
+			_reach_tick = tick
+			_reach.clear()
+		if not _reach.has(pid):
+			var own: Array = []
+			for id in ids:
+				var e: SimEntity = ents[id]
+				if e.alive and e.owner == pid and e.kind == SimEntity.Kind.UNIT:
+					own.append(id)
+			_reach[pid] = _builder_regions(own)
+		mine = _reach[pid]
+	if mine.has("none"):
+		return true   # no builder: the command itself is rejected (REASON_NO_BUILDER)
+	var has_f := false
+	var has_v := false
+	for k: String in mine:
+		has_f = has_f or k.begins_with("f")
+		has_v = has_v or k.begins_with("v")
+	if has_v:
+		for r in map.footprint_regions(t, fp, false):
+			if mine.has("v" + str(r)):
+				return true
+	if has_f:
+		for r in map.footprint_regions(t, fp, true):
+			if mine.has("f" + str(r)):
+				return true
 	return false
 
 func in_grid(pid: int, p: Vector2i) -> bool:

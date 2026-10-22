@@ -19,6 +19,8 @@ var pf: Pathfinder
 ## Static vehicle-terrain connectivity (flood fill at load, ignores buildings). 0 = not
 ## vehicle-passable. Zero Hour lets a dozer build anywhere it can drive to.
 var region: PackedInt32Array
+## Same for foot builders (TPLA Laborers walk through forest and fords).
+var foot_region: PackedInt32Array
 
 func load_from(def: MapDef) -> void:
 	w = def.size.x
@@ -45,11 +47,15 @@ func load_from(def: MapDef) -> void:
 	_build_regions()
 
 func _build_regions() -> void:
-	region = PackedInt32Array()
+	region = _flood(VEH_OK)
+	foot_region = _flood(FOOT_OK)
+
+func _flood(ok: Array) -> PackedInt32Array:
+	var region := PackedInt32Array()
 	region.resize(w * h)
 	var next := 1
 	for start in w * h:
-		if region[start] != 0 or not VEH_OK[tiles[start]]:
+		if region[start] != 0 or not ok[tiles[start]]:
 			continue
 		var stack := PackedInt32Array([start])
 		region[start] = next
@@ -64,13 +70,29 @@ func _build_regions() -> void:
 				if nx < 0 or ny < 0 or nx >= w or ny >= h:
 					continue
 				var j := ny * w + nx
-				if region[j] == 0 and VEH_OK[tiles[j]]:
+				if region[j] == 0 and ok[tiles[j]]:
 					region[j] = next
 					stack.append(j)
 		next += 1
+	return region
 
-## Vehicle region a building footprint touches (any passable tile on its border ring).
-func footprint_regions(t: Vector2i, fp: Vector2i) -> Dictionary:
+## Region of a tile for a move layer; if the tile itself is not passable (a unit standing
+## on a building edge, a seam, a bridge end) the nearest passable tile within 3 is used.
+func region_near(t: Vector2i, foot: bool) -> int:
+	var reg := foot_region if foot else region
+	for r in 4:
+		for yy in range(-r, r + 1):
+			for xx in range(-r, r + 1):
+				if maxi(absi(xx), absi(yy)) != r:
+					continue
+				var c := t + Vector2i(xx, yy)
+				if in_bounds(c) and reg[idx(c)] != 0:
+					return reg[idx(c)]
+	return 0
+
+## Regions (vehicle, or foot) a building footprint touches (any passable tile on its border ring).
+func footprint_regions(t: Vector2i, fp: Vector2i, foot: bool = false) -> Dictionary:
+	var reg := foot_region if foot else region
 	var out := {}
 	for yy in range(-1, fp.y + 1):
 		for xx in range(-1, fp.x + 1):
@@ -78,7 +100,7 @@ func footprint_regions(t: Vector2i, fp: Vector2i) -> Dictionary:
 				continue
 			var c := Vector2i(t.x + xx, t.y + yy)
 			if in_bounds(c):
-				var r := region[idx(c)]
+				var r := reg[idx(c)]
 				if r != 0:
 					out[r] = true
 	return out
