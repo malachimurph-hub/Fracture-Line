@@ -65,6 +65,8 @@ func _ready() -> void:
 			test_audio()
 		"content":
 			test_content()
+		"tpla":
+			test_tpla()
 		"stall":
 			var r2 := MatchRunner.new()
 			r2.record_replay = false
@@ -557,3 +559,174 @@ func test_content() -> void:
 	print("PCG32 seed(42,54) first outputs: ", seq, " (reference 0xa15c02b7=", 0xa15c02b7, ", 0x7b47f409=", 0x7b47f409, ")")
 	if seq[0] != 0xa15c02b7 or seq[1] != 0x7b47f409:
 		failed = true
+
+# ------------------------------------------------------------------ M2: TPLA mechanics
+func _tpla_spot(w: SimWorld, pid: int, def_id: StringName, near: Vector2i, skip: int = 0) -> Vector2i:
+	var found := 0
+	for r in range(3, 40):
+		for dy in range(-r, r + 1):
+			for dx in range(-r, r + 1):
+				if absi(dx) != r and absi(dy) != r:
+					continue
+				var t := near + Vector2i(dx, dy)
+				if w.can_place(pid, def_id, t, false) == "":
+					if found == skip:
+						return t
+					found += 1
+	return Vector2i(-1, -1)
+
+func _tpla_place(w: SimWorld, pid: int, def_id: StringName, near: Vector2i, skip: int = 0) -> SimEntity:
+	var t := _tpla_spot(w, pid, def_id, near, skip)
+	if t.x < 0:
+		return null
+	return w._place_building(Content.building(def_id), pid, t, 0, true)
+
+func _ticks(r: MatchRunner, n: int) -> void:
+	for i in n:
+		r.advance()
+
+func test_tpla() -> void:
+	var r := MatchRunner.new()
+	r.record_replay = false
+	r.start(make_cfg("1v1", 11, [], ["tpla", "eu"]))
+	r.ais.clear()   # scripted test: no AI orders
+	var w := r.sim
+	var ex: PackedByteArray = w.fog.explored[0]
+	ex.fill(1)
+	w.fog.explored[0] = ex
+	var den: SimEntity = null
+	for id in w.ids:
+		var e: SimEntity = w.ents[id]
+		if e.owner == 0 and e.def_id == &"tpla_den":
+			den = e
+	_check(den != null and w.faction_of(0) == &"tpla" and w.has_tpla, "TPLA player starts with a Den")
+	var base := FX.to_tile(den.pos)
+	w.players[0].supply = 20000
+	# --- no power needed
+	var camp := _tpla_place(w, 0, &"tpla_camp", base)
+	_tpla_place(w, 0, &"tpla_chop_shop", base)
+	_ticks(r, 2)
+	var p0: SimPlayer = w.players[0]
+	_check(not Content.faction(&"tpla")["power"] and p0.power_prod == 0 and not p0.low_power, "TPLA needs no power (prod=%d used=%d low=%s)" % [p0.power_prod, p0.power_used, p0.low_power])
+	r.issue({"p": 0, "t": "queue", "target": camp.id, "def": "tpla_militia", "n": 3})
+	_ticks(r, 20 * 20)
+	var mil: Array = []
+	for id in w.ids:
+		var e2: SimEntity = w.ents[id]
+		if e2.alive and e2.owner == 0 and e2.def_id == &"tpla_militia":
+			mil.append(e2)
+	_check(mil.size() == 3, "camp trains militia at full speed without any power plant (%d)" % mil.size())
+	# --- laborers harvest
+	var lab: SimEntity = null
+	for id in w.ids:
+		var e3: SimEntity = w.ents[id]
+		if e3.alive and e3.owner == 0 and e3.def_id == &"tpla_laborer":
+			lab = e3
+	_tpla_place(w, 0, &"tpla_stash", FX.to_tile(EconSys.nearest_resource(w, den.pos).pos))   # laborers drop off at a Supply Stash
+	var h0: int = p0.stats["harvested"]
+	var res := EconSys.nearest_resource(w, den.pos)
+	r.issue({"p": 0, "t": "harvest", "ids": [lab.id], "target": res.id})
+	_ticks(r, 20 * 60)
+	_check(p0.stats["harvested"] > h0, "Laborer harvests into a Supply Stash (+%d)" % (p0.stats["harvested"] - h0))
+	# --- tunnel network
+	var ta := _tpla_place(w, 0, &"tpla_tunnel", base)
+	var tb := _tpla_place(w, 0, &"tpla_tunnel", base + Vector2i(14, 0) if w.map.in_bounds(base + Vector2i(14, 0)) else base - Vector2i(14, 0), 0)
+	_check(ta != null and tb != null and ta.id != tb.id, "two tunnels placed")
+	var ids: Array = []
+	for u: SimEntity in mil:
+		ids.append(u.id)
+	r.issue({"p": 0, "t": "garrison", "ids": ids, "target": ta.id})
+	_ticks(r, 20 * 25)
+	_check(TplaSys.network_units(w, 0).size() == 3, "3 militia entered the tunnel network (%d)" % TplaSys.network_units(w, 0).size())
+	for u: SimEntity in mil:
+		u.hp = u.max_hp / 3
+	_ticks(r, 20 * 6)
+	_check(mil[0].hp > mil[0].max_hp / 3, "units heal inside the network (%d/%d)" % [mil[0].hp, mil[0].max_hp])
+	r.issue({"p": 0, "t": "unload", "ids": [tb.id]})
+	_ticks(r, 2)
+	var near_b := true
+	for u: SimEntity in mil:
+		near_b = near_b and u.res_id == 0 and FX.dist(u.pos, tb.pos) < FX.ONE * 6
+	_check(near_b, "evacuating at the other tunnel brings everyone out there (shared network)")
+	r.issue({"p": 0, "t": "garrison", "ids": ids, "target": tb.id})
+	_ticks(r, 20 * 10)
+	w._kill(tb, null)
+	_ticks(r, 2)
+	_check(TplaSys.network_units(w, 0).size() == 3 and mil[0].res_id == -ta.id, "losing one tunnel moves the garrison to the next")
+	w._kill(ta, null)
+	_ticks(r, 2)
+	var dead := 0
+	for u: SimEntity in mil:
+		if not u.alive:
+			dead += 1
+	_check(dead == 3, "losing the last tunnel kills the units inside (%d)" % dead)
+	# --- salvage
+	var rat := w.spawn_unit(&"tpla_rattler", 0, null, FX.tile_center(base + Vector2i(0, 6)))
+	_ticks(r, 2)
+	var hp0 := rat.max_hp
+	TplaSys.spawn_crate(w, rat.pos, 150)
+	_ticks(r, 25)
+	_check(rat.tier == 1 and rat.max_hp > hp0, "salvage vehicle picks up a crate: tier %d, HP %d -> %d" % [rat.tier, hp0, rat.max_hp])
+	TplaSys.spawn_crate(w, rat.pos, 150)
+	_ticks(r, 25)
+	TplaSys.spawn_crate(w, rat.pos, 150)
+	_ticks(r, 25)
+	TplaSys.spawn_crate(w, rat.pos, 150)
+	var s0: int = p0.supply
+	_ticks(r, 25)
+	_check(rat.tier == 3 and p0.supply == s0 + 150, "tier caps at 3, extra crates become Supply (tier %d, +%d)" % [rat.tier, p0.supply - s0])
+	var eu_tank := w.spawn_unit(&"eu_leopold", 1, null, FX.tile_center(base + Vector2i(8, 8)))
+	_ticks(r, 1)
+	var crates0 := 0
+	for id in w.ids:
+		if w.ents[id].alive and w.ents[id].kind == SimEntity.Kind.CRATE:
+			crates0 += 1
+	w._kill(eu_tank, rat)
+	_ticks(r, 2)
+	var crates1 := 0
+	for id in w.ids:
+		if w.ents[id].alive and w.ents[id].kind == SimEntity.Kind.CRATE:
+			crates1 += 1
+	_check(crates1 == crates0 + 1, "destroyed vehicles drop a salvage crate")
+	# --- rebuild hole
+	var camp2 := _tpla_place(w, 0, &"tpla_camp", base, 3)
+	var ct := camp2.tile
+	w._kill(camp2, null)
+	_ticks(r, 3)
+	var hole: SimEntity = null
+	for id in w.ids:
+		var e4: SimEntity = w.ents[id]
+		if e4.alive and e4.def_id == &"tpla_hole" and e4.tile == ct:
+			hole = e4
+	_check(hole != null and hole.aux_def == &"tpla_camp", "destroyed TPLA structure leaves a rebuild hole")
+	_ticks(r, TplaSys.HOLE_DELAY + 30)
+	var site: SimEntity = null
+	for id in w.ids:
+		var e5: SimEntity = w.ents[id]
+		if e5.alive and e5.def_id == &"tpla_camp" and e5.tile == ct:
+			site = e5
+	if site == null:
+		for id in w.ids:
+			var e9: SimEntity = w.ents[id]
+			if e9.alive and e9.kind == SimEntity.Kind.BUILDING and e9.owner == 0:
+				print("   dbg bld ", e9.def_id, " tile=", e9.tile, " built=", e9.built, " aux_t=", e9.aux_t, " tick=", w.tick)
+		print("   dbg ct=", ct)
+	_check(site != null, "a Laborer climbs out of the hole and starts rebuilding")
+	_ticks(r, 20 * 15)
+	_check(site != null and site.built, "the structure is rebuilt for free")
+	# --- demo trap + stealth
+	var trap := _tpla_place(w, 0, &"tpla_demo_trap", base + Vector2i(-8, -8))
+	_ticks(r, 25)
+	_check(trap.stealthy and not w.fog.is_visible_ent(w, 1, trap), "Demo Trap is hidden from the enemy")
+	_check(w.fog.is_visible_ent(w, 0, trap), "the owner still sees the trap")
+	var gren := w.spawn_unit(&"eu_grenadier", 1, null, trap.pos + Vector2i(FX.ONE, 0))
+	_ticks(r, 10)
+	_check(not trap.alive and (not gren.alive or gren.hp < gren.max_hp), "enemy infantry walking onto the trap sets it off")
+	var net := _tpla_place(w, 0, &"tpla_camo_net", base + Vector2i(-4, 8))
+	_ticks(r, 5)
+	var hidden := 0
+	for id in w.ids:
+		var e6: SimEntity = w.ents[id]
+		if e6.alive and e6.owner == 0 and e6.kind == SimEntity.Kind.BUILDING and e6.stealthy:
+			hidden += 1
+	_check(net != null and hidden >= 1, "Camo Net hides structures under it (%d hidden)" % hidden)
