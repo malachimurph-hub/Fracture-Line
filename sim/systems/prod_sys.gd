@@ -1,5 +1,6 @@
 class_name ProdSys
-## Construction (builders must stand next to the site; interrupted builds pause) and unit production.
+## Construction (builders must stand next to the site; interrupted builds stay as a scaffold until
+## a builder resumes them; one builder works at a time, as in Zero Hour) and unit production.
 
 static func run(w: SimWorld) -> void:
 	# construction: count adjacent builders working on each site
@@ -18,9 +19,9 @@ static func run(w: SimWorld) -> void:
 			work[s.id] = work.get(s.id, 0) + 1
 	for sid in work:
 		var s: SimEntity = w.ents[sid]
-		var n: int = mini(2, work[sid])
-		for i in n:
-			_build_step(w, s)
+		# Zero Hour: one builder constructs a structure at a time; extra builders sent to the
+		# same scaffold stand by (they take over if the first is interrupted or killed)
+		_build_step(w, s)
 	# production
 	for id in w.ids:
 		var b: SimEntity = w.ents[id]

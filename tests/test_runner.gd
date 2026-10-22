@@ -66,6 +66,8 @@ func _ready() -> void:
 			test_saveload()
 		"corners":
 			test_corners()
+		"resume":
+			test_resume()
 		"placement":
 			test_placement()
 		"audio":
@@ -694,6 +696,105 @@ func test_corners() -> void:
 				break
 		var wr := w.can_place(0, bid, water, true, [builder.id])
 		_check(wr != "" and TranslationServer.translate(wr) != wr, "%s: water gives a readable reason (%s = '%s')" % [fac, wr, tr(wr)])
+	print("=== RESULT: %s" % ("FAIL" if failed else "PASS"))
+
+## Zero Hour scaffolds: an interrupted build pauses and keeps its progress; a resume order
+## finishes it; a second builder does not speed it up; the AI resumes its own scaffolds.
+func test_resume() -> void:
+	for fac in ["eu", "tpla"]:
+		var r := MatchRunner.new()
+		r.record_replay = false
+		r.start(make_cfg("1v1", 7, ["medium", "medium"], [fac, "eu"]))
+		r.ais.clear()
+		var w := r.sim
+		w.players[0].supply = 50000
+		var bid: StringName = &"eu_reactor" if fac == "eu" else &"tpla_camp"
+		var builders: Array = []
+		var home := Vector2i.ZERO
+		for id in w.ids:
+			var e: SimEntity = w.ents[id]
+			if e.owner == 0 and e.kind == SimEntity.Kind.BUILDING:
+				home = e.tile
+		# a second builder
+		var bdef: StringName = Content.faction(StringName(fac))["builder"]
+		for id in w.ids:
+			var e2: SimEntity = w.ents[id]
+			if e2.owner == 0 and e2.def_id == bdef:
+				builders.append(e2)
+		var extra := w.spawn_unit(bdef, 0, null, builders[0].pos + Vector2i(FX.ONE * 2, 0))
+		if extra != null:
+			builders.append(extra)
+		var spot := Vector2i(-1, -1)
+		for rr in range(4, 20):
+			for dx in range(-rr, rr + 1):
+				if spot.x < 0 and w.can_place(0, bid, home + Vector2i(dx, rr), true, [builders[0].id]) == "":
+					spot = home + Vector2i(dx, rr)
+		r.issue({"p": 0, "t": "place", "ids": [builders[0].id], "def": String(bid), "tile": spot, "rot": 0})
+		r.advance()
+		var site: SimEntity = w.get_ent(w.map.occ[w.map.idx(spot)])
+		var t0 := 0
+		while site.progress == 0 and t0 < 20 * 60:
+			r.advance()
+			t0 += 1
+		for i in 40:
+			r.advance()
+		r.issue({"p": 0, "t": "stop", "ids": [builders[0].id]})
+		r.advance()
+		var p1 := site.progress
+		for i in 200:
+			r.advance()
+		_check(not site.built and site.progress == p1 and p1 > 0, "%s: interrupted build stays a scaffold (progress %d kept, unchanged)" % [fac, p1])
+		# resume with two builders: progress rate must equal one builder (Zero Hour)
+		var ids2: Array = []
+		for b in builders:
+			ids2.append(b.id)
+		r.issue({"p": 0, "t": "resume_build", "ids": ids2, "target": site.id})
+		var t1 := 0
+		var p2 := site.progress
+		while site.progress == p2 and t1 < 20 * 60:
+			r.advance()
+			t1 += 1
+		var p3 := site.progress
+		for i in 40:
+			r.advance()
+		_check(builders.size() < 2 or site.built or site.progress - p3 == 40, "%s: two builders build at one builder's speed (+%d in 40 ticks, %d builders)" % [fac, site.progress - p3, builders.size()])
+		var t2 := 0
+		while not site.built and t2 < 20 * 300:
+			r.advance()
+			t2 += 1
+		_check(site.built, "%s: resumed scaffold is finished" % fac)
+		# the AI resumes its own scaffold
+		var r2 := MatchRunner.new()
+		r2.record_replay = false
+		r2.start(make_cfg("1v1", 8, ["medium", "medium"], [fac, "eu"]))
+		var w2 := r2.sim
+		for i in 20 * 90:
+			r2.advance()
+		var site2: SimEntity = null
+		for i in 20 * 120:
+			r2.advance()
+			for id in w2.ids:
+				var s2: SimEntity = w2.ents[id]
+				if s2.owner == 0 and s2.kind == SimEntity.Kind.BUILDING and not s2.built and s2.progress > 0:
+					site2 = s2
+			if site2 != null:
+				break
+		if site2 == null:
+			_check(false, "%s AI: found an AI construction site to interrupt" % fac)
+			continue
+		var stop_ids: Array = []
+		for id in w2.ids:
+			var u: SimEntity = w2.ents[id]
+			if u.owner == 0 and u.kind == SimEntity.Kind.UNIT and not u.orders.is_empty() and u.orders[0].get("o", "") == "build" and int(u.orders[0]["target"]) == site2.id:
+				stop_ids.append(u.id)
+		r2.issue({"p": 0, "t": "stop", "ids": stop_ids})
+		var done := false
+		for i in 20 * 240:
+			r2.advance()
+			if site2.built:
+				done = true
+				break
+		_check(done, "%s AI resumes its own interrupted scaffold (%s)" % [fac, site2.def_id])
 	print("=== RESULT: %s" % ("FAIL" if failed else "PASS"))
 
 func test_content() -> void:
