@@ -441,3 +441,4 @@ POWER_US_REPAIR,Field Repair
 POWER_US_REPAIR_DESC,"Vehicles, aircraft and structures in the area regain half their health."
 HUD_AIR_REARMING,Rearming %d s
 HUD_AIR_SLOTS,Airfield slots %d / %d
+ALERT_AIR_SUPPORT,JTAC: air support inbound

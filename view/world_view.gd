@@ -71,6 +71,56 @@ func setup(r: MatchRunner, pid: int) -> void:
 func team_shape_index(team: int) -> int:
 	return clampi(team, 0, 3)
 
+## M2.5 aircraft (view only): altitude eased from the sim air_state (jets ~6 m, helicopters ~4 m,
+## parked = on the pad), spinning Rotor/TailRotor nodes, bank in turns and a ground shadow.
+const JET_ALT := 6.0
+const HELI_ALT := 4.0
+var air_alt := {}
+var air_shadows := {}
+
+func _air_view(id: int, e: SimEntity, ud: UnitDef, v: Node3D, p: Vector3, delta: float) -> Vector3:
+	var jet := ud.tags.has("jet")
+	var want := 0.0 if e.air_state == AirSys.PARKED else (JET_ALT if jet else HELI_ALT)
+	if e.air_state == AirSys.RETURNING and jet:
+		var home := sim.get_ent(e.air_home)
+		if home != null:
+			var d := FX.to_world(e.pos).distance_to(FX.to_world(home.pos))
+			want = clampf(d * 0.35, 0.3, JET_ALT)    # glide path down to the pad
+	var alt: float = air_alt.get(id, want)
+	alt = move_toward(alt, want, delta * (3.0 if jet else 2.0))
+	air_alt[id] = alt
+	var spin := alt > 0.2 or not jet
+	for rn in [v.find_child("Rotor", true, false), v.find_child("TailRotor", true, false)]:
+		if rn is Node3D and spin:
+			if String(rn.get_meta("rotor_axis", "y")) == "x":
+				rn.rotate_object_local(Vector3.RIGHT, delta * 40.0)
+			else:
+				rn.rotate_object_local(Vector3.UP, delta * 28.0)
+	var sh: MeshInstance3D = air_shadows.get(id)
+	if sh == null:
+		sh = MeshInstance3D.new()
+		var q := QuadMesh.new()
+		q.size = Vector2(1.6, 1.6) if jet else Vector2(1.3, 1.3)
+		q.orientation = PlaneMesh.FACE_Y
+		sh.mesh = q
+		var m := StandardMaterial3D.new()
+		m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		m.albedo_color = Color(0, 0, 0, 0.35)
+		var img := Image.create_empty(32, 32, false, Image.FORMAT_RGBA8)
+		for y in 32:
+			for x in 32:
+				var r := Vector2(x - 15.5, y - 15.5).length() / 15.5
+				img.set_pixel(x, y, Color(1, 1, 1, clampf(1.0 - r, 0.0, 1.0)))
+		m.albedo_texture = ImageTexture.create_from_image(img)
+		sh.material_override = m
+		sh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		add_child(sh)
+		air_shadows[id] = sh
+	sh.visible = v.visible and alt > 0.2
+	sh.position = Vector3(p.x + alt * 0.25, p.y + 0.04, p.z + alt * 0.15)
+	return p + Vector3(0, alt, 0)
+
 func _world_pos(e: SimEntity) -> Vector3:
 	var p := FX.to_world(e.pos)
 	var t := FX.to_tile(e.pos)
@@ -336,6 +386,10 @@ func _on_death(ev: Dictionary) -> void:
 		rings[id].queue_free()
 		rings.erase(id)
 	views.erase(id)
+	air_alt.erase(id)
+	if air_shadows.has(id):
+		air_shadows[id].queue_free()
+		air_shadows.erase(id)
 	fx_acc.erase(id)
 	prev.erase(id)
 	cur.erase(id)
@@ -369,9 +423,16 @@ func frame(a: float, delta: float) -> void:
 			if not vis:
 				if shield_domes.has(id):
 					shield_domes[id].visible = false
+				if air_shadows.has(id):
+					air_shadows[id].visible = false
 				continue
 			var p: Vector3 = (prev.get(id, Vector3.ZERO) as Vector3).lerp(cur.get(id, Vector3.ZERO), a)
+			var ud: UnitDef = Content.unit(e.def_id)
+			if ud.move_layer == &"air":
+				p = _air_view(id, e, ud, v, p, delta)
 			v.position = p
+			# M2.5 sniper stealth: own (or spectated) hidden units draw translucent
+			v.set_ghosted(e.stealthy and (e.team == local_team or local_team < 0))
 			var want := atan2(float(e.dir.x), float(e.dir.y))
 			var y0: float = yaw.get(id, want)
 			var ny := lerp_angle(y0, want, minf(1.0, delta * 8.0))

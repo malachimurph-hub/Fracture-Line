@@ -525,6 +525,10 @@ func _refresh_selection_info() -> void:
 			lines.append(tr("HUD_CARRY") % [e.carry, ud.harvest_capacity])
 		if ud.transport_capacity > 0:
 			lines.append(tr("HUD_PASSENGERS") % [RosterSys.passengers(sim, e).size(), ud.transport_capacity])
+		if e.air_state == AirSys.PARKED and e.air_t > 0 and ud.move_layer == &"air":
+			lines.append(tr("HUD_AIR_REARMING") % ceili(float(e.air_t) / FX.TICK_HZ))
+		if e.stealthy and e.owner == pid:
+			lines.append(tr("HUD_STEALTHED"))
 		if e.owner >= 0 and RosterSys.is_jammed(sim, e, RosterSys.jammers(sim)):
 			lines.append(tr("HUD_JAMMED"))
 		if not ud.stubs.is_empty():
@@ -546,6 +550,8 @@ func _refresh_selection_info() -> void:
 				lines.append(tr("HUD_UNPOWERED"))
 			if bd.power != 0:
 				lines.append(tr("HUD_BLD_POWER") % bd.power)
+			if bd.air_slots > 0:
+				lines.append(tr("HUD_AIR_SLOTS") % [AirSys.slots_used(sim, e), bd.air_slots])
 			if e.hold_reason != "":
 				lines.append(tr(e.hold_reason))
 			_fill_queue(e)
@@ -1026,6 +1032,10 @@ func on_events(events: Array) -> void:
 						AudioDirector.announce("insufficient_funds")
 					elif rs in ["REASON_TERRAIN", "REASON_BLOCKED", "REASON_SHROUD", "REASON_UNREACHABLE", "REASON_ENEMY", "REASON_RESOURCE"]:
 						AudioDirector.announce("cannot_build")
+			"jtac_call":
+				if int(ev["owner"]) == pid:
+					alert("jtac", tr("ALERT_AIR_SUPPORT"), ev["pos"], 8.0)
+					AudioDirector.announce("air_support")
 			"captured":
 				if int(ev["owner"]) == pid:
 					var c := sim.get_ent(int(ev["id"]))
