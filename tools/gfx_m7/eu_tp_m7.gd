@@ -29,6 +29,8 @@ static func jobs() -> Dictionary:
 		"eu_motor_pool": func() -> void: U._make("motor_pool", Vector2(4, 4), 1.5, _eu_motor_pool, Callable(), Vector3.ZERO, "eu"),
 		"eu_hub": func() -> void: U._make("hub", Vector2(3, 3), 1.7, _eu_hub, Callable(), Vector3.ZERO, "eu"),
 		"tpla_chop_shop": func() -> void: U._make("chop_shop", Vector2(4, 4), 1.5, _tp_chop_shop, Callable(), Vector3.ZERO, "tpla", _tp_found),
+		"eu_gun_bunker": func() -> void: U._make("gun_bunker", Vector2(2, 2), 0.9, _eu_bunker, _eu_bunker_turret, Vector3(0, 0.5, 0.05), "eu"),
+		"tpla_bazaar": func() -> void: U._make("bazaar", Vector2(3, 3), 1.5, _tp_bazaar, Callable(), Vector3.ZERO, "tpla", _tp_found),
 		"tpla_stash": func() -> void: U._make("stash", Vector2(3, 3), 1.2, _tp_stash, Callable(), Vector3.ZERO, "tpla", _tp_found),
 	}
 
@@ -828,3 +830,127 @@ static func _tp_blight() -> void:
 		b.color(TP_S, Geo.STEEL)
 		b.tube(bt * Vector3(0, 0, 0.56), bt * Vector3(0, 0, 0.62), 0.07, 10))
 	U._vfinish(root, model, h, mat, "blight", [t, b], 1.38, "tpla")
+
+
+# ================================================================== EU Gun Bunker
+## Low chamfered casemate with a sloped concrete glacis, sandbag apron, periscope and vents;
+## the turret is an armoured cupola with a twin-barrel cannon.
+static func _eu_bunker(g) -> void:
+	g.color(CON, Geo.CONCRETE)
+	g.plan_loft([Vector2(-0.82, -0.7), Vector2(0.82, -0.7), Vector2(0.9, 0.5), Vector2(0.55, 0.85), Vector2(-0.55, 0.85), Vector2(-0.9, 0.5)], Y0, Y0 + 0.42, Vector2(0.86, 0.84), Vector2(0, -0.02))
+	g.color(CON_D, Geo.CONCRETE)
+	g.plan_loft([Vector2(-0.62, -0.55), Vector2(0.62, -0.55), Vector2(0.68, 0.38), Vector2(0.4, 0.62), Vector2(-0.4, 0.62), Vector2(-0.68, 0.38)], Y0 + 0.42, Y0 + 0.47, Vector2(0.97, 0.97))
+	g.color("#2b2d2c", Geo.DARK)
+	g.box(Vector3(0, Y0 + 0.25, 0.79), Vector3(0.5, 0.06, 0.02))   # firing slit
+	for x in [-0.6, 0.6]:
+		g.vent(Vector3(x, Y0 + 0.2, -0.705), 0.22, 0.1, 4, 180)
+	g.color(EU_S, Geo.STEEL)
+	g.box(Vector3(0, Y0 + 0.22, -0.72), Vector3(0.26, 0.3, 0.02))   # rear blast door
+	g.ladder(Vector3(0.35, Y0, -0.72), 0.42, Vector3.RIGHT, 0.06)
+	g.tube(Vector3(-0.45, Y0 + 0.47, -0.3), Vector3(-0.45, Y0 + 0.62, -0.3), 0.02, 6)   # periscope
+	g.cbox(Vector3(-0.45, Y0 + 0.64, -0.29), Vector3(0.05, 0.04, 0.07), 0.008)
+	g.color("#ffffff", Geo.TEAM)
+	g.box(Vector3(0, Y0 + 0.36, 0.745), Vector3(0.9, 0.04, 0.01))
+	for i in 9:
+		var x := -0.85 + i * 0.21
+		g.sandbag(Vector3(x, Y0 + 0.03, 0.98), 0.22, 0.0, "#c2b08a")
+		if i % 2 == 0:
+			g.sandbag(Vector3(x + 0.1, Y0 + 0.09, 0.98), 0.2, 0.0, "#b5a47e")
+	U._lamp(g, Vector3(0.5, Y0 + 0.5, -0.4))
+	V4._antenna(g, Vector3(0.55, Y0 + 0.47, -0.45), 0.45)
+
+static func _eu_bunker_turret(t) -> void:
+	t.color(EU_S, Geo.STEEL)
+	t.cyl(0.38, 0.38, 0.05, 16, Transform3D.IDENTITY)
+	t.color(EU, Geo.PAINT)
+	t.lathe([[0.05, 0.36], [0.16, 0.34], [0.24, 0.27], [0.3, 0.12], [0.31, 0.0]], 16, Transform3D.IDENTITY, false, false)
+	t.color(EU_D, Geo.PAINT)
+	t.cbox(Vector3(0, 0.15, 0.32), Vector3(0.3, 0.16, 0.12), 0.02)   # mantlet
+	t.color(EU_S, Geo.STEEL)
+	for x in [-0.07, 0.07]:
+		t.tube(Vector3(x, 0.15, 0.36), Vector3(x, 0.15, 0.85), 0.028, 8)
+		t.tube(Vector3(x, 0.15, 0.78), Vector3(x, 0.15, 0.87), 0.038, 8)
+	t.hatch(Vector3(-0.1, 0.27, -0.08), 0.12)
+	t.color(GLASS_C, Geo.GLASS)
+	t.box(Vector3(0.14, 0.25, 0.14), Vector3(0.08, 0.03, 0.03))
+	t.color("#ffffff", Geo.TEAM)
+	t.band(0.345, 0.1, 0.035, 0.01, 16, Transform3D.IDENTITY)
+	U._smoke(t, Vector3(0.3, 0.12, 0.0), 80.0)
+	U._smoke(t, Vector3(-0.3, 0.12, 0.0), -80.0)
+
+# ================================================================== TPLA Night Bazaar
+## Market court: canvas-roofed stalls around a well, string lights, a tea-house with a
+## rooftop water tank, carpets, crates, sacks and a generator.
+static func _tp_bazaar(g) -> void:
+	var cols := ["#b33a2a", "#c4932e", "#3d6e8a", "#6e8a3d", "#8a3d6e"]
+	var stalls := [Vector3(-0.9, 0, -0.95), Vector3(0.0, 0, -1.0), Vector3(0.9, 0, -0.95), Vector3(-1.05, 0, 0.1), Vector3(1.05, 0, 0.15)]
+	for i in stalls.size():
+		var c: Vector3 = stalls[i] + Vector3(0, Y0, 0)
+		var side := i >= 3
+		var sz := Vector3(0.6, 0, 0.5) if not side else Vector3(0.5, 0, 0.6)
+		g.color(WOODC, Geo.WOOD)
+		for px in [-1.0, 1.0]:
+			for pz in [-1.0, 1.0]:
+				var hgt := 0.62 if (pz < 0 and not side) or (side and px * signf(c.x) > 0) else 0.52
+				g.tube(c + Vector3(px * sz.x * 0.45, 0, pz * sz.z * 0.45), c + Vector3(px * sz.x * 0.45, hgt, pz * sz.z * 0.45), 0.015, 4)
+		g.color(cols[i], Geo.CANVAS)
+		g.rcbox(c + Vector3(0, 0.58, 0), Vector3(sz.x + 0.1, 0.02, sz.z + 0.1), 0.005, Vector3(-9, 0, 0) if not side else Vector3(0, 0, 9 * signf(c.x)))
+		g.color("#e8dcc0", Geo.CANVAS)
+		g.rcbox(c + Vector3(0, 0.52, sz.z * 0.5 + 0.04 if not side else 0), Vector3(sz.x + 0.1, 0.06, 0.01) if not side else Vector3(0.01, 0.06, sz.z + 0.1), 0.002, Vector3.ZERO)
+		g.color(WOODC, Geo.WOOD)
+		g.box(c + Vector3(0, 0.16, 0.1 if not side else 0), Vector3(sz.x * 0.8, 0.04, 0.18) if not side else Vector3(0.18, 0.04, sz.z * 0.8))
+		for k in 3:
+			g.color(["#c8a24a", "#9fbf3a", "#d86a3a", "#e8dcc0"][(i + k) % 4], Geo.CANVAS)
+			var o := Vector3((k - 1) * 0.15, 0.2, 0.1) if not side else Vector3(0, 0.2, (k - 1) * 0.15)
+			g.cbox(c + o, Vector3(0.1, 0.06, 0.1), 0.02)
+	# tea-house with water tank and team banner, front right
+	var th := Vector3(0.85, Y0, 0.95)
+	g.color(MUD, Geo.CONCRETE)
+	g.cbox(th + Vector3(0, 0.32, 0), Vector3(0.7, 0.64, 0.6), 0.04)
+	g.color(MUD_D, Geo.CONCRETE)
+	g.cbox(th + Vector3(0, 0.66, 0), Vector3(0.74, 0.05, 0.64), 0.015)
+	g.color("#2b2b2a", Geo.DARK)
+	g.box(th + Vector3(-0.15, 0.24, 0.302), Vector3(0.2, 0.36, 0.01))
+	g.color("#ffd27a", Geo.LAMP)
+	g.box(th + Vector3(0.18, 0.36, 0.302), Vector3(0.16, 0.12, 0.01))
+	g.color(TP_S, Geo.STEEL)
+	for p in [Vector3(0.1, 0.68, -0.1), Vector3(0.25, 0.68, -0.1)]:
+		g.tube(th + p, th + p + Vector3(0, 0.12, 0), 0.01, 3)
+	g.color("#3d5a6e", Geo.STEEL)
+	g.lathe([[0.8, 0.13], [1.02, 0.13], [1.06, 0.08]], 10, Transform3D(Basis.IDENTITY, th + Vector3(0.17, 0, -0.1)))
+	g.color("#ffffff", Geo.TEAM)
+	g.box(th + Vector3(0, 0.5, 0.305), Vector3(0.5, 0.08, 0.01))
+	# central well with a rope frame
+	var w := Vector3(-0.1, Y0, 0.2)
+	g.color("#a99a7c", Geo.CONCRETE)
+	g.lathe([[0.0, 0.2], [0.16, 0.2], [0.18, 0.17]], 12, Transform3D(Basis.IDENTITY, w))
+	g.color("#2e2c29", Geo.DARK)
+	g.lathe([[0.17, 0.14], [0.175, 0.14]], 10, Transform3D(Basis.IDENTITY, w), false, true)
+	g.color(WOODC, Geo.WOOD)
+	for x in [-0.18, 0.18]:
+		g.tube(w + Vector3(x, 0.1, 0), w + Vector3(x, 0.45, 0), 0.015, 4)
+	g.tube(w + Vector3(-0.2, 0.44, 0), w + Vector3(0.2, 0.44, 0), 0.015, 4)
+	# carpets, sacks, generator
+	for i in 3:
+		g.color(cols[(i + 2) % 5], Geo.CANVAS)
+		g.rcbox(Vector3(-0.6 + i * 0.4, Y0 + 0.005, 0.85), Vector3(0.3, 0.008, 0.44), 0.001, Vector3(0, -10 + i * 12, 0))
+	g.color("#d0c09a", Geo.SANDBAG)
+	for i in 5:
+		g.rcbox(Vector3(-1.2 + (i % 3) * 0.13, Y0 + 0.06 + (i / 3) * 0.08, 1.1), Vector3(0.12, 0.1, 0.1), 0.03, Vector3(0, i * 20, 0))
+	var gen := Vector3(-0.15, Y0, -0.45)
+	g.color("#c4932e", Geo.PAINT)
+	g.cbox(gen + Vector3(0, 0.08, 0), Vector3(0.24, 0.16, 0.16), 0.015)
+	g.color(TP_S, Geo.STEEL)
+	g.tube(gen + Vector3(0.09, 0.16, 0), gen + Vector3(0.09, 0.3, 0), 0.012, 4)
+	# string lights criss-crossing the court
+	g.color("#2e2c29", Geo.STEEL)
+	var runs := [[Vector3(-1.2, 0.66, -0.7), Vector3(0.75, 0.75, 0.75)], [Vector3(1.2, 0.66, -0.7), Vector3(-1.2, 0.6, 0.6)]]
+	for r in runs:
+		var a: Vector3 = r[0] + Vector3(0, Y0, 0)
+		var b: Vector3 = r[1] + Vector3(0, Y0, 0)
+		g.color("#2e2c29", Geo.STEEL)
+		g.tube(a, b, 0.003, 3)
+		for k in 9:
+			var p := a.lerp(b, (k + 0.5) / 9.0) - Vector3(0, 0.03 * sin(PI * (k + 0.5) / 9.0), 0)
+			g.color(["#ffd27a", "#ff7a5a", "#7affb0", "#7ac8ff"][k % 4], Geo.LAMP)
+			g.box(p, Vector3(0.025, 0.03, 0.025))

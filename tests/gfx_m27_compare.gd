@@ -38,6 +38,8 @@ func _ready() -> void:
 			"tpla_bclose": await bld_close("tpla", ["chop_shop", "stash", "den"], "tpla_buildings_close")
 			"eu_close2": await close_row("eu", ["harvester", "crawler", "salamander", "hearth"], "eu_vehicles_close2")
 			"tpla_close2": await close_row("tpla", ["mule", "blight", "jackal", "sprayer"], "tpla_vehicles_close2")
+			"eu_bclose2": await bld_close("eu", ["gun_bunker", "hq", "heavy_factory"], "eu_buildings_close2")
+			"tpla_bclose2": await bld_close("tpla", ["bazaar", "camp", "workshop"], "tpla_buildings_close2")
 			"us_close": await close_row("us", ["halberd", "lynx", "picket", "longreach"], "us_vehicles_close")
 			"eu_close": await close_row("eu", ["leopold", "wolfhound", "flakwerk", "salamander"], "eu_vehicles_close")
 			"tpla_close": await close_row("tpla", ["rattler", "scrapback", "hailstorm", "junkhammer"], "tpla_vehicles_close")
