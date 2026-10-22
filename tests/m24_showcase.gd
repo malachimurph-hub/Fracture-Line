@@ -354,9 +354,13 @@ func run_perf() -> void:
 	m.runner.issue({"p": 0, "t": "amove", "ids": eu, "pos": FX.tile_center(o + Vector2i(13, 2))})
 	m.runner.issue({"p": 1, "t": "amove", "ids": tp, "pos": FX.tile_center(o + Vector2i(13, 18))})
 	_look(o + Vector2i(13, 10), 1)
-	for k in 20:
-		await frames(15)
-		if m.world.wfx.shots.size() > 30:
+	# as in the firefight: once the guns open, ~1/30 s of battle per software-rendered frame so the
+	# counters see rounds in flight the way the phone would
+	for k in 300:
+		await get_tree().process_frame
+		if Engine.time_scale == 1.0 and int(m.world.wfx.stats["fired"]) > 0:
+			Engine.time_scale = clampf(0.033 / maxf(0.033, get_process_delta_time()), 0.01, 1.0)
+		if m.world.wfx.shots.size() > 30 and k > 40:
 			break
 	var res := {}
 	for lvl in [0, 1, 2]:
@@ -366,10 +370,25 @@ func run_perf() -> void:
 	m.cam.set_level(1)
 	await frames(5)
 	await shot("big_battle_perf")
+	# where the draw calls go (default zoom): without the M2.4 weapon / construction effects, and
+	# without the sun's shadow pass
+	var fx_nodes: Array = [m.world.wfx, m.world.vfx]
+	for n in fx_nodes:
+		n.visible = false
+	res["no_fx"] = await _counters("big_battle_zoom1_effects_hidden")
+	for n in fx_nodes:
+		n.visible = true
+	var suns := get_tree().root.find_children("*", "DirectionalLight3D", true, false)
+	for l in suns:
+		(l as DirectionalLight3D).shadow_enabled = false
+	res["no_shadow"] = await _counters("big_battle_zoom1_no_shadows")
+	for l in suns:
+		(l as DirectionalLight3D).shadow_enabled = true
+	Engine.time_scale = 1.0
 	print("M24PERF ", JSON.stringify(res))
 	var worst_dc := 0
 	var worst_pr := 0
-	for lvl in res:
+	for lvl in [0, 1, 2]:
 		worst_dc = maxi(worst_dc, int(res[lvl]["draw_calls"]))
 		worst_pr = maxi(worst_pr, int(res[lvl]["primitives"]))
 	check("big battle draw calls <= 300 (%d)" % worst_dc, worst_dc <= 300, worst_dc)

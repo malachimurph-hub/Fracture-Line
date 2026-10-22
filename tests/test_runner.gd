@@ -84,6 +84,8 @@ func _ready() -> void:
 			test_roster()
 		"m24":
 			test_m24()
+		"viewcost":
+			view_cost()
 		"stall":
 			var r2 := MatchRunner.new()
 			r2.record_replay = false
@@ -1651,3 +1653,45 @@ func test_m24() -> void:
 	_check(fires > 0 and with_w == fires, "fire events carry the weapon id (%d of %d)" % [with_w, fires])
 	_check(mism == 0, "view attached vs headless: identical sim state hashes over 8 min (%d mismatches)" % mism)
 	print("M24 weapon fx stats: ", bv.wfx.stats)
+
+
+## Diagnostic: draw surfaces (one draw call each, before shadow passes) and triangles of every
+## unit / structure view, so render budgets can be traced to individual models.
+func view_cost() -> void:
+	var r := MatchRunner.new()
+	r.record_replay = false
+	r.start(make_cfg("1v1", 7, [], ["eu", "tpla"]))
+	var wv := WorldView.new()
+	add_child(wv)
+	wv.setup(r, 0)
+	var rows: Array = []
+	for id in Content.units.keys() + Content.buildings.keys():
+		var e := SimEntity.new()
+		e.def_id = id
+		e.kind = SimEntity.Kind.UNIT if Content.units.has(id) else SimEntity.Kind.BUILDING
+		var ps: PackedScene = load(wv._scene_for(e))
+		var v: Node3D = ps.instantiate()
+		add_child(v)
+		var surf := 0
+		var tris := 0
+		var mm := 0
+		for n in v.find_children("*", "GeometryInstance3D", true, false):
+			if not (n as GeometryInstance3D).is_visible_in_tree():
+				continue
+			if n is MeshInstance3D and (n as MeshInstance3D).mesh != null:
+				var mesh: Mesh = (n as MeshInstance3D).mesh
+				surf += mesh.get_surface_count()
+				for si in mesh.get_surface_count():
+					var a := mesh.surface_get_arrays(si)
+					var idx = a[Mesh.ARRAY_INDEX]
+					tris += (idx.size() if idx != null else a[Mesh.ARRAY_VERTEX].size()) / 3
+			elif n is MultiMeshInstance3D:
+				mm += 1
+				var mmi: MultiMesh = (n as MultiMeshInstance3D).multimesh
+				if mmi != null and mmi.mesh != null:
+					surf += mmi.mesh.get_surface_count()
+		rows.append([surf, tris, String(id), mm])
+		v.free()
+	rows.sort_custom(func(a, b): return a[0] > b[0])
+	for row in rows:
+		print("VIEWCOST %-22s surfaces=%3d tris=%6d multimesh=%d" % [row[2], row[0], row[1], row[3]])
