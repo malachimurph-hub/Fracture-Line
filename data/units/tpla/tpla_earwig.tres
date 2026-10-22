@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"tpla_earwig"
+faction = &"tpla"
+name_key = "UNIT_TPLA_EARWIG"
+desc_key = "UNIT_TPLA_EARWIG_DESC"
+cost = 500
+build_time_ms = 8000
+pop = 1
+prereqs = PackedStringArray()
+tags = PackedStringArray("vehicle", "detector", "scout")
+max_hp = 280
+armor_type = &"light"
+weapons = PackedStringArray()
+speed_mtps = 3000
+move_layer = &"vehicle"
+sight = 14
+radius_mt = 460
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 0
+role = &"detector"
+view_scene = "res://view/units/tpla/earwig.tscn"
+stubs = PackedStringArray("radar_scan")
+loco = &""
+turn_dps = 260
+accel_ms = 500
+turret_dps = 0
+abilities = PackedStringArray()
+transport_capacity = 0
+detector = true

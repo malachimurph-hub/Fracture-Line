@@ -6,7 +6,7 @@ extends Node3D
 const VFX_COLORS := {"tracer": Color("#fff2b0"), "tracer_heavy": Color("#ffd166"), "missile": Color("#ff9b54"),
 	"shell": Color("#ffe08a"), "grenade": Color("#c9e86b"), "flak": Color("#f7f7f7"),
 	"rocket": Color("#ffb070"), "rocket_salvo": Color("#ffa060"), "tracer_quad": Color("#ffe9a8"),
-	"bomb": Color("#ffcf7a"), "rust_shell": Color("#b5d64a")}
+	"bomb": Color("#ffcf7a"), "rust_shell": Color("#b5d64a"), "flame": Color("#ff7a1f")}
 
 var runner: MatchRunner
 var sim: SimWorld
@@ -263,6 +263,12 @@ func _on_fire(ev: Dictionary) -> void:
 			vfx.tracer(apex, to, col, 0.05, 0.25)
 			vfx.muzzle(muzzle, dir, 0.25)
 			vfx.impact(to - Vector3(0, 0.3, 0), 0.35)
+		"flame":
+			# flame jet: a thick short-lived stream plus a few licks of fire along it
+			vfx.tracer(muzzle, to, col, 0.12, 0.12)
+			vfx.muzzle(muzzle, dir, 0.3)
+			for k in 3:
+				vfx.impact(muzzle.lerp(to, (k + 1) / 3.0) - Vector3(0, 0.2, 0), 0.22)
 		"bomb":
 			pass   # the "explode" event draws the blast
 		"grenade":

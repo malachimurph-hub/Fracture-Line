@@ -19,3 +19,13 @@ tpla_bomb,520,700,0,1000,demolition,2400,0,1,bomb,0,0,attack,0,0,12,0,0
 tpla_rust_shell,38,10000,3000,4600,corrosive,1300,0,1,rust_shell,0,400,attack,0,0,12,400,0
 tpla_tunnel_mg,15,6000,0,450,hmg,0,1,1,tracer_heavy,0,0,attack,0,0,12,0,0
 tpla_demo_charge,380,1500,0,1000,demolition,2600,0,1,bomb,0,0,attack,0,0,12,0,0
+eu_twin_cannon,105,7500,0,400,cannon,600,0,1,shell,0,0,attack,2,3000,6,0,900
+eu_flamer,30,3500,0,500,flame,700,0,1,flame,0,0,attack,0,0,20,0,0
+eu_howitzer,160,14000,4000,6000,explosive,1500,0,1,shell,0,1500,attack,0,0,8,800,0
+eu_mortar,45,10000,2500,3500,explosive,1200,0,1,grenade,0,0,attack,0,0,12,500,0
+eu_gatling,14,7500,0,200,quad,0,1,1,tracer_quad,0,300,attack,0,0,15,0,0
+eu_mine_charge,220,1200,0,1000,demolition,1200,0,1,bomb,0,0,attack,0,0,12,0,0
+tpla_junk_cannon,85,6500,0,2400,cannon,500,0,1,shell,0,0,attack,0,0,6,0,600
+tpla_rot_spray,18,3000,0,600,corrosive,800,0,1,rust_shell,0,0,attack,0,0,20,0,0
+tpla_bike_mg,9,4500,0,400,hmg,0,0,1,tracer,0,0,attack,0,0,15,0,0
+tpla_wasp_missile,30,7000,0,500,anti_tank,0,1,1,missile,0,0,attack,3,4000,12,0,0

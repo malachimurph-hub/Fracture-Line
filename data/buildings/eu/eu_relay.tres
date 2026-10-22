@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="BuildingDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/building_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"eu_relay"
+faction = &"eu"
+name_key = "BLD_EU_RELAY"
+desc_key = "BLD_EU_RELAY_DESC"
+category = &"support"
+cost = 600
+build_time_ms = 8000
+footprint = Vector2i(2, 2)
+max_hp = 600
+power = -1
+grid_radius = 0
+sight = 7
+prereqs = PackedStringArray("eu_signals")
+produces = PackedStringArray()
+is_hq = false
+is_refinery = false
+passive_income = 0
+free_unit = &""
+shield_pct = 25
+view_scene = "res://view/buildings/eu/relay.tscn"
+stubs = PackedStringArray()
+weapons = PackedStringArray()
+needs_power_to_fire = false
+garrison_capacity = 0
+capturable = false
+capture_income = 0
+buildable = true
+tags = PackedStringArray("heal_aura")
+aux_radius = 6

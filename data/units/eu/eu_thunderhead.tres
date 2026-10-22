@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"eu_thunderhead"
+faction = &"eu"
+name_key = "UNIT_EU_THUNDERHEAD"
+desc_key = "UNIT_EU_THUNDERHEAD_DESC"
+cost = 1600
+build_time_ms = 16000
+pop = 3
+prereqs = PackedStringArray("eu_signals")
+tags = PackedStringArray("vehicle", "artillery")
+max_hp = 500
+armor_type = &"light"
+weapons = PackedStringArray("eu_howitzer")
+speed_mtps = 1300
+move_layer = &"vehicle"
+sight = 9
+radius_mt = 620
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 0
+role = &"artillery"
+view_scene = "res://view/units/eu/thunderhead.tscn"
+stubs = PackedStringArray()
+loco = &""
+turn_dps = 0
+accel_ms = 0
+turret_dps = 0
+abilities = PackedStringArray()
+transport_capacity = 0
+detector = false

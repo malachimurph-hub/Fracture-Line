@@ -132,6 +132,102 @@
       "created",
       "veteran"
      ]
+    },
+    "eu_salamander": {
+     "folder": "wolfhound",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ],
+     "alias_of": "eu_wolfhound"
+    },
+    "eu_hearth": {
+     "folder": "wolfhound",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ],
+     "alias_of": "eu_wolfhound"
+    },
+    "eu_spectre": {
+     "folder": "aegis",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ],
+     "alias_of": "eu_aegis"
+    },
+    "eu_sentinel": {
+     "folder": "flakwerk",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ],
+     "alias_of": "eu_flakwerk"
+    },
+    "eu_brennus": {
+     "folder": "leopold",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ],
+     "alias_of": "eu_leopold"
+    },
+    "eu_thunderhead": {
+     "folder": "leopold",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ],
+     "alias_of": "eu_leopold"
+    },
+    "eu_kestrel": {
+     "folder": "wolfhound",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ],
+     "alias_of": "eu_wolfhound"
+    },
+    "eu_corvid": {
+     "folder": "flakwerk",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ],
+     "alias_of": "eu_flakwerk"
     }
    }
   },
@@ -240,6 +336,66 @@
       "created",
       "veteran"
      ]
+    },
+    "tpla_junkhammer": {
+     "folder": "scrapback",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ],
+     "alias_of": "tpla_scrapback"
+    },
+    "tpla_sprayer": {
+     "folder": "blight",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ],
+     "alias_of": "tpla_blight"
+    },
+    "tpla_earwig": {
+     "folder": "rattler",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ],
+     "alias_of": "tpla_rattler"
+    },
+    "tpla_jackal": {
+     "folder": "shrike",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ],
+     "alias_of": "tpla_shrike"
+    },
+    "tpla_bus": {
+     "folder": "rattler",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ],
+     "alias_of": "tpla_rattler"
     }
    }
   },

@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"eu_spectre"
+faction = &"eu"
+name_key = "UNIT_EU_SPECTRE"
+desc_key = "UNIT_EU_SPECTRE_DESC"
+cost = 900
+build_time_ms = 10000
+pop = 2
+prereqs = PackedStringArray("eu_signals")
+tags = PackedStringArray("vehicle", "jammer")
+max_hp = 450
+armor_type = &"light"
+weapons = PackedStringArray()
+speed_mtps = 2000
+move_layer = &"vehicle"
+sight = 10
+radius_mt = 520
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 0
+role = &"jammer"
+view_scene = "res://view/units/eu/spectre.tscn"
+stubs = PackedStringArray()
+loco = &""
+turn_dps = 0
+accel_ms = 0
+turret_dps = 0
+abilities = PackedStringArray()
+transport_capacity = 0
+detector = false

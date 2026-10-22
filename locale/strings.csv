@@ -47,7 +47,7 @@ COLOR_PURPLE,Purple
 COLOR_GREEN,Green
 COLOR_ORANGE,Orange
 STUB_SUPERWEAPONS,[STUB] No superweapon structures exist yet; this toggle is saved but has no effect.
-STUB_TRANSPORT,[STUB] Wolfhound transport (carry infantry) is not implemented yet.
+STUB_TRANSPORT,Transport: select infantry and tap this vehicle to load.
 DIFF_EASY,Easy
 DIFF_MEDIUM,Medium
 DIFF_HARD,Hard
@@ -316,3 +316,59 @@ ROLE_SHIELD,Shield support
 ROLE_ANTI_AIR,Anti-air
 ROLE_ARTILLERY,Artillery
 ROLE_SUICIDE,Bomb truck
+UNIT_EU_BRENNUS,Brennus Siege Tank
+UNIT_EU_BRENNUS_DESC,"Twin-cannon super-heavy tank. Slow, very tough, fires two-round salvos. Needs a Signals Center."
+UNIT_EU_SALAMANDER,Salamander Flame Tank
+UNIT_EU_SALAMANDER_DESC,"Short-range flame projector. Burns infantry and structures, weak against heavy armour."
+UNIT_EU_THUNDERHEAD,Thunderhead Howitzer
+UNIT_EU_THUNDERHEAD_DESC,"Long-range self-propelled howitzer. Slow to aim, cannot hit close targets. Needs a Signals Center."
+UNIT_EU_HEARTH,Hearth Mortar Carrier
+UNIT_EU_HEARTH_DESC,"Light mortar carrier. Indirect fire against infantry and light vehicles."
+UNIT_EU_SPECTRE,Spectre Jammer
+UNIT_EU_SPECTRE_DESC,"Unarmed electronic-warfare truck. Enemy vehicles within 6 tiles cannot fire. Needs a Signals Center."
+UNIT_EU_SENTINEL,Sentinel Outpost
+UNIT_EU_SENTINEL_DESC,"Unarmed recon carrier. Detects hidden mines, traps and camouflaged structures; carries 2 infantry."
+UNIT_EU_KESTREL,Kestrel Lift Helo
+UNIT_EU_KESTREL_DESC,"[STUB] Transport helicopter. Aircraft are not in the game yet; listed for the full roster."
+UNIT_EU_CORVID,Corvid Strike Jet
+UNIT_EU_CORVID_DESC,"[STUB] Strike jet. Aircraft are not in the game yet; listed for the full roster."
+UNIT_TPLA_JUNKHAMMER,Junkhammer Tank
+UNIT_TPLA_JUNKHAMMER_DESC,"Heavy scrap tank with a big cannon. Collects salvage like other TPLA vehicles. Needs a Workshop."
+UNIT_TPLA_SPRAYER,Rot Sprayer
+UNIT_TPLA_SPRAYER_DESC,"Truck that hoses corrosive slurry. Strong against infantry and light vehicles at short range."
+UNIT_TPLA_EARWIG,Earwig Van
+UNIT_TPLA_EARWIG_DESC,"Unarmed listening van. Wide sight; detects hidden mines and traps."
+UNIT_TPLA_JACKAL,Jackal Bike
+UNIT_TPLA_JACKAL_DESC,"Very fast raider bike with a light machine gun. Fragile."
+UNIT_TPLA_BUS,Rust Bus
+UNIT_TPLA_BUS_DESC,"Armoured bus. Carries 8 infantry. Needs a Workshop."
+BLD_EU_FLAK_TOWER,Flak Tower
+BLD_EU_FLAK_TOWER_DESC,"Rapid-fire rotary gun tower. Hits ground and air targets. Needs power to fire."
+BLD_EU_SIGNALS,Signals Center
+BLD_EU_SIGNALS_DESC,"Command and tech centre. Unlocks the Brennus, Thunderhead, Spectre and the advanced structures."
+BLD_EU_RELAY,Field Relay Mast
+BLD_EU_RELAY_DESC,"Repairs your vehicles and heals infantry within 6 tiles (1% health per second)."
+BLD_EU_EXCHANGE,Data Exchange
+BLD_EU_EXCHANGE_DESC,"Trades data for supply: +4 supply per second while powered."
+BLD_EU_AIRSTRIP,Airstrip
+BLD_EU_AIRSTRIP_DESC,"[STUB] Aircraft production. Aircraft are not in the game yet."
+BLD_EU_MINEFIELD,Minefield
+BLD_EU_MINEFIELD_DESC,"Hidden mine. Explodes when an enemy steps or drives onto it. Detectors reveal it."
+BLD_EU_CONCORD,Concord Pylon
+BLD_EU_CONCORD_DESC,"[STUB] Superweapon. The strike itself is not implemented yet."
+BLD_TPLA_WASP_NEST,Wasp Nest
+BLD_TPLA_WASP_NEST_DESC,"Rocket nest. Fires 3-missile salvos at vehicles and aircraft."
+BLD_TPLA_DECOY,Decoy Yard
+BLD_TPLA_DECOY_DESC,"Cheap fake structure that draws enemy fire and attention."
+BLD_TPLA_RUST_SILO,Rust Bloom Silo
+BLD_TPLA_RUST_SILO_DESC,"[STUB] Superweapon. The strike itself is not implemented yet."
+ROLE_FLAME,Flame
+ROLE_JAMMER,Jammer
+ROLE_DETECTOR,Detector
+ROLE_SCOUT,Scout
+ROLE_TRANSPORT,Transport
+ROLE_AIR_TRANSPORT,Air transport
+ROLE_AIR_STRIKE,Strike aircraft
+HUD_PASSENGERS,Passengers: %d / %d
+HUD_JAMMED,Jammed: cannot fire
+REASON_STUB,Not available yet [STUB]

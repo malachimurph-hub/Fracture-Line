@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"eu_kestrel"
+faction = &"eu"
+name_key = "UNIT_EU_KESTREL"
+desc_key = "UNIT_EU_KESTREL_DESC"
+cost = 1200
+build_time_ms = 12000
+pop = 3
+prereqs = PackedStringArray("eu_airstrip")
+tags = PackedStringArray("vehicle", "air", "stub")
+max_hp = 600
+armor_type = &"air"
+weapons = PackedStringArray()
+speed_mtps = 3000
+move_layer = &"vehicle"
+sight = 10
+radius_mt = 700
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 0
+role = &"air_transport"
+view_scene = "res://view/units/eu/kestrel.tscn"
+stubs = PackedStringArray("aircraft")
+loco = &""
+turn_dps = 0
+accel_ms = 0
+turret_dps = 0
+abilities = PackedStringArray()
+transport_capacity = 0
+detector = false

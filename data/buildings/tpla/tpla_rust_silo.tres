@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="BuildingDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/building_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"tpla_rust_silo"
+faction = &"tpla"
+name_key = "BLD_TPLA_RUST_SILO"
+desc_key = "BLD_TPLA_RUST_SILO_DESC"
+category = &"superweapon"
+cost = 4500
+build_time_ms = 50000
+footprint = Vector2i(3, 3)
+max_hp = 2200
+power = 0
+grid_radius = 0
+sight = 8
+prereqs = PackedStringArray("tpla_bazaar")
+produces = PackedStringArray()
+is_hq = false
+is_refinery = false
+passive_income = 0
+free_unit = &""
+shield_pct = 0
+view_scene = "res://view/buildings/tpla/rust_silo.tscn"
+stubs = PackedStringArray("superweapon")
+weapons = PackedStringArray()
+needs_power_to_fire = false
+garrison_capacity = 0
+capturable = false
+capture_income = 0
+buildable = true
+tags = PackedStringArray()
+aux_radius = 0

@@ -247,12 +247,24 @@ def ann_rule(fac, ev):
     return {"priority": own.get("priority", base.get("priority", 1)), "cooldown": own.get("cooldown", base.get("cooldown", 1.0)),
             "variants": own.get("variants", base.get("variants", 1))}
 
+# M2.4 roster units without their own recordings yet: they reuse a sibling unit's voice folder
+# (and events) in the runtime manifest only, so the recording script does not list them twice.
+VOICE_ALIASES = {
+    "eu": {"eu_salamander": "eu_wolfhound", "eu_hearth": "eu_wolfhound", "eu_spectre": "eu_aegis", "eu_sentinel": "eu_flakwerk",
+           "eu_brennus": "eu_leopold", "eu_thunderhead": "eu_leopold", "eu_kestrel": "eu_wolfhound", "eu_corvid": "eu_flakwerk"},
+    "tpla": {"tpla_junkhammer": "tpla_scrapback", "tpla_sprayer": "tpla_blight", "tpla_earwig": "tpla_rattler",
+             "tpla_jackal": "tpla_shrike", "tpla_bus": "tpla_rattler"},
+}
+
 def build_manifest():
     fac = {}
     for f, fd in FACTIONS.items():
         fac[f] = {"label": fd["label"], "radio": True, "radio_style": fd["radio"], "units": {}}
         for uid, u in fd["units"].items():
             fac[f]["units"][uid] = {"folder": u["folder"], "events": u["events"]}
+        for uid, sib in VOICE_ALIASES.get(f, {}).items():
+            u = fd["units"][sib]
+            fac[f]["units"][uid] = {"folder": u["folder"], "events": u["events"], "alias_of": sib}
     for later, label in [("us", "United States"), ("wa", "Western Alliance")]:
         fac[later] = {"label": label, "radio": True, "units": {}, "later": True}
     ann_events = {}

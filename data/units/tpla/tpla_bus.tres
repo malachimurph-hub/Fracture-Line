@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"tpla_bus"
+faction = &"tpla"
+name_key = "UNIT_TPLA_BUS"
+desc_key = "UNIT_TPLA_BUS_DESC"
+cost = 800
+build_time_ms = 10000
+pop = 2
+prereqs = PackedStringArray("tpla_workshop")
+tags = PackedStringArray("vehicle", "transport")
+max_hp = 700
+armor_type = &"light"
+weapons = PackedStringArray()
+speed_mtps = 2200
+move_layer = &"vehicle"
+sight = 8
+radius_mt = 640
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 0
+role = &"transport"
+view_scene = "res://view/units/tpla/bus.tscn"
+stubs = PackedStringArray("bunker_on_death")
+loco = &""
+turn_dps = 180
+accel_ms = 700
+turret_dps = 0
+abilities = PackedStringArray()
+transport_capacity = 8
+detector = false

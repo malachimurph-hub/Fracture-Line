@@ -12,10 +12,10 @@ var combat: CombatTable
 var errors: PackedStringArray = []
 var power_order: Array[StringName] = []
 
-const UNIT_ORDER := [&"eu_crawler", &"eu_harvester", &"eu_grenadier", &"eu_lancer", &"eu_wolfhound", &"eu_flakwerk", &"eu_leopold", &"eu_aegis"]
-const BUILDING_ORDER := [&"eu_hq", &"eu_reactor", &"eu_pylon", &"eu_hub", &"eu_barracks", &"eu_motor_pool", &"eu_heavy_factory", &"eu_gun_bunker"]
-const TPLA_UNIT_ORDER := [&"tpla_laborer", &"tpla_militia", &"tpla_rocket_cell", &"tpla_rattler", &"tpla_scrapback", &"tpla_hailstorm", &"tpla_shrike", &"tpla_mule", &"tpla_blight"]
-const TPLA_BUILDING_ORDER := [&"tpla_den", &"tpla_stash", &"tpla_camp", &"tpla_chop_shop", &"tpla_tunnel", &"tpla_workshop", &"tpla_bazaar", &"tpla_demo_trap", &"tpla_camo_net"]
+const UNIT_ORDER := [&"eu_crawler", &"eu_harvester", &"eu_grenadier", &"eu_lancer", &"eu_wolfhound", &"eu_flakwerk", &"eu_leopold", &"eu_aegis", &"eu_salamander", &"eu_hearth", &"eu_spectre", &"eu_sentinel", &"eu_brennus", &"eu_thunderhead", &"eu_kestrel", &"eu_corvid"]
+const BUILDING_ORDER := [&"eu_hq", &"eu_reactor", &"eu_pylon", &"eu_hub", &"eu_barracks", &"eu_motor_pool", &"eu_heavy_factory", &"eu_gun_bunker", &"eu_flak_tower", &"eu_minefield", &"eu_signals", &"eu_relay", &"eu_exchange", &"eu_airstrip", &"eu_concord"]
+const TPLA_UNIT_ORDER := [&"tpla_laborer", &"tpla_militia", &"tpla_rocket_cell", &"tpla_rattler", &"tpla_scrapback", &"tpla_hailstorm", &"tpla_shrike", &"tpla_mule", &"tpla_blight", &"tpla_junkhammer", &"tpla_sprayer", &"tpla_earwig", &"tpla_jackal", &"tpla_bus"]
+const TPLA_BUILDING_ORDER := [&"tpla_den", &"tpla_stash", &"tpla_camp", &"tpla_chop_shop", &"tpla_tunnel", &"tpla_workshop", &"tpla_bazaar", &"tpla_demo_trap", &"tpla_camo_net", &"tpla_wasp_nest", &"tpla_decoy", &"tpla_rust_silo"]
 
 ## Playable factions (skirmish). "power": whether the faction uses the power economy.
 const FACTIONS := {

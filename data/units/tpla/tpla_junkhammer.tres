@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"tpla_junkhammer"
+faction = &"tpla"
+name_key = "UNIT_TPLA_JUNKHAMMER"
+desc_key = "UNIT_TPLA_JUNKHAMMER_DESC"
+cost = 900
+build_time_ms = 12000
+pop = 3
+prereqs = PackedStringArray("tpla_workshop")
+tags = PackedStringArray("vehicle", "tank", "salvage")
+max_hp = 850
+armor_type = &"heavy"
+weapons = PackedStringArray("tpla_junk_cannon")
+speed_mtps = 1600
+move_layer = &"vehicle"
+sight = 8
+radius_mt = 620
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 0
+role = &"tank"
+view_scene = "res://view/units/tpla/junkhammer.tscn"
+stubs = PackedStringArray()
+loco = &""
+turn_dps = 0
+accel_ms = 0
+turret_dps = 80
+abilities = PackedStringArray()
+transport_capacity = 0
+detector = false
