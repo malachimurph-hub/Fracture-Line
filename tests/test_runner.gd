@@ -80,6 +80,8 @@ func _ready() -> void:
 			test_duel()
 		"zh":
 			test_zh()
+		"roster":
+			test_roster()
 		"stall":
 			var r2 := MatchRunner.new()
 			r2.record_replay = false
@@ -1320,3 +1322,149 @@ func test_duel() -> void:
 			elif vb > va: ew += 1
 			print("%s vs %s seed %d: tpla left $%d, eu left $%d" % [pair[0], pair[1], seed, va, vb])
 		print("== %s vs %s: tpla wins %d, eu wins %d" % [pair[0], pair[1], tw, ew])
+
+
+# ------------------------------------------------------------------ M2.4 roster (ZH 1:1 widening)
+const ROSTER_NEW_UNITS := ["eu_brennus", "eu_salamander", "eu_thunderhead", "eu_hearth", "eu_spectre", "eu_sentinel", "eu_kestrel", "eu_corvid",
+	"tpla_junkhammer", "tpla_sprayer", "tpla_earwig", "tpla_jackal", "tpla_bus"]
+const ROSTER_NEW_BUILDINGS := ["eu_flak_tower", "eu_signals", "eu_relay", "eu_exchange", "eu_airstrip", "eu_minefield", "eu_concord",
+	"tpla_wasp_nest", "tpla_decoy", "tpla_rust_silo"]
+
+func test_roster() -> void:
+	_roster_content()
+	_roster_transport()
+	_roster_jammer()
+	_roster_mines()
+	_roster_heal_stub_prod()
+
+func _roster_reveal(w: SimWorld) -> void:
+	for p in w.players.size():
+		var ex: PackedByteArray = w.fog.explored[p]
+		ex.fill(1)
+		w.fog.explored[p] = ex
+
+func _roster_content() -> void:
+	for id in ROSTER_NEW_UNITS:
+		var d: UnitDef = Content.unit(StringName(id))
+		_check(d != null and ResourceLoader.exists(d.view_scene) and tr(d.name_key) != d.name_key, "unit %s: def, model and name '%s'" % [id, tr(d.name_key) if d else "?"])
+		var made := false
+		for bid in Content.buildings:
+			if Content.building(bid).produces.has(id):
+				made = true
+		_check(made, "unit %s is in a production building's build list" % id)
+	for id in ROSTER_NEW_BUILDINGS:
+		var b: BuildingDef = Content.building(StringName(id))
+		_check(b != null and ResourceLoader.exists(b.view_scene) and tr(b.name_key) != b.name_key and b.buildable, "structure %s: def, model, name '%s', buildable" % [id, tr(b.name_key) if b else "?"])
+	_check(Content.combat.table.has(&"flame") or Content.combat.table.has("flame"), "flame damage type in the combat table")
+	_check(Content.unit(&"eu_wolfhound").transport_capacity == 4 and Content.unit(&"eu_wolfhound").stubs.is_empty(), "Wolfhound transport is real (capacity 4, no stub)")
+
+func _roster_transport() -> void:
+	var r := _zh_runner(41)
+	var w := r.sim
+	var c := _zh_open(w, 7)
+	var t := w.spawn_unit(&"eu_wolfhound", 0, null, FX.tile_center(c))
+	t.pos = FX.tile_center(c)
+	var inf: Array = []
+	for k in 5:
+		var g := w.spawn_unit(&"eu_grenadier", 0, null, FX.tile_center(c + Vector2i(k - 2, 3)))
+		g.pos = FX.tile_center(c + Vector2i(k - 2, 3))
+		inf.append(g.id)
+	r.issue({"p": 0, "t": "garrison", "ids": inf, "target": t.id})
+	_ticks(r, 120)
+	var inside := RosterSys.passengers(w, t).size()
+	_check(inside == 4, "Wolfhound loads 4 infantry, the 5th stays out (%d inside)" % inside)
+	r.issue({"p": 0, "t": "move", "ids": [t.id], "pos": FX.tile_center(c + Vector2i(0, 6))})
+	_ticks(r, 100)
+	var rides := true
+	for u: SimEntity in RosterSys.passengers(w, t):
+		rides = rides and u.pos == t.pos
+	_check(rides and FX.to_tile(t.pos) != c, "passengers ride with the transport")
+	# save/load with passengers aboard keeps the state identical
+	var snap := w.serialize()
+	var w2 := SimWorld.new()
+	w2.deserialize(snap)
+	_check(w2.state_hash() == w.state_hash() and RosterSys.passengers(w2, w2.get_ent(t.id)).size() == 4, "save/load keeps passengers aboard")
+	r.issue({"p": 0, "t": "unload", "ids": [t.id]})
+	_ticks(r, 2)
+	_check(RosterSys.passengers(w, t).is_empty(), "Unload puts everyone out")
+	r.issue({"p": 0, "t": "garrison", "ids": inf.slice(0, 3), "target": t.id})
+	_ticks(r, 120)
+	_check(RosterSys.passengers(w, t).size() == 3, "infantry board again (%d)" % RosterSys.passengers(w, t).size())
+	w.damage(t, 100000, null)
+	_ticks(r, 3)
+	var alive := 0
+	for id in inf.slice(0, 3):
+		var u := w.get_ent(id)
+		if u != null and u.alive and u.res_id >= 0:
+			alive += 1
+	_check(not t.alive and alive == 3, "passengers bail out when the transport is destroyed (%d)" % alive)
+	# Rust Bus carries 8, vehicles cannot board
+	var bus := w.spawn_unit(&"tpla_bus", 0, null, FX.tile_center(c))
+	var tank := w.spawn_unit(&"eu_leopold", 0, null, FX.tile_center(c + Vector2i(1, 1)))
+	r.issue({"p": 0, "t": "garrison", "ids": [tank.id], "target": bus.id})
+	_ticks(r, 40)
+	_check(Content.unit(&"tpla_bus").transport_capacity == 8 and tank.res_id >= 0, "Rust Bus capacity 8; vehicles cannot board")
+
+func _roster_jammer() -> void:
+	var dmg := []
+	for with_jammer in [true, false]:
+		var r := _zh_runner(43)
+		var w := r.sim
+		var c := _zh_open(w, 7)
+		_roster_reveal(w)
+		var tank := w.spawn_unit(&"eu_leopold", 1, null, FX.tile_center(c + Vector2i(0, 4)))
+		tank.pos = FX.tile_center(c + Vector2i(0, 4))
+		var dummy := w.spawn_unit(&"eu_crawler", 0, null, FX.tile_center(c))
+		dummy.pos = FX.tile_center(c)
+		dummy.max_hp = 100000
+		dummy.hp = 100000
+		if with_jammer:
+			var j := w.spawn_unit(&"eu_spectre", 0, null, FX.tile_center(c + Vector2i(-2, 0)))
+			j.pos = FX.tile_center(c + Vector2i(-2, 0))
+			j.max_hp = 100000
+			j.hp = 100000
+		r.issue({"p": 1, "t": "attack", "ids": [tank.id], "target": dummy.id})
+		_ticks(r, 200)
+		dmg.append(100000 - dummy.hp)
+	_check(dmg[0] == 0 and dmg[1] > 0, "Spectre jammer stops enemy vehicle fire within 6 tiles (damage %d jammed vs %d free)" % dmg)
+
+func _roster_mines() -> void:
+	var r := _zh_runner(47)
+	var w := r.sim
+	var c := _zh_open(w, 7)
+	var mine := w._place_building(Content.building(&"eu_minefield"), 0, c + Vector2i(0, 2), 0, true)
+	_ticks(r, 10)
+	_check(mine.stealthy and (mine.stealth_mask & (1 << w.player_team(1))) == 0, "EU minefield is hidden from the enemy")
+	var ear := w.spawn_unit(&"tpla_earwig", 1, null, FX.tile_center(c + Vector2i(0, -6)))
+	ear.pos = FX.tile_center(c + Vector2i(0, -6))
+	_ticks(r, 10)
+	_check((mine.stealth_mask & (1 << w.player_team(1))) != 0, "Earwig detector reveals the mine from 8 tiles")
+	var rat := w.spawn_unit(&"tpla_rattler", 1, null, FX.tile_center(c + Vector2i(0, 6)))
+	rat.pos = FX.tile_center(c + Vector2i(0, 6))
+	r.issue({"p": 1, "t": "move", "ids": [rat.id], "pos": FX.tile_center(c + Vector2i(0, -2))})
+	_ticks(r, 200)
+	_check(not mine.alive and (not rat.alive or rat.hp < rat.max_hp), "minefield detonates under an enemy vehicle (rattler hp %d/%d)" % [rat.hp, rat.max_hp])
+
+func _roster_heal_stub_prod() -> void:
+	var r := _zh_runner(53)
+	var w := r.sim
+	var c := _zh_open(w, 7)
+	var relay := w._place_building(Content.building(&"eu_relay"), 0, c + Vector2i(3, 0), 0, true)
+	var tank := w.spawn_unit(&"eu_leopold", 0, null, FX.tile_center(c))
+	tank.pos = FX.tile_center(c)
+	tank.hp = tank.max_hp / 2
+	var h0 := tank.hp
+	w.power_dirty = true
+	_ticks(r, 100)
+	_check(relay.powered and tank.hp > h0, "Field Relay Mast repairs nearby vehicles (%d -> %d)" % [h0, tank.hp])
+	# [STUB] aircraft cannot be produced; real units can
+	var strip := w._place_building(Content.building(&"eu_airstrip"), 0, c + Vector2i(-6, -6), 0, true)
+	w.players[0].supply = 50000
+	r.issue({"p": 0, "t": "queue", "target": strip.id, "def": "eu_kestrel", "n": 1})
+	_ticks(r, 2)
+	_check(strip.queue.is_empty(), "[STUB] Kestrel is rejected at the Airstrip")
+	var mp := w._place_building(Content.building(&"eu_motor_pool"), 0, c + Vector2i(-6, 4), 0, true)
+	var before := w.count_owned(0, &"eu_salamander")
+	r.issue({"p": 0, "t": "queue", "target": mp.id, "def": "eu_salamander", "n": 1})
+	_ticks(r, 20 * 30)
+	_check(w.count_owned(0, &"eu_salamander") > before, "Motor Pool produces the Salamander")
