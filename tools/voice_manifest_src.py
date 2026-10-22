@@ -115,7 +115,7 @@ TPLA_UNITS = {
     "tpla_laborer": {"folder": "laborer", "name": "Laborer (worker: builds and gathers)", "persona": "Hard-working scavenger with a wry, tired humour. Grounded, friendly.",
         "events": ["select", "move", "build", "harvest", "under_fire", "created"],
         "say": {"select": ["Yeah, boss?", "Got my shovel.", "Laborer here.", "Need a hand?"],
-                "move": ["Walking.", "On my way.", "Fine, fine, I'm going.", "Heading over."],
+                "move": ["Walking.", "On my way.", "Khalas, fine, I'm going.", "Heading over."],
                 "build": ["We'll knock it together.", "Scrap and sweat, coming up.", "I'll build it."],
                 "harvest": ["Hauling crates.", "Back to the pile."],
                 "under_fire": ["They're shooting at the workers!", "Cover! We're just diggers!"],
@@ -123,7 +123,7 @@ TPLA_UNITS = {
     "tpla_militia": {"folder": "militia", "name": "Militia (rifle infantry)", "persona": "Scrappy volunteer fighter. Fierce, informal, quick.",
         "events": UNIT_EVENTS + ["garrison"],
         "say": {"select": ["Militia.", "We're here.", "Say the word.", "Ready to fight."],
-                "move": ["Moving.", "Through the alleys!", "Follow me!", "Going now."],
+                "move": ["Moving.", "Through the alleys!", "Yalla, follow me!", "Going now."],
                 "attack": ["Hit them!", "Fire, fire!", "For the Basin!", "Take them down!"],
                 "under_fire": ["They found us!", "Scatter! Take cover!"],
                 "created": ["Militia, armed and angry.", "Fighters reporting."],
@@ -133,7 +133,7 @@ TPLA_UNITS = {
         "events": UNIT_EVENTS + ["garrison"],
         "say": {"select": ["Rocket cell.", "Tubes ready.", "Point us at steel.", "Loaded."],
                 "move": ["Shifting position.", "Keep low, move!", "Relocating.", "Going."],
-                "attack": ["Rocket out!", "Hit the armour!", "Fire the tube!", "Burn that tank!"],
+                "attack": ["Rocket out!", "Hit the armour!", "Yalla, fire the tube!", "Burn that tank!"],
                 "under_fire": ["We're spotted!", "Rocket cell pinned down!"],
                 "created": ["Rocket cell ready to hunt.", "Anti-armour team here."],
                 "veteran": ["Our aim just got better."],
@@ -141,7 +141,7 @@ TPLA_UNITS = {
     "tpla_rattler": {"folder": "rattler", "name": "Rattler (technical truck)", "persona": "Reckless driver-and-gunner pair. Loud, grinning, a bit unhinged.",
         "events": UNIT_EVENTS,
         "say": {"select": ["Rattler!", "Engine's coughing, but ready.", "Gun's on the back.", "Where are we driving?"],
-                "move": ["Hang on!", "Full throttle!", "Driving!", "Kick up the dust!"],
+                "move": ["Hang on!", "Full throttle!", "Yalla, yalla, driving!", "Kick up the dust!"],
                 "attack": ["Spray them!", "Gunner, open up!", "Drive-by!", "Rattle them!"],
                 "under_fire": ["Truck's taking hits!", "Get us out of here!"],
                 "created": ["Rattler rolling, held together with wire.", "Fresh truck, fresh gun."],
@@ -157,7 +157,7 @@ TPLA_UNITS = {
     "tpla_scrapback": {"folder": "scrapback", "name": "Scrapback (scrap tank)", "persona": "Proud scrap-tank commander. Heavy, slow, stubborn.",
         "events": UNIT_EVENTS,
         "say": {"select": ["Scrapback.", "Patched and ready.", "Armour, such as it is.", "Commander here."],
-                "move": ["Grinding forward.", "Treads turning.", "Rolling out.", "Moving."],
+                "move": ["Grinding forward.", "Treads turning.", "Boro! Rolling out.", "Moving."],
                 "attack": ["Fire the cannon!", "Break them!", "Target their armour!", "Pound it!"],
                 "under_fire": ["The plates are buckling!", "Scrapback taking heavy hits!"],
                 "created": ["Scrapback, built from the bones of their tanks.", "Tank ready."],
@@ -224,16 +224,21 @@ VOICE_CAST = {
                      "eu_leopold": [{"v": "bm_george:0.7,bm_daniel:0.3", "speed": 0.92}],
                      "eu_aegis": [{"v": "bf_isabella", "speed": 1.0}],
                      "eu_flakwerk": [{"v": "bf_alice", "speed": 1.04}]}},
-    "tpla": {"lang": "en-us", "announcer": [{"v": "af_heart", "speed": 0.98}],
-             "units": {"tpla_laborer": [{"v": "am_michael", "speed": 1.0}, {"v": "am_michael:0.5,am_eric:0.5", "speed": 1.02}],
-                       "tpla_militia": [{"v": "am_fenrir", "speed": 1.08}, {"v": "af_river", "speed": 1.08}, {"v": "am_fenrir:0.5,am_puck:0.5", "speed": 1.1}],
-                       "tpla_rocket_cell": [{"v": "am_puck", "speed": 1.06}, {"v": "af_kore", "speed": 1.06}],
-                       "tpla_rattler": [{"v": "am_echo:0.5,am_liam:0.5", "speed": 1.12}],
-                       "tpla_hailstorm": [{"v": "am_liam", "speed": 1.0}],
-                       "tpla_scrapback": [{"v": "am_onyx", "speed": 0.92}],
-                       "tpla_shrike": [{"v": "af_nova", "speed": 1.12}],
-                       "tpla_mule": [{"v": "am_echo", "speed": 0.94}],
-                       "tpla_blight": [{"v": "af_sarah", "speed": 0.95}]}},
+    # M2.5: Middle Eastern-accented English (Arabic / Persian accents). Engine: Chatterbox
+    # Multilingual (MIT), language token "ar", voice-prompted by synthetic accented-English prompts
+    # made by tools/accent_tts.py from CC0 Persian Piper voices (amir, ganji, reza_ibrahim), each
+    # pitch+formant shifted ("shift", semitones) into a new speaker. "exag" = Chatterbox emotion.
+    "tpla": {"engine": "chatterbox", "lang": "ar",
+             "announcer": [{"v": "amir", "shift": -1.0, "exag": 0.45}],
+             "units": {"tpla_laborer": [{"v": "ganji", "shift": -1.5, "exag": 0.45}, {"v": "ganji", "shift": -0.5, "exag": 0.5}],
+                       "tpla_militia": [{"v": "amir", "shift": 0.5, "exag": 0.6}, {"v": "ganji", "shift": 1.5, "exag": 0.6}, {"v": "reza", "shift": 2.0, "exag": 0.6}],
+                       "tpla_rocket_cell": [{"v": "ganji", "shift": 1.0, "exag": 0.55}, {"v": "amir", "shift": 4.5, "exag": 0.55}],
+                       "tpla_rattler": [{"v": "reza", "shift": 2.5, "exag": 0.75}],
+                       "tpla_hailstorm": [{"v": "amir", "shift": -2.5, "exag": 0.5}],
+                       "tpla_scrapback": [{"v": "ganji", "shift": -3.0, "exag": 0.5}],
+                       "tpla_shrike": [{"v": "ganji", "shift": 5.0, "exag": 0.7}],
+                       "tpla_mule": [{"v": "reza", "shift": -1.0, "exag": 0.35}],
+                       "tpla_blight": [{"v": "amir", "shift": 3.5, "exag": 0.35}]}},
 }
 EVENT_SPEED = {"select": 1.0, "move": 1.06, "attack": 1.1, "under_fire": 1.18, "created": 1.0, "veteran": 0.98, "build": 1.0, "harvest": 1.0, "garrison": 1.06}
 
@@ -282,6 +287,9 @@ def build_manifest():
         "max_variants": 9,
     }
 
+def _vname(c):
+    return c["v"] if "shift" not in c else f"chatterbox/{c['v']}{c['shift']:+g}st"
+
 def lines():
     """Every line of the script: (faction, unit_id or 'announcer', folder, event, n, text, file_stem)."""
     out = []
@@ -302,9 +310,9 @@ def write_docs():
     rows = []
     md = []
     md.append("# FRACTURE LINE — Voice recording script (M2: EU Alliance + TPLA)\n")
-    md.append("You record these lines yourself; the game picks them up automatically. Until a line is recorded, the game plays an **AI-generated voice** (offline neural TTS, Kokoro-82M, Apache-2.0) for it, so every line in this script already has a voice in the game. Your recording always replaces the AI line with the same file name.\n")
+    md.append("You record these lines yourself; the game picks them up automatically. Until a line is recorded, the game plays an **AI-generated voice** (offline neural TTS: EU on Kokoro-82M, Apache-2.0; TPLA since M2.5 on Chatterbox Multilingual, MIT, with Middle Eastern-accented English) for it, so every line in this script already has a voice in the game. Your recording always replaces the AI line with the same file name.\n")
     md.append("Everything here is original wording. Feel free to improvise as long as the meaning and length fit.\n")
-    md.append("**TPLA sensitivity rule (GDD 4):** the TPLA is fictional, multinational and secular. Record it in your normal voice or a made-up flavour; please **no imitation of real-world ethnic accents**, no religious phrases.\n")
+    md.append("**TPLA voice direction (M2.5, Malachi's call; replaces the old neutral-accent rule):** the TPLA speaks English with Middle Eastern (Arabic / Persian) accents. Play real people, not caricatures; orders must stay clearly understandable English. A few short in-language shouts are fine (\"Yalla!\" = come on / let's go, \"Khalas\" = enough / done, \"Boro!\" = go!). Still no religious phrases.\n")
     md.append("## How to record (phone is fine)\n")
     md.append("- **Room:** quiet, soft furnishings (a closet full of clothes or a car works great). No fans/AC, phone on flight mode.\n"
               "- **Distance:** about **15 cm** (a hand-span) from the phone's bottom mic, slightly off to the side so you don't pop on P/B sounds.\n"
@@ -325,7 +333,7 @@ def write_docs():
             md.append(f"### {u['name']} — `{uid}`\n")
             md.append(f"*Persona:* {u['persona']}  ")
             md.append(f"*Folder:* `res://audio/voice/{f}/{u['folder']}/`  ")
-            md.append("*AI voice now:* " + ", ".join(c["v"] for c in cast["units"][uid]) + "\n")
+            md.append("*AI voice now:* " + ", ".join(_vname(c) for c in cast["units"][uid]) + "\n")
             md.append("| File | Event | Suggested wordings (pick one per take, or improvise) |\n|---|---|---|")
             for ev in u["events"]:
                 for n in range(1, EVENTS[ev]["variants"] + 1):
@@ -336,9 +344,9 @@ def write_docs():
             md.append("")
         af = fd["ann_folder"]
         persona = ("calm, authoritative command voice; clear diction, slightly clipped." if f == "eu" else
-                   "the TPLA's underground radio voice: warm, confident, a little defiant; neutral accent.")
+                   "the TPLA's underground radio voice: warm, confident, a little defiant; Middle Eastern (Arabic / Persian) accented English.")
         md.append(f"## {fd['label']} — announcer\n")
-        md.append(f"*Persona:* {persona} The radio filter is NOT applied (only a light colour on the TPLA one).  \n*Folder:* `res://audio/voice/{af}/`  \n*AI voice now:* {cast['announcer'][0]['v']}\n")
+        md.append(f"*Persona:* {persona} The radio filter is NOT applied (only a light colour on the TPLA one).  \n*Folder:* `res://audio/voice/{af}/`  \n*AI voice now:* {_vname(cast['announcer'][0])}\n")
         md.append("| File | Event | Length | Suggested wordings |\n|---|---|---|---|")
         for ev, v in fd["announcer"].items():
             for n in range(1, ann_rule(f, ev)["variants"] + 1):

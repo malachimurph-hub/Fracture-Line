@@ -7,3 +7,4 @@ tests/out/
 !data/balance/*.import
 !assets/**/*.import
 !audio/**/*.import
+__pycache__/

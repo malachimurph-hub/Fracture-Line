@@ -42,6 +42,8 @@ def main(argv):
         for (fac, uid, folder, ev, n, text, stem, _says) in vm.lines():
             if only and fac != only:
                 continue
+            if vm.VOICE_CAST[fac].get("engine", "kokoro") != "kokoro":
+                continue   # e.g. TPLA since M2.5: tools/gen_ai_voices_me.py
             cast = vm.VOICE_CAST[fac]
             if uid == "announcer":
                 actors = cast["announcer"]
@@ -70,8 +72,11 @@ def main(argv):
             n_new += 1
             if n_new % 25 == 0:
                 print("...", n_new, flush=True)
-    with open(os.path.join(OUT, "voice_ai_index.json"), "w") as fh:
-        json.dump({"generator": "Kokoro-82M v1.0 (Apache-2.0) via kokoro-onnx 0.6.1 (MIT)", "lines": log}, fh, indent=0)
+    ip = os.path.join(OUT, "voice_ai_index.json")
+    old = json.load(open(ip)) if os.path.exists(ip) else {"lines": []}
+    keep = [l for l in old["lines"] if l.get("engine", "kokoro") != "kokoro"]
+    with open(ip, "w") as fh:
+        json.dump({"generator": "EU: Kokoro-82M v1.0 (Apache-2.0) via kokoro-onnx (MIT); TPLA: see engine per line", "lines": log + keep}, fh, indent=0)
     print(f"AI voices: {len(log)} lines ({n_new} generated now) -> {os.path.relpath(OUT, ROOT)}")
 
 if __name__ == "__main__":
