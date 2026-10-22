@@ -25,6 +25,9 @@ const RUST := Color("#9fbf3a")
 const DECAL_CAP := 160
 const SMOKE := Color("#3d3833")
 const DUST := Color("#c2a77e")
+## M2.7: the menu background battle tones explosions / smoke down so they never blanket the
+## view (1.0 in matches). Scales particle counts and smoke size/opacity, never the sim.
+var fx_mul := 1.0
 
 func _ready() -> void:
 	_box.size = Vector3.ONE
@@ -128,6 +131,8 @@ func flak_burst(p: Vector3) -> void:
 
 ## Burning building / wreck smoke column, called periodically by the world view.
 func smoke_puff(p: Vector3, strength: float, burning: bool) -> void:
+	if fx_mul < 1.0 and randf() > fx_mul:
+		return
 	var w := Vector3(0.35, 0, 0.12)   # light prevailing wind
 	smoke.emit(p + Vector3(randf_range(-0.25, 0.25), 0, randf_range(-0.25, 0.25)), Vector3(0, 1.1 + strength * 0.6, 0) + w, 2.6 + strength, 0.35 + strength * 0.25, 1.4 + strength, Color(0.16, 0.15, 0.14, 0.75), Color(0.35, 0.33, 0.31, 0.0))
 	if burning:
@@ -193,16 +198,17 @@ func flash(p: Vector3, col: Color, size: float, life: float = 0.12) -> void:
 	_add("sph", mi, life, {"grow": size * 0.6, "s": size})
 
 func explosion(p: Vector3, size: float) -> void:
-	var nf := int(clampf(6 + size * 5, 6, 18))
+	var nf := int(clampf(6 + size * 5, 6, 18) * fx_mul)
+	var sa := 0.85 * clampf(fx_mul * 1.2, 0.0, 1.0)
 	for k in nf:
 		var d := Vector3(randf_range(-1, 1), randf_range(0.3, 1.3), randf_range(-1, 1))
 		fire.emit(p + Vector3(0, 0.25, 0) + d * 0.15 * size, d * 2.2 * size, randf_range(0.25, 0.5), size * randf_range(0.35, 0.6), size * 0.9, Color("#fff0b0"), Color(0.85, 0.22, 0.04, 0.0), 1.0)
 	for k in int(nf * 0.7):
 		var d2 := Vector3(randf_range(-1, 1), randf_range(0.6, 1.6), randf_range(-1, 1))
-		smoke.emit(p + Vector3(0, 0.4, 0) + d2 * 0.2 * size, d2 * 1.0 * size, randf_range(1.6, 2.6), size * 0.45, size * 1.7, Color(0.2, 0.18, 0.16, 0.85), Color(0.42, 0.4, 0.37, 0.0))
+		smoke.emit(p + Vector3(0, 0.4, 0) + d2 * 0.2 * size, d2 * 1.0 * size, randf_range(1.6, 2.6) * fx_mul, size * 0.45, size * 1.7 * fx_mul, Color(0.2, 0.18, 0.16, sa), Color(0.42, 0.4, 0.37, 0.0))
 	for k in int(clampf(size * 5, 2, 10)):
 		debris.emit(p + Vector3(0, 0.3, 0), Vector3(randf_range(-2.5, 2.5), randf_range(2.5, 5.5), randf_range(-2.5, 2.5)) * sqrt(size), 2.0, randf_range(0.06, 0.14) * sqrt(size), 0.08, Color("#3b3733"), Color("#2a2725"))
-	for k in 6:
+	for k in int(6 * fx_mul):
 		var a := k * TAU / 6.0
 		smoke.emit(p + Vector3(cos(a), 0.1, sin(a)) * 0.3 * size, Vector3(cos(a), 0.15, sin(a)) * 2.0 * size, 1.0, size * 0.4, size * 1.1, Color(DUST, 0.6), Color(DUST, 0.0))
 	decal(p, size * 0.9, 1 if size >= 1.2 else 0)

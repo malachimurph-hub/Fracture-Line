@@ -38,15 +38,15 @@ func build() -> void:
 		q.pressed.connect(func(): get_tree().quit())
 		right.add_child(q)
 
-## M2.6: live battle behind the menu (half-resolution SubViewport, 30 FPS cap while shown).
+## M2.6: live battle behind the menu (reduced-resolution 3D, 30 FPS cap while shown).
+## M2.7: 3D at 67% scale instead of a half-size viewport (sharper models), lighter veil.
 func _add_battle_backdrop() -> void:
 	if not Settings.g("menu_battle"):
 		return
 	var svc := SubViewportContainer.new()
 	svc.name = "BattleBackdrop"
 	svc.stretch = true
-	svc.stretch_shrink = 2
-	svc.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR   # smooth upscale of the half-res render
+	svc.stretch_shrink = 1
 	svc.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	svc.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(svc)
@@ -55,19 +55,21 @@ func _add_battle_backdrop() -> void:
 	vp.own_world_3d = true
 	vp.audio_listener_enable_3d = false
 	vp.msaa_3d = Viewport.MSAA_DISABLED
+	vp.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
+	vp.scaling_3d_scale = 0.67
 	svc.add_child(vp)
 	var mb := MenuBattle.new()
 	mb.name = "MenuBattle"
 	vp.add_child(mb)
 	# readability: dark gradient on the menu side, light veil elsewhere
 	var veil := ColorRect.new()
-	veil.color = Color(0.03, 0.035, 0.045, 0.35)
+	veil.color = Color(0.03, 0.035, 0.045, 0.16)
 	veil.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	veil.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(veil)
 	move_child(veil, 2)
 	var side := ColorRect.new()
-	side.color = Color(0.03, 0.035, 0.045, 0.45)
+	side.color = Color(0.03, 0.035, 0.045, 0.4)
 	side.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	side.set_anchors_preset(Control.PRESET_FULL_RECT)
 	side.anchor_left = 0.6
