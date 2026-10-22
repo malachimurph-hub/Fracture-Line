@@ -354,25 +354,29 @@ VOICE_CAST = {
                      "eu_harvester": [{"v": "bm_lewis", "speed": 1.0}],
                      "eu_grenadier": [{"v": "bm_daniel", "speed": 1.05}, {"v": "bm_daniel:0.5,bm_lewis:0.5", "speed": 1.05}],
                      "eu_lancer": [{"v": "bm_fable", "speed": 1.02}, {"v": "bm_fable:0.6,bm_george:0.4", "speed": 1.0}],
-                     "eu_wolfhound": [{"v": "bf_lily", "speed": 1.08}],
+                     "eu_wolfhound": [{"v": "bm_lewis:0.6,bm_fable:0.4", "speed": 1.1}],
                      "eu_leopold": [{"v": "bm_george:0.7,bm_daniel:0.3", "speed": 0.92}],
-                     "eu_aegis": [{"v": "bf_isabella", "speed": 1.0}],
-                     "eu_flakwerk": [{"v": "bf_alice", "speed": 1.04}]}},
+                     "eu_aegis": [{"v": "bm_daniel:0.6,bm_george:0.4", "speed": 0.98}],
+                     "eu_flakwerk": [{"v": "bm_fable:0.5,bm_lewis:0.5", "speed": 1.05}]}},
     # M2.5: Middle Eastern-accented English (Arabic / Persian accents). Engine: Chatterbox
     # Multilingual (MIT), language token "ar", voice-prompted by synthetic accented-English prompts
     # made by tools/accent_tts.py from CC0 Persian Piper voices (amir, ganji, reza_ibrahim), each
     # pitch+formant shifted ("shift", semitones) into a new speaker. "exag" = Chatterbox emotion.
     "tpla": {"engine": "chatterbox", "lang": "ar",
-             "announcer": [{"v": "amir", "shift": -1.0, "exag": 0.45}],
-             "units": {"tpla_laborer": [{"v": "ganji", "shift": -1.5, "exag": 0.45}, {"v": "ganji", "shift": -0.5, "exag": 0.5}],
+             # v2 (Malachi: "slightly too Russian"; loved the Militia): prompts now use the Arabic
+             # accent rules ("ar": p->b, v->f, tapped r, full unreduced vowels, w kept - the old
+             # Persian rule w->v sounded Slavic), shifts kept within -2..+2 st (male range).
+             # The Militia keeps its original v1 takes and cast as the style reference.
+             "announcer": [{"v": "amir", "shift": -0.5, "exag": 0.5, "kind": "ar"}],
+             "units": {"tpla_laborer": [{"v": "ganji", "shift": -1.5, "exag": 0.5, "kind": "ar"}, {"v": "ganji", "shift": -0.5, "exag": 0.55, "kind": "ar"}],
                        "tpla_militia": [{"v": "amir", "shift": 0.5, "exag": 0.6}, {"v": "ganji", "shift": 1.5, "exag": 0.6}, {"v": "reza", "shift": 2.0, "exag": 0.6}],
-                       "tpla_rocket_cell": [{"v": "ganji", "shift": 1.0, "exag": 0.55}, {"v": "amir", "shift": 4.5, "exag": 0.55}],
-                       "tpla_rattler": [{"v": "reza", "shift": 2.5, "exag": 0.75}],
-                       "tpla_hailstorm": [{"v": "amir", "shift": -2.5, "exag": 0.5}],
-                       "tpla_scrapback": [{"v": "ganji", "shift": -3.0, "exag": 0.5}],
-                       "tpla_shrike": [{"v": "ganji", "shift": 5.0, "exag": 0.7}],
-                       "tpla_mule": [{"v": "reza", "shift": -1.0, "exag": 0.35}],
-                       "tpla_blight": [{"v": "amir", "shift": 3.5, "exag": 0.35}]}},
+                       "tpla_rocket_cell": [{"v": "ganji", "shift": 1.0, "exag": 0.6, "kind": "ar"}, {"v": "reza", "shift": 0.5, "exag": 0.6, "kind": "ar"}],
+                       "tpla_rattler": [{"v": "reza", "shift": 1.5, "exag": 0.75, "kind": "ar"}],
+                       "tpla_hailstorm": [{"v": "amir", "shift": -1.5, "exag": 0.55, "kind": "ar"}],
+                       "tpla_scrapback": [{"v": "ganji", "shift": -2.0, "exag": 0.55, "kind": "ar"}],
+                       "tpla_shrike": [{"v": "ganji", "shift": 2.0, "exag": 0.7, "kind": "ar"}],
+                       "tpla_mule": [{"v": "reza", "shift": -1.0, "exag": 0.4, "kind": "ar"}],
+                       "tpla_blight": [{"v": "amir", "shift": 1.5, "exag": 0.4, "kind": "ar"}]}},
 }
 VOICE_CAST["us"] = {"lang": "en-us", "announcer": [{"v": "af_nicole:0.5,af_sarah:0.5", "speed": 0.98}],
           "units": {"us_dozer": [{"v": "am_michael:0.6,am_onyx:0.4", "speed": 0.95}],
@@ -383,11 +387,31 @@ VOICE_CAST["us"] = {"lang": "en-us", "announcer": [{"v": "af_nicole:0.5,af_sarah
                     "us_sniper": [{"v": "am_onyx", "speed": 0.94}],
                     "us_lynx": [{"v": "am_puck:0.6,am_adam:0.4", "speed": 1.08}],
                     "us_halberd": [{"v": "am_fenrir", "speed": 0.94}],
-                    "us_picket": [{"v": "af_sarah", "speed": 1.04}],
+                    "us_picket": [{"v": "am_liam:0.5,am_michael:0.5", "speed": 1.05}],
                     "us_longreach": [{"v": "am_fenrir:0.5,am_eric:0.5", "speed": 0.98}],
-                    "us_harrier": [{"v": "af_bella", "speed": 1.04}],
+                    "us_harrier": [{"v": "am_eric:0.6,am_echo:0.4", "speed": 1.04}],
                     "us_wraith": [{"v": "am_echo:0.6,am_puck:0.4", "speed": 1.08}],
                     "us_thunderlance": [{"v": "am_onyx:0.6,am_fenrir:0.4", "speed": 0.95}]}}
+# Malachi's rule (M2.5): unit / soldier voices are male only; announcers may be female.
+MALE_PROMPTS = {"amir", "ganji", "reza"}        # Piper fa_IR voices used for Chatterbox prompts (all male)
+MAX_UNIT_SHIFT = 2.5                            # semitones: higher shifts start to read as female
+
+def check_unit_voices_male():
+    bad = []
+    for fac, cast in VOICE_CAST.items():
+        for uid, actors in cast["units"].items():
+            for a in actors:
+                if "shift" in a:
+                    if a["v"] not in MALE_PROMPTS or a["shift"] > MAX_UNIT_SHIFT:
+                        bad.append((uid, a))
+                else:
+                    for part in a["v"].split(","):
+                        name = part.split(":")[0]
+                        if len(name) < 2 or name[1] != "m":      # Kokoro ids: <lang><f|m>_name
+                            bad.append((uid, a))
+    assert not bad, "female / non-male unit voices (unit sets must be male): %s" % bad
+
+check_unit_voices_male()
 EVENT_SPEED = {"select": 1.0, "move": 1.06, "attack": 1.1, "under_fire": 1.18, "created": 1.0, "veteran": 0.98, "build": 1.0, "harvest": 1.0, "garrison": 1.06}
 
 FACTIONS = {"eu": {"label": "EU Alliance", "units": EU_UNITS, "announcer": ANNOUNCER_EU, "ann_folder": "announcer", "radio": "eu"},
@@ -437,7 +461,7 @@ def build_manifest():
     }
 
 def _vname(c):
-    return c["v"] if "shift" not in c else f"chatterbox/{c['v']}{c['shift']:+g}st"
+    return c["v"] if "shift" not in c else f"chatterbox/{c['v']}{c['shift']:+g}st" + ("/ar-v2" if c.get("kind") else "")
 
 def lines():
     """Every line of the script: (faction, unit_id or 'announcer', folder, event, n, text, file_stem)."""

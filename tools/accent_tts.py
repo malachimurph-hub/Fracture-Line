@@ -56,6 +56,15 @@ def accent(sent, kind):
         for a, b in ARABIC2:
             s = s.replace(a, b)
         return list(s.replace("e", "i").replace("o", "u"))
+    if kind == "me":
+        # M2.5 v2 Arabic-flavoured English for Chatterbox prompts (Malachi: v1 sounded "slightly
+        # Russian"): Arabic vowel/consonant rules (p->b, v->f, full vowels, w kept), a single tapped
+        # r instead of a trill, and emphatic (pharyngealised) t/d/s before back vowels.
+        for a, b in ARABIC:
+            s = s.replace(a, b)
+        s = s.replace("r", "ɾ")
+        s = re.sub(r"([tds])(ˈ|ˌ)?([ɑaou])", lambda m: m.group(1) + "ˤ" + (m.group(2) or "") + m.group(3), s)
+        return list(s)
     if kind == "fa":
         # s + consonant at the start of a word: Persian speakers add a short e ("estop", "esquad")
         s = re.sub(r"(^|\s)(ˈ?)s([ptkmnlw])", lambda m: m.group(1) + "e" + m.group(2) + "s" + m.group(3), s)

@@ -28,9 +28,11 @@ PROMPT_TEXT = ("The convoy reached the river crossing before dawn. We unloaded t
 
 def prompt_for(c):
     os.makedirs(PROMPTS, exist_ok=True)
-    p = os.path.join(PROMPTS, f"{c['v']}_{c['shift']:+.1f}.wav")
+    kind = c.get("kind", "fa2" if c["v"] == "reza" else "fa")    # v2 cast: "ar" -> Arabic rules ("me")
+    tag = "" if "kind" not in c else "_" + c["kind"]
+    p = os.path.join(PROMPTS, f"{c['v']}_{c['shift']:+.1f}{tag}.wav")
     if not os.path.exists(p):
-        a, sr = at.synth(PROMPT_TEXT, PIPER[c["v"]], "fa2" if c["v"] == "reza" else "fa", speed=0.95, noise=0.5)
+        a, sr = at.synth(PROMPT_TEXT, PIPER[c["v"]], "me" if kind == "ar" else kind, speed=0.95, noise=0.5)
         r = 2 ** (c["shift"] / 12.0)      # play-speed shift: pitch and formants together -> new speaker
         a = resample_poly(a, int(round(1000 / r)), 1000).astype(np.float32)
         sf.write(p, a, sr)
@@ -82,9 +84,10 @@ def main(argv):
             print("gen", os.path.relpath(dst, ROOT), repr(text), flush=True)
     ip = os.path.join(OUT, "voice_ai_index.json")
     old = json.load(open(ip)) if os.path.exists(ip) else {"lines": []}
-    keep = [l for l in old["lines"] if not (l["file"].startswith("audio/voice_ai/tpla/") or l["file"].startswith("audio/voice_ai/announcer_tpla/"))]
+    mine = {l["file"] for l in log}
+    keep = [l for l in old["lines"] if l["file"] not in mine and (only or not (l["file"].startswith("audio/voice_ai/tpla/") or l["file"].startswith("audio/voice_ai/announcer_tpla/")))]
     with open(ip, "w") as fh:
-        json.dump({"generator": "EU: Kokoro-82M v1.0 (Apache-2.0) via kokoro-onnx (MIT); TPLA: Chatterbox Multilingual (MIT), lang=ar, synthetic accented prompts from CC0 Piper fa_IR voices",
+        json.dump({"generator": "EU + US: Kokoro-82M v1.0 (Apache-2.0) via kokoro-onnx (MIT); TPLA: Chatterbox Multilingual (MIT), lang=ar, synthetic accented prompts from CC0 Piper fa_IR voices",
                    "lines": keep + log}, fh, indent=0)
     print(f"TPLA voices: {len(log)} lines ({n_new} generated now)")
 

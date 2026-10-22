@@ -548,6 +548,25 @@ func test_audio() -> void:
 					not_ai.append("%s/%s" % [uid, ev])
 	_check(missing.is_empty(), "every manifest line has a voice %s" % [missing])
 	_check(not_ai.is_empty(), "every EU + TPLA + US line has a recorded or AI voice (no robotic fallback) %s" % [not_ai.slice(0, 8)])
+	# Malachi's rule: unit / soldier voices are male only (announcers may be female)
+	var female: Array = []
+	var idx = JSON.parse_string(FileAccess.get_file_as_string("res://audio/voice_ai/voice_ai_index.json"))
+	for l in (idx["lines"] if idx is Dictionary else []):
+		var f := String(l["file"])
+		if f.contains("/announcer"):
+			continue
+		var v := String(l.get("voice", ""))
+		if v.begins_with("chatterbox/"):
+			var name := v.trim_prefix("chatterbox/")
+			var sh := float(name.substr(name.find("+") if name.find("+") >= 0 else name.find("-")).trim_suffix("/ar-v2").trim_suffix("st"))
+			if not (name.begins_with("amir") or name.begins_with("ganji") or name.begins_with("reza")) or sh > 2.5:
+				female.append(f)
+		else:
+			for part in v.split(","):
+				var id := part.get_slice(":", 0)
+				if id.length() < 2 or id[1] != "m":
+					female.append(f)
+	_check(female.is_empty(), "unit voice sets use male voices only (%d female/unknown lines) %s" % [female.size(), female.slice(0, 5)])
 	_check(ad.manifest["factions"]["tpla"]["units"].size() == Content.TPLA_UNIT_ORDER.size(), "manifest has every TPLA unit")
 	var st: Dictionary = ad.voice_status()
 	print("voice status: %d of %d lines recorded, %d AI, %d placeholder, %d missing" % [st["recorded"], st["total"], st["ai"], st["placeholder"], st["missing"]])
