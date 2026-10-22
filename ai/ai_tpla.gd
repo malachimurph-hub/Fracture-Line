@@ -195,6 +195,11 @@ func _next_building() -> StringName:
 		return &"tpla_camo_net"
 	if s > 900 and difficulty == "hard" and counts.get(&"tpla_chop_shop", 0) < 3 and p.supply > 2000:
 		return &"tpla_chop_shop"
+	# M2.4: rocket nests for anti-vehicle / AA cover, decoys to soak fire (not on easy)
+	if s > 420 and difficulty != "easy" and counts.get(&"tpla_wasp_nest", 0) < (2 if difficulty == "hard" else 1) and p.supply > 1100:
+		return &"tpla_wasp_nest"
+	if s > 660 and difficulty == "hard" and counts.get(&"tpla_decoy", 0) < 1 and p.supply > 700:
+		return &"tpla_decoy"
 	return &""
 
 func _enemy_spawn() -> Vector2i:
@@ -227,6 +232,8 @@ func _toward_for(id: StringName) -> Vector2i:
 				return res.pos if res != null else base
 			var er := _pick_expansion()
 			return er.pos if er != null else base
+		&"tpla_wasp_nest", &"tpla_decoy":
+			return base + (_enemy_spawn() - base) * 22 / 100
 		&"tpla_tunnel":
 			var n := w.count_owned(pid, &"tpla_tunnel")
 			var far := _remote_stash()
@@ -298,6 +305,11 @@ func _pick_unit(bd: BuildingDef) -> StringName:
 			wgt = 0
 		if ud.tags.has("raider") and seconds() < 420:
 			wgt = wgt * 3 / 2     # early swarm raids
+		# M2.4: one detector per dozen fighters; [STUB] never
+		if ud.tags.has("stub"):
+			wgt = 0
+		elif ud.tags.has("detector") and int(have.get(sid, 0)) >= 1 + n_combat / 12:
+			wgt = 0
 		if w.prereqs_met(pid, ud.prereqs) != "":
 			wgt = 0
 		weights[uid] = wgt

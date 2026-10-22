@@ -222,6 +222,17 @@ func _next_building() -> StringName:
 		return &"eu_gun_bunker"
 	if seconds() > 780 and counts.get(&"eu_motor_pool", 0) < 2 and p.supply > 1500:
 		return &"eu_motor_pool"
+	# M2.4 tech and support structures (ZH China-style: tech centre, repair, income, AA, mines)
+	if seconds() > 480 and counts.get(&"eu_heavy_factory", 0) >= 1 and counts.get(&"eu_signals", 0) < 1 and p.supply > 1700:
+		return &"eu_signals"
+	if counts.get(&"eu_signals", 0) >= 1 and counts.get(&"eu_relay", 0) < 1 and p.supply > 800:
+		return &"eu_relay"
+	if seconds() > 600 and difficulty != "easy" and counts.get(&"eu_flak_tower", 0) < 1 and p.supply > 1200:
+		return &"eu_flak_tower"
+	if counts.get(&"eu_signals", 0) >= 1 and counts.get(&"eu_exchange", 0) < 1 and p.supply > 2600:
+		return &"eu_exchange"
+	if seconds() > 540 and difficulty != "easy" and counts.get(&"eu_minefield", 0) < (4 if difficulty == "hard" else 2) and p.supply > 600:
+		return &"eu_minefield"
 	return &""
 
 ## Units allowed to take build orders (EU: every Crawler; TPLA: the reserved Laborers).
@@ -302,6 +313,10 @@ func _toward_for(id: StringName) -> Vector2i:
 				if far != null:
 					return far.pos + (map_center() - far.pos) / 10
 			return base + (map_center() - base) * 3 / 10
+		&"eu_flak_tower", &"eu_minefield":
+			# forward, on the road toward the map centre (mines spread a little by count)
+			var nm := w.count_owned(pid, id)
+			return base + (map_center() - base) * (28 + 6 * (nm % 3)) / 100
 		&"eu_pylon":
 			# pylons only extend the Grid shield now; keep them among the base buildings
 			return base + (map_center() - base) / 5
@@ -479,6 +494,13 @@ func _pick_unit(bd: BuildingDef) -> StringName:
 			wgt = 0
 		if uid == "eu_flakwerk" and enemy_inf < 4:
 			wgt /= 3
+		# M2.4: support units (detector / jammer / artillery) in small numbers; [STUB] never
+		if ud.tags.has("stub"):
+			wgt = 0
+		elif (ud.tags.has("detector") or ud.tags.has("jammer")) and _count_type(StringName(uid)) >= 1 + combat_units().size() / 12:
+			wgt = 0
+		elif ud.tags.has("artillery") and _count_type(StringName(uid)) >= 2 + combat_units().size() / 8:
+			wgt = 0
 		if w.prereqs_met(pid, ud.prereqs) != "":
 			wgt = 0
 		weights[uid] = wgt
@@ -491,6 +513,13 @@ func _pick_unit(bd: BuildingDef) -> StringName:
 		if roll < 0:
 			return StringName(uid)
 	return StringName(bd.produces[0])
+
+func _count_type(def_id: StringName) -> int:
+	var n := 0
+	for u: SimEntity in combat_units():
+		if u.def_id == def_id:
+			n += 1
+	return n
 
 func _staging() -> Vector2i:
 	if bb["staging"].x < 0 or _every("t_staging", 600):

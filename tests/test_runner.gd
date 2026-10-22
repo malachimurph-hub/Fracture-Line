@@ -369,6 +369,7 @@ func run_match(mode: String, seed: int, verbose: bool, max_minutes: int = 40, di
 	var friendly_hits := 0
 	var worst_tick_ms := 0.0
 	var sum_ms := 0.0
+	var built := {}   # M2.4: which unit and structure types the AI actually fields
 	while not r.sim.game_over and r.sim.tick < max_ticks:
 		var a := Time.get_ticks_usec()
 		r.advance()
@@ -376,6 +377,10 @@ func run_match(mode: String, seed: int, verbose: bool, max_minutes: int = 40, di
 		sum_ms += dt
 		worst_tick_ms = maxf(worst_tick_ms, dt)
 		for ev in r.sim.events:
+			if (ev["t"] == "spawn" or ev["t"] == "site") and r.sim.ents.has(ev["id"]):
+				var se: SimEntity = r.sim.ents[ev["id"]]
+				if se.owner >= 0:
+					built[se.def_id] = int(built.get(se.def_id, 0)) + 1
 			if ev["t"] == "attacked" and int(ev["by"]) >= 0 and int(ev["owner"]) >= 0 and int(ev["by"]) != int(ev["owner"]) and not r.sim.enemies(r.sim.player_team(int(ev["by"])), r.sim.player_team(int(ev["owner"]))):
 				friendly_hits += 1
 			if ev["t"] == "attacked" and r.sim.ents.has(ev["id"]):
@@ -411,6 +416,13 @@ func run_match(mode: String, seed: int, verbose: bool, max_minutes: int = 40, di
 		worst_tick_ms, first_attack, res["wall_s"], "OK" if ok else "FAIL"])
 	for p in r.sim.players:
 		print("   P%d %s team%d elim=%s supply=%d rank=%d stats=%s" % [p.id, p.faction, p.team, p.eliminated, p.supply, p.rank, p.stats])
+	var bk := built.keys()
+	bk.sort()
+	var parts: Array = []
+	for k in bk:
+		parts.append("%s=%d" % [k, built[k]])
+	print("   BUILT " + " ".join(parts))
+	res["built"] = built
 	return res
 
 func _print_state(r: MatchRunner) -> void:
