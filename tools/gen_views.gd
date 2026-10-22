@@ -162,7 +162,7 @@ func _merge(parts: Array) -> Dictionary:
 	return {"mesh": mesh, "top": top, "extent": extent, "team": team_surface}
 
 func _save(parts: Array, path: String, structure: bool, fp: Vector2) -> void:
-	if path in M3_OWNED:
+	if path in M3_OWNED or path in load("res://tools/gfx_m6/core_m6.gd").OWNED:
 		return
 	var root := Node3D.new()
 	root.name = "View"

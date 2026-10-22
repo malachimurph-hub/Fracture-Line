@@ -148,6 +148,42 @@ void fragment() {
 		float cellmask = step(0.55, fract(sin(dot(floor(suv), vec2(12.9898, 78.233))) * 43758.5453));
 		col = mix(col, s.rgb * 0.92, s.a * side * cellmask * stencil * (1.0 - rmask));
 	}
+	// ---- M2.6 surface detail (Zero Hour-style crispness at RTS distance) ----
+	float side2 = 1.0 - abs(onrm.y);
+	if (hi && cls != 2 && cls != 5 && cls != 15) {
+		// vertical rain / grime streaks running down walls and hull sides
+		float sk = texture(weather_tex, vec2((opos.x + opos.z) * 2.3, opos.y * 0.22), bias).r;
+		float streak = smoothstep(0.45, 0.85, sk) * side2 * (cls == 10 || cls == 11 ? 0.32 : 0.2);
+		col *= 1.0 - streak * dirt_amt;
+		// edge wear: bright worn metal on hard edges (curvature from normal derivatives)
+		float curv = clamp(length(fwidth(onrm)) * 1.6, 0.0, 1.0);
+		float ew = curv * smoothstep(0.35, 0.75, wt.b + 0.25) * weather * wear_amt;
+		col = mix(col, vec3(0.5, 0.49, 0.46), clamp(ew, 0.0, 1.0) * 0.55);
+		metal = mix(metal, 0.8, ew * 0.6);
+		rough = mix(rough, 0.38, ew * 0.6);
+		// micro roughness breakup
+		rough = clamp(rough + (wt.r - 0.5) * 0.12, 0.05, 1.0);
+	}
+	// contact shadow / cavity near the ground plane (reads like baked AO)
+	col *= mix(0.62, 1.0, smoothstep(0.0, 0.14, opos.y));
+	if (hi && panel > 0.0) {
+		// bump from panel seams + rivet grid (derivative normal perturbation, no extra texture)
+		float seam = 1.0 - wt.g;
+		vec2 rp = (abs(onrm.x) > abs(onrm.z) ? opos.zy : opos.xy) * 26.0;
+		float rv = 1.0 - smoothstep(0.08, 0.16, length(fract(rp) - 0.5));
+		rv *= step(0.72, fract(sin(dot(floor(rp * 0.25), vec2(7.13, 3.71))) * 951.3));
+		float hgt = (-seam * 0.7 + rv * 0.5) * panel;
+		vec3 dpdx = dFdx(VERTEX);
+		vec3 dpdy = dFdy(VERTEX);
+		float dhx = dFdx(hgt);
+		float dhy = dFdy(hgt);
+		vec3 r1 = cross(dpdy, NORMAL);
+		vec3 r2 = cross(NORMAL, dpdx);
+		float det = dot(dpdx, r1);
+		vec3 grad = sign(det) * (dhx * r1 + dhy * r2);
+		NORMAL = normalize(abs(det) * NORMAL - grad * 0.012);
+		col *= 1.0 - rv * 0.12;
+	}
 	if (damage_amt > 0.0) {
 		// soot + scorch blotches grow with damage; burnt-out = nearly all char, embers in cracks
 		float n = wl.r * 0.6 + wt.r * 0.4;

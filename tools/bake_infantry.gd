@@ -10,6 +10,13 @@ const OUT := "res://assets/models/infantry/"
 const FPS := 15.0
 const TARGET_TRIS := 1300
 const HEIGHT := 0.5          # model units (old procedural soldiers were 0.5; WorldView scales infantry x1.4)
+## M2.6 realistic proportions (Malachi: "less cartoony infantry"): the toon rig is re-proportioned
+## at bake time in bone space - smaller head, longer legs and arms, taller torso - so soldiers read
+## as adults at RTS distance (head ~1/7 of height instead of ~1/4).
+const PROPORTIONS := {"Head": Vector3(0.66, 0.66, 0.66), "Neck": Vector3(0.9, 1.15, 0.9), "Torso": Vector3(0.95, 1.12, 0.95),
+	"Abdomen": Vector3(0.92, 1.15, 0.92), "UpperLeg.L": Vector3(0.9, 1.32, 0.9), "UpperLeg.R": Vector3(0.9, 1.32, 0.9),
+	"LowerLeg.L": Vector3(0.95, 1.12, 0.95), "LowerLeg.R": Vector3(0.95, 1.12, 0.95),
+	"UpperArm.L": Vector3(0.95, 1.12, 0.95), "UpperArm.R": Vector3(0.95, 1.12, 0.95)}
 const ANIMS := [["idle", "Idle", true], ["run", "Run_Gun", true], ["fire", "Idle_Shoot", true], ["die", "Death", false]]
 
 ## colours are linear-ish sRGB hex; "team" = flagged for the per-player colour
@@ -34,6 +41,16 @@ const SPECS := {
 	"us_sniper": {"file": "Character_Soldier.gltf", "weapon": "Sniper", "keep": ["Body", "Head"],
 		"node_colors": {"Head": {"Black": "team"}},
 		"colors": {"Character_Main": "#5e6243", "Pants": "#585a40", "Grey": "#4d513a", "DarkGrey": "#3a3d2e", "Black": "#2a2c22", "Skin": "#b98a64", "Grey2": "#4c4f3c", "Wood": "#5a4a30", "LightGrey": "#7d7f62"}},
+	# M2.6: the last old procedural squads move to baked soldiers
+	"eu_lancer": {"file": "Character_Soldier.gltf", "weapon": "RocketLauncher", "keep": ["Body", "Head", "ShoulderPad.L", "ShoulderPad.R"],
+		"node_colors": {"Head": {"Black": "team"}},
+		"colors": {"Character_Main": "#56603f", "Pants": "#4a523c", "Grey": "team", "DarkGrey": "#30353a", "Black": "#1c1e20", "Skin": "#d2a681", "Grey2": "#5c6166", "Wood": "#6b5236", "LightGrey": "#9aa0a5"}},
+	"tpla_rocket": {"file": "Character_Enemy.gltf", "weapon": "RocketLauncher", "keep": ["Character_Enemy", "Character_Enemy_Head"],
+		"node_colors": {"Character_Enemy_Head": {"Enemy_Red": "#5e5a4a", "Black": "team"}},
+		"colors": {"Enemy_Red": "#7d7356", "Grey": "#5d5c40", "DarkGrey": "#4b3f2e", "Black": "#4a3f30", "Skin": "#a87c58", "Grey2": "#5a5b4a", "Wood": "#7a5530", "LightGrey": "#a89a80"}},
+	"tpla_laborer": {"file": "Character_Enemy.gltf", "weapon": "Shovel", "keep": ["Character_Enemy", "Character_Enemy_Head"],
+		"node_colors": {"Character_Enemy_Head": {"Enemy_Red": "team", "Black": "#3a3128"}},
+		"colors": {"Enemy_Red": "#8a7a62", "Grey": "#6e6250", "DarkGrey": "#5e4d36", "Black": "#4a3f30", "Skin": "#b98a64", "Grey2": "#5a5b4a", "Wood": "#7a5530", "LightGrey": "#a89a80"}},
 	"wa_rifleman_placeholder": {"file": "Character_Hazmat.gltf", "weapon": "Shotgun", "keep": ["Character_Hazmat", "Character_Hazmat_Head"],
 		"colors": {"Hazmat_Main": "#5d6748", "DarkGrey": "#3a3f33", "Black": "#1e201c", "Grey": "team", "Grey2": "#55594c", "Wood": "#6b5236", "LightGrey": "#9aa08c"}},
 }
@@ -201,12 +218,16 @@ func _bake(key: String, spec: Dictionary) -> Dictionary:
 	var N2 := PackedVector3Array()
 	var C2 := PackedColorArray()
 	var U2 := PackedVector2Array()
+	var CU := PackedVector2Array()
 	for j in nv:
 		var vi := keep_v[j]
 		V2.append((ref[0][vi] - foot) * scale)
 		N2.append((ref[1][vi] as Vector3).normalized())
 		C2.append(COL[vi])
 		U2.append(Vector2(j % 256, j / 256))
+		# M2.6: part colour + team flag also packed in UV (float32, exact): x = R*256 + G, y = B + 1000 * team
+		var cc: Color = COL[vi]
+		CU.append(Vector2(float(cc.r8 * 256 + cc.g8), float(cc.b8) + (1000.0 if cc.a > 0.5 else 0.0)))
 	var im2 := ImporterMesh.new()
 	var a2 := []
 	a2.resize(Mesh.ARRAY_MAX)
@@ -217,7 +238,14 @@ func _bake(key: String, spec: Dictionary) -> Dictionary:
 	a2[Mesh.ARRAY_INDEX] = idx2
 	im2.add_surface(Mesh.PRIMITIVE_TRIANGLES, a2, [], {}, null, "soldier")
 	im2.generate_lods(25.0, 60.0, [])
-	var mesh := im2.get_mesh()
+	# M2.6: build the ArrayMesh directly so the UV-packed part colour survives uncompressed,
+	# reusing the simplifier's LOD index lists
+	var lods := {}
+	for l in im2.get_surface_lod_count(0):
+		lods[im2.get_surface_lod_size(0, l)] = im2.get_surface_lod_indices(0, l)
+	a2[Mesh.ARRAY_TEX_UV] = CU
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, a2, [], lods)
 	# animations move limbs (and Death lies down forward): generous fixed bounds
 	mesh.custom_aabb = AABB(Vector3(-0.45, -0.05, -0.45), Vector3(0.9, HEIGHT + 0.2, 0.9))
 	var vm := VatModel.new()
@@ -256,6 +284,9 @@ func _pose(player: AnimationPlayer, skel: Skeleton3D, anim: String, t: float, sr
 	for i in nb:
 		var par := skel.get_bone_parent(i)
 		var lp := skel.get_bone_pose(i)
+		var pr: Vector3 = PROPORTIONS.get(skel.get_bone_name(i), Vector3.ONE)
+		if pr != Vector3.ONE:
+			lp = lp * Transform3D(Basis.from_scale(pr), Vector3.ZERO)
 		g[i] = lp if par < 0 else (g[par] as Transform3D) * lp
 	var sk := skel.global_transform
 	var mats := []   # per src: either per-bind skin transforms or one rigid transform

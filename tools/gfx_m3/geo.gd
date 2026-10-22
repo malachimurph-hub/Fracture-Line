@@ -170,9 +170,52 @@ func sandbag(c: Vector3, l: float, yaw: float, col: Variant = "#9c8a62") -> void
 	box(Vector3.ZERO, Vector3(l, 0.06, 0.12), t)
 	box(Vector3.ZERO, Vector3(l - 0.05, 0.09, 0.09), t)
 
+## M2.6: LODs. The engine simplifier (meshoptimizer via ImporterMesh) builds the LOD index
+## chains; the mesh keeps every attribute (wheel UV / UV2, part class in colour alpha).
+var lods := true
+
 func commit(mat: Material) -> ArrayMesh:
 	st.index()
-	var m := st.commit()
-	if m.get_surface_count() > 0:
-		m.surface_set_material(0, mat)
+	if not lods or tris < 120:
+		var m0 := st.commit()
+		if m0.get_surface_count() > 0:
+			m0.surface_set_material(0, mat)
+		return m0
+	var arrays := st.commit_to_arrays()
+	var im := ImporterMesh.new()
+	im.add_surface(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	im.generate_lods(25.0, 60.0, [])
+	var ld := {}
+	for l in im.get_surface_lod_count(0):
+		ld[im.get_surface_lod_size(0, l)] = im.get_surface_lod_indices(0, l)
+	var m := ArrayMesh.new()
+	m.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays, [], ld)
+	m.surface_set_material(0, mat)
 	return m
+
+## M2.6 detail helpers -------------------------------------------------------------------
+## Row of rivet / bolt heads from a to b on a face with outward normal n.
+func rivets(a: Vector3, b: Vector3, count: int, n: Vector3, r := 0.008) -> void:
+	for i in count:
+		var p := a.lerp(b, (float(i) + 0.5) / float(count))
+		box(p + n * r * 0.5, Vector3(r, r, r) * 1.4)
+
+## Louvred vent panel centred at c on a face (normal along +z of transform t), w x h.
+func vent(c: Vector3, w: float, h: float, slats: int, yaw := 0.0) -> void:
+	var t := Transform3D(Basis(Vector3.UP, deg_to_rad(yaw)), c)
+	box(Vector3(0, 0, 0), Vector3(w, h, 0.012), t)
+	for i in slats:
+		var y := -h * 0.5 + h * (float(i) + 0.5) / float(slats)
+		box(Vector3(0, 0, 0.0), Vector3(w * 0.9, h / float(slats) * 0.35, 0.03), t * Transform3D(Basis(Vector3.RIGHT, deg_to_rad(-30)), Vector3(0, y, 0.012)))
+
+## Square hatch with hinge and handle on a horizontal surface at c.
+func hatch(c: Vector3, s: float) -> void:
+	bbox(c + Vector3(0, 0.008, 0), Vector3(s, 0.016, s), 0.004)
+	box(c + Vector3(0, 0.02, -s * 0.42), Vector3(s * 0.6, 0.014, 0.014))
+	tube(c + Vector3(-s * 0.2, 0.02, s * 0.3), c + Vector3(s * 0.2, 0.02, s * 0.3), 0.005, 4)
+
+## Jerrycan / stowage box helpers
+func jerrycan(c: Vector3, yaw := 0.0) -> void:
+	var t := Transform3D(Basis(Vector3.UP, deg_to_rad(yaw)), c)
+	bbox(Vector3(0, 0.05, 0), Vector3(0.035, 0.1, 0.07), 0.006, t)
+	box(Vector3(0, 0.105, 0.02), Vector3(0.02, 0.012, 0.02), t)
