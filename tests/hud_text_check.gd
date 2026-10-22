@@ -31,8 +31,9 @@ static func _walk(n: Node, out: Array) -> void:
 					out.append("'%s' / '%s' does not fit in %s (font %d)" % [b.label_text.replace("\n", " "), b.sub, b.size, b.fit_size])
 				if b.fit_size < HudButton.MIN_FONT and b.label_text != "":
 					out.append("'%s' font below minimum" % b.label_text)
-				if minf(b.size.x, b.size.y) < 43.5:
-					out.append("'%s' tap target %s < 44 dp" % [b.label_text.replace("\n", " "), b.size])
+				var hs: Vector2 = b.size + Vector2.ONE * b.hit_pad * 2.0   # M2.6: invisible tap padding counts
+				if minf(hs.x, hs.y) < 43.5:
+					out.append("'%s' tap target %s < 44 dp" % [b.label_text.replace("\n", " "), hs])
 		elif c is Button:
 			var pb: Button = c
 			if minf(pb.size.x, pb.size.y) < 39.5:

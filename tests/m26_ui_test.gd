@@ -22,11 +22,14 @@ func _ready() -> void:
 	# virtual gesture clock (as in the touch test): slow software-rendered frames must not turn a
 	# tap into a long-press
 	WorldInput.test_clock_ms = 1000
-	await test_pause()
-	await test_placement()
-	await test_bar_and_top()
-	await test_themes()
-	await test_menu_battle()
+	var parts := "pause,place,bar,themes,menu"
+	if args.size() > 1 and not args[1].begins_with("--"):
+		parts = args[1]
+	if "pause" in parts: await test_pause()
+	if "place" in parts: await test_placement()
+	if "bar" in parts: await test_bar_and_top()
+	if "themes" in parts: await test_themes()
+	if "menu" in parts: await test_menu_battle()
 	var failed := false
 	for c in checks:
 		print(("PASS " if c[1] else "FAIL ") + c[0] + ("" if c.size() < 3 else "  (" + str(c[2]) + ")"))
@@ -302,7 +305,11 @@ func test_menu_battle() -> void:
 		return
 	var t0: int = bg.runner.sim.tick
 	var c0: Vector3 = bg.cam.focus
-	await secs(6.0)
+	# wait for ~25 s of game time (the box renders in software, so wall time varies)
+	var waited := 0.0
+	while bg.runner.sim.tick < t0 + 500 and waited < 120.0:
+		await secs(1.0)
+		waited += 1.0
 	check("menu battle sim runs and units fight", bg.runner.sim.tick > t0 + 60 and bg.shots_seen > 0, "tick %d->%d shots %d" % [t0, bg.runner.sim.tick, bg.shots_seen])
 	check("menu camera drifts", bg.cam.focus.distance_to(c0) > 0.5, bg.cam.focus.distance_to(c0))
 	var facs := {}

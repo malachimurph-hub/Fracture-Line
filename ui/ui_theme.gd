@@ -69,11 +69,11 @@ const PALETTES := {
 	&"tpla": {"bg": Color(0.13, 0.09, 0.06, 0.96), "btn": Color("#4a3322"), "btn_hover": Color("#5c3f29"), "btn_pressed": Color("#24170e"),
 		"edge": Color("#7a4a2a"), "frame": Color("#b5562a"), "accent": Color("#f0b860"), "title": Color("#e08a3c"),
 		"money": Color("#f6c86a"), "text": Color("#efe2cc"), "radius": 0, "btn_radius": 0, "frame_w": 2, "skew": 0.12,
-		"embolden": 0.55, "spacing": 0, "slant": 0.12},
+		"embolden": 0.3, "spacing": 0, "slant": 0.08},
 	&"us": {"bg": Color(0.06, 0.09, 0.14, 0.96), "btn": Color("#22344c"), "btn_hover": Color("#2c4462"), "btn_pressed": Color("#0f1a28"),
 		"edge": Color("#41648c"), "frame": Color("#7fb0e6"), "accent": Color("#ffffff"), "title": Color("#cfe4ff"),
 		"money": Color("#9fe0a0"), "text": Color("#e6eef8"), "radius": 2, "btn_radius": 2, "frame_w": 1, "skew": 0.0,
-		"embolden": 0.25, "spacing": 1, "slant": 0.0},
+		"embolden": 0.15, "spacing": 0, "slant": 0.0},
 }
 static var _fthemes: Dictionary = {}
 

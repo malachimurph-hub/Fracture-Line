@@ -97,7 +97,7 @@ func _new_battle() -> void:
 	var dir: Vector2 = (hq[1] - hq[0]).normalized()
 	if dir == Vector2.ZERO:
 		dir = Vector2.RIGHT
-	_front = [c - dir * 9.0, c + dir * 9.0]
+	_front = [c - dir * 6.0, c + dir * 6.0]
 	_pools.clear()
 	for pid in 2:
 		_pools[pid] = []
@@ -150,7 +150,7 @@ func _wave(pid: int) -> void:
 	for i in WAVE:
 		var uid: StringName = pool[_rng.randi() % pool.size()]
 		var off := Vector2(_rng.randf_range(-4, 4), _rng.randf_range(-4, 4))
-		var t := Vector2i((at + off - (to - at).normalized() * 6.0).round())
+		var t := Vector2i((at + off - (to - at).normalized() * 2.0).round())
 		t = t.clamp(Vector2i(2, 2), Vector2i(runner.sim.map.w - 3, runner.sim.map.h - 3))
 		var u := runner.sim.spawn_unit(uid, pid, null, FX.tile_center(t))
 		if u != null:
