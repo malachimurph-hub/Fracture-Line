@@ -1,3 +1,86 @@
+# FRACTURE LINE 0.2.1 (M2.1): Known issues and verification
+
+## Verification (logs are in `verification/m2.1/`, build from commit 08ec4af)
+
+| Test | Result |
+|---|---|
+| APK signature (`apksigner verify`) | Passes (v2 and v3). versionCode 5, version 0.2.1, arm64-v8a, 38,306,561 bytes. Signed with the debug key. |
+| Rendered UI flow on the exported build (LinuxVerify, Vulkan Mobile on llvmpipe, 2340×1080 at 450 dpi) | 60/60 PASS. Covers the lobby Difficulty column (default Medium), lobby text-fit and on-screen checks, an EU and a TPLA match, and HUD text-fit on every card. |
+| Exported: content, save/load, replay | PASS. Save/load: 0 mismatches over 3000 ticks after loading. Replay: 30 checkpoints, 0 mismatches. |
+| Exported: placement | 5/5 PASS |
+| Exported: far corners (both factions, 4 shrouded corners) | 12/12 PASS |
+| Exported: resume build | 8/8 PASS |
+| Exported: TPLA mechanics | 20/20 PASS |
+| Exported: audio and voice | 40/40 PASS |
+| Exported: difficulty, Hard vs Easy mirrors, 2 per faction | Hard wins 4/4. Hard harvested 1.6–2.9× more and lost 0–1 structures; Easy lost 9–17. |
+| Touch simulation (editor build, rendered) | 26/26 PASS, including 44 dp targets, groups chevron, X deselect and resume build |
+| Visual `m21` mode (editor build) | 43/43 PASS. Lobby fit and HUD text-fit for both factions. Screenshots: `screens/m21_hud_groups_x.png`, `screens/m21_lobby_difficulty.png` |
+
+### Failures found while verifying, and their fixes
+- **Save/load diverged (2999/3000 mismatches).**
+  - Cause: pending path requests (the per-tick path budget queue) were not saved, so after a load those units never got a path. It was latent since M1; the M2.1 data changes made the 6000-tick test hit it.
+  - Fix: the queue is now saved and restored (6a3928a).
+- **TPLA test "extra crates become Supply" (+330 instead of +150).**
+  - Cause: the test measured the raw Supply change, which also included Laborer harvest income (changed by capacity 90). The game logic was correct.
+  - Fix: the test now counts the crate payout event exactly (+150) and checks that Supply rose by at least that much (0fdd708).
+- **UI flow: "Mule Bomb Truck / $600 [STUB]" did not fit the 63 dp button** on the export's text server.
+  - Fix: on [STUB] items the price uses 9 dp next to the tag, with tighter margins (08ec4af).
+- **Touch test: HUD taps failing under load** (groups arrow, group 1, the Resume build grid button).
+  - Cause: HudButton timed long-presses on the real clock, so a slow software-rendered frame turned a tap into a long-press.
+  - Fix: it now uses the same gesture clock as world input (08ec4af).
+
+## Balance: EU vs TPLA, Medium vs Medium 1v1 (honest)
+
+| Batch | Seeds | EU | TPLA | Draws |
+|---|---|---|---|---|
+| M2 baseline | 12 | 7 | 5 | 0 |
+| f1 | 12 | 9 | 3 | 0 |
+| f2 | 12 | 4 | 7 | 1 |
+| f3 (after idle-push fix) | 12 | 4 | 8 | 0 |
+| f4 | 12 | 4 | 8 | 0 |
+| g1, all spawn pairs | 24 | 9 | 15 | 0 |
+| g2 | 24 | 9 | 15 | 0 |
+| g3 (reverted) | 24 | 5 | 19 | 0 |
+| g4 | 24 | 9 | 15 | 0 |
+| **g5, final, kept** | 24 | **10** | **14** | **0** |
+
+- **Outcomes depend strongly on the spawn pair.**
+- **The one-builder rule (resume build, 893cf47) and the save/load fix came after g5.** No 24-seed batch has been run since, so the final balance is unverified after those changes. On the user's instruction, there was no further tuning.
+- **Hard vs Hard (2 seeds, editor build, after the one-builder rule):** TPLA won both, in under 6 minutes, with early raids. Hard-level balance is not tuned.
+
+## AI difficulty: what actually differs
+- **Reaction:** the AI thinks every 12, 4 or 2 ticks (Easy, Medium, Hard).
+- **Economy and build order:**
+  - harvesters per hub 2/2/3
+  - expansion at 600, 330 or 240 s
+  - production queue slack 3/1/0
+  - TPLA: Laborers 5/6/7; Hard adds extra traps and up to 3 Chop Shops
+- **Attacks:**
+  - first wave at 420, 300 or 225 s
+  - wave size ×0.7, ×1.0 or ×1.1
+  - TPLA raids 0, 3 or 4
+- **Defences:** bunkers 0/1/2. **Scouting, capturing and powers:** off on Easy, on for Medium and Hard.
+- **Micro:** Easy never retreats damaged units; Medium and Hard do.
+  - This is the only micro difference. There is no focus-fire or kiting difference yet, which is a known gap.
+- **No resource cheats at any level.** The GDD reserves an income bonus for a later "Brutal" tier only, which is not implemented.
+- **Medium vs Easy and Hard vs Medium** were not measured separately in M2.1.
+
+## Known issues
+- **Not tested on the S24 Ultra or any phone.** 60 fps is unverified, and the APK's ETC2/ASTC textures could not be rendered on the box.
+- **Exported compile check finds 0 scripts** (they are precompiled). The rendered UI flow is what proves the exported scripts load.
+- **Alerts are 40 dp tall,** below the 44 dp target. They are notices; tapping one is optional.
+- The unused `LOBBY_KIND_OPEN` string is still in strings.csv.
+- **Sim spikes:** single ticks reach 60–112 ms (AI think plus pathing bursts).
+- The M2 issues below still apply:
+  - stealth detection is proximity-only
+  - decals are static
+  - voices are AI-generated
+  - models are procedural stand-ins (see GRAPHICS_PLAN.md)
+  - bridges can't be destroyed
+- Stubs are listed in STUBS.md.
+
+---
+
 # FRACTURE LINE 0.2.0-m2: Known issues and verification
 
 ## Verification (logs are in `verification/`)
