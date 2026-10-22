@@ -39,7 +39,7 @@ func _ready() -> void:
 	if text != "" and label_text == "":
 		label_text = text
 	text = ""
-	button_down.connect(func(): _down_ms = Time.get_ticks_msec(); _fired = false)
+	button_down.connect(func(): _down_ms = _now(); _fired = false)
 	button_up.connect(func(): _down_ms = -1)
 	pressed.connect(_on_pressed)
 	resized.connect(func(): _fit_key = ""; queue_redraw())
@@ -57,8 +57,13 @@ func _on_pressed() -> void:
 	AudioDirector.ui("error" if stub or disabled else "click")
 	primary.emit()
 
+## Same gesture clock as WorldInput: real time on device; under the touch test the virtual
+## clock, so a slow CI frame cannot turn a tap into a long-press (secondary) action.
+static func _now() -> int:
+	return WorldInput.test_clock_ms if WorldInput.test_clock_ms >= 0 else Time.get_ticks_msec()
+
 func _process(_d: float) -> void:
-	if _down_ms >= 0 and not _fired and is_pressed() and Time.get_ticks_msec() - _down_ms > 500:
+	if _down_ms >= 0 and not _fired and is_pressed() and _now() - _down_ms > 500:
 		_fired = true
 		AudioDirector.ui("select")
 		if Settings.g("haptics"):
@@ -146,6 +151,13 @@ func _para_fits(p: TextParagraph, box: Vector2) -> bool:
 func _stub_on_sub() -> bool:
 	return sub != ""
 
+## Price line shares the row with the [STUB] tag: 9 dp (the minimum) and tighter margins.
+func _sub_font() -> int:
+	return 9 if stub and _stub_on_sub() else 10
+
+func _sub_margin() -> float:
+	return 3.0 if stub and _stub_on_sub() else 4.0
+
 ## M2.1 (smaller buttons): a queued [STUB] item has no room for price + badge + tag on one
 ## line, so while it is queued the price yields to the tag (it is still in the tooltip).
 func _hide_sub_text() -> bool:
@@ -167,13 +179,14 @@ func _draw() -> void:
 	if sub != "" and not _hide_sub_text():
 		# price / count on its own line; a queue badge sits at the right end of that line
 		var al := HORIZONTAL_ALIGNMENT_LEFT if badge != "" or stub else HORIZONTAL_ALIGNMENT_CENTER
-		draw_string(f, Vector2(4, size.y - 4), sub, al, size.x - 8 - bw, 10, Color(1, 0.85, 0.45, 0.95 if not disabled else 0.5))
+		var sm := _sub_margin()
+		draw_string(f, Vector2(sm, size.y - 4), sub, al, size.x - sm * 2 - bw, _sub_font(), Color(1, 0.85, 0.45, 0.95 if not disabled else 0.5))
 	if badge != "":
 		var by := size.y - 15.0 if sub != "" else 2.0
 		draw_rect(Rect2(Vector2(size.x - bw - 2, by), Vector2(bw, 13)), Color("#e2b23c"))
 		draw_string(f, Vector2(size.x - bw + 2, by + 11), badge, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color.BLACK)
 	if stub and _stub_on_sub():
-		var sx := (size.x - 4 - bw - 2 - f.get_string_size("[STUB]", HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x) if _hide_sub_text() else (size.x - 4 - f.get_string_size("[STUB]", HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x)
+		var sx := (size.x - 4 - bw - 2 - f.get_string_size("[STUB]", HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x) if _hide_sub_text() else (size.x - _sub_margin() - f.get_string_size("[STUB]", HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x)
 		draw_string(f, Vector2(sx, size.y - 4), "[STUB]", HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color("#ff8a7a"))
 	elif stub:
 		draw_string(f, Vector2(4, 13), "[STUB]", HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color("#ff8a7a"))
@@ -185,8 +198,8 @@ func text_fits() -> bool:
 	_fit()
 	var f := get_theme_default_font()
 	var bw := 8.0 + 7.0 * badge.length() if badge != "" else 0.0
-	var stub_w := f.get_string_size("[STUB]", HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x + 4.0 if stub and _stub_on_sub() else 0.0
+	var stub_w := f.get_string_size("[STUB]", HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x + 3.0 if stub and _stub_on_sub() else 0.0
 	if _hide_sub_text():
 		return fit_ok and stub_w + bw + 6 <= size.x + 0.5
-	var sub_ok := sub == "" or f.get_string_size(sub, HORIZONTAL_ALIGNMENT_LEFT, -1, 10).x <= size.x - 8 - bw - stub_w + 0.5
+	var sub_ok := sub == "" or f.get_string_size(sub, HORIZONTAL_ALIGNMENT_LEFT, -1, _sub_font()).x <= size.x - _sub_margin() * 2 - bw - stub_w + 0.5
 	return fit_ok and sub_ok
