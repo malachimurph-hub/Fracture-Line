@@ -34,6 +34,9 @@ func _ready() -> void:
 			"eu": await bld_grid("eu", EU_B, "eu_buildings"); await veh_row("eu", EU_V, "eu_vehicles")
 			"tpla": await bld_grid("tpla", TP_B, "tpla_buildings"); await veh_row("tpla", TP_V, "tpla_vehicles")
 			"bench": await bench()
+			"us_close": await close_row("us", ["halberd", "lynx", "picket", "longreach"], "us_vehicles_close")
+			"eu_close": await close_row("eu", ["leopold", "wolfhound", "flakwerk", "salamander"], "eu_vehicles_close")
+			"tpla_close": await close_row("tpla", ["rattler", "scrapback", "hailstorm", "junkhammer"], "tpla_vehicles_close")
 	get_tree().quit(0)
 
 func _world() -> void:
@@ -128,6 +131,13 @@ func veh_row(f: String, list: Array, name: String) -> void:
 		var p := Vector3((i % cols - (cols - 1) * 0.5) * 2.6, 0, (i / cols) * 2.6 - 1.3)
 		_place("res://view/units/%s/%s.tscn" % [f, list[i]], p, -35.0, _team(f))
 	await _cam(Vector3(0, 7.5, 8.5), Vector3(0, 0.2, 0.2), 40)
+	await _shot("%s_%s" % [prefix, name])
+
+func close_row(f: String, list: Array, name: String) -> void:
+	await _world()
+	for i in list.size():
+		_place("res://view/units/%s/%s.tscn" % [f, list[i]], Vector3((i - (list.size() - 1) * 0.5) * 2.1, 0, 0), -35.0, _team(f))
+	await _cam(Vector3(0.5, 3.6, 4.6), Vector3(0, 0.3, 0), 48)
 	await _shot("%s_%s" % [prefix, name])
 
 ## Big-fight render benchmark: 3 x 40 vehicles + 30 structures under a mid-zoom RTS camera.
