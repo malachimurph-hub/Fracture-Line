@@ -90,7 +90,18 @@ func _bld(def_id: StringName, owner: int, t: Vector2i, k: float, hpk: float) -> 
 	return e
 
 func _unit(def_id: StringName, owner: int, t: Vector2i) -> SimEntity:
-	return sim.spawn_unit(def_id, owner, null, t)
+	var e := sim.spawn_unit(def_id, owner, null, FX.tile_center(t))
+	# spawned outside a sim step, so the "spawn" event never reaches the view: make it here
+	m.world._ensure_view(e)
+	m.world.cur[e.id] = m.world._world_pos(e)
+	m.world.prev[e.id] = m.world.cur[e.id]
+	return e
+
+## Showcase units fight but do not die before the shots (real combat, inflated HP).
+func _tough(e: SimEntity) -> SimEntity:
+	e.max_hp *= 1000
+	e.hp = e.max_hp
+	return e
 
 func _counters(label: String) -> Dictionary:
 	var dc := 0
@@ -141,15 +152,15 @@ func run() -> void:
 	var eu_ids: Array = []
 	var tp_ids: Array = []
 	for i in 2:
-		eu_ids.append(_unit(&"eu_leopold", 0, u + Vector2i(i * 3, 5)).id)
-		tp_ids.append(_unit(&"tpla_rattler", 1, u + Vector2i(i * 3 + 1, 0)).id)
+		eu_ids.append(_tough(_unit(&"eu_leopold", 0, u + Vector2i(2 + i * 3, 5))).id)
+		tp_ids.append(_tough(_unit(&"tpla_rattler", 1, u + Vector2i(3 + i * 3, 2))).id)
 	for i in 3:
-		eu_ids.append(_unit(&"eu_grenadier", 0, u + Vector2i(8 + i * 2, 6)).id)
-		tp_ids.append(_unit(&"tpla_militia", 1, u + Vector2i(8 + i * 2, 1)).id)
+		eu_ids.append(_tough(_unit(&"eu_grenadier", 0, u + Vector2i(9 + i * 1, 5))).id)
+		tp_ids.append(_tough(_unit(&"tpla_militia", 1, u + Vector2i(9 + i * 1, 2))).id)
 	await frames(6)
 	sim._kill(dead, null)
 	# let them face off and start shooting
-	m.cam.jump_to(FX.to_world(FX.tile_center(u + Vector2i(5, 3))), false)
+	m.cam.jump_to(FX.to_world(FX.tile_center(u + Vector2i(7, 4))), false)
 	m.cam.set_level(0)
 	await frames(40)
 	await shot("units_close")
@@ -171,7 +182,7 @@ func run() -> void:
 	print("GFX crowd block at ", c0)
 	var crowd: Array = []
 	for i in 38:
-		var e := _unit(&"eu_grenadier" if i % 2 == 0 else &"tpla_militia", i % 2, c0 + Vector2i((i % 8) * 2, (i / 8) * 2))
+		var e := _tough(_unit(&"eu_grenadier" if i % 2 == 0 else &"tpla_militia", i % 2, c0 + Vector2i((i % 8) * 2, (i / 8) * 2)))
 		crowd.append(e.id)
 	m.runner.issue({"p": 0, "t": "move", "ids": crowd.filter(func(id): return sim.ents[id].owner == 0), "pos": FX.tile_center(c0 + Vector2i(8, 11))})
 	m.runner.issue({"p": 1, "t": "move", "ids": crowd.filter(func(id): return sim.ents[id].owner == 1), "pos": FX.tile_center(c0 + Vector2i(8, 0))})

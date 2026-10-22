@@ -1,0 +1,14 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://view/materials/model_m3_reveal.gdshader" id="1_wgqg6"]
+[ext_resource type="Texture2D" path="res://assets/textures/materials/rust.png" id="2_qpfb6"]
+[ext_resource type="Texture2D" path="res://assets/textures/materials/stencils.png" id="3_pxrbe"]
+[ext_resource type="Texture2D" path="res://assets/textures/materials/weather.png" id="4_rbm61"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_wgqg6")
+shader_parameter/weather_tex = ExtResource("4_rbm61")
+shader_parameter/rust_tex = ExtResource("2_qpfb6")
+shader_parameter/stencil_tex = ExtResource("3_pxrbe")
+shader_parameter/stencil_amount = 0.6

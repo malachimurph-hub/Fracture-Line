@@ -34,6 +34,10 @@ const C := {
 	"acid": ["glow", "#b6e04a"], "fire": ["glow", "#ff9a3a"],
 }
 var mats := {}
+## M2.2: these views are built by tools/gen_gfx_m3.gd (VAT soldiers, articulated vehicles,
+## staged barracks) and must not be overwritten by the M1/M2 procedural generator.
+const M3_OWNED := ["res://view/units/eu/grenadier.tscn", "res://view/units/tpla/militia.tscn",
+	"res://view/units/eu/leopold.tscn", "res://view/units/tpla/rattler.tscn", "res://view/buildings/eu/barracks.tscn"]
 
 func _init() -> void:
 	_make_mats()
@@ -158,6 +162,8 @@ func _merge(parts: Array) -> Dictionary:
 	return {"mesh": mesh, "top": top, "extent": extent, "team": team_surface}
 
 func _save(parts: Array, path: String, structure: bool, fp: Vector2) -> void:
+	if path in M3_OWNED:
+		return
 	var root := Node3D.new()
 	root.name = "View"
 	root.set_script(load("res://view/wrappers/entity_view.gd"))

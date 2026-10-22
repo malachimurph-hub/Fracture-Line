@@ -210,6 +210,8 @@ func _on_fire(ev: Dictionary) -> void:
 	else:
 		from.y += 0.5 if src.kind == SimEntity.Kind.UNIT else 0.9
 	to.y += 0.4
+	if v != null and v.has_method("on_fire"):
+		v.on_fire()
 	var kind: String = String(ev["vfx"])
 	var col: Color = VFX_COLORS.get(kind, Color.WHITE)
 	var dir := (to - from).normalized()
@@ -317,6 +319,13 @@ func _on_death(ev: Dictionary) -> void:
 		ghosts[id] = v      # player still remembers it until they look again
 		v.set_overlay(fog_overlay)
 	else:
+		# M2.2 views can play a death (squad falls, vehicle wreck, building rubble) and free
+		# themselves after it; everything else disappears at once as before
+		if seen and not ev.get("silent", false) and v.has_method("play_death"):
+			var linger: float = v.play_death()
+			if linger > 0.0:
+				get_tree().create_timer(linger, false).timeout.connect(v.queue_free)
+				return
 		v.queue_free()
 
 ## Called every rendered frame.
@@ -342,6 +351,8 @@ func frame(a: float, delta: float) -> void:
 			var ny := lerp_angle(y0, want, minf(1.0, delta * 8.0))
 			yaw[id] = ny
 			v.rotation.y = ny
+			if v.has_method("set_health"):
+				v.set_health(float(e.hp) / float(maxi(1, e.max_hp)))
 			if v.turret != null:
 				var tgt := sim.get_ent(e.target)
 				if tgt != null and sim.tick - e.firing_tick < 40:
@@ -369,7 +380,11 @@ func frame(a: float, delta: float) -> void:
 			if e.kind == SimEntity.Kind.BUILDING:
 				v.set_ghosted(e.stealthy and (e.team == local_team or local_team < 0))
 				var k := 1.0 if e.built else 0.15 + 0.85 * float(e.progress) / float(maxi(1, e.build_ticks))
-				if v.model:
+				if v.has_method("set_build_progress"):
+					# M2.2 staged construction (scaffold, rising structure) + damage states
+					v.set_build_progress(1.0 if e.built else float(e.progress) / float(maxi(1, e.build_ticks)))
+					v.set_damage(float(e.hp) / float(maxi(1, e.max_hp)))
+				elif v.model:
 					v.model.scale.y = k
 				if vis and not icon_mode:
 					var acc2: float = fx_acc.get(id, 0.0) + delta
