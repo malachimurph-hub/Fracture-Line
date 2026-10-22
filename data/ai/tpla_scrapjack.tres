@@ -13,4 +13,4 @@ harass = 4
 opening = PackedStringArray("tpla_stash", "tpla_camp", "tpla_chop_shop", "tpla_tunnel", "tpla_stash", "tpla_workshop", "tpla_demo_trap", "tpla_bazaar", "tpla_tunnel", "tpla_camo_net")
 unit_weights = {"tpla_militia": 3, "tpla_rocket_cell": 3, "tpla_rattler": 7, "tpla_scrapback": 5, "tpla_hailstorm": 2, "tpla_shrike": 2, "tpla_mule": 1, "tpla_blight": 2}
 wave_growth_pct = 30
-first_wave_value = 4500
+first_wave_value = 4000
