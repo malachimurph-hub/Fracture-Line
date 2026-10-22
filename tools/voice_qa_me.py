@@ -38,6 +38,8 @@ def main(argv):
         for (fac, uid, folder, ev, n, text, stem, _says) in vm.lines():
             if fac != "tpla":
                 continue
+            if os.environ.get("FL_QA_ONLY") and stem not in os.environ["FL_QA_ONLY"].split(","):
+                continue
             ann = uid == "announcer"
             c = (cast["announcer"] if ann else cast["units"][uid])[(n - 1) % len((cast["announcer"] if ann else cast["units"][uid]))]
             rel = folder if ann else f"tpla/{folder}"
@@ -75,7 +77,7 @@ def main(argv):
             print("%-55s %.2f -> %.2f  %r" % (os.path.relpath(dst, g.ROOT), s0, best[0], best[2]), flush=True)
     sc = [r["score"] for r in report]
     print("QA: %d lines, mean word match %.2f, under %.1f: %d" % (len(sc), sum(sc) / len(sc), thr, sum(1 for x in sc if x < thr)))
-    json.dump(report, open("/tmp/voice_qa_me.json", "w"), indent=1)
+    json.dump(report, open(os.environ.get("FL_QA_OUT", "/tmp/voice_qa_me.json"), "w"), indent=1)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
