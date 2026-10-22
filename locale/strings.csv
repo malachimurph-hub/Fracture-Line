@@ -442,3 +442,5 @@ POWER_US_REPAIR_DESC,"Vehicles, aircraft and structures in the area regain half 
 HUD_AIR_REARMING,Rearming %d s
 HUD_AIR_SLOTS,Airfield slots %d / %d
 ALERT_AIR_SUPPORT,JTAC: air support inbound
+MAP_OCHRE,Ochre Wells
+MAP_OCHRE_DESC,"Arid. A walled market town in a dry basin, ringed by a sandy wadi you can ford almost anywhere, with deep oasis pools on the diagonals. Mesas and salt flats outside; garrisonable town blocks inside."

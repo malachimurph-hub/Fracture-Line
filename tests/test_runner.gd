@@ -1730,7 +1730,7 @@ func _m25_supply() -> void:
 	_check(seam_min >= 30000 and cache_min >= 6000, "supply piles hold ~2x (smallest seam %d, smallest pile %d)" % [seam_min, cache_min])
 
 func _m25_maps() -> void:
-	for mid in ["varno_crossing", "kessel_pass", "harrow_junction"]:
+	for mid in ["varno_crossing", "kessel_pass", "harrow_junction", "ochre_wells"]:
 		var md: MapDef = Content.maps.get(StringName(mid))
 		_check(md != null, "map %s loads" % mid)
 		if md == null:
@@ -1756,7 +1756,7 @@ func _m25_maps() -> void:
 			if r.sim.count_owned(pl, Content.faction(r.sim.players[pl].faction)["hq"]) > 0:
 				hqs += 1
 		_check(hqs == 4 and not r.sim.game_over, "map %s: 4-player match (US/EU/TPLA/US) runs 30 s, %d HQs standing" % [mid, hqs])
-	_check(SkirmishConfig.map_ids().size() >= 3, "lobby lists %d maps" % SkirmishConfig.map_ids().size())
+	_check(SkirmishConfig.map_ids().size() >= 4, "lobby lists %d maps" % SkirmishConfig.map_ids().size())
 
 func _m25_minimap() -> void:
 	var r := MatchRunner.new()

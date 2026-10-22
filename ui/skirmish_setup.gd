@@ -216,7 +216,8 @@ const BIOME_PREVIEW := {"s": Color("#c9a878"), "d": Color("#9c8160"), "g": Color
 	"a": Color("#4f4c47"), "c": Color("#b0aa9e"), "r": Color("#857563"), "w": Color("#3f6f8f")}
 ## M2.5: natural ground colours per environment (asphalt / concrete / rock / water shared)
 const ENV_PREVIEW := {&"winter": {"s": Color("#e9eef3"), "d": Color("#8c8378"), "g": Color("#c9d3d6"), "G": Color("#7d9080"), "w": Color("#a9c3d2"), "r": Color("#7c7f86")},
-	&"temperate": {"s": Color("#8fa65a"), "d": Color("#7a6248"), "g": Color("#6f8f45"), "G": Color("#4f7034"), "c": Color("#9d9a92")}}
+	&"temperate": {"s": Color("#8fa65a"), "d": Color("#7a6248"), "g": Color("#6f8f45"), "G": Color("#4f7034"), "c": Color("#9d9a92")},
+	&"arid": {"s": Color("#cfa56a"), "d": Color("#a08654"), "g": Color("#a8966f"), "r": Color("#6e5a4c"), "w": Color("#8f7a5c")}}
 
 ## Map preview from the map's biome layer (what the terrain actually looks like).
 func _biome_preview(md: MapDef) -> ImageTexture:

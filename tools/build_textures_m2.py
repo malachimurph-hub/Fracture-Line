@@ -81,6 +81,9 @@ ENV_LAYERS = {
                ("snowy_rock", "Rock035"), ("ice", "Ice002"), None],
     "temperate": [("meadow", "Grass001"), ("mud", "Ground037"), ("grass", "Grass004"), None,
                   ("rock", "Rock023"), ("riverbed", "Gravel035"), ("paving", "PavingStones130")],
+    # M2.5 Ochre Wells: pale dune sand, cracked dry flats, sandy scrub, ochre mesa rock, wadi gravel
+    "arid": [("dune_sand", "Ground090"), ("dry_flat", "Ground102"), ("sandy_scrub", "Ground054"), None,
+             ("mesa_rock", "Rock061"), ("wadi_gravel", "Ground079S"), None],
 }
 
 def build_terrain_env(env):

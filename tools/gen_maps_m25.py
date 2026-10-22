@@ -8,6 +8,10 @@
                                 garrisonable blocks around a central square; farmland, hedges and
                                 oak woods around the bases.
 
+  Ochre Wells      (arid):      a walled market town in a dry basin, ringed by a sandy wadi
+                                (mostly fordable, a few deep oasis pools); flat-topped mesas and
+                                cracked salt flats outside; four causeways into town.
+
 Same outputs as tools/gen_map_varno.py (tiles / biome / decor / MapDef .tres) plus MapDef.env.
 Tile chars: . grass  : road  , rough  ~ water  = ford  # bridge  ^ cliff  T forest.
 Biome chars (view only, splat layers): s d g G (natural), a asphalt, r rock, w riverbed, c concrete.
@@ -329,6 +333,96 @@ def harrow():
             m.deco("wreck_car", x, y)
     m.write(SPAWNS, "MAP_HARROW_DESC")
 
+# ======================================================================= Ochre Wells (arid)
+def ochre():
+    m = Map("ochre_wells", "MAP_OCHRE", "arid")
+    g, bio = m.g, m.bio
+    C = 63.5
+    # dry wadi ring around the town (fordable gravel), deep oasis pools at four spots
+    for y in range(N):
+        for x in range(N):
+            r = math.hypot(x - C, y - C)
+            xq, yq = min(x, N - 1 - x), min(y, N - 1 - y)
+            w = 2.2 + 0.9 * vnoise(xq, yq, 6, 3)
+            if abs(r - 25.0) < w:
+                ang = math.degrees(math.atan2(abs(y - C), abs(x - C)))
+                g[y][x] = '~' if 30 < ang < 60 and abs(r - 25.0) < w - 0.6 else '='
+    # mesas (impassable) and salt-flat patches, scrub thickets (infantry cover)
+    for (cx, cy, r) in ((38, 12, 3.6), (10, 38, 3.2), (30, 30, 2.4), (48, 26, 2.2), (24, 48, 2.0)):
+        m.blob(cx, cy, r, '^', 8)
+    for (cx, cy, r) in ((22, 34, 2.4), (44, 8, 2.2), (8, 52, 2.6), (36, 40, 1.8)):
+        m.blob(cx, cy, r, 'T', 9)
+    for y in range(H):
+        for x in range(H):
+            if g[y][x] == '.' and vnoise(x, y, 6, 5) > 0.74:
+                m.put(x, y, ',')
+    m.border()
+    m.clear_bases()
+    # four causeways into town (bridges over the pools' banks), town street grid inside the ring
+    m.road(22, 20, 52, 50, 2)           # diagonal desert highway to the town gate
+    m.road(20, 22, 20, 60)
+    m.road(20, 60, 40, 62)
+    m.road(22, 20, 60, 20)
+    for y in range(46, H):
+        for x in range(46, H):
+            if math.hypot(x - C, y - C) < 20 and ((x - 46) % 6 in (0, 1) or (y - 46) % 6 in (0, 1)):
+                if g[y][x] in '.,T':
+                    m.put(x, y, ':')
+    for y in range(N):
+        for x in range(N):
+            t = g[y][x]
+            xq, yq = min(x, N - 1 - x), min(y, N - 1 - y)
+            n, n2 = vnoise(xq, yq, 9, 1), vnoise(xq, yq, 3, 2)
+            town = math.hypot(x - C, y - C) < 21
+            if t in '~=#':
+                b = 'w'
+            elif t == '^':
+                b = 'r'
+            elif t == ':':
+                b = 'a'
+            elif town:
+                b = 'c' if n2 > 0.3 else 'd'
+            elif t == ',':
+                b = 'd'
+            elif t == 'T':
+                b = 'g'
+            elif n > 0.68:
+                b = 'g'           # sandy scrub ground
+            elif n < 0.3:
+                b = 'd'           # cracked salt flat
+            else:
+                b = 's'           # dune sand
+            if bio[y][x] != 'd' or t in '~=#^:':
+                bio[y][x] = b
+    m.economy(home_seam=(8, 26), home_pile=(27, 8), mid_seam=(34, 52), piles=[(52, 34)], pumps=[(40, 30), (12, 60)],
+              civ=[(48, 48), (55, 47), (47, 55), (55, 55), (60, 50), (50, 60)])
+    for y in range(1, H):
+        for x in range(1, H):
+            t, b, r = g[y][x], bio[y][x], hsh(x, y, 11)
+            near_water = any(g[min(N - 1, max(0, y + dy))][min(N - 1, max(0, x + dx))] == '~' for dx in (-2, 0, 2) for dy in (-2, 0, 2))
+            if t == 'T' and r < 0.55:
+                m.deco("scrub_tree", x, y)
+            elif t == '^' and r < 0.25:
+                m.deco("rock", x, y)
+            elif t == '.' and near_water and r < 0.35:
+                m.deco("palm", x, y)
+            elif t == '.' and b == 'c' and r < 0.012:
+                m.deco("palm", x, y)
+            elif t == '.' and b in 'sg' and r < 0.012:
+                m.deco("scrub_tree", x, y)
+            elif t in '.,' and r < 0.012:
+                m.deco("rock_small", x, y)
+    for y in range(1, H):
+        for x in range(1, H):
+            if g[y][x] == '.' and (x * 5 + y * 3) % 19 == 0 and any(g[y + dy][x + dx] == ':' for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                m.deco("power_pole", x, y, 0)
+    for (x, y, k) in ((36, 34, "wreck_car"), (44, 42, "shack"), (30, 58, "shack"), (58, 28, "shack"), (26, 24, "gas_station")):
+        if g[y][x] in ':.,':
+            m.deco(k, x, y)
+    m.write(SPAWNS, "MAP_OCHRE_DESC")
+
 if __name__ == "__main__":
-    kessel()
-    harrow()
+    import sys
+    only = sys.argv[1:] or ["kessel", "harrow", "ochre"]
+    for fn in only:
+        globals()[fn]()
