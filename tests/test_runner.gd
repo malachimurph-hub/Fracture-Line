@@ -401,6 +401,8 @@ func run_match(mode: String, seed: int, verbose: bool, max_minutes: int = 40, di
 				var tgt: SimEntity = r.sim.ents[ev["id"]]
 				if tgt.kind == SimEntity.Kind.BUILDING and not first_attack.has(ev["by"]):
 					first_attack[ev["by"]] = r.sim.tick / 20
+		if r.sim.tick == 36000 or (r.sim.tick == max_ticks - 1):
+			_stall_diag(r)
 		if r.sim.tick == 6000 or r.sim.tick == 12000:
 			snap += " t%d:" % (r.sim.tick / 1200)
 			for p in r.sim.players:
@@ -452,6 +454,38 @@ func run_match(mode: String, seed: int, verbose: bool, max_minutes: int = 40, di
 	print("   ECON" + snap)
 	res["built"] = built
 	return res
+
+## M2.6 stalemate diagnosis (test-side): what keeps the loser alive and what the winner's army does.
+func _stall_diag(r: MatchRunner) -> void:
+	var s := r.sim
+	print("   STALL-DIAG t=%d:%02d" % [s.tick / 1200, (s.tick / 20) % 60])
+	for p in s.players:
+		var keep: Array = []
+		var units := 0
+		var army := 0
+		for id in s.ids:
+			var e: SimEntity = s.ents[id]
+			if not e.alive or e.owner != p.id:
+				continue
+			if e.kind == SimEntity.Kind.BUILDING:
+				var d: BuildingDef = Content.building(e.def_id)
+				if d.is_hq or d.produces.size() > 0:
+					keep.append("%s@%s%s" % [e.def_id, e.tile, "" if e.built else "(site)"])
+			elif e.kind == SimEntity.Kind.UNIT:
+				units += 1
+				if not s.udef(e).tags.has("builder") and not s.udef(e).tags.has("harvester"):
+					army += s.udef(e).cost
+		var ai_s := ""
+		if r.ais.has(p.id):
+			var ai: AIPlayer = r.ais[p.id]
+			var wl: Array = []
+			for id in ai.bb["wave"]:
+				var we := s.get_ent(id)
+				if we != null:
+					wl.append(we)
+			ai_s = " wave_n=%d wave=%d at %s idle=%d knows=%s" % [int(ai.bb["wave_n"]), wl.size(), FX.to_tile(ai._centroid(wl)) if not wl.is_empty() else Vector2i(-1, -1),
+				wl.filter(func(x): return x.is_idle()).size(), ai._knows_enemy_structure()]
+		print("     P%d %s $%d pop %d/%d units %d army$%d keep=%s%s" % [p.id, p.faction, p.supply, p.pop, p.pop_cap, units, army, keep, ai_s])
 
 func _print_state(r: MatchRunner) -> void:
 	var s := r.sim

@@ -9,7 +9,10 @@ extends CanvasLayer
 const BAR_H := 106.0
 const PORTRAIT := Vector2(65, 47)
 const BTN := Vector2(63, 49)
-const TOP_H := 44.0
+const TOP_H := 37.0           ## M2.6: top strip drawn ~15% smaller (was 44) ...
+const TOP_PAD := 3.5          ## ... with invisible tap padding -> 44 dp touch targets
+const MM_BIG := 168.0         ## M2.6: minimap size while the command bar is tucked away
+const BAR_SLIDE_S := 0.22
 const XBTN := Vector2(44, 44)
 
 var m  ## Match node
@@ -46,11 +49,16 @@ var groups_open := false
 var deselect_btn: Button
 var resume_btn: HudButton
 var clock_lbl: Label
-var pause_btn: Button
+var pause_btn: HudButton
+var res_panel: Panel          ## M2.6: money / power / Build / General, stays when the bar slides out
+var emblem: FactionEmblem
+var fac: StringName = &"eu"
+var bar_k := 0.0              ## 0 = command bar up, 1 = slid out (nothing selected)
 var alerts_box: VBoxContainer
 var back_btn: Button
 var place_bar: HBoxContainer
 var place_reason: Label
+var place_confirm: PlaceConfirm    ## M2.6: ✓ / ✗ floating above the ghost
 var target_bar: HBoxContainer
 var target_lbl: Label
 var tray: PanelContainer
@@ -77,7 +85,8 @@ func setup(match_node, c: PlayerController, w: WorldView, cm: CameraRig) -> void
 	pid = c.pid
 	layer = 10
 	root = Control.new()
-	root.theme = UiTheme.get_theme()
+	fac = sim.faction_of(pid) if pid >= 0 else &"eu"
+	root.theme = UiTheme.faction_theme(fac)
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(root)
 	_build()
@@ -91,13 +100,16 @@ func setup(match_node, c: PlayerController, w: WorldView, cm: CameraRig) -> void
 
 # ------------------------------------------------------------------ build
 func _build() -> void:
+	var fp := UiTheme.pal(fac)
 	bar = Panel.new()
-	bar.add_theme_stylebox_override("panel", UiTheme.box(Color(0.09, 0.10, 0.12, 0.96), UiTheme.GOLD, 1, 6))
+	bar.name = "CommandBar"
+	bar.add_theme_stylebox_override("panel", UiTheme.fbox(fac, fp["bg"], fp["frame"], -1, int(fp["radius"])))
 	root.add_child(bar)
 	blockers.append(bar)
 	minimap = Minimap.new()
 	minimap.setup(world, cam, ctl)
-	bar.add_child(minimap)
+	root.add_child(minimap)      # M2.6: own node so it can grow when the bar slides out
+	blockers.append(minimap)
 	# selection panel
 	sel_panel = Control.new()
 	bar.add_child(sel_panel)
@@ -116,7 +128,7 @@ func _build() -> void:
 	sel_portrait.custom_minimum_size = PORTRAIT
 	sel_portrait.draw.connect(_draw_portrait)
 	sel_panel.add_child(sel_portrait)
-	sel_name = UiTheme.label("", 13, UiTheme.GOLD)
+	sel_name = UiTheme.label("", 13, UiTheme.pal(sim.faction_of(pid) if pid >= 0 else &"eu")["title"])
 	sel_panel.add_child(sel_name)
 	sel_info = UiTheme.label("", 10)
 	sel_info.clip_text = true
@@ -144,11 +156,20 @@ func _build() -> void:
 		grid.add_child(b)
 		grid_buttons.append(b)
 	# resources panel
+	res_panel = Panel.new()
+	res_panel.name = "ResPanel"
+	res_panel.add_theme_stylebox_override("panel", UiTheme.fbox(fac, fp["bg"], fp["frame"], -1, int(fp["radius"])))
+	root.add_child(res_panel)
+	blockers.append(res_panel)
+	emblem = FactionEmblem.new()
+	emblem.fac = fac
+	emblem.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	res_panel.add_child(emblem)
 	var rp := VBoxContainer.new()
 	rp.name = "Res"
 	rp.add_theme_constant_override("separation", 2)
-	bar.add_child(rp)
-	money_lbl = UiTheme.label("$0", 17, Color("#ffd166"))
+	res_panel.add_child(rp)
+	money_lbl = UiTheme.label("$0", 17, fp["money"])
 	rp.add_child(money_lbl)
 	power_bar = ProgressBar.new()
 	power_bar.show_percentage = false
@@ -166,21 +187,21 @@ func _build() -> void:
 	build_btn = _hud_btn(tr("HUD_BUILD"), Vector2(50, 44))
 	build_btn.primary.connect(open_build)
 	row.add_child(build_btn)
-	rank_lbl = UiTheme.label("", 11, UiTheme.CYAN)
+	rank_lbl = UiTheme.label("", 11, fp["accent"])
 	# top strip
 	top = HBoxContainer.new()
 	top.add_theme_constant_override("separation", 4)
 	root.add_child(top)
-	var army := _hud_btn(tr("HUD_ARMY"), Vector2(58, TOP_H))
+	var army := _hud_btn(tr("HUD_ARMY"), Vector2(50, TOP_H))
 	army.primary.connect(ctl.select_all_army)
 	top.add_child(army)
 	army_btn = army
-	var idle := _hud_btn(tr("HUD_IDLE_BUILDER") % tr(Content.unit(Content.faction(sim.faction_of(pid) if pid >= 0 else &"eu")["builder"]).name_key), Vector2(65, TOP_H))
+	var idle := _hud_btn(tr("HUD_IDLE_BUILDER") % tr(Content.unit(Content.faction(sim.faction_of(pid) if pid >= 0 else &"eu")["builder"]).name_key), Vector2(56, TOP_H))
 	idle.primary.connect(ctl.select_idle_builder)
 	top.add_child(idle)
 	idle_btn = idle
 	var sp := Control.new()
-	sp.custom_minimum_size = Vector2(8, 1)
+	sp.custom_minimum_size = Vector2(TOP_PAD * 2 + 2, 1)
 	top.add_child(sp)
 	groups_btn = HudButton.new()
 	groups_btn.custom_minimum_size = Vector2(TOP_H, TOP_H)
@@ -203,13 +224,18 @@ func _build() -> void:
 	top.add_child(fill)
 	clock_lbl = UiTheme.label("00:00", 14)
 	top.add_child(clock_lbl)
-	pause_btn = UiTheme.button("II", Vector2(TOP_H, TOP_H))
-	pause_btn.pressed.connect(toggle_pause)
+	pause_btn = _hud_btn("II", Vector2(TOP_H, TOP_H))
+	pause_btn.name = "PauseBtn"
+	pause_btn.primary.connect(toggle_pause)
 	top.add_child(pause_btn)
-	var menu_btn := UiTheme.button(tr("HUD_MENU"), Vector2(58, TOP_H))
-	menu_btn.pressed.connect(toggle_pause_menu)
+	var menu_btn := _hud_btn(tr("HUD_MENU"), Vector2(50, TOP_H))
+	menu_btn.name = "MenuBtn"
+	menu_btn.primary.connect(toggle_pause_menu)
 	top.add_child(menu_btn)
+	top.add_theme_constant_override("separation", int(TOP_PAD * 2))
 	for c in [army, idle, pause_btn, menu_btn, groups_btn] + group_btns:
+		c.hit_pad = TOP_PAD
+		c.add_theme_font_size_override("font_size", 11)
 		blockers.append(c)
 	# alerts
 	alerts_box = VBoxContainer.new()
@@ -232,15 +258,16 @@ func _build() -> void:
 	var rot := UiTheme.button(tr("HUD_ROTATE"), Vector2(64, 56))
 	rot.pressed.connect(ctl.rotate_ghost)
 	place_bar.add_child(rot)
-	var cancel := UiTheme.button(tr("HUD_CANCEL"), Vector2(64, 56))
-	cancel.pressed.connect(ctl.cancel_mode)
-	place_bar.add_child(cancel)
-	var ok := UiTheme.button(tr("HUD_CONFIRM"), Vector2(84, 56))
-	ok.add_theme_color_override("font_color", Color("#9dff9a"))
-	ok.pressed.connect(func(): ctl.confirm_place())
-	place_bar.add_child(ok)
 	root.add_child(place_bar)
 	blockers.append(place_bar)
+	# M2.6: confirm / cancel float above the ghost (tap or drag to move it; it stays until ✓ / ✗)
+	place_confirm = PlaceConfirm.new()
+	place_confirm.visible = false
+	place_confirm.ok_btn.pressed.connect(func(): ctl.confirm_place())
+	place_confirm.cancel_btn.pressed.connect(ctl.cancel_mode)
+	root.add_child(place_confirm)
+	blockers.append(place_confirm.ok_btn)
+	blockers.append(place_confirm.cancel_btn)
 	target_bar = HBoxContainer.new()
 	target_lbl = UiTheme.label("", 14, Color("#ffd166"))
 	target_bar.add_child(target_lbl)
@@ -307,18 +334,32 @@ func _layout() -> void:
 	root.position = Vector2.ZERO
 	root.size = UiScale.logical_size()
 	var bh := BAR_H
-	bar.position = Vector2(sr.position.x, sr.end.y - bh)
+	var vis_h := bar_visible_h()
+	bar.position = Vector2(sr.position.x, sr.end.y - vis_h)
 	bar.size = Vector2(sr.size.x, bh)
 	var pad := 4.0
-	minimap.position = Vector2(pad, pad)
-	minimap.size = Vector2(bh - pad * 2, bh - pad * 2)
+	# minimap: docked in the bar's left corner, grows to MM_BIG at the bottom-left when the bar is out
+	var ek := ease(bar_k, -2.0)
+	var mm_small := bh - pad * 2
+	var mm_big := minf(MM_BIG, sr.size.y * 0.45)
+	var mms := lerpf(mm_small, mm_big, ek)
+	minimap.size = Vector2(mms, mms)
+	minimap.position = Vector2(sr.position.x + pad, lerpf(bar.position.y + pad, sr.end.y - mms - pad, ek))
 	var res_w := 135.0
 	var grid_w := BTN.x * 5 + 12.0
-	var res: Control = bar.get_node("Res")
-	res.position = Vector2(bar.size.x - res_w - pad, pad)
+	var res: Control = res_panel.get_node("Res")
+	# resource panel: docked in the bar's right end; framed on its own when the bar is out
+	res_panel.size = Vector2(res_w + pad * 2, bh)
+	res_panel.position = Vector2(sr.end.x - res_panel.size.x, minf(bar.position.y, sr.end.y - bh))
+	res_panel.self_modulate = Color(1, 1, 1, ek)
+	res.position = Vector2(pad, pad)
 	res.size = Vector2(res_w, bh - pad * 2)
-	grid.position = Vector2(res.position.x - grid_w - pad, pad)
-	var sx := minimap.position.x + minimap.size.x + 8
+	emblem.size = Vector2(26, 26)
+	emblem.position = Vector2(res_w - 26 - pad, pad + 2)
+	res_w = res_w + pad
+	var res_x := bar.size.x - res_w - pad
+	grid.position = Vector2(res_x - grid_w - pad, pad)
+	var sx := pad + mm_small + 8
 	var sw := grid.position.x - sx - 8
 	sel_panel.position = Vector2(sx, pad)
 	sel_panel.size = Vector2(sw, bh - pad * 2)
@@ -338,18 +379,21 @@ func _layout() -> void:
 	queue_box.position = Vector2(0, row_y)
 	resume_btn.size = Vector2(78, 44)
 	resume_btn.position = Vector2(sw - 78, row_y)
-	top.position = sr.position + Vector2(4, 4)
-	top.size = Vector2(sr.size.x - 8, TOP_H)
+	top.position = sr.position + Vector2(4 + TOP_PAD, 4 + TOP_PAD)
+	top.size = Vector2(sr.size.x - 8 - TOP_PAD * 2, TOP_H)
 	alerts_box.position = sr.position + Vector2(6, 52)
 	alerts_box.size = Vector2(minf(288, sr.size.x * 0.36), 10)
-	back_btn.position = sr.position + Vector2(6, sr.size.y - bh - 56)
-	toast_lbl.position = Vector2(sr.position.x, sr.end.y - bh - 34)
+	var lift := maxf(vis_h, minimap.size.y + pad if bar_k > 0.0 else 0.0)
+	back_btn.position = sr.position + Vector2(6, sr.size.y - lift - 56)
+	toast_lbl.position = Vector2(sr.position.x, sr.end.y - vis_h - 34)
 	toast_lbl.size = Vector2(sr.size.x, 24)
-	place_bar.position = Vector2(sr.end.x - 360, sr.end.y - bh - 64)
+	place_bar.position = Vector2(sr.end.x - 360, sr.end.y - maxf(vis_h, bh) - 64)
 	place_bar.size = Vector2(352, 56)
+	if is_instance_valid(place_confirm):
+		_place_confirm_follow()
 	place_bar.alignment = BoxContainer.ALIGNMENT_END
 	target_bar.position = Vector2(sr.position.x + sr.size.x * 0.5 - 140, sr.position.y + 54)
-	tray.position = Vector2(sr.end.x - 300, sr.end.y - bh - 8 - 220)
+	tray.position = Vector2(sr.end.x - 300, sr.end.y - bh - 8 - 220)   # res panel keeps its height
 	tray.size = Vector2(292, 220)
 	paused_lbl.position = Vector2(sr.position.x + sr.size.x * 0.5 - 50, sr.position.y + 100)
 	perf_lbl.position = sr.position + Vector2(sr.size.x - 210, 52)
@@ -358,13 +402,43 @@ func _layout() -> void:
 	var pc: Control = pause_menu.get_node("P")
 	pc.position = root.size * 0.5 - Vector2(130, 210)
 
+## M2.6 (Malachi): with nothing selected (and no placement / targeting going on) the command bar
+## slides out of the way and the minimap grows; any selection slides it back up.
+func bar_target() -> float:
+	if pid < 0:
+		return 0.0
+	if ctl.mode != PlayerController.Mode.NONE or not ctl.selection.is_empty() or tray.visible:
+		return 0.0
+	return 1.0
+
+func bar_visible_h() -> float:
+	return BAR_H * (1.0 - ease(bar_k, -2.0))
+
+## Screen point above the ghost's top centre (footprint centre, raised by the building height).
+func _place_confirm_follow() -> void:
+	if ctl.mode != PlayerController.Mode.PLACE or ctl.place_def == &"":
+		return
+	var d := Content.building(ctl.place_def)
+	var fpv := d.footprint if ctl.place_rot % 2 == 0 else Vector2i(d.footprint.y, d.footprint.x)
+	var top3 := Vector3(ctl.place_tile.x + fpv.x * 0.5, 2.2, ctl.place_tile.y + fpv.y * 0.5)
+	if cam.cam.is_position_behind(top3):
+		return
+	var sp := cam.cam.unproject_position(top3)
+	var sr := UiScale.safe_rect
+	if sr.size.x <= 0:
+		sr = Rect2(Vector2.ZERO, UiScale.logical_size())
+	var bounds := Rect2(sr.position + Vector2(0, TOP_H + 8), Vector2(sr.size.x, sr.size.y - TOP_H - 8 - bar_visible_h() - 8))
+	place_confirm.place_at(sp, bounds)
+
 ## True when a screen point (logical units) is over HUD chrome - world input ignores it.
 func blocks(p: Vector2) -> bool:
 	if pause_menu.visible:
 		return true
 	for b in blockers:
-		if is_instance_valid(b) and b.is_visible_in_tree() and b.get_global_rect().has_point(p):
-			return true
+		if is_instance_valid(b) and b.is_visible_in_tree():
+			var gr: Rect2 = b.hit_rect() if b is HudButton else b.get_global_rect()
+			if gr.has_point(p):
+				return true
 	return false
 
 # ------------------------------------------------------------------ per frame
@@ -379,6 +453,12 @@ func _process(delta: float) -> void:
 		_toast_t -= delta
 		if _toast_t <= 0.0:
 			toast_lbl.text = ""
+	var want := bar_target()
+	if bar_k != want:
+		bar_k = move_toward(bar_k, want, delta / BAR_SLIDE_S)
+		_layout()
+	if place_confirm.visible:
+		_place_confirm_follow()
 	if Settings.g("perf_overlay"):
 		perf_lbl.visible = true
 		perf_lbl.text = "FPS %d  tick %.2f ms  ents %d  draw %d" % [Engine.get_frames_per_second(), m.avg_tick_ms, sim.ids.size(),
@@ -400,7 +480,7 @@ func _refresh() -> void:
 	var secs := sim.tick / 20
 	clock_lbl.text = "%02d:%02d" % [secs / 60, secs % 60]
 	paused_lbl.visible = m.paused
-	pause_btn.text = ">" if m.paused else "II"
+	pause_btn.label_text = ">" if m.paused else "II"
 	var assigned := 0
 	for i in 5:
 		var gb: HudButton = group_btns[i]
@@ -868,6 +948,10 @@ func _prereq_names(p: PackedStringArray) -> String:
 # ------------------------------------------------------------------ modes
 func _on_mode() -> void:
 	place_bar.visible = ctl.mode == PlayerController.Mode.PLACE
+	place_confirm.visible = ctl.mode == PlayerController.Mode.PLACE
+	if place_confirm.visible:
+		place_confirm.set_valid(ctl.place_reason == "")
+		_place_confirm_follow()
 	target_bar.visible = ctl.mode == PlayerController.Mode.TARGET
 	if ctl.mode == PlayerController.Mode.PLACE:
 		place_reason.text = tr(ctl.place_reason) if ctl.place_reason != "" else ""

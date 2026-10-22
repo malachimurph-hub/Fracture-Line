@@ -31,6 +31,16 @@ var fit_ok := true
 var fit_size := 0
 var _fit_key := ""
 var _para: TextParagraph
+## M2.6: invisible tap padding (dp) around the drawn button: the top strip draws ~15% smaller
+## buttons but keeps a >= 44 dp touch target.
+var hit_pad := 0.0
+
+func _has_point(point: Vector2) -> bool:
+	return Rect2(Vector2.ZERO, size).grow(hit_pad).has_point(point)
+
+## Touch-target rect in global (HUD) coordinates, including the invisible padding.
+func hit_rect() -> Rect2:
+	return get_global_rect().grow(hit_pad)
 
 func _ready() -> void:
 	button_mask = MOUSE_BUTTON_MASK_LEFT | MOUSE_BUTTON_MASK_RIGHT

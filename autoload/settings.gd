@@ -14,6 +14,7 @@ var data := {
 	"perf_overlay": false,
 	"always_health_bars": false,
 	"haptics": true,
+	"menu_battle": true,     ## M2.6: live battle behind the main menu
 	"edge_pan": false,
 	"camera_inertia": true,
 	"vol_master": 0.9,

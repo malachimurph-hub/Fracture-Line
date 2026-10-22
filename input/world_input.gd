@@ -326,8 +326,8 @@ func _mouse_button(ev: InputEventMouseButton) -> void:
 		m_box = false
 		return
 	if ctl.mode == PlayerController.Mode.PLACE:
+		# M2.6: a click/tap only moves the ghost; it stays until ✓ (or Enter) confirms
 		ctl.move_ghost_screen(ev.position)
-		ctl.confirm_place()
 		return
 	if ctl.mode == PlayerController.Mode.TARGET:
 		ctl.complete_target(ev.position)
@@ -342,8 +342,8 @@ func _mouse_motion(ev: InputEventMouseMotion) -> void:
 	if m_pan:
 		cam.pan_screen(ev.relative)
 		return
-	if ctl.mode == PlayerController.Mode.PLACE and not m_down:
-		ctl.move_ghost_screen(ev.position)
+	if ctl.mode == PlayerController.Mode.PLACE and m_down:
+		ctl.move_ghost_screen(ev.position)   # M2.6: drag the ghost with the mouse too
 	if m_down and not m_box and ev.position.distance_to(m_start) > 6.0 and ctl.mode == PlayerController.Mode.NONE:
 		m_box = true
 	if m_box:

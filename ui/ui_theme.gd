@@ -56,6 +56,74 @@ static func get_theme() -> Theme:
 	_theme = t
 	return t
 
+# ---------------------------------------------------------------- M2.6 faction HUD themes
+## Zero Hour gives each faction its own command-bar look. Ours (Malachi, M2.6):
+##  EU Alliance  - gunmetal + gold + cyan, rounded bevelled frames (the base theme)
+##  TPLA         - rust / umber / sand, square riveted frames, slanted buttons, heavy stencil-ish font
+##  US           - navy + steel blue + white, chamfer-like tight corners, wide-spaced font
+const PALETTES := {
+	&"eu": {"bg": Color(0.09, 0.10, 0.12, 0.96), "btn": Color("#343a44"), "btn_hover": Color("#3f4652"), "btn_pressed": Color("#1a1d22"),
+		"edge": Color("#4b5260"), "frame": Color("#c9a24a"), "accent": Color("#6fe3ff"), "title": Color("#c9a24a"),
+		"money": Color("#ffd166"), "text": Color("#e8e6e0"), "radius": 6, "btn_radius": 4, "frame_w": 1, "skew": 0.0,
+		"embolden": 0.0, "spacing": 0, "slant": 0.0},
+	&"tpla": {"bg": Color(0.13, 0.09, 0.06, 0.96), "btn": Color("#4a3322"), "btn_hover": Color("#5c3f29"), "btn_pressed": Color("#24170e"),
+		"edge": Color("#7a4a2a"), "frame": Color("#b5562a"), "accent": Color("#f0b860"), "title": Color("#e08a3c"),
+		"money": Color("#f6c86a"), "text": Color("#efe2cc"), "radius": 0, "btn_radius": 0, "frame_w": 2, "skew": 0.12,
+		"embolden": 0.55, "spacing": 0, "slant": 0.12},
+	&"us": {"bg": Color(0.06, 0.09, 0.14, 0.96), "btn": Color("#22344c"), "btn_hover": Color("#2c4462"), "btn_pressed": Color("#0f1a28"),
+		"edge": Color("#41648c"), "frame": Color("#7fb0e6"), "accent": Color("#ffffff"), "title": Color("#cfe4ff"),
+		"money": Color("#9fe0a0"), "text": Color("#e6eef8"), "radius": 2, "btn_radius": 2, "frame_w": 1, "skew": 0.0,
+		"embolden": 0.25, "spacing": 1, "slant": 0.0},
+}
+static var _fthemes: Dictionary = {}
+
+static func pal(fac: StringName) -> Dictionary:
+	return PALETTES.get(fac, PALETTES[&"eu"])
+
+static func fbox(fac: StringName, bg: Color, border: Color, bw: int = -1, radius: int = -1, margin: float = 6.0) -> StyleBoxFlat:
+	var p := pal(fac)
+	var s := box(bg, border, int(p["frame_w"]) if bw < 0 else bw, int(p["btn_radius"]) if radius < 0 else radius, margin)
+	s.skew = Vector2(float(p["skew"]), 0)
+	if fac == &"us":
+		# US: steel double-edge look (inner border + soft outer glow)
+		s.shadow_color = Color(p["frame"], 0.25)
+		s.shadow_size = 2
+	elif fac == &"tpla":
+		s.border_width_bottom = s.border_width_top + 1   # heavier "welded" lower edge
+	return s
+
+## Faction font accent: a FontVariation of the default font (embolden, slant, letter spacing).
+static func faction_font(fac: StringName) -> Font:
+	var p := pal(fac)
+	var fv := FontVariation.new()
+	fv.base_font = ThemeDB.fallback_font
+	fv.variation_embolden = float(p["embolden"])
+	if float(p["slant"]) != 0.0:
+		fv.variation_transform = Transform2D(Vector2(1, 0), Vector2(float(p["slant"]), 1), Vector2.ZERO)
+	fv.spacing_glyph = int(p["spacing"])
+	return fv
+
+static func faction_theme(fac: StringName) -> Theme:
+	if fac == &"" or not PALETTES.has(fac):
+		fac = &"eu"
+	if _fthemes.has(fac):
+		return _fthemes[fac]
+	var p := pal(fac)
+	var t := get_theme().duplicate(true) as Theme
+	t.default_font = faction_font(fac)
+	t.set_stylebox("normal", "Button", fbox(fac, p["btn"], p["edge"]))
+	t.set_stylebox("hover", "Button", fbox(fac, p["btn_hover"], p["frame"]))
+	t.set_stylebox("pressed", "Button", fbox(fac, p["btn_pressed"], p["accent"], 2))
+	t.set_stylebox("disabled", "Button", fbox(fac, Color(p["btn"]).darkened(0.4), Color(p["edge"]).darkened(0.4)))
+	t.set_color("font_color", "Button", p["text"])
+	t.set_color("font_pressed_color", "Button", p["accent"])
+	t.set_color("font_color", "Label", p["text"])
+	t.set_stylebox("panel", "Panel", fbox(fac, p["bg"], p["frame"], -1, int(p["radius"])))
+	t.set_stylebox("panel", "PanelContainer", fbox(fac, p["bg"], p["frame"], -1, int(p["radius"]), 8))
+	t.set_stylebox("panel", "TooltipPanel", fbox(fac, Color(0.05, 0.05, 0.06, 0.95), p["frame"]))
+	_fthemes[fac] = t
+	return t
+
 static func button(text: String, min_size := Vector2(48, 48)) -> Button:
 	var b := Button.new()
 	b.text = text

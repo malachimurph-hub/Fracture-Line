@@ -1,8 +1,11 @@
 extends ScreenBase
 ## Main menu: Skirmish, Continue (suspended match), Settings, Credits/About, Quit.
 
+var _old_fps := 0
+
 func build() -> void:
 	get_tree().set_auto_accept_quit(true)
+	_add_battle_backdrop()
 	var h := HBoxContainer.new()
 	body.add_child(h)
 	var left := VBoxContainer.new()
@@ -34,6 +37,47 @@ func build() -> void:
 		var q := UiTheme.button(tr("MENU_QUIT"), Vector2(260, 52))
 		q.pressed.connect(func(): get_tree().quit())
 		right.add_child(q)
+
+## M2.6: live battle behind the menu (half-resolution SubViewport, 30 FPS cap while shown).
+func _add_battle_backdrop() -> void:
+	if not Settings.g("menu_battle"):
+		return
+	var svc := SubViewportContainer.new()
+	svc.name = "BattleBackdrop"
+	svc.stretch = true
+	svc.stretch_shrink = 2
+	svc.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	svc.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(svc)
+	move_child(svc, 1)               # above the flat background, below the menu
+	var vp := SubViewport.new()
+	vp.own_world_3d = true
+	vp.audio_listener_enable_3d = false
+	vp.msaa_3d = Viewport.MSAA_DISABLED
+	svc.add_child(vp)
+	var mb := MenuBattle.new()
+	mb.name = "MenuBattle"
+	vp.add_child(mb)
+	# readability: dark gradient on the menu side, light veil elsewhere
+	var veil := ColorRect.new()
+	veil.color = Color(0.03, 0.035, 0.045, 0.35)
+	veil.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	veil.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(veil)
+	move_child(veil, 2)
+	var side := ColorRect.new()
+	side.color = Color(0.03, 0.035, 0.045, 0.45)
+	side.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	side.set_anchors_preset(Control.PRESET_FULL_RECT)
+	side.anchor_left = 0.6
+	add_child(side)
+	move_child(side, 3)
+	_old_fps = Engine.max_fps
+	Engine.max_fps = 30
+
+func _exit_tree() -> void:
+	if _old_fps >= 0 and has_node("BattleBackdrop"):
+		Engine.max_fps = _old_fps
 
 func _continue() -> void:
 	var d := SaveSystem.load_suspend()
