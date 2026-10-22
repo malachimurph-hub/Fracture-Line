@@ -322,15 +322,15 @@ UNIT_EU_SALAMANDER,Salamander Flame Tank
 UNIT_EU_SALAMANDER_DESC,"Short-range flame projector. Burns infantry and structures, weak against heavy armour."
 UNIT_EU_THUNDERHEAD,Thunderhead Howitzer
 UNIT_EU_THUNDERHEAD_DESC,"Long-range self-propelled howitzer. Slow to aim, cannot hit close targets. Needs a Signals Center."
-UNIT_EU_HEARTH,Hearth Mortar Carrier
+UNIT_EU_HEARTH,Hearth Mortar
 UNIT_EU_HEARTH_DESC,"Light mortar carrier. Indirect fire against infantry and light vehicles."
 UNIT_EU_SPECTRE,Spectre Jammer
 UNIT_EU_SPECTRE_DESC,"Unarmed electronic-warfare truck. Enemy vehicles within 6 tiles cannot fire. Needs a Signals Center."
 UNIT_EU_SENTINEL,Sentinel Outpost
 UNIT_EU_SENTINEL_DESC,"Unarmed recon carrier. Detects hidden mines, traps and camouflaged structures; carries 2 infantry."
-UNIT_EU_KESTREL,Kestrel Lift Helo
+UNIT_EU_KESTREL,Kestrel Helo
 UNIT_EU_KESTREL_DESC,"[STUB] Transport helicopter. Aircraft are not in the game yet; listed for the full roster."
-UNIT_EU_CORVID,Corvid Strike Jet
+UNIT_EU_CORVID,Corvid Jet
 UNIT_EU_CORVID_DESC,"[STUB] Strike jet. Aircraft are not in the game yet; listed for the full roster."
 UNIT_TPLA_JUNKHAMMER,Junkhammer Tank
 UNIT_TPLA_JUNKHAMMER_DESC,"Heavy scrap tank with a big cannon. Collects salvage like other TPLA vehicles. Needs a Workshop."

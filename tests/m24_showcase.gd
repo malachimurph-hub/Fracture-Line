@@ -240,9 +240,130 @@ func run_build() -> void:
 	check("rigs struck on completion", left == 0, left)
 
 # ------------------------------------------------------------------ firefight
+func _tough(e: SimEntity) -> SimEntity:
+	e.max_hp *= 1000
+	e.hp = e.max_hp
+	return e
+
+func _army(spec: Array, owner: int, o: Vector2i, cols: int) -> Array:
+	var ids: Array = []
+	var i := 0
+	for it in spec:
+		for k in int(it[1]):
+			var t := o + Vector2i((i % cols) * 2, (i / cols) * 2)
+			ids.append(_tough(_unit(it[0], owner, t)).id)
+			i += 1
+	return ids
+
 func run_fight() -> void:
-	pass
+	var o := _open_block(22, 16)
+	# EU (south) vs TPLA (north), about 7 tiles apart: tanks, missile and rifle infantry, flak,
+	# a flamer and artillery behind; TPLA rifles, RPG cells, technicals, rocket buggy, quad gun
+	var eu := _army([[&"eu_leopold", 2], [&"eu_brennus", 1], [&"eu_lancer", 2], [&"eu_grenadier", 3], [&"eu_flakwerk", 1], [&"eu_salamander", 1]], 0, o + Vector2i(1, 11), 5)
+	eu += _army([[&"eu_thunderhead", 1], [&"eu_hearth", 1]], 0, o + Vector2i(6, 15), 2)
+	var tp := _army([[&"tpla_militia", 4], [&"tpla_rocket_cell", 2], [&"tpla_rattler", 2], [&"tpla_shrike", 1], [&"tpla_hailstorm", 1], [&"tpla_scrapback", 1], [&"tpla_sprayer", 1]], 1, o + Vector2i(1, 1), 6)
+	tp += _army([[&"tpla_blight", 1]], 1, o + Vector2i(14, 0), 1)
+	m.runner.issue({"p": 0, "t": "amove", "ids": eu, "pos": FX.tile_center(o + Vector2i(6, 3))})
+	m.runner.issue({"p": 1, "t": "amove", "ids": tp, "pos": FX.tile_center(o + Vector2i(6, 12))})
+	_look(o + Vector2i(6, 7), 0)
+	await frames(10)
+	var wfx: WeaponFx = m.world.wfx
+	var best := -1
+	var n := 0
+	var shots_taken := 0
+	for f in 600:
+		await get_tree().process_frame
+		var c := wfx.count_class(["cannon", "artillery"])
+		var r := wfx.count_class(["rocket", "missile", "salvo"])
+		var t := wfx.count_class(["rifle", "mg", "quad", "autocannon"])
+		var score := mini(c, 2) * 4 + mini(r, 2) * 4 + mini(t, 6)
+		if c >= 1 and r >= 1 and t >= 2 and score > best and f > 60:
+			best = score
+			await shot("firefight_mid_shot")
+			shots_taken += 1
+			print("FIREFIGHT frame %d cannon=%d rockets=%d tracers=%d streams=%d" % [f, c, r, t, wfx.streams.size()])
+			if score >= 18 or shots_taken >= 4:
+				break
+		n = f
+	check("firefight shot caught shells, rockets and tracers in flight", best > 0, best)
+	_look(o + Vector2i(6, 7), 1)
+	await frames(30)
+	await shot("firefight_wide")
+	var st: Dictionary = wfx.stats
+	print("WEAPONFX ", JSON.stringify(st))
+	check("rounds fired", int(st["rounds"]) > 50, st["rounds"])
+	check("misses land on the ground", int(st["ground_misses"]) > 0, st["ground_misses"])
+	check("flak airbursts", int(st["airbursts"]) > 0, st["airbursts"])
+	check("rocket / missile smoke trails", int(st["trail_puffs"]) > 0, st["trail_puffs"])
+	check("flame / spray streams", int(st["stream_particles"]) > 0, st["stream_particles"])
+	var beams := 0
+	for it in m.world.vfx.items:
+		if it["k"] == "box":
+			beams += 1
+	check("no beam / laser line meshes", beams == 0 and not m.world.vfx.has_method("tracer"), beams)
+	for id in eu + tp:
+		var e: SimEntity = sim.ents.get(id)
+		if e != null:
+			sim._kill(e, null)
+	m.world.on_tick(sim.events.duplicate())
+	sim.events.clear()
+	await frames(30)
 
 # ------------------------------------------------------------------ big battle counters
+func _counters(label: String) -> Dictionary:
+	var dc := 0
+	var prims := 0
+	var objs := 0
+	var proc_ms := 0.0
+	var t0 := Time.get_ticks_usec()
+	for k in 30:
+		await get_tree().process_frame
+		dc = maxi(dc, RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME))
+		prims = maxi(prims, RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME))
+		objs = maxi(objs, RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME))
+		proc_ms = maxf(proc_ms, Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0)
+	var vx: Vfx = m.world.vfx
+	var r := {"label": label, "draw_calls": dc, "primitives": prims, "objects": objs, "process_ms_max": proc_ms,
+		"frame_ms_llvmpipe": (Time.get_ticks_usec() - t0) / 30000.0, "view_ms_avg": m.avg_view_ms, "tick_ms_avg": m.avg_tick_ms,
+		"rounds_in_flight": m.world.wfx.shots.size(), "streams": m.world.wfx.streams.size(),
+		"particles": vx.smoke.live + vx.fire.live + vx.debris.live + vx.spark_layer.live, "streaks": m.world.wfx.glow.n + m.world.wfx.solid.n,
+		"units": _count_units()}
+	print("GFXPERF ", JSON.stringify(r))
+	return r
+
+func _count_units() -> int:
+	var c := 0
+	for id in sim.ids:
+		c += 1 if sim.ents[id].kind == SimEntity.Kind.UNIT else 0
+	return c
+
 func run_perf() -> void:
-	pass
+	var o := _open_block(30, 22)
+	var mix_eu := [[&"eu_leopold", 10], [&"eu_brennus", 3], [&"eu_wolfhound", 4], [&"eu_lancer", 8], [&"eu_grenadier", 14], [&"eu_flakwerk", 3], [&"eu_salamander", 3], [&"eu_hearth", 3], [&"eu_thunderhead", 2]]
+	var mix_tp := [[&"tpla_militia", 16], [&"tpla_rocket_cell", 8], [&"tpla_rattler", 8], [&"tpla_shrike", 4], [&"tpla_hailstorm", 4], [&"tpla_scrapback", 4], [&"tpla_jackal", 4], [&"tpla_junkhammer", 2]]
+	var eu := _army(mix_eu, 0, o + Vector2i(0, 14), 13)
+	var tp := _army(mix_tp, 1, o + Vector2i(0, 0), 13)
+	# both sides attack-move into each other
+	m.runner.issue({"p": 0, "t": "amove", "ids": eu, "pos": FX.tile_center(o + Vector2i(13, 2))})
+	m.runner.issue({"p": 1, "t": "amove", "ids": tp, "pos": FX.tile_center(o + Vector2i(13, 18))})
+	_look(o + Vector2i(13, 10), 1)
+	for k in 20:
+		await frames(15)
+		if m.world.wfx.shots.size() > 30:
+			break
+	var res := {}
+	for lvl in [0, 1, 2]:
+		m.cam.set_level(lvl)
+		await frames(15)
+		res[lvl] = await _counters("big_battle_zoom%d" % lvl)
+	m.cam.set_level(1)
+	await frames(5)
+	await shot("big_battle_perf")
+	print("M24PERF ", JSON.stringify(res))
+	var worst_dc := 0
+	var worst_pr := 0
+	for lvl in res:
+		worst_dc = maxi(worst_dc, int(res[lvl]["draw_calls"]))
+		worst_pr = maxi(worst_pr, int(res[lvl]["primitives"]))
+	check("big battle draw calls <= 300 (%d)" % worst_dc, worst_dc <= 300, worst_dc)
+	check("big battle primitives <= 600k (%d)" % worst_pr, worst_pr <= 600000, worst_pr)

@@ -231,6 +231,8 @@ func _impact(cls: String, p: Vector3, hitk: int, s: float) -> void:
 		"rifle", "mg", "quad", "autocannon":
 			if hitk == 1 or hitk == 2:   # rounds striking armour / walls: sparks, a little grit
 				vfx.sparks(p, Vector3.ZERO, 3 if cls == "rifle" else 5, 1.2)
+				if hitk == 1 and randf() < 0.35:
+					AudioDirector.sfx("hit_metal", p, -9.0, 0.15)
 				vfx.fire.emit(p, Vector3.ZERO, 0.04, s * 0.5, s * 0.2, Color("#fff4d0"), Color(1, 0.6, 0.2, 0), 1.0)
 				if hitk == 2:
 					vfx.smoke.emit(p, Vector3(randf_range(-0.2, 0.2), 0.3, randf_range(-0.2, 0.2)), 0.6, s * 0.4, s * 1.2, Color(0.7, 0.68, 0.64, 0.5), Color(0.7, 0.68, 0.64, 0.0))

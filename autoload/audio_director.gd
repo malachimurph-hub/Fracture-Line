@@ -22,6 +22,13 @@ const SFX := {
 	"tpla_rust_launch": "res://audio/sfx/tpla_rust_launch.ogg", "tpla_rust_sizzle": "res://audio/sfx/tpla_rust_sizzle.ogg",
 	"expl_huge": "res://audio/sfx/explosion_huge.ogg", "salvage": "res://audio/sfx/salvage.ogg", "tunnel": "res://audio/sfx/tunnel.ogg",
 	"trap_click": "res://audio/sfx/trap_click.ogg",
+	# M2.4 weapon effects
+	"flame": "res://audio/sfx/flame.ogg", "howitzer": "res://audio/sfx/howitzer.ogg", "hit_metal": "res://audio/sfx/hit_metal_1.ogg",
+}
+## M2.4: alternative takes picked at random (plus pitch jitter) so repeated fire does not loop.
+const VARIANTS := {
+	"expl_small": ["res://audio/sfx/explosion_small.ogg", "res://audio/sfx/explosion_small_b.ogg", "res://audio/sfx/explosion_small_c.ogg"],
+	"hit_metal": ["res://audio/sfx/hit_metal_1.ogg", "res://audio/sfx/hit_metal_2.ogg", "res://audio/sfx/hit_metal_3.ogg"],
 }
 const UI := {"click": "res://audio/ui/click.ogg", "select": "res://audio/ui/select.ogg", "error": "res://audio/ui/error.ogg",
 	"confirm": "res://audio/ui/confirm.ogg", "alert": "res://audio/ui/alert.ogg", "build_ready": "res://audio/ui/build_ready.ogg"}
@@ -146,7 +153,11 @@ func sfx(key: String, pos: Vector3, vol_db: float = 0.0, pitch_var: float = 0.06
 		free_p.panning_strength = 0.6
 		world_root.add_child(free_p)
 		_pool3d.append(free_p)
-	var s := stream(SFX.get(key, ""))
+	var path: String = SFX.get(key, "")
+	if VARIANTS.has(key):
+		var vs: Array = VARIANTS[key]
+		path = vs[randi() % vs.size()]
+	var s := stream(path)
 	if s == null:
 		return
 	_last_play[key] = now

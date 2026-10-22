@@ -36,8 +36,8 @@ var _fx_t := 0.0
 var _crane_t := 0.0
 var stats := {"swapped": 0}
 
-static func scaffold_top_for(b: AABB) -> float:
-	return maxf(0.55, b.end.y * 0.88)
+static func scaffold_top_for(b: AABB, body: float = -1.0) -> float:
+	return maxf(0.55, (b.end.y if body < 0.0 else minf(b.end.y, body + 0.15)) * 0.92)
 
 func setup(v: EntityView, faction: StringName) -> void:
 	view = v
@@ -45,9 +45,10 @@ func setup(v: EntityView, faction: StringName) -> void:
 	tpla = faction == &"tpla"
 	staged = v is BuildingView
 	bounds = _measure(v)
-	var key := "%s_%d_%d_%d_%d" % [faction, roundi(bounds.position.x * 20), roundi(bounds.size.x * 20), roundi(bounds.size.z * 20), roundi(bounds.end.y * 20)]
+	body_top = _body_of(v, bounds)
+	var key := "%s_%d_%d_%d_%d" % [faction, roundi(bounds.position.x * 20), roundi(bounds.size.x * 20), roundi(bounds.size.z * 20), roundi(body_top * 20)]
 	if not _mesh_cache.has(key):
-		_mesh_cache[key] = _build_meshes(bounds, tpla)
+		_mesh_cache[key] = _build_meshes(bounds, tpla, body_top)
 	var ms: Dictionary = _mesh_cache[key]
 	scaffold = _mi(ms["scaffold"], MAT_REVEAL)
 	scaffold.set_instance_shader_parameter(&"rust_amt", 0.45 if tpla else 0.1)
@@ -74,19 +75,33 @@ func _mi(m: Mesh, mat: Material) -> MeshInstance3D:
 	add_child(mi)
 	return mi
 
-## Structure bounds in view space (hidden damage / rubble / scaffold parts excluded).
+static var _measure_cache: Dictionary = {}   ## scene path -> [AABB, body top]
+
+## Structure bounds in view space (hidden damage / rubble / scaffold parts excluded), plus the
+## "body" height: where most of the geometry ends (aerials and flag poles stick out above it).
 static func _measure(v: EntityView) -> AABB:
+	var key := v.scene_file_path
+	if key != "" and _measure_cache.has(key):
+		return _measure_cache[key][0]
 	var out := AABB()
 	var first := true
+	var ys := PackedFloat32Array()
 	var stack: Array = [[v.model if v.model != null else v, Transform3D.IDENTITY if v.model == null else v.model.transform]]
 	while not stack.is_empty():
 		var it: Array = stack.pop_back()
 		var n: Node = it[0]
 		var xf: Transform3D = it[1]
 		if n is MeshInstance3D and (n as MeshInstance3D).mesh != null:
-			var a: AABB = xf * (n as MeshInstance3D).mesh.get_aabb()
+			var mesh := (n as MeshInstance3D).mesh
+			var a: AABB = xf * mesh.get_aabb()
 			out = a if first else out.merge(a)
 			first = false
+			for si in mesh.get_surface_count():
+				var arr := mesh.surface_get_arrays(si)
+				var vs: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
+				var step := maxi(1, vs.size() / 1500)
+				for i in range(0, vs.size(), step):
+					ys.append((xf * vs[i]).y)
 		for c in n.get_children():
 			if c is Node3D and not (c.name in SKIP):
 				stack.append([c, xf * (c as Node3D).transform])
@@ -94,7 +109,23 @@ static func _measure(v: EntityView) -> AABB:
 		out = AABB(Vector3(-0.8, 0, -0.8), Vector3(1.6, 1.2, 1.6))
 	out.position.y = maxf(0.0, out.position.y)
 	out.size.y = maxf(0.4, out.size.y)
+	var body := out.end.y
+	if ys.size() > 20:
+		ys.sort()
+		body = clampf(ys[int(ys.size() * 0.93)] + 0.05, minf(0.4, out.end.y), out.end.y)
+	if key != "":
+		_measure_cache[key] = [out, body]
+	_last_body = body
 	return out
+
+static var _last_body := 1.0
+var body_top := 1.0            ## height where most of the structure ends (see _measure)
+
+static func _body_of(v: EntityView, b: AABB) -> float:
+	var key := v.scene_file_path
+	if key != "" and _measure_cache.has(key):
+		return _measure_cache[key][1]
+	return _last_body if _last_body <= b.end.y else b.end.y
 
 # ------------------------------------------------------------------ materials (legacy views)
 func _swap_to_clip(root: Node) -> void:
@@ -168,9 +199,12 @@ func update(k: float, delta: float, vfx: Vfx, on_screen: bool) -> void:
 	else:
 		_idle_t += delta
 	var working := _idle_t < 0.6
-	var top := scaffold_top_for(bounds)
+	var top := scaffold_top_for(bounds, body_top)
 	var rk := clampf((k - 0.12) / 0.83, 0.0, 1.0)
-	var ry := bounds.position.y + (bounds.size.y + 0.06) * rk - 0.02
+	# the body rises over most of the build; aerials / masts above it go up in the last tenth
+	var ry := lerpf(bounds.position.y, body_top, minf(1.0, rk / 0.9)) - 0.02
+	if rk > 0.9:
+		ry = lerpf(body_top, bounds.end.y + 0.06, (rk - 0.9) / 0.1)
 	# the scaffold goes up first, then climbs about one lift ahead of the rising structure
 	var sy := maxf(top * 0.4 * clampf(k / 0.12, 0.0, 1.0), ry + 0.5)
 	scaffold.set_instance_shader_parameter(&"reveal_y", minf(top + 0.3, sy) - 0.03)
@@ -217,9 +251,9 @@ func finish() -> void:
 	queue_free()
 
 # ------------------------------------------------------------------ geometry
-static func _build_meshes(b: AABB, is_tpla: bool) -> Dictionary:
+static func _build_meshes(b: AABB, is_tpla: bool, body: float) -> Dictionary:
 	var out := {}
-	var top := scaffold_top_for(b)
+	var top := scaffold_top_for(b, body)
 	var off := 0.14
 	var x0 := b.position.x - off
 	var x1 := b.end.x + off
@@ -342,7 +376,7 @@ static func _build_meshes(b: AABB, is_tpla: bool) -> Dictionary:
 		g.color("#6f7a55", RigGeo.CANVAS)
 		g.sheet(Vector3(x0 - 0.02, 0.15, lerpf(z0, z1, 0.15)), Vector3(x0 - 0.02, 0.15, lerpf(z0, z1, 0.65)), top * 0.55, 0.006)
 		g.color("#b9a37a", RigGeo.CANVAS)
-		g.obox(Vector3(lerpf(x0, x1, 0.75), top + 0.1, lerpf(z0, z1, 0.25)), Vector3((x1 - x0) * 0.22, 0.006, (z1 - z0) * 0.22), Basis(Vector3(1, 0, 0.3).normalized(), 0.12))
+		g.obox(Vector3(lerpf(x0, x1, 0.82), top + 0.1, lerpf(z0, z1, 0.18)), Vector3((x1 - x0) * 0.14, 0.006, (z1 - z0) * 0.14), Basis(Vector3(1, 0, 0.3).normalized(), 0.12))
 		# leaning scrap sheets, sandbags, mud-brick stack, oil drums
 		g.color("#7a5236", RigGeo.SCRAP)
 		g.obox(Vector3(x1 + 0.06, 0.22, lerpf(z0, z1, 0.6)), Vector3(0.01, 0.22, 0.2), Basis(Vector3.FORWARD, 0.25))

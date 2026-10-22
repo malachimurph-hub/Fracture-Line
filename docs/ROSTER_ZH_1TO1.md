@@ -40,11 +40,11 @@ Tier key: T0 base, T1 basic production, T2 needs a T1 production building, T3 ne
 | Dragon Tank | **Salamander Flame Tank** | Anti-infantry / anti-garrison | 900 / 12 / T2 | Motor Pool | Short-range flame. New `flame` damage type (strong vs infantry, weak vs armour) | added |
 | Troop Crawler | **Wolfhound IFV** | APC / raider | 750 / 10 / T2 | Motor Pool | Autocannon. Carries 4 infantry (load / unload is real from M2.4; was a stub) | exists (transport added) |
 | Nuke Cannon | **Thunderhead Howitzer** | Long-range heavy artillery | 1600 / 16 / T3 | Heavy Factory + Signals Center | 14-tile range, 4-tile minimum, 1.5 s set-up before firing, big splash with scatter | added |
-| Inferno Cannon | **Hearth Mortar Carrier** | Medium artillery | 1000 / 12 / T2 | Motor Pool | 10-tile incendiary mortar, scatter | added |
+| Inferno Cannon | **Hearth Mortar** | Medium artillery | 1000 / 12 / T2 | Motor Pool | 10-tile incendiary mortar, scatter | added |
 | ECM Tank | **Spectre Jammer** | Electronic warfare | 900 / 10 / T3 | Motor Pool + Signals Center | Jamming field: enemy vehicles within 6 tiles cannot fire. Unarmed | added |
 | Listening Outpost | **Sentinel Outpost** | Detector / scout | 800 / 10 / T2 | Motor Pool | Detector: reveals stealthed units and structures in sight (12). Carries 2 infantry | added |
-| Helix (helicopter) | **Kestrel Lift Helo** | Air transport / gunship | 1500 / 15 / T3 | Airstrip | No air layer yet | stub |
-| MiG (jet) | **Corvid Strike Jet** | Air strike | 1500 / 15 / T3 | Airstrip | No air layer yet | stub |
+| Helix (helicopter) | **Kestrel Helo** | Air transport / gunship | 1500 / 15 / T3 | Airstrip | No air layer yet | stub |
+| MiG (jet) | **Corvid Jet** | Air strike | 1500 / 15 / T3 | Airstrip | No air layer yet | stub |
 | (no ZH equivalent) | **Aegis Shield Carrier** | Mobile shield | 1200 / 15 / T2 | Heavy Factory | Area shield aura | exists (EU extra) |
 
 ### Structures
