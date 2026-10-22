@@ -6,9 +6,13 @@
   call-in. Balance pass pending Malachi's US building list.
 - **Doubling supplies lengthens games.** In the supply soak one hard-vs-hard match ran to the
   40:00 cap without a winner (stalemate). Others ended normally.
-- **TPLA voice quality is not perfect (v2 retune).** Chatterbox sometimes swallows or bends a word: the
-  accent is deliberate, but a few takes are still under the 0.7 Whisper word-match threshold
-  after the re-render pass (see voice QA in SOAK.md / builds/m2_5/voice_qa.json). Short unit
+- **TPLA voice quality is not perfect (v2 retune).** Chatterbox sometimes swallows or bends a word.
+  - Raw v2 takes score about the same as v1 on Whisper word match (0.74 vs 0.76, raw); the accent change is the point of v2.
+  - The re-render QA pass ran on Laborer, Rocket Cell, Rattler and Hailstorm (67 lines: mean
+    0.74 → 0.89, 10 still under 0.7).
+  - Scrapback, Shrike, Mule, Blight and the announcer ship their raw v2 takes (no QA pass yet,
+    due to time).
+  - Logs: builds/m2_5/voice_qa_v2.txt and voice_qa_me.json. Short unit
   names ("Rattler", "Scrapback") are heard by Whisper as "Radcliffe" / "Skrubback", but are
   intelligible in context.
 - **TPLA voice watermark.** Chatterbox embeds Resemble AI's imperceptible Perth watermark in
