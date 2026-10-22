@@ -104,9 +104,13 @@ func _fit() -> void:
 			fit_size = fs
 			fit_ok = true
 			return
-	_para = _make_para(f, MIN_FONT, r.size.x)
+	# M2.6: a single long word ("Thunderlance") wider than the box at the 9 dp minimum is
+	# drawn with 1 px tighter letter spacing instead (same 9 dp height, still readable)
+	var cf := condensed(f)
+	var pc := _make_para(cf, MIN_FONT, r.size.x)
+	_para = pc
 	fit_size = MIN_FONT
-	fit_ok = label_text == ""
+	fit_ok = label_text == "" or _para_fits(pc, r.size)
 
 ## Shared by the HUD portrait: [TextParagraph, fits, font_size] for `text` in `box`.
 static func fit_paragraph(t: String, f: Font, box: Vector2, start: int) -> Array:
@@ -114,7 +118,19 @@ static func fit_paragraph(t: String, f: Font, box: Vector2, start: int) -> Array
 		var p := _para_of(t, f, fs, box.x)
 		if _fits_box(p, box):
 			return [p, true, fs]
-	return [_para_of(t, f, MIN_FONT, box.x), t == "", MIN_FONT]
+	var pc := _para_of(t, condensed(f), MIN_FONT, box.x)
+	return [pc, t == "" or _fits_box(pc, box), MIN_FONT]
+
+static var _condensed: Dictionary = {}
+## Tight-tracked (-1 px per glyph) variation of `f`, cached per base font.
+static func condensed(f: Font) -> Font:
+	if _condensed.has(f):
+		return _condensed[f]
+	var fv := FontVariation.new()
+	fv.base_font = f
+	fv.spacing_glyph = -1
+	_condensed[f] = fv
+	return fv
 
 static func _para_of(t: String, f: Font, fs: int, w: float) -> TextParagraph:
 	var p := TextParagraph.new()
