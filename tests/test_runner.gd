@@ -197,6 +197,32 @@ func _ready() -> void:
 				if re.sim.game_over:
 					print("game over")
 					break
+			# stall probe: every surviving building vs the other side's knowledge of it
+			for id in re.sim.ids:
+				var sb: SimEntity = re.sim.ents[id]
+				if not sb.alive or sb.kind != SimEntity.Kind.BUILDING:
+					continue
+				var other := 1 - sb.owner
+				var ot: int = re.sim.players[other].team
+				var nd := 1 << 40
+				for id2 in re.sim.ids:
+					var u2: SimEntity = re.sim.ents[id2]
+					if u2.alive and u2.owner == other and u2.kind == SimEntity.Kind.UNIT:
+						nd = mini(nd, FX.dist(u2.pos, sb.pos))
+				var ai2: AIPlayer = re.ais.get(other)
+				print("  bld P%d %s tile=%s hp=%d visible_to_enemy=%s remembered=%s nearest_enemy_unit=%.1f tiles enemy_wave=%d" % [sb.owner, sb.def_id, sb.tile, sb.hp,
+					re.sim.fog.is_visible_ent(re.sim, ot, sb), re.sim.fog.memory.get(ot, {}).has(id), nd / float(FX.ONE), (ai2.bb["wave"].size() if ai2 != null else -1)])
+			for pid3 in 2:
+				var ai3: AIPlayer = re.ais.get(pid3)
+				if ai3 == null or ai3.bb["wave"].is_empty():
+					continue
+				var wu3: Array = []
+				for id3 in ai3.bb["wave"]:
+					var e3 := re.sim.get_ent(id3)
+					if e3 != null:
+						wu3.append(e3)
+				print("  wave P%d n=%d centroid=%s pick_target=%s hunt_i=%d samples=%s" % [pid3, wu3.size(), FX.to_tile(ai3._centroid(wu3)), FX.to_tile(ai3._pick_target()), int(ai3.bb.get("hunt_i", 0)),
+					str(wu3.slice(0, 4).map(func(x): return [x.def_id, FX.to_tile(x.pos), x.orders.slice(0, 1), x.target]))])
 			var dk := deaths.keys()
 			dk.sort_custom(func(x, y): return deaths[x] > deaths[y])
 			for k2 in dk.slice(0, 25):

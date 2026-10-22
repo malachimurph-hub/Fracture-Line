@@ -651,10 +651,15 @@ func _army() -> void:
 				bb["wave"] = []
 	if not bb["wave"].is_empty() and not bb.get("hold_wave", false):
 		var idle := 0
+		var idle_ids: Array = []
 		for id in bb["wave"]:
 			if w.get_ent(id).is_idle():
 				idle += 1
-		if idle * 2 >= bb["wave"].size():
+				idle_ids.append(id)
+		var push_all: bool = idle * 2 >= bb["wave"].size()
+		if push_all or (not idle_ids.is_empty() and _every("t_idle_push", 200)):
+			# idle part of a strung-out wave (reinforcements still walking up) must not just
+			# stand there: it pushes on alone, otherwise a won game can stall into a draw
 			var t2 := _pick_target()
 			if seconds() > 600 and not _knows_enemy_structure():
 				var hp2 := _hunt_points()
@@ -662,7 +667,7 @@ func _army() -> void:
 				bb["hunt_i"] = hi2 + 1
 				t2 = hp2[hi2 % hp2.size()]
 			if t2.x >= 0:
-				cmd({"t": "amove", "ids": bb["wave"].duplicate(), "pos": t2})
+				cmd({"t": "amove", "ids": bb["wave"].duplicate() if push_all else idle_ids, "pos": t2})
 		if _every("t_reinforce", 200) and army_value(staged) >= (1200 if seconds() > 960 else 2500):
 			var rein: Array = []
 			for u: SimEntity in staged:
