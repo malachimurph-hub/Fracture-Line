@@ -43,6 +43,7 @@ static func build(only: Array) -> void:
 		"us_dozer": func() -> void: _dozer(),
 		"us_supply_truck": func() -> void: _supply_truck(),
 	}
+	jobs.merge(load("res://tools/gfx_m7/eu_tp_m7.gd").jobs())
 	for k in jobs:
 		if all or k in only:
 			jobs[k].call()
@@ -51,7 +52,7 @@ static func build(only: Array) -> void:
 		f.store_line("WROTE " + p)
 
 # ------------------------------------------------------------------ building assembly
-static func _make(short: String, fp: Vector2, top: float, hull_fn: Callable, turret_fn: Callable = Callable(), tpos := Vector3.ZERO) -> void:
+static func _make(short: String, fp: Vector2, top: float, hull_fn: Callable, turret_fn: Callable = Callable(), tpos := Vector3.ZERO, fac := "us", found_fn: Callable = Callable()) -> void:
 	var mat: Material = load(VK.MAT_PATH)
 	var root := Node3D.new()
 	root.name = "View"
@@ -64,7 +65,10 @@ static func _make(short: String, fp: Vector2, top: float, hull_fn: Callable, tur
 	root.set("scaffold_top", top * 0.8)
 	var model := VK._n3(root, root, "Model")
 	var f = K.new()
-	_foundation(f, fp)
+	if found_fn.is_valid():
+		found_fn.call(f, fp)
+	else:
+		_foundation(f, fp)
 	VK._mi(model, root, "Foundation", f.commit(mat))
 	var h = K.new()
 	hull_fn.call(h)
@@ -76,13 +80,14 @@ static func _make(short: String, fp: Vector2, top: float, hull_fn: Callable, tur
 		turret_fn.call(t)
 		VK._mi(pv, root, "Turret", t.commit(mat))
 		parts.append(t)
+	var tp := fac == "tpla"
 	var s = B4._scaffold(fp, top * 0.8)
 	VK._mi(model, root, "Scaffold", s.commit(mat)).visible = false
-	var l = B4._damage_light(fp, false)
+	var l = B4._damage_light(fp, tp)
 	VK._mi(model, root, "DamageLight", l.commit(mat)).visible = false
-	var hv = B4._damage_heavy(fp, top, false)
+	var hv = B4._damage_heavy(fp, top, tp)
 	VK._mi(model, root, "DamageHeavy", hv.commit(mat)).visible = false
-	var rb = B4._rubble(fp, false)
+	var rb = B4._rubble(fp, tp)
 	VK._mi(model, root, "Rubble", rb.commit(mat)).visible = false
 	var hx := fp.x * 0.3
 	var hz := fp.y * 0.3
@@ -94,8 +99,8 @@ static func _make(short: String, fp: Vector2, top: float, hull_fn: Callable, tur
 		model.add_child(mk)
 		mk.owner = root
 		i += 1
-	print("  us_%s: hull %d + foundation %d%s tris (LOD0)" % [short, h.tris, f.tris, (" + turret %d" % parts[2].tris) if parts.size() > 2 else ""])
-	var path := "res://view/buildings/us/%s.tscn" % short
+	print("  %s_%s: hull %d + foundation %d%s tris (LOD0)" % [fac, short, h.tris, f.tris, (" + turret %d" % parts[2].tris) if parts.size() > 2 else ""])
+	var path := "res://view/buildings/%s/%s.tscn" % [fac, short]
 	VK._save(root, path, top + 0.15)
 	wrote.append(path)
 

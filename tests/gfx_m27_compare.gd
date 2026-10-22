@@ -34,6 +34,8 @@ func _ready() -> void:
 			"eu": await bld_grid("eu", EU_B, "eu_buildings"); await veh_row("eu", EU_V, "eu_vehicles")
 			"tpla": await bld_grid("tpla", TP_B, "tpla_buildings"); await veh_row("tpla", TP_V, "tpla_vehicles")
 			"bench": await bench()
+			"eu_bclose": await bld_close("eu", ["reactor", "motor_pool", "hub"], "eu_buildings_close")
+			"tpla_bclose": await bld_close("tpla", ["chop_shop", "stash", "den"], "tpla_buildings_close")
 			"us_close": await close_row("us", ["halberd", "lynx", "picket", "longreach"], "us_vehicles_close")
 			"eu_close": await close_row("eu", ["leopold", "wolfhound", "flakwerk", "salamander"], "eu_vehicles_close")
 			"tpla_close": await close_row("tpla", ["rattler", "scrapback", "hailstorm", "junkhammer"], "tpla_vehicles_close")
@@ -122,6 +124,13 @@ func bld_grid(f: String, list: Array, name: String) -> void:
 		var p := Vector3((i % cols - (cols - 1) * 0.5) * 5.6, 0, (i / cols) * 6.0 - 3.0)
 		_place("res://view/buildings/%s/%s.tscn" % [f, list[i]], p, -20.0, _team(f))
 	await _cam(Vector3(0, 17, 17), Vector3(0, 0, 0.6), 40)
+	await _shot("%s_%s" % [prefix, name])
+
+func bld_close(f: String, list: Array, name: String) -> void:
+	await _world()
+	for i in list.size():
+		_place("res://view/buildings/%s/%s.tscn" % [f, list[i]], Vector3((i - (list.size() - 1) * 0.5) * 5.0, 0, 0), -20.0, _team(f))
+	await _cam(Vector3(0, 7.5, 9.0), Vector3(0, 0.4, 0), 50)
 	await _shot("%s_%s" % [prefix, name])
 
 func veh_row(f: String, list: Array, name: String) -> void:
