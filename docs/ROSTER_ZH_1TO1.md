@@ -34,9 +34,9 @@ Tier key: T0 base, T1 basic production, T2 needs a T1 production building, T3 ne
 |---|---|---|---|---|---|---|
 | Dozer | **Construction Crawler** | Builder | 1000 / 10 / T0 | HQ | Armoured builder | exists |
 | Supply Truck | **Harvester Rig** | Gatherer | 800 / 10 / T0 | Logistics Hub | Free MG turret, 400 per load | exists |
-| Battlemaster | **Leopold MBT** | Main battle tank | 1000 / 14 / T2 | Heavy Factory | Turret 75°/s | exists |
+| Battlemaster | **Leopold MBT** | Main battle tank | 1000 / 12 / T2 | Heavy Factory | Turret 75°/s | exists |
 | Overlord | **Brennus Siege Tank** | Super-heavy tank | 1800 / 18 / T3 | Heavy Factory + Signals Center | Twin cannon (2-round clip), slow, very tough. Bolt-on add-ons [STUB] | added |
-| Gattling Tank | **Flakwerk AA** | Anti-air / anti-infantry | 800 / 10 / T2 | Motor Pool | Flak bursts | exists |
+| Gattling Tank | **Flakwerk AA** | Anti-air / anti-infantry | 800 / 12 / T2 | Motor Pool | Flak bursts | exists |
 | Dragon Tank | **Salamander Flame Tank** | Anti-infantry / anti-garrison | 900 / 12 / T2 | Motor Pool | Short-range flame. New `flame` damage type (strong vs infantry, weak vs armour) | added |
 | Troop Crawler | **Wolfhound IFV** | APC / raider | 750 / 10 / T2 | Motor Pool | Autocannon. Carries 4 infantry (load / unload is real from M2.4; was a stub) | exists (transport added) |
 | Nuke Cannon | **Thunderhead Howitzer** | Long-range heavy artillery | 1600 / 16 / T3 | Heavy Factory + Signals Center | 14-tile range, 4-tile minimum, 1.5 s set-up before firing, big splash with scatter | added |
@@ -45,7 +45,7 @@ Tier key: T0 base, T1 basic production, T2 needs a T1 production building, T3 ne
 | Listening Outpost | **Sentinel Outpost** | Detector / scout | 800 / 10 / T2 | Motor Pool | Detector: reveals stealthed units and structures in sight (12). Carries 2 infantry | added |
 | Helix (helicopter) | **Kestrel Lift Helo** | Air transport / gunship | 1500 / 15 / T3 | Airstrip | No air layer yet | stub |
 | MiG (jet) | **Corvid Strike Jet** | Air strike | 1500 / 15 / T3 | Airstrip | No air layer yet | stub |
-| (no ZH equivalent) | **Aegis Shield Carrier** | Mobile shield | 1200 / 14 / T2 | Heavy Factory | Area shield aura | exists (EU extra) |
+| (no ZH equivalent) | **Aegis Shield Carrier** | Mobile shield | 1200 / 15 / T2 | Heavy Factory | Area shield aura | exists (EU extra) |
 
 ### Structures
 | ZH role (reference) | FRACTURE LINE | Role | Cost / build s / tier | Prereqs | Special | Status |
@@ -79,16 +79,16 @@ Tier key: T0 base, T1 basic production, T2 needs a T1 production building, T3 ne
 ### Vehicles
 | ZH role (reference) | FRACTURE LINE | Role | Cost / build s / tier | Prereqs (built at) | Special | Status |
 |---|---|---|---|---|---|---|
-| Worker (infantry) | **Laborer** | Builder / gatherer | 150 / 5 / T0 | Den / Stash | On foot | exists |
-| Technical | **Rattler Technical** | Raider | 400 / 7 / T1 | Chop Shop | Salvage tiers 1–3 | exists |
-| Scorpion Tank | **Scrapback Tank** | Light tank | 650 / 10 / T1 | Chop Shop | Second gun at tier 2 | exists |
+| Worker (infantry) | **Laborer** | Builder / gatherer | 200 / 5 / T0 | Den / Stash | On foot | exists |
+| Technical | **Rattler Technical** | Raider | 500 / 6 / T1 | Chop Shop | Salvage tiers 1–3 | exists |
+| Scorpion Tank | **Scrapback Tank** | Light tank | 650 / 9 / T1 | Chop Shop | Second gun at tier 2 | exists |
 | Marauder Tank | **Junkhammer Tank** | Heavy salvage tank | 900 / 12 / T2 | Chop Shop + Workshop | Heavy cannon, salvage tiers | added |
 | Quad Cannon | **Hailstorm AA** | AA / anti-infantry | 700 / 9 / T1 | Chop Shop | Quad guns (12-round clip) | exists |
-| Rocket Buggy | **Shrike Rocket Buggy** | Hit-and-run artillery | 600 / 9 / T1 | Chop Shop | Rocket salvos | exists |
+| Rocket Buggy | **Shrike Rocket Buggy** | Hit-and-run artillery | 800 / 9 / T2 | Chop Shop + Workshop | Rocket salvos | exists |
 | Toxin Tractor | **Rot Sprayer** | Anti-infantry / area denial | 600 / 9 / T1 | Chop Shop | Short-range corrosive spray, leaves rust zones | added |
-| SCUD Launcher | **Blight Mortar** | Long-range artillery | 900 / 12 / T2 | Chop Shop | Corrosive shells | exists |
+| SCUD Launcher | **Blight Mortar** | Long-range artillery | 900 / 11 / T2 | Chop Shop + Workshop | Corrosive shells | exists |
 | Radar Van | **Earwig Van** | Detector / scout | 500 / 8 / T1 | Chop Shop | Detector, 14-tile sight. Radar scan [STUB] | added |
-| Bomb Truck | **Mule Bomb Truck** | Suicide | 500 / 8 / T1 | Chop Shop | Detonates on target. Disguise [STUB] | exists |
+| Bomb Truck | **Mule Bomb Truck** | Suicide | 600 / 8 / T2 | Chop Shop + Workshop | Detonates on target. Disguise [STUB] | exists |
 | Combat Cycle | **Jackal Bike** | Fast scout / raider | 350 / 5 / T1 | Chop Shop | Fastest unit, light MG. Rider swap [STUB] | added |
 | Battle Bus | **Rust Bus** | Transport | 800 / 10 / T2 | Chop Shop + Workshop | Carries 8 infantry. Becomes a bunker when destroyed [STUB] | added |
 
