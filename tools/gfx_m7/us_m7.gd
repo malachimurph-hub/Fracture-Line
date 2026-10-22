@@ -43,7 +43,9 @@ static func build(only: Array) -> void:
 		"us_dozer": func() -> void: _dozer(),
 		"us_supply_truck": func() -> void: _supply_truck(),
 	}
-	jobs.merge(load("res://tools/gfx_m7/eu_tp_m7.gd").jobs())
+	var et = load("res://tools/gfx_m7/eu_tp_m7.gd")
+	jobs.merge(et.jobs())
+	jobs.merge(et.vjobs())
 	for k in jobs:
 		if all or k in only:
 			jobs[k].call()
@@ -747,14 +749,14 @@ static func _drop_zone(g) -> void:
 	_floodlight(g, Vector3(-1.3, Y0, 1.25), 0.9, 135)
 
 # ================================================================== vehicles
-static func _vfinish(root: Node3D, model: Node3D, h, mat: Material, name: String, extra: Array, bar: float) -> void:
+static func _vfinish(root: Node3D, model: Node3D, h, mat: Material, name: String, extra: Array, bar: float, fac := "us") -> void:
 	var hull := VK._mi(model, root, "Hull", h.commit(mat))
 	hull.set_meta("moves", true)
 	var t := 0
 	for g in [h] + extra:
 		t += g.tris
-	print("  us_%s: %d tris (LOD0) in %d meshes" % [name, t, 1 + extra.size()])
-	var path := "res://view/units/us/%s.tscn" % name
+	print("  %s_%s: %d tris (LOD0) in %d meshes" % [fac, name, t, 1 + extra.size()])
+	var path := "res://view/units/%s/%s.tscn" % [fac, name]
 	VK._save(root, path, bar)
 	wrote.append(path)
 
