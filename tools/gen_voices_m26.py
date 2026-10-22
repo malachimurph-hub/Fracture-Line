@@ -66,22 +66,33 @@ def roughen(a, sr, amt, seed):
 def words(s):
     return re.findall(r"[a-z']+", s.lower().replace("-", " "))
 
+def _heard(wm, x, pad_s):
+    pad = np.zeros(int(16000 * pad_s), np.float32)   # short one-word clips: Whisper needs some context
+    segs, _ = wm.transcribe(np.concatenate([pad, x, pad]), language="en", beam_size=2, condition_on_previous_text=False)
+    return " ".join(s.text for s in segs).strip()
+
 def score(wm, path, text):
     raw = subprocess.run(["ffmpeg", "-v", "quiet", "-i", path, "-f", "f32le", "-ac", "1", "-ar", "16000", "-"], capture_output=True).stdout
     x = np.frombuffer(raw, np.float32)
-    pad = np.zeros(6400, np.float32)       # short one-word clips: Whisper needs some context
-    segs, _ = wm.transcribe(np.concatenate([pad, x, pad]), language="en", beam_size=2, condition_on_previous_text=False)
-    heard = " ".join(x.text for x in segs).strip()
-    got = set(words(heard))
     norm = lambda w: w.rstrip("'").replace("'em", "them")
-    got |= {norm(w) for w in got}
     want = [norm(w) for w in words(text) if w not in SHOUTS]
-    def hit(w):
-        if w in got or w.replace("in'", "ing") in got:
-            return True
-        # invented unit names (Halberd, Leopold, Rattler...): accept a close phonetic spelling
-        return len(w) >= 5 and any(difflib.SequenceMatcher(None, w, g).ratio() >= 0.7 for g in got)
-    return sum(1 for w in want if hit(w)) / max(1, len(want)), heard
+    def sc_of(heard):
+        got = set(words(heard))
+        got |= {norm(w) for w in got}
+        def hit(w):
+            if w in got or w.replace("in'", "ing") in got:
+                return True
+            # invented unit names (Halberd, Leopold, Rattler...): accept a close phonetic spelling
+            return len(w) >= 5 and any(difflib.SequenceMatcher(None, w, g).ratio() >= 0.7 for g in got)
+        return sum(1 for w in want if hit(w)) / max(1, len(want))
+    heard = _heard(wm, x, 0.4)
+    sc = sc_of(heard)
+    if sc < THR and len(x) < 16000 * 1.8:   # Whisper is erratic on ~1 s barks: second listen with more context
+        h2 = _heard(wm, x, 1.2)
+        s2 = sc_of(h2)
+        if s2 > sc:
+            sc, heard = s2, h2
+    return sc, heard
 
 def render(job):
     fac, uid, rel, ev, n, text, stem, dst, actor, lang, radio_on, rstyle = job
