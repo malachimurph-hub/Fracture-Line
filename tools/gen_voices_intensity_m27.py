@@ -177,7 +177,7 @@ def render(job):
             sc, heard = g.score(wm, cand, text)
             extra = len(g.words(heard)) - nw
             bad_len = dur > 0.9 + 0.45 * nw or extra >= 2          # babble / long tail
-            eff = sc - (0.3 if bad_len else 0.2 if extra >= 1 else 0)
+            eff = sc - (0.3 if bad_len else 0.25 if extra >= 1 else 0)
             lid = None
             if fac == "tpla":     # accent drift guard: Whisper language-ID must not lean Russian
                 x = subprocess.run(["ffmpeg", "-v", "quiet", "-i", cand, "-f", "f32le", "-ac", "1", "-ar", "16000", "-"], capture_output=True).stdout
@@ -234,8 +234,10 @@ def main(argv):
         REP = os.path.join(out, "qa_intensity.json")
     evs = arg("--event"); evs = evs.split(",") if evs else None
     rep = {r["file"]: r for r in (json.load(open(REP)) if os.path.exists(REP) else [])}
+    def weak(r):        # under the word-match bar, or extra babble words heard (long tail)
+        return r["qa"] < THR or len(g.words(r["heard"])) > len(g.words(r["text"]))
     js = [j for j in jobs(arg("--only"), arg("--unit"), out, evs)
-          if "--force" in argv or os.path.relpath(j[7], ROOT) not in rep or ("--retake" in argv and rep[os.path.relpath(j[7], ROOT)]["qa"] < THR)]
+          if "--force" in argv or os.path.relpath(j[7], ROOT) not in rep or ("--retake" in argv and weak(rep[os.path.relpath(j[7], ROOT)]))]
     # warm the prompt cache in this process (Kokoro), so workers don't race on it
     for j in js:
         if j[1] != "tpla_militia":
