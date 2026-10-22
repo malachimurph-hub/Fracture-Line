@@ -55,17 +55,28 @@ git -C /workspace/mobile-rts/project merge assets-m26     # merge-tree check: me
 - **Cast reels:** `builds/m2_6/voice_samples/cast_{eu,us,tpla}.mp3`, one line per unit back to back. The contents are listed in `cast_reels.txt`.
 
 ### Voice generation status
-In progress (generation still running in the background; re-run the generator to resume): 73/520 lines regenerated (EU 22/135, US 0/224, TPLA 51/161). Mean Whisper word-match 0.63; 41 line(s) still under 0.8 after all retakes:
+In progress (generation still running in the background; re-run the generator to resume): 171/520 lines regenerated (EU 32/135, US 52/224, TPLA 87/161). Mean Whisper word-match 0.73; 66 line(s) still under 0.8 after all retakes:
 
+- `audio/voice_ai/eu/aegis/select_1.ogg` "Aegis online.": QA 0.00, heard ""
+- `audio/voice_ai/eu/aegis/select_3.ogg` "Grid link stable.": QA 0.00, heard ""
+- `audio/voice_ai/eu/aegis/select_4.ogg` "Projector standing by.": QA 0.00, heard "I'm sorry, but I  I'm sorry, but I'm sorry, but I  I'm sorry, but I am"
 - `audio/voice_ai/eu/crawler/select_1.ogg` "Crawler here.": QA 0.50, heard "Call her here!"
+- `audio/voice_ai/eu/flakwerk/select_1.ogg` "Flakwerk.": QA 0.00, heard ""
+- `audio/voice_ai/eu/flakwerk/select_4.ogg` "Radar's clean.": QA 0.50, heard "Radosk.  Clean."
 - `audio/voice_ai/eu/grenadier/select_1.ogg` "Squad ready.": QA 0.00, heard ""
 - `audio/voice_ai/eu/grenadier/select_2.ogg` "Grenadiers.": QA 0.00, heard "G'hainna Diaz"
 - `audio/voice_ai/eu/harvester/select_1.ogg` "Hauler here.": QA 0.50, heard "here."
 - `audio/voice_ai/eu/harvester/select_2.ogg` "Supply run?": QA 0.00, heard ""
 - `audio/voice_ai/eu/lancer/select_2.ogg` "Tube's loaded.": QA 0.50, heard "to you, too-  to you loaded"
 - `audio/voice_ai/eu/lancer/select_3.ogg` "Show me armour.": QA 0.67, heard "Show me."
+- `audio/voice_ai/eu/leopold/select_1.ogg` "Leopold.": QA 0.00, heard ""
 - `audio/voice_ai/eu/wolfhound/select_1.ogg` "Wolfhound.": QA 0.00, heard ""
 - `audio/voice_ai/eu/wolfhound/select_2.ogg` "Recon ready.": QA 0.50, heard "Already"
+- `audio/voice_ai/announcer_tpla/battle_start_1.ogg` "The network is live.": QA 0.50, heard "The network T."
+- `audio/voice_ai/tpla/blight/select_2.ogg` "Canisters ready.": QA 0.00, heard ""
+- `audio/voice_ai/tpla/hailstorm/attack_3.ogg` "Shred that plane!": QA 0.67, heard "Shred that blame."
+- `audio/voice_ai/tpla/hailstorm/select_3.ogg` "Four barrels, ready.": QA 0.00, heard ""
+- `audio/voice_ai/tpla/hailstorm/veteran_1.ogg` "Tighter bursts now.": QA 0.33, heard "First, now-"
 - `audio/voice_ai/tpla/laborer/build_1.ogg` "We'll knock it together.": QA 0.75, heard "We'll knock it."
 - `audio/voice_ai/tpla/laborer/build_2.ogg` "Scrap and sweat, coming up.": QA 0.00, heard ""
 - `audio/voice_ai/tpla/laborer/build_3.ogg` "I'll build it.": QA 0.00, heard ""
@@ -79,6 +90,8 @@ In progress (generation still running in the background; re-run the generator to
 - `audio/voice_ai/tpla/laborer/select_3.ogg` "Laborer here.": QA 0.00, heard ""
 - `audio/voice_ai/tpla/laborer/under_fire_1.ogg` "They're shooting at the workers!": QA 0.60, heard "They are shooting Tatda workers."
 - `audio/voice_ai/tpla/laborer/under_fire_2.ogg` "Cover! We're just diggers!": QA 0.00, heard ""
+- `audio/voice_ai/tpla/mule/select_1.ogg` "Mule.": QA 0.00, heard ""
+- `audio/voice_ai/tpla/mule/select_2.ogg` "Careful with the cargo.": QA 0.75, heard "with the cargo"
 - `audio/voice_ai/tpla/rattler/attack_1.ogg` "Spray them!": QA 0.00, heard ""
 - `audio/voice_ai/tpla/rattler/attack_2.ogg` "Gunner, open up!": QA 0.67, heard "Gunner open ups."
 - `audio/voice_ai/tpla/rattler/attack_3.ogg` "Shoot as we pass!": QA 0.00, heard ""
@@ -98,6 +111,18 @@ In progress (generation still running in the background; re-run the generator to
 - `audio/voice_ai/tpla/rocket_cell/select_4.ogg` "Loaded.": QA 0.00, heard ""
 - `audio/voice_ai/tpla/rocket_cell/under_fire_1.ogg` "We're spotted!": QA 0.00, heard ""
 - `audio/voice_ai/tpla/rocket_cell/under_fire_2.ogg` "Rocket team pinned down!": QA 0.75, heard "Rocket team pin down."
+- `audio/voice_ai/tpla/scrapback/select_1.ogg` "Scrapback.": QA 0.00, heard "Scrubbog"
+- `audio/voice_ai/tpla/scrapback/select_2.ogg` "Patched and ready.": QA 0.33, heard "Stand ready."
+- `audio/voice_ai/tpla/scrapback/select_3.ogg` "Armour, such as it is.": QA 0.40, heard "or choose, it is."
+- `audio/voice_ai/tpla/shrike/select_2.ogg` "Racks loaded.": QA 0.50, heard "Rex loaded"
+- `audio/voice_ai/tpla/shrike/select_3.ogg` "Fast and light.": QA 0.33, heard "incident light"
+- `audio/voice_ai/tpla/shrike/select_4.ogg` "Ready to sting.": QA 0.00, heard ""
+- `audio/voice_ai/us/dozer/select_1.ogg` "Dozer here.": QA 0.50, heard "Those are here."
+- `audio/voice_ai/us/grunt/select_2.ogg` "Ready to go.": QA 0.67, heard "Ready to"
+- `audio/voice_ai/us/javelin/select_4.ogg` "We've got tubes.": QA 0.33, heard "We've"
+- `audio/voice_ai/us/lynx/select_1.ogg` "Lynx ready.": QA 0.50, heard "Links ready the"
+- `audio/voice_ai/us/sniper/select_3.ogg` "In position.": QA 0.50, heard "in possession"
+- `audio/voice_ai/us/supply_truck/select_1.ogg` "Supply truck.": QA 0.00, heard "..."
 
 Lines not yet regenerated keep their M2.5 audio, which still works in game. Short invented-name barks ("Hauler here.") are the usual low scorers; listen before re-recording.
 
