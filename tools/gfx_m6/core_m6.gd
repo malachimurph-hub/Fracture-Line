@@ -508,15 +508,15 @@ static func _eu_factory(g) -> void:
 	g.bbox(Vector3(0, Y0 + 0.35, -0.4), Vector3(3.4, 0.7, 2.6), 0.03)   # plinth walls
 	g.color("#6d7266", Geo.CORR)
 	g.box(Vector3(0, Y0 + 1.2, -0.4), Vector3(3.3, 1.0, 2.5))
-	# sawtooth roof: 5 teeth along x
-	for i in 5:
-		var x0 := -1.65 + i * 0.66
-		g.color("#5d6257", Geo.CORR)
-		g.prism_x([Vector2(-1.65, Y0 + 1.7), Vector2(0.85, Y0 + 1.7), Vector2(-1.65, Y0 + 2.2)], x0, x0 + 0.66)
+	# sawtooth roof: 5 teeth running along x, glazing on the (back) vertical faces
+	g.color("#7b8073", Geo.CORR)
+	g.box(Vector3(0, Y0 + 1.72, -0.4), Vector3(3.3, 0.04, 2.5))
+	for j in 5:
+		var z0 := -1.65 + j * 0.5
+		g.color("#737a6c", Geo.CORR)
+		g.prism_x([Vector2(z0, Y0 + 1.74), Vector2(z0 + 0.5, Y0 + 1.74), Vector2(z0 + 0.02, Y0 + 2.08)], -1.62, 1.62)
 		g.color(GLASS, Geo.GLASS)
-		g.box(Vector3(x0 + 0.33, Y0 + 1.95, -1.66), Vector3(0.62, 0.48, 0.015))
-		g.color(EU_S, Geo.STEEL)
-		g.box(Vector3(x0 + 0.005, Y0 + 1.95, -0.4), Vector3(0.03, 0.03, 2.5))
+		g.box(Vector3(0, Y0 + 1.9, z0 + 0.012), Vector3(3.1, 0.26, 0.012))
 	g.color(EU_S, Geo.STEEL)   # frame columns
 	for x in [-1.66, -0.55, 0.55, 1.66]:
 		g.box(Vector3(x, Y0 + 1.0, 0.86), Vector3(0.08, 1.4, 0.08))
