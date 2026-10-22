@@ -581,7 +581,7 @@ func serialize() -> Dictionary:
 		"players": pd, "ents": ed, "next_id": next_id, "options": options.duplicate(), "fog": fog.to_dict(),
 		"winner_team": winner_team, "game_over": game_over, "temp_vision": temp_vision.duplicate(true),
 		"pending": pending.duplicate(true), "zones": zones.duplicate(true), "pending_holes": pending_holes.duplicate(true),
-		"has_tpla": has_tpla, "hash": state_hash()}
+		"has_tpla": has_tpla, "path_queue": path_queue.duplicate(), "hash": state_hash()}
 
 func deserialize(d: Dictionary) -> void:
 	var map_def: MapDef = Content.maps.get(StringName(d["map_id"]))
@@ -618,5 +618,12 @@ func deserialize(d: Dictionary) -> void:
 	for id in ids:
 		var e: SimEntity = ents[id]
 		e.path_pending = false
+	# pending path requests are part of the state (PATH_BUDGET defers them across ticks);
+	# dropping them on load made loaded games diverge from the original (M2.1 fix)
+	for qid in d.get("path_queue", []):
+		var qe: SimEntity = ents.get(int(qid))
+		if qe != null and not qe.path_pending:
+			qe.path_pending = true
+			path_queue.append(qe.id)
 	PowerSys.recompute_grid(self)
 	rebuild_spatial()
