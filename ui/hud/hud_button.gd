@@ -160,8 +160,16 @@ func _sub_margin() -> float:
 
 ## M2.1 (smaller buttons): a queued [STUB] item has no room for price + badge + tag on one
 ## line, so while it is queued the price yields to the tag (it is still in the tooltip).
+## M2.4: the same happens on a narrow card when the price and the tag together are wider than
+## the button (four-digit prices on the Airstrip's two stubbed aircraft).
 func _hide_sub_text() -> bool:
-	return stub and badge != "" and sub != ""
+	if not stub or sub == "":
+		return false
+	if badge != "":
+		return true
+	var f := get_theme_default_font()
+	var need := f.get_string_size(sub, HORIZONTAL_ALIGNMENT_LEFT, -1, _sub_font()).x + f.get_string_size("[STUB]", HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x + 3.0
+	return need > size.x - _sub_margin() * 2 + 0.5
 
 func _draw() -> void:
 	var f := get_theme_default_font()
