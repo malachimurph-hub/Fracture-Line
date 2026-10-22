@@ -271,8 +271,14 @@ func run_fight() -> void:
 	var best := -1
 	var n := 0
 	var shots_taken := 0
-	for f in 600:
+	# software rendering runs at ~1 frame/s, which would let a 0.2 s shell flight start and land
+	# between two frames; once the guns open up, slow game time (sim and view alike) so a frame
+	# is ~1/30 s of battle, like on the phone
+	for f in 420:
 		await get_tree().process_frame
+		if Engine.time_scale == 1.0 and int(wfx.stats["fired"]) > 0:
+			Engine.time_scale = clampf(0.033 / maxf(0.033, get_process_delta_time()), 0.01, 1.0)
+			print("FIREFIGHT engaged at frame %d, time_scale %.3f" % [f, Engine.time_scale])
 		var c := wfx.count_class(["cannon", "artillery"])
 		var r := wfx.count_class(["rocket", "missile", "salvo"])
 		var t := wfx.count_class(["rifle", "mg", "quad", "autocannon"])
@@ -285,6 +291,7 @@ func run_fight() -> void:
 			if score >= 18 or shots_taken >= 4:
 				break
 		n = f
+	Engine.time_scale = 1.0
 	check("firefight shot caught shells, rockets and tracers in flight", best > 0, best)
 	_look(o + Vector2i(6, 7), 1)
 	await frames(30)
