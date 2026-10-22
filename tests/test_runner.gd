@@ -84,6 +84,8 @@ func _ready() -> void:
 			test_roster()
 		"m24":
 			test_m24()
+		"m25":
+			test_m25()
 		"viewcost":
 			view_cost()
 		"stall":
@@ -1697,3 +1699,228 @@ func view_cost() -> void:
 	rows.sort_custom(func(a, b): return a[0] > b[0])
 	for row in rows:
 		print("VIEWCOST %-22s surfaces=%3d tris=%6d multimesh=%d" % [row[2], row[0], row[1], row[3]])
+
+
+# ================================================================== M2.5
+func test_m25() -> void:
+	_m25_supply()
+	_m25_maps()
+	_m25_minimap()
+	_m25_us_content()
+	_m25_air()
+	_m25_sniper_jtac()
+
+func _m25_supply() -> void:
+	var md: MapDef = Content.maps.get(&"varno_crossing")
+	var seam_min := 1 << 30
+	var cache_min := 1 << 30
+	for r in md.resources:
+		if String(r["kind"]) == "seam":
+			seam_min = mini(seam_min, int(r["amount"]))
+		else:
+			cache_min = mini(cache_min, int(r["amount"]))
+	# M2.4 piles: seams 15000-20000, caches 3000-4000 -> doubled in M2.5
+	_check(seam_min >= 30000 and cache_min >= 6000, "supply piles hold ~2x (smallest seam %d, smallest pile %d)" % [seam_min, cache_min])
+
+func _m25_maps() -> void:
+	for mid in ["varno_crossing", "kessel_pass", "harrow_junction"]:
+		var md: MapDef = Content.maps.get(StringName(mid))
+		_check(md != null, "map %s loads" % mid)
+		if md == null:
+			continue
+		var garr := 0
+		var pumps := 0
+		for n in md.neutrals:
+			var bd: BuildingDef = Content.building(StringName(n["kind"]))
+			if bd != null and bd.garrison_capacity > 0:
+				garr += 1
+			if bd != null and bd.capturable:
+				pumps += 1
+		_check(md.spawns.size() == 4 and md.resources.size() >= 12 and garr >= 10 and pumps >= 2,
+			"map %s: 4 spawns, %d supply piles, %d garrisonable buildings, %d derricks, env %s" % [mid, md.resources.size(), garr, pumps, md.env])
+		var r := MatchRunner.new()
+		r.record_replay = false
+		var cfg := make_cfg("ffa", 5, [], ["us", "eu", "tpla", "us"])
+		cfg["map"] = mid
+		r.start(cfg)
+		_ticks(r, 600)
+		var hqs := 0
+		for pl in r.sim.players.size():
+			if r.sim.count_owned(pl, Content.faction(r.sim.players[pl].faction)["hq"]) > 0:
+				hqs += 1
+		_check(hqs == 4 and not r.sim.game_over, "map %s: 4-player match (US/EU/TPLA/US) runs 30 s, %d HQs standing" % [mid, hqs])
+	_check(SkirmishConfig.map_ids().size() >= 3, "lobby lists %d maps" % SkirmishConfig.map_ids().size())
+
+func _m25_minimap() -> void:
+	var r := MatchRunner.new()
+	r.record_replay = false
+	r.start(make_cfg("1v1", 7, [], ["eu", "tpla"]))
+	r.ais.clear()
+	_ticks(r, 8)
+	var w := r.sim
+	var team: int = w.players[0].team
+	var far: SimEntity = null
+	var n_res := 0
+	for id in w.ids:
+		var e: SimEntity = w.ents[id]
+		if e.kind == SimEntity.Kind.RESOURCE:
+			n_res += 1
+			if not w.fog.visible_tile(team, e.tile) and (far == null or FX.dist2(e.pos, w.ents[w.ids[0]].pos) > FX.dist2(far.pos, w.ents[w.ids[0]].pos)):
+				far = e
+	var known := {}
+	var shown := 0
+	for id in w.ids:
+		var e2: SimEntity = w.ents[id]
+		if e2.kind == SimEntity.Kind.RESOURCE and Minimap.known_fraction(w, team, e2, known) > 0.0:
+			shown += 1
+	_check(shown == n_res and n_res > 0, "minimap shows every supply pile from the start (%d / %d)" % [shown, n_res])
+	if far != null:
+		far.amount = 0
+		_check(Minimap.known_fraction(w, team, far, known) == 1.0, "a pile emptied under the shroud keeps its last-seen icon")
+		w.fog.disabled = true
+		_check(Minimap.known_fraction(w, team, far, known) == 0.0, "once seen empty, the pile's icon is removed")
+
+func _us_runner(seed: int) -> MatchRunner:
+	var r := MatchRunner.new()
+	r.record_replay = false
+	r.start(make_cfg("1v1", seed, [], ["us", "eu"]))
+	r.ais.clear()
+	r.sim.fog.disabled = true
+	return r
+
+func _m25_us_content() -> void:
+	var f: Dictionary = Content.faction(&"us")
+	_check(Content.FACTIONS.has(&"us") and f["hq"] == &"us_command", "United States is a playable faction")
+	for id in f["units"]:
+		var d: UnitDef = Content.unit(id)
+		_check(d != null and ResourceLoader.exists(d.view_scene) and tr(d.name_key) != d.name_key and Content.producer_of(id) != &"", "US unit %s: def, model, name '%s', producer" % [id, tr(d.name_key) if d else "?"])
+	for id in f["buildings"]:
+		var b: BuildingDef = Content.building(id)
+		_check(b != null and ResourceLoader.exists(b.view_scene) and tr(b.name_key) != b.name_key, "US structure %s: def, model, name '%s'" % [id, tr(b.name_key) if b else "?"])
+	_check(Content.unit(&"us_thunderlance").air_slots == 4 and Content.unit(&"us_wraith").air_slots == 2 and Content.unit(&"us_harrier").air_slots == 0 and Content.building(&"us_airfield").air_slots == 6,
+		"airfield slots: bomber 4, fighter 2, gunship 0, airfield 6")
+	var g: int = Content.weapon(&"us_m16").damage
+	_check(Content.weapon(&"us_m4").damage * 100 / g >= 135 and Content.unit(&"us_jtac").max_hp * 100 / Content.unit(&"us_grunt").max_hp >= 135 and Content.unit(&"us_jtac").sight > Content.unit(&"us_grunt").sight,
+		"JTAC: 35% stronger than a Grunt, wider sight")
+
+func _m25_air() -> void:
+	var r := _us_runner(51)
+	var w := r.sim
+	var c := _zh_open(w, 7)
+	_tpla_place(w, 0, &"us_reactor", c + Vector2i(8, -8))
+	_tpla_place(w, 0, &"us_reactor", c + Vector2i(-8, -8))
+	_tpla_place(w, 0, &"us_barracks", c + Vector2i(8, 8))
+	_tpla_place(w, 0, &"us_garage", c + Vector2i(-8, 8))
+	var af := _tpla_place(w, 0, &"us_airfield", c)
+	_tpla_place(w, 0, &"us_strategy", c + Vector2i(0, -8))
+	w.power_dirty = true
+	for def in ["us_thunderlance", "us_wraith", "us_wraith"]:
+		r.issue({"p": 0, "t": "queue", "target": af.id, "def": def, "n": 1})
+	_ticks(r, 1150)
+	var jets: Array = []
+	for id in w.ids:
+		var u: SimEntity = w.ents[id]
+		if u.alive and u.kind == SimEntity.Kind.UNIT and Content.unit(u.def_id).air_slots > 0:
+			jets.append(u)
+	var parked := 0
+	for j: SimEntity in jets:
+		if j.air_state == AirSys.PARKED and j.air_home == af.id:
+			parked += 1
+	_check(jets.size() == 2 and parked == 2 and AirSys.slots_used(w, af) == 6, "bomber (4) + fighter (2) fill the 6 slots, parked on the pad (%d jets, %d slots)" % [jets.size(), AirSys.slots_used(w, af)])
+	_check(af.queue.size() == 1 and af.hold_reason == "REASON_AIRFIELD_FULL", "a third jet waits: airfield full (%s)" % af.hold_reason)
+	var bomber: SimEntity = null
+	var fighter: SimEntity = null
+	for j: SimEntity in jets:
+		if j.def_id == &"us_thunderlance":
+			bomber = j
+		else:
+			fighter = j
+	if bomber == null or fighter == null:
+		_check(false, "jets built")
+		return
+	# ground units cannot shoot at flying aircraft; AA can
+	var tank := w.spawn_unit(&"eu_leopold", 1, null, FX.tile_center(c + Vector2i(0, 22)))
+	var flak := w.spawn_unit(&"eu_flakwerk", 1, null, FX.tile_center(c + Vector2i(30, 30)))
+	var hp0 := tank.hp
+	r.issue({"p": 0, "t": "attack", "ids": [bomber.id], "target": tank.id})
+	var took_off := false
+	var dropped := false
+	for i in 500:
+		r.advance()
+		if bomber.air_state == AirSys.FLYING and not took_off:
+			took_off = true
+			_check(not OrderSys.valid_target(w, tank, bomber) and OrderSys.valid_target(w, flak, bomber), "flying bomber: the tank's cannon cannot target it, the flak gun can")
+		if tank.hp < hp0 and not dropped:
+			dropped = true
+		if dropped and bomber.air_state == AirSys.PARKED:
+			break
+	_check(took_off and dropped, "bomber takes off and drops its strike on the tank (hp %d -> %d)" % [hp0, tank.hp])
+	_check(bomber.air_state == AirSys.PARKED and bomber.air_t > 0, "after one strike the bomber flies home, lands and rearms (%d ticks left)" % bomber.air_t)
+	_check(OrderSys.valid_target(w, tank, bomber), "a parked aircraft is a ground target")
+	# save / load mid-rearm keeps the air state
+	var snap := w.serialize()
+	var w2 := SimWorld.new()
+	w2.deserialize(snap)
+	var b2 := w2.get_ent(bomber.id)
+	_check(w2.state_hash() == w.state_hash() and b2.air_state == AirSys.PARKED and b2.air_t == bomber.air_t and b2.air_home == af.id, "save/load keeps airfield, parking and rearm state")
+	# fighter shoots down an enemy helicopter
+	var heli := w.spawn_unit(&"us_harrier", 1, null, FX.tile_center(c + Vector2i(-20, 6)))
+	r.issue({"p": 0, "t": "attack", "ids": [fighter.id], "target": heli.id})
+	_ticks(r, 400)
+	_check(not heli.alive, "fighter missiles shoot down a gunship")
+	# gunship hovers at its destination and never lands
+	var g2 := w.spawn_unit(&"us_harrier", 0, null, FX.tile_center(c + Vector2i(-6, -12)))
+	var dest := FX.tile_center(c + Vector2i(6, -12))
+	r.issue({"p": 0, "t": "move", "ids": [g2.id], "pos": dest})
+	_ticks(r, 200)
+	var p1 := g2.pos
+	_ticks(r, 40)
+	_check(FX.dist(g2.pos, dest) < FX.ONE and g2.pos == p1 and g2.air_state == AirSys.FLYING, "gunship flies straight over terrain and hovers at its destination")
+
+func _m25_sniper_jtac() -> void:
+	var r := _us_runner(53)
+	var w := r.sim
+	var c := _zh_open(w, 7)
+	var sn := w.spawn_unit(&"us_sniper", 0, null, FX.tile_center(c))
+	sn.pos = FX.tile_center(c)
+	_ticks(r, 60)
+	_check(sn.stealthy and not w.fog.is_visible_ent(w, w.players[1].team, sn), "Scout Sniper is invisible to the enemy while standing still")
+	var gren := w.spawn_unit(&"eu_grenadier", 1, null, FX.tile_center(c + Vector2i(0, 7)))
+	gren.pos = FX.tile_center(c + Vector2i(0, 7))
+	gren.orders = [{"o": "guard", "pos": gren.pos}]
+	var hits := 0
+	for i in 120:
+		var hp_before := gren.hp
+		r.advance()
+		if gren.hp < hp_before or not gren.alive:
+			hits += 1
+		if not gren.alive:
+			break
+	_check(not gren.alive and hits == 1, "sniper kills an infantry soldier with one shot (%d hit)" % hits)
+	_check(sn.stealthy, "and stays hidden while firing from a standstill")
+	r.issue({"p": 0, "t": "move", "ids": [sn.id], "pos": FX.tile_center(c + Vector2i(0, -4))})
+	_ticks(r, 6)
+	_check(not sn.stealthy, "moving reveals the sniper")
+	var vs_tank := Content.weapon(&"us_sniper_rifle").damage * Content.combat.mult(&"sniper", &"heavy") / 100
+	_check(vs_tank < 10, "sniper rifle is useless against tanks (%d dmg)" % vs_tank)
+	# JTAC: call-in and boost aura
+	var tank := w.spawn_unit(&"eu_leopold", 1, null, FX.tile_center(c + Vector2i(3, 14)))
+	tank.orders = [{"o": "guard", "pos": tank.pos}]
+	var jt := w.spawn_unit(&"us_jtac", 0, null, FX.tile_center(c + Vector2i(3, 9)))
+	jt.orders = [{"o": "guard", "pos": jt.pos}]
+	var heli := w.spawn_unit(&"us_harrier", 0, null, FX.tile_center(c + Vector2i(-10, -10)))
+	var called := false
+	for i in 80:
+		r.advance()
+		if not heli.orders.is_empty() and int(heli.orders[0].get("target", 0)) == tank.id:
+			called = true
+			break
+	_check(called, "JTAC calls the idle gunship onto his target")
+	var how := w.spawn_unit(&"us_longreach", 0, null, FX.tile_center(c + Vector2i(-12, 0)))
+	var gr := w.spawn_unit(&"us_grunt", 0, null, FX.tile_center(c + Vector2i(-12, 2)))
+	_check(AirSys.boost_pct(w, how, tank.pos) == 125 and AirSys.boost_pct(w, heli, tank.pos) == 125 and AirSys.boost_pct(w, gr, tank.pos) == 100,
+		"JTAC boosts artillery and aircraft near him (+25%), not rifles")
+	var n0 := w.count_owned(0, &"us_grunt")
+	w.players[0].powers["us_paradrop"] = {"ready": w.tick}
+	PowersSys.fire(w, 0, &"us_paradrop", FX.tile_center(c + Vector2i(-8, -6)))
+	_check(w.count_owned(0, &"us_grunt") == n0 + 5, "Paradrop lands five Marine Grunts")

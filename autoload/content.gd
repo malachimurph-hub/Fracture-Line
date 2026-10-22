@@ -157,7 +157,7 @@ func is_building(id) -> bool:
 	return buildings.has(StringName(id))
 
 func producer_of(unit_id) -> StringName:
-	for bid in BUILDING_ORDER + TPLA_BUILDING_ORDER:
+	for bid in BUILDING_ORDER + TPLA_BUILDING_ORDER + US_BUILDING_ORDER:
 		var b: BuildingDef = buildings[bid]
 		if b.produces.has(String(unit_id)):
 			return bid

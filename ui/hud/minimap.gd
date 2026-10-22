@@ -132,12 +132,16 @@ func _draw() -> void:
 
 ## Last-seen fill level of a resource for the local player (1.0 until scouted).
 func supply_fraction(e: SimEntity) -> float:
-	var sim := world.sim
-	var seen := world.local_team < 0 or sim.fog.disabled or sim.fog.visible_tile(world.local_team, e.tile) \
-		or sim.fog.visible_tile(world.local_team, FX.to_tile(e.pos))
+	return known_fraction(world.sim, world.local_team, e, res_known)
+
+## Shroud-respecting fill level (static so tests can check it without a view): a pile's level
+## updates only while the team can see it; until then the icon shows the start value.
+static func known_fraction(sim: SimWorld, team: int, e: SimEntity, known: Dictionary) -> float:
+	var seen := team < 0 or sim.fog.disabled or sim.fog.visible_tile(team, e.tile) \
+		or sim.fog.visible_tile(team, FX.to_tile(e.pos))
 	if seen:
-		res_known[e.id] = float(e.amount) / float(maxi(1, e.max_amount))
-	return res_known.get(e.id, 1.0)
+		known[e.id] = float(e.amount) / float(maxi(1, e.max_amount))
+	return known.get(e.id, 1.0)
 
 func _draw_supply(k: Vector2) -> void:
 	var sim := world.sim

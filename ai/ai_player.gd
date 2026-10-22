@@ -34,6 +34,21 @@ func init(runner: MatchRunner, p_id: int, diff: String, personality: StringName)
 func to_dict() -> Dictionary:
 	return {"pid": pid, "difficulty": difficulty, "persona": persona.id, "faction": String(faction()), "bb": bb.duplicate(true)}
 
+## Structure / unit ids per role for the power-economy build planner (EU; AIUs overrides).
+## "" = the faction has no such structure.
+func roles() -> Dictionary:
+	return {"builder": &"eu_crawler", "harvester": &"eu_harvester", "refinery": &"eu_hub", "power": &"eu_reactor",
+		"bunker": &"eu_gun_bunker", "barracks": &"eu_barracks", "heavy": &"eu_heavy_factory", "motor": &"eu_motor_pool",
+		"tech": &"eu_signals", "support": &"eu_relay", "aa_tower": &"eu_flak_tower", "income": &"eu_exchange",
+		"mine": &"eu_minefield", "pylon": &"eu_pylon"}
+
+var R: Dictionary:
+	get:
+		if _roles.is_empty():
+			_roles = roles()
+		return _roles
+var _roles: Dictionary = {}
+
 ## Faction this AI plays (subclasses such as AITpla override the faction-specific layers).
 func faction() -> StringName:
 	return w.faction_of(pid)
@@ -42,6 +57,8 @@ func faction() -> StringName:
 static func create(fac: StringName) -> AIPlayer:
 	if fac == &"tpla":
 		return AITpla.new()
+	if fac == &"us":
+		return AIUs.new()
 	return AIPlayer.new()
 
 func from_dict(runner: MatchRunner, d: Dictionary) -> void:
@@ -155,8 +172,8 @@ func _economy() -> void:
 		elif d.tags.has("harvester"):
 			harvesters.append(u)
 	var want_crawlers: int = cfg["crawlers"] if seconds() > 180 else 1
-	if h != null and crawlers.size() < want_crawlers and h.queue.is_empty() and p.supply >= Content.unit(&"eu_crawler").cost:
-		cmd({"t": "queue", "target": h.id, "def": "eu_crawler", "n": 1})
+	if h != null and crawlers.size() < want_crawlers and h.queue.is_empty() and p.supply >= Content.unit(R["builder"]).cost:
+		cmd({"t": "queue", "target": h.id, "def": String(R["builder"]), "n": 1})
 	var hubs: Array = []
 	for b: SimEntity in my_ents(SimEntity.Kind.BUILDING):
 		if b.built and w.bdef(b).is_refinery:
@@ -165,9 +182,9 @@ func _economy() -> void:
 	var queued := 0
 	for hb: SimEntity in hubs:
 		queued += hb.queue.size()
-	if harvesters.size() + queued < want_h and not hubs.is_empty() and p.supply >= Content.unit(&"eu_harvester").cost:
+	if harvesters.size() + queued < want_h and not hubs.is_empty() and p.supply >= Content.unit(R["harvester"]).cost:
 		# queue at the hub with the fewest harvesters nearby
-		cmd({"t": "queue", "target": hubs[(w.tick / 40) % hubs.size()].id, "def": "eu_harvester", "n": 1})
+		cmd({"t": "queue", "target": hubs[(w.tick / 40) % hubs.size()].id, "def": String(R["harvester"]), "n": 1})
 	# idle / parked harvesters go back to work; harvesters under attack flee to the nearest hub
 	for hv: SimEntity in harvesters:
 		if hv.is_idle():
@@ -200,40 +217,44 @@ func _next_building() -> StringName:
 		var id := StringName(item)
 		desired[id] = desired.get(id, 0) + 1
 		if counts.get(id, 0) < desired[id]:
-			if id == &"eu_hub" and desired[id] >= 2 and seconds() < cfg["expand_s"]:
+			if id == R["refinery"] and desired[id] >= 2 and seconds() < cfg["expand_s"]:
 				continue
-			if id == &"eu_gun_bunker" and desired[id] > cfg["bunkers"]:
+			if id == R["bunker"] and desired[id] > cfg["bunkers"]:
 				continue
 			return id
 	# dynamic: power headroom
 	var p := me()
 	if p.power_prod - p.power_used < 3:
-		return &"eu_reactor"
-	if counts.get(&"eu_gun_bunker", 0) < cfg["bunkers"]:
-		return &"eu_gun_bunker"
-	if seconds() > cfg["expand_s"] + 240 and counts.get(&"eu_hub", 0) < (3 if difficulty == "hard" else 2):
-		return &"eu_hub"
+		return R["power"]
+	if counts.get(R["bunker"], 0) < cfg["bunkers"]:
+		return R["bunker"]
+	if seconds() > cfg["expand_s"] + 240 and counts.get(R["refinery"], 0) < (3 if difficulty == "hard" else 2):
+		return R["refinery"]
 	# mid-game base growth (ZH AI keeps adding production and defenses)
-	if seconds() > 420 and counts.get(&"eu_barracks", 0) < 2 and p.supply > 1000:
-		return &"eu_barracks"
-	if seconds() > 540 and counts.get(&"eu_heavy_factory", 0) < 2 and p.supply > 2000:
-		return &"eu_heavy_factory"
-	if seconds() > 660 and difficulty != "easy" and counts.get(&"eu_gun_bunker", 0) < int(cfg["bunkers"]) + 2 and p.supply > 1200:
-		return &"eu_gun_bunker"
-	if seconds() > 780 and counts.get(&"eu_motor_pool", 0) < 2 and p.supply > 1500:
-		return &"eu_motor_pool"
+	if seconds() > 420 and counts.get(R["barracks"], 0) < 2 and p.supply > 1000:
+		return R["barracks"]
+	if seconds() > 540 and counts.get(R["heavy"], 0) < 2 and p.supply > 2000:
+		return R["heavy"]
+	if seconds() > 660 and difficulty != "easy" and counts.get(R["bunker"], 0) < int(cfg["bunkers"]) + 2 and p.supply > 1200:
+		return R["bunker"]
+	if seconds() > 780 and counts.get(R["motor"], 0) < 2 and p.supply > 1500:
+		return R["motor"]
 	# M2.4 tech and support structures (ZH China-style: tech centre, repair, income, AA, mines)
-	if seconds() > 480 and counts.get(&"eu_heavy_factory", 0) >= 1 and counts.get(&"eu_signals", 0) < 1 and p.supply > 1700:
-		return &"eu_signals"
-	if counts.get(&"eu_signals", 0) >= 1 and counts.get(&"eu_relay", 0) < 1 and p.supply > 800:
-		return &"eu_relay"
-	if seconds() > 600 and difficulty != "easy" and counts.get(&"eu_flak_tower", 0) < 1 and p.supply > 1200:
-		return &"eu_flak_tower"
-	if counts.get(&"eu_signals", 0) >= 1 and counts.get(&"eu_exchange", 0) < 1 and p.supply > 2600:
-		return &"eu_exchange"
-	if seconds() > 540 and difficulty != "easy" and counts.get(&"eu_minefield", 0) < (4 if difficulty == "hard" else 2) and p.supply > 600:
-		return &"eu_minefield"
+	if seconds() > 480 and counts.get(R["heavy"], 0) >= 1 and counts.get(R["tech"], 0) < 1 and p.supply > 1700:
+		return R["tech"]
+	if _has_role("support") and counts.get(R["tech"], 0) >= 1 and counts.get(R["support"], 0) < 1 and p.supply > 800:
+		return R["support"]
+	if seconds() > 600 and difficulty != "easy" and _has_role("aa_tower") and counts.get(R["aa_tower"], 0) < 1 and p.supply > 1200:
+		return R["aa_tower"]
+	if _has_role("income") and counts.get(R["tech"], 0) >= 1 and counts.get(R["income"], 0) < 1 and p.supply > 2600:
+		return R["income"]
+	if seconds() > 540 and difficulty != "easy" and _has_role("mine") and counts.get(R["mine"], 0) < (4 if difficulty == "hard" else 2) and p.supply > 600:
+		return R["mine"]
 	return &""
+
+## Dynamic build pick for a role; "" when the faction lacks that structure.
+func _has_role(k: String) -> bool:
+	return R.get(k, &"") != &""
 
 ## Units allowed to take build orders (EU: every Crawler; TPLA: the reserved Laborers).
 func _builders() -> Array:
@@ -291,20 +312,19 @@ func _rot_toward(t: Vector2i, p: Vector2i) -> int:
 
 func _toward_for(id: StringName) -> Vector2i:
 	var base := base_pos()
-	match id:
-		&"eu_hub":
-			var n := w.count_owned(pid, &"eu_hub")
+	if id == R["refinery"]:
+			var n := w.count_owned(pid, id)
 			if n == 0:
 				var res := EconSys.nearest_resource(w, base, 30)
 				return res.pos if res != null else base
 			var er := _pick_expansion()
 			return er.pos if er != null else base
-		&"eu_reactor":
+	if id == R["power"]:
 			return base + (base - map_center()) / 8
-		&"eu_gun_bunker":
+	if id == R["bunker"]:
 			# ZH AI fortifies its expansions: every other bunker after the first two goes to the
 			# newest remote Supply Hub, facing the map centre.
-			var nb := w.count_owned(pid, &"eu_gun_bunker")
+			var nb := w.count_owned(pid, id)
 			if nb >= 2 and nb % 2 == 0:
 				var far: SimEntity = null
 				for b: SimEntity in my_ents(SimEntity.Kind.BUILDING):
@@ -313,11 +333,11 @@ func _toward_for(id: StringName) -> Vector2i:
 				if far != null:
 					return far.pos + (map_center() - far.pos) / 10
 			return base + (map_center() - base) * 3 / 10
-		&"eu_flak_tower", &"eu_minefield":
+	if id == R["aa_tower"] or id == R["mine"]:
 			# forward, on the road toward the map centre (mines spread a little by count)
 			var nm := w.count_owned(pid, id)
 			return base + (map_center() - base) * (28 + 6 * (nm % 3)) / 100
-		&"eu_pylon":
+	if id == R["pylon"]:
 			# pylons only extend the Grid shield now; keep them among the base buildings
 			return base + (map_center() - base) / 5
 	return base + (map_center() - base) / 6
@@ -378,7 +398,7 @@ static func _offsets() -> Array:
 	return _spot_offs
 
 func _margin_for(id: StringName) -> int:
-	return 0 if id == &"eu_pylon" else 1
+	return 0 if id == R["pylon"] else 1
 
 ## Incremental placement search spread over several thinks: returns a tile, SPOT_PENDING
 ## while still searching (state in bb["fs"]), or (-1,-1) when nothing fits.
@@ -457,6 +477,7 @@ func _production() -> void:
 			cmd({"t": "rally", "ids": [b.id], "pos": staging, "flag": false})
 		if b.queue.size() > cfg["prod_gap"]:
 			continue
+		_cur_b = b
 		var pick := _pick_unit(bd)
 		if pick == &"":
 			continue
@@ -464,6 +485,12 @@ func _production() -> void:
 		if p.supply - cost >= reserve or p.supply > 6000:
 			if p.pop + Content.unit(pick).pop <= p.pop_cap:
 				cmd({"t": "queue", "target": b.id, "def": String(pick), "n": 1})
+
+var _cur_b: SimEntity = null   ## producer being filled by _production (for _unit_allowed)
+
+## Faction hook: may this unit be queued at _cur_b right now (e.g. US airfield slots)?
+func _unit_allowed(_ud: UnitDef) -> bool:
+	return true
 
 func _pick_unit(bd: BuildingDef) -> StringName:
 	# counter-aware weights: more anti-tank if we see enemy armor, more grenadiers vs infantry
@@ -492,10 +519,12 @@ func _pick_unit(bd: BuildingDef) -> StringName:
 			wgt *= 2
 		if uid == "eu_aegis" and have_aegis >= 1 + combat_units().size() / 10:
 			wgt = 0
-		if uid == "eu_flakwerk" and enemy_inf < 4:
+		if ud.tags.has("aa") and _enemy_air_seen() > 0:
+			wgt *= 4   # M2.5: enemy aircraft spotted - build anti-air
+		elif uid == "eu_flakwerk" and enemy_inf < 4:
 			wgt /= 3
 		# M2.4: support units (detector / jammer / artillery) in small numbers; [STUB] never
-		if ud.tags.has("stub"):
+		if ud.tags.has("stub") or ud.tags.has("builder") or ud.tags.has("harvester") or not _unit_allowed(ud):
 			wgt = 0
 		elif (ud.tags.has("detector") or ud.tags.has("jammer")) and _count_type(StringName(uid)) >= 1 + combat_units().size() / 12:
 			wgt = 0
@@ -513,6 +542,19 @@ func _pick_unit(bd: BuildingDef) -> StringName:
 		if roll < 0:
 			return StringName(uid)
 	return StringName(bd.produces[0])
+
+## Enemy aircraft currently visible, or seen in the last 3 minutes (M2.5 air layer).
+func _enemy_air_seen() -> int:
+	if _every("t_air_scan", 40):
+		var n := 0
+		for id in w.ids:
+			var e: SimEntity = w.ents[id]
+			if e.alive and e.kind == SimEntity.Kind.UNIT and w.enemies(me().team, e.team) and w.is_air(e) and w.fog.is_visible_ent(w, me().team, e):
+				n += 1
+		if n > 0:
+			bb["air_seen_tick"] = w.tick
+		bb["air_seen"] = n if n > 0 else (1 if w.tick - int(bb.get("air_seen_tick", -100000)) < 3600 else 0)
+	return int(bb.get("air_seen", 0))
 
 func _count_type(def_id: StringName) -> int:
 	var n := 0
