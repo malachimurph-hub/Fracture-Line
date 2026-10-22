@@ -1064,6 +1064,7 @@ func _zh_move_ticks(r: MatchRunner, u: SimEntity, dest: Vector2i, limit: int = 4
 func test_zh() -> void:
 	_zh_loco()
 	_zh_weapons()
+	_zh_scatter()
 
 func _zh_loco() -> void:
 	var r := _zh_runner()
@@ -1161,3 +1162,34 @@ func _zh_weapons() -> void:
 		gaps.append(int(hmg[i]) - int(hmg[i - 1]))
 	print("  rattler shot gaps %s" % [gaps])
 	_check(gaps.size() >= 10 and gaps.count(FX.ms_to_ticks(200)) >= 7 and gaps.max() >= FX.ms_to_ticks(1400), "HMG clip: bursts of quick shots with a reload pause")
+
+## Hit rate of `wd` from u against a fresh dummy of `tdef` (direct hits deal the full damage).
+func _zh_hit_rate(w: SimWorld, u: SimEntity, tdef: String, wid: String, n: int) -> int:
+	var wd: WeaponDef = Content.weapon(StringName(wid))
+	var t := w.spawn_unit(StringName(tdef), 1, null, u.pos + Vector2i(0, FX.ONE * 4))
+	t.pos = u.pos + Vector2i(0, FX.ONE * 4)
+	var full := wd.damage * Content.combat.mult(wd.damage_type, w.udef(t).armor_type) / 100
+	var hits := 0
+	for i in n:
+		t.max_hp = 1000000
+		t.hp = 1000000
+		t.shield = 0
+		CombatSys.fire(w, u, t, wd, 100)
+		if 1000000 - t.hp >= full:
+			hits += 1
+	t.hp = 0
+	return hits * 100 / n
+
+func _zh_scatter() -> void:
+	var r := _zh_runner(41)
+	var w := r.sim
+	var c := _zh_open(w, 7)
+	var u := w.spawn_unit(&"eu_leopold", 0, null, FX.tile_center(c))
+	var vs_veh := _zh_hit_rate(w, u, "eu_crawler", "eu_tank_cannon", 200)
+	var vs_inf := _zh_hit_rate(w, u, "tpla_laborer", "eu_tank_cannon", 200)
+	var rifle := _zh_hit_rate(w, u, "tpla_laborer", "eu_rifle", 200)
+	var arty := _zh_hit_rate(w, u, "eu_crawler", "tpla_rust_shell", 200)
+	print("  direct-hit rate: tank cannon vs vehicle %d%%, vs infantry %d%%; rifle vs infantry %d%%; rust shell vs vehicle %d%%" % [vs_veh, vs_inf, rifle, arty])
+	_check(vs_veh == 100 and rifle == 100, "accurate weapons always hit")
+	_check(vs_inf >= 20 and vs_inf <= 70, "tank cannon often misses infantry (%d%%)" % vs_inf)
+	_check(arty < 100, "artillery scatters (%d%%)" % arty)

@@ -166,20 +166,37 @@ static func explode(w: SimWorld, src: SimEntity, center: Vector2i, wd: WeaponDef
 
 static func fire(w: SimWorld, src: SimEntity, t: SimEntity, wd: WeaponDef, dmg_pct: int) -> void:
 	src.firing_tick = w.tick
-	w.events.append({"t": "fire", "id": src.id, "to": t.pos, "tid": t.id, "vfx": wd.vfx})
-	var armor := _armor_of(w, t)
-	var dmg := wd.damage * Content.combat.mult(wd.damage_type, armor) / 100 * dmg_pct / 100
-	w.damage(t, maxi(1, dmg), src)
+	var impact := t.pos
+	var hit := true
+	var sc := scatter_of(w, t, wd)
+	if sc > 0:
+		# radius uniform in [0, sc] (more shots land near the aim point), random bearing
+		var rr := w.rng.range_int(sc + 1)
+		var hv := FX.dir_of(w.rng.range_int(FX.ANG))
+		impact = t.pos + Vector2i(hv.x * rr / FX.ONE, hv.y * rr / FX.ONE)
+		hit = rr <= t.radius
+	w.events.append({"t": "fire", "id": src.id, "to": impact, "tid": t.id, "vfx": wd.vfx, "miss": not hit})
+	if hit:
+		var armor := _armor_of(w, t)
+		var dmg := wd.damage * Content.combat.mult(wd.damage_type, armor) / 100 * dmg_pct / 100
+		w.damage(t, maxi(1, dmg), src)
 	if wd.damage_type == &"corrosive":
-		TplaSys.add_zone(w, t.pos, maxi(FX.ONE, FX.mt_to_fx(wd.splash_mt)), 120, wd.damage * dmg_pct / 100, src.owner, src.team)
+		TplaSys.add_zone(w, impact, maxi(FX.ONE, FX.mt_to_fx(wd.splash_mt)), 120, wd.damage * dmg_pct / 100, src.owner, src.team)
 	if wd.splash_mt > 0:
 		var r := FX.mt_to_fx(wd.splash_mt)
-		for o: SimEntity in w.units_in_radius(t.pos, r):
-			if o.id == t.id or not w.enemies(src.team, o.team) or o.res_id < 0:
+		for o: SimEntity in w.units_in_radius(impact, r):
+			if (hit and o.id == t.id) or not w.enemies(src.team, o.team) or o.res_id < 0:
 				continue
-			var frac := 100 - 50 * FX.dist(o.pos, t.pos) / maxi(1, r)
+			var frac := 100 - 50 * FX.dist(o.pos, impact) / maxi(1, r)
 			var sd := wd.damage * Content.combat.mult(wd.damage_type, _armor_of(w, o)) / 100 * frac / 100 * dmg_pct / 100
 			w.damage(o, sd, src)
+
+## Scatter radius in fx for this shot: base scatter plus extra against infantry.
+static func scatter_of(w: SimWorld, t: SimEntity, wd: WeaponDef) -> int:
+	var sc := wd.scatter_mt
+	if wd.scatter_inf_mt > 0 and t.kind == SimEntity.Kind.UNIT and w.udef(t).tags.has("infantry"):
+		sc += wd.scatter_inf_mt
+	return FX.mt_to_fx(sc) if sc > 0 else 0
 
 static func _armor_of(w: SimWorld, t: SimEntity) -> StringName:
 	if t.kind == SimEntity.Kind.UNIT:
