@@ -252,6 +252,7 @@ POWER_BLACKOUT_DESC,[STUB] Not implemented yet.
 CREDITS_BODY,"FRACTURE LINE — Milestone 2 (skirmish: EU Alliance and TPLA).
 Design, code, procedural 3D models, weathering, decals, shaders, effects, UI and text: original work made for Malachi Murphy with Grok Bot.
 Textures: ambientCG (ambientcg.com), CC0 1.0 public domain — Ground097, Ground109, Grass004, Rock063, Asphalt033, Gravel035, Concrete034, CorrugatedSteel005, Rust004.
+Soldier models and animations: Quaternius, ""Toon Shooter Game Kit"" (quaternius.com), CC0 1.0 public domain — recoloured per faction, decimated and baked to vertex animation.
 Sound effects and music (""Dust Over Varno"", ""Steel Rain""): original, synthesized for this game.
 Voices: AI-generated with the Kokoro-82M speech model (hexgrad, Apache-2.0) via kokoro-onnx (MIT); phonemes by eSpeak NG (GPL-3.0 build tool, only audio ships). Your own recordings in audio/voice replace them.
 Inspired by the classic base-building RTS genre; no names, art, audio or text from any other game are used.
