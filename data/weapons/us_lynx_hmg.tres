@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_s")
 id = &"us_lynx_hmg"
-damage = 12
+damage = 10
 range_mt = 5500
 min_range_mt = 0
 cooldown_ms = 220
