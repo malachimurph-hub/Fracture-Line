@@ -15,7 +15,11 @@ var hud: Hud
 var overlay: WorldOverlay
 var acc: float = 0.0
 var paused: bool = false
-var _menu_pause: bool = false
+## M2.6: pause reasons ("user" = pause button, "menu" = pause menu, "app" = Android sent the app
+## to the background). paused = any reason. Resume in the pause menu clears every reason, so the
+## game can never be left paused with no visible way out (M2.5 bug: closing and reopening the app
+## while the pause menu was open left the game stuck on "Paused").
+var _pause_reasons: Dictionary = {}
 var speed: float = 1.0
 var avg_tick_ms: float = 0.0
 var avg_view_ms: float = 0.0   ## WorldView.frame cost (interpolation, fog, VFX emitters)
@@ -199,15 +203,36 @@ func build_result(won: bool) -> Dictionary:
 
 func set_paused(p: bool, from_menu: bool = false) -> void:
 	if from_menu:
-		if p and not paused:
-			_menu_pause = true
-			paused = true
-		elif not p and _menu_pause:
-			_menu_pause = false
-			paused = false
+		if p:
+			_pause_reasons["menu"] = true
+		else:
+			_pause_reasons.clear()      # Resume: always back to a running game
+	else:
+		if p:
+			_pause_reasons["user"] = true
+		else:
+			_pause_reasons.clear()
+	paused = not _pause_reasons.is_empty()
+
+## Android pause / focus loss: save, then pause behind the pause menu so that reopening the app
+## shows the menu with a working Resume (instead of a bare "Paused" label).
+func app_backgrounded() -> void:
+	if runner == null:
 		return
-	paused = p
-	_menu_pause = false
+	autosave()
+	if runner.sim.game_over:
+		return
+	_pause_reasons["app"] = true
+	paused = true
+	if hud != null:
+		hud.show_pause_menu()
+
+## Back in the foreground: stay paused behind the menu (the player taps Resume), but make sure the
+## menu really is up and the frame clock does not try to catch up on the time spent away.
+func app_foregrounded() -> void:
+	acc = 0.0
+	if paused and hud != null:
+		hud.show_pause_menu()
 
 func cycle_speed() -> void:
 	var sp := [1.0, 1.5, 2.0, 0.5]
@@ -236,11 +261,14 @@ func autosave() -> void:
 
 func _notification(what: int) -> void:
 	match what:
-		NOTIFICATION_APPLICATION_PAUSED, NOTIFICATION_APPLICATION_FOCUS_OUT:
+		NOTIFICATION_APPLICATION_PAUSED:
+			app_backgrounded()
+		NOTIFICATION_APPLICATION_FOCUS_OUT:
 			if runner != null:
 				autosave()
-				if what == NOTIFICATION_APPLICATION_PAUSED:
-					set_paused(true)
+		NOTIFICATION_APPLICATION_RESUMED, NOTIFICATION_APPLICATION_FOCUS_IN:
+			if runner != null:
+				app_foregrounded()
 		NOTIFICATION_WM_CLOSE_REQUEST:
 			if runner != null:
 				autosave()

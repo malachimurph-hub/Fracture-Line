@@ -934,6 +934,12 @@ func _fill_tray() -> void:
 func toggle_pause() -> void:
 	m.set_paused(not m.paused)
 
+func show_pause_menu() -> void:
+	if not pause_menu.visible:
+		toggle_pause_menu()
+	else:
+		m.set_paused(true, true)
+
 func toggle_pause_menu() -> void:
 	pause_menu.visible = not pause_menu.visible
 	if pause_menu.visible:
