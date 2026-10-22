@@ -70,7 +70,7 @@ def score(wm, path, text):
     raw = subprocess.run(["ffmpeg", "-v", "quiet", "-i", path, "-f", "f32le", "-ac", "1", "-ar", "16000", "-"], capture_output=True).stdout
     x = np.frombuffer(raw, np.float32)
     pad = np.zeros(6400, np.float32)       # short one-word clips: Whisper needs some context
-    segs, _ = wm.transcribe(np.concatenate([pad, x, pad]), language="en", beam_size=5)
+    segs, _ = wm.transcribe(np.concatenate([pad, x, pad]), language="en", beam_size=2, condition_on_previous_text=False)
     heard = " ".join(x.text for x in segs).strip()
     got = set(words(heard))
     norm = lambda w: w.rstrip("'").replace("'em", "them")
@@ -89,9 +89,11 @@ def render(job):
     h = int(hashlib.md5(stem.encode()).hexdigest()[:6], 16)
     dst_ = dst
     est, espd, erough = vc.EVENT_MOD.get(ev, (0, 1, 0)) if uid != "announcer" else (0, 1, 0)
-    ladder = [(actor["s"], 1.0), (actor["s"], 0.93), (actor["s"] * 0.55, 0.97), (actor["s"] * 0.25, 0.92), (0.0, 0.95)]
+    ladder = [(actor["s"], 1.0), (actor["s"] * 0.55, 0.95), (0.0, 0.93), (0.0, 0.84)]
     if fac == "tpla":
-        ladder = [(actor["acc"], 1.0), (actor["acc"], 0.92), ("ar" if actor["acc"] == "me" else "me", 0.95), ("none", 0.95)]
+        ladder = [(actor["acc"], 1.0), ("ar" if actor["acc"] == "me" else "me", 0.94), ("none", 0.95), ("none", 0.84)]
+    if len(words(text)) <= 3:      # short barks: never rush them, Whisper (and players) lose them
+        espd = min(espd, 1.0)
     best = (-1, None, "", None)
     with tempfile.TemporaryDirectory() as td:
         for i, (s_or_kind, sm) in enumerate(ladder):
@@ -103,7 +105,8 @@ def render(job):
                 ph = phon(k, text, fac, actor["acc"], s_or_kind, lang)
             a, sr = k.create(ph, voice=style(k, actor["v"]), speed=float(min(1.35, spd)), is_phonemes=True)
             a = np.asarray(a, np.float32)
-            a = roughen(a, sr, actor.get("rough", 0) + erough, h + i)
+            last = i == len(ladder) - 1      # last rung: slower, clean, light FX
+            a = roughen(a, sr, 0 if last else actor.get("rough", 0) + erough, h + i)
             pad = np.zeros(int(sr * 0.08), np.float32)
             w0 = os.path.join(td, f"{i}_a.wav"); sf.write(w0, np.concatenate([pad, a, pad]), sr)
             st = actor["st"] + est + ((h >> 3) % 5 - 2) * 0.1
@@ -114,7 +117,8 @@ def render(job):
                 subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", w0, "-af",
                                 f"rubberband=pitch={2 ** (st / 12):.5f}:formant={fm}:pitchq=quality", src], check=True)
             cand = os.path.join(td, f"{i}.ogg")
-            iv.process(src, cand, radio_on, rstyle, pre=vc.FX[actor["fx"]], lufs=actor.get("lufs", -16.0))
+            iv.process(src, cand, radio_on, rstyle, pre=vc.FX["grit" if last and actor["fx"] in ("shout", "mask", "bullhorn") else actor["fx"]],
+                       lufs=actor.get("lufs", -16.0))
             sc, heard = score(wm, cand, text)
             if sc > best[0]:
                 best = (sc, cand, heard, i)
@@ -155,14 +159,19 @@ def main(argv):
     force = "--force" in argv
     rep_p = os.path.join(ROOT, "tools", "voice_qa_m26.json")
     rep = {r["file"]: r for r in (json.load(open(rep_p)) if os.path.exists(rep_p) else [])}
-    js = [j for j in jobs(only, unit, out) if force or os.path.relpath(j[7], ROOT) not in rep]
+    event = argv[argv.index("--event") + 1] if "--event" in argv else None
+    retake = "--retake" in argv     # re-render lines that stayed under the threshold
+    js = [j for j in jobs(only, unit, out) if (event is None or j[3] in event.split(",")) and (force or os.path.relpath(j[7], ROOT) not in rep
+          or (retake and rep[os.path.relpath(j[7], ROOT)]["qa"] < THR))]
     print("lines to render:", len(js), flush=True)
-    with ProcessPoolExecutor(nj) as ex:
-        for i, r in enumerate(ex.map(render, js, chunksize=4)):
+    import multiprocessing as mp
+    with mp.get_context("spawn").Pool(nj, maxtasksperchild=25) as pool:   # recycle workers: onnx RSS creeps
+        for r in pool.imap_unordered(render, js):
             rep[r["file"]] = r
             print("%-48s %.2f t%d %r" % (r["file"], r["qa"], r["take"], r["heard"]), flush=True)
-            if i % 20 == 19:
-                json.dump(sorted(rep.values(), key=lambda x: x["file"]), open(rep_p, "w"), indent=0)
+            tmp = rep_p + ".tmp"     # save every line: an OOM kill must not lose finished work
+            json.dump(sorted(rep.values(), key=lambda x: x["file"]), open(tmp, "w"), indent=0)
+            os.replace(tmp, rep_p)
     json.dump(sorted(rep.values(), key=lambda x: x["file"]), open(rep_p, "w"), indent=0)
     sc = [r["qa"] for r in rep.values()]
     print("QA: %d lines, mean %.2f, under %.1f: %d" % (len(sc), sum(sc) / max(1, len(sc)), THR, sum(1 for x in sc if x < THR)))
