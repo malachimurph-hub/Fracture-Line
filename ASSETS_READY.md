@@ -55,7 +55,7 @@ git -C /workspace/mobile-rts/project merge assets-m26     # merge-tree check: me
 - **Cast reels:** `builds/m2_6/voice_samples/cast_{eu,us,tpla}.mp3`, one line per unit back to back. The contents are listed in `cast_reels.txt`.
 
 ### Voice generation status
-In progress (generation still running in the background; re-run the generator to resume): 258/520 lines regenerated (EU 32/135, US 65/224, TPLA 161/161). Mean Whisper word-match 0.76; 93 line(s) still under 0.8 after all retakes:
+In progress (generation still running in the background; re-run the generator to resume): 404/520 lines regenerated (EU 32/135, US 211/224, TPLA 161/161). Mean Whisper word-match 0.82; 111 line(s) still under 0.8 after all retakes:
 
 - `audio/voice_ai/eu/aegis/select_1.ogg` "Aegis online.": QA 0.00, heard ""
 - `audio/voice_ai/eu/aegis/select_3.ogg` "Grid link stable.": QA 0.00, heard ""
@@ -145,11 +145,29 @@ In progress (generation still running in the background; re-run the generator to
 - `audio/voice_ai/us/dozer/move_4.ogg` "Copy, heading there.": QA 0.33, heard "Copy a"
 - `audio/voice_ai/us/dozer/select_1.ogg` "Dozer here.": QA 0.50, heard "Those are here."
 - `audio/voice_ai/us/dozer/under_fire_1.ogg` "Dozer taking fire!": QA 0.67, heard "taking fire"
+- `audio/voice_ai/us/grunt/attack_4.ogg` "Light 'em up!": QA 0.67, heard "Light  Light him up"
+- `audio/voice_ai/us/grunt/move_2.ogg` "Oorah, on the move!": QA 0.75, heard "We the  We're on the move."
 - `audio/voice_ai/us/grunt/select_2.ogg` "Ready to go.": QA 0.67, heard "Ready to"
+- `audio/voice_ai/us/halberd/attack_3.ogg` "Firing main gun!": QA 0.67, heard ", firing main guns."
+- `audio/voice_ai/us/halberd/created_1.ogg` "Halberd main battle tank, ready.": QA 0.60, heard "How-albert main battle some credit"
+- `audio/voice_ai/us/halberd/under_fire_2.ogg` "Armor under fire!": QA 0.33, heard "I'm going  under the"
+- `audio/voice_ai/us/harrier/created_2.ogg` "Gunship airborne.": QA 0.50, heard "Gunship"
+- `audio/voice_ai/us/harrier/move_2.ogg` "En route.": QA 0.50, heard "On route"
 - `audio/voice_ai/us/javelin/select_4.ogg` "We've got tubes.": QA 0.33, heard "We've"
+- `audio/voice_ai/us/lynx/attack_3.ogg` "Hit 'em!": QA 0.50, heard "Hit, hit."
+- `audio/voice_ai/us/lynx/attack_4.ogg` "Fifty's talking!": QA 0.50, heard "50-50s talking"
+- `audio/voice_ai/us/lynx/created_1.ogg` "Lynx reporting.": QA 0.50, heard "Link's reporting...."
 - `audio/voice_ai/us/lynx/select_1.ogg` "Lynx ready.": QA 0.50, heard "Links ready the"
+- `audio/voice_ai/us/picket/attack_2.ogg` "Bird in the air!": QA 0.75, heard "in the air."
+- `audio/voice_ai/us/picket/veteran_1.ogg` "Faster lock-ons now.": QA 0.25, heard "Faster,,"
+- `audio/voice_ai/us/sniper/garrison_1.ogg` "Taking the high window.": QA 0.50, heard "Taking the"
 - `audio/voice_ai/us/sniper/select_3.ogg` "In position.": QA 0.50, heard "in possession"
+- `audio/voice_ai/us/sniper/veteran_1.ogg` "Steady hands now.": QA 0.00, heard "either.  you"
+- `audio/voice_ai/us/supply_truck/harvest_1.ogg` "Heading to the supply dump.": QA 0.00, heard "Q&"
+- `audio/voice_ai/us/supply_truck/move_3.ogg` "Roger, en route.": QA 0.67, heard "Roger on route"
 - `audio/voice_ai/us/supply_truck/select_1.ogg` "Supply truck.": QA 0.00, heard "..."
+- `audio/voice_ai/us/wraith/attack_1.ogg` "Fox three!": QA 0.50, heard "Fox 3"
+- `audio/voice_ai/us/wraith/move_3.ogg` "Copy, en route.": QA 0.67, heard "ny,.  copy on route."
 
 Lines not yet regenerated keep their M2.5 audio, which still works in game. Short invented-name barks ("Hauler here.") are the usual low scorers; listen before re-recording.
 
