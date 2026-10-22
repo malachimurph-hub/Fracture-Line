@@ -13,7 +13,7 @@ extends Resource
 @export var armor_type: StringName = &"infantry"
 @export var weapons: PackedStringArray = []
 @export var speed_mtps: int = 1000          ## milli-tiles per second
-@export var move_layer: StringName = &"foot" ## foot | vehicle | air(future)
+@export var move_layer: StringName = &"foot" ## foot | vehicle | air (M2.5)
 @export var sight: int = 7                   ## tiles
 @export var radius_mt: int = 400             ## body radius, milli-tiles
 @export var shield_aura_radius: int = 0      ## tiles; Aegis
@@ -30,4 +30,5 @@ extends Resource
 @export var abilities: PackedStringArray = []
 @export var transport_capacity: int = 0      ## M2.4: infantry slots (transport vehicles)
 @export var detector: bool = false           ## M2.4: reveals stealthed units/structures in sight
+@export var air_slots: int = 0             ## M2.5: Airfield parking slots used (bomber 4, fighter 2, gunship 0)
 @export var stubs: PackedStringArray = []    ## features listed but not implemented (shown as [STUB])

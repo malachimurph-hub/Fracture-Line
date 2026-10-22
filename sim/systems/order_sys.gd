@@ -9,6 +9,8 @@ static func run(w: SimWorld) -> void:
 		var u: SimEntity = w.ents[id]
 		if not u.alive or u.kind != SimEntity.Kind.UNIT or u.res_id < 0:
 			continue
+		if u.air_state != AirSys.FLYING and w.is_air(u):
+			continue   # parked / returning aircraft: AirSys owns them
 		_think(w, u)
 
 static func max_range(w: SimWorld, u: SimEntity) -> int:
@@ -28,6 +30,8 @@ static func valid_target(w: SimWorld, u: SimEntity, t: SimEntity) -> bool:
 	if t.kind == SimEntity.Kind.CRATE or not w.enemies(u.team, t.team):
 		return false
 	if t.kind == SimEntity.Kind.UNIT and t.res_id < 0:
+		return false
+	if not CombatSys.can_hit(w, u, t.kind == SimEntity.Kind.UNIT and w.flying(t)):
 		return false
 	return w.fog.is_visible_ent(w, u.team, t)
 
@@ -87,7 +91,7 @@ static func _engage(w: SimWorld, u: SimEntity, t: SimEntity) -> void:
 		u.path_goal = NONE
 	else:
 		var dest := t.pos
-		if t.kind != SimEntity.Kind.UNIT:
+		if t.kind != SimEntity.Kind.UNIT and not w.is_air(u):
 			dest = FX.tile_center(w.map.nearest_passable(FX.to_tile(t.pos), w.is_vehicle(u)))
 		if u.goal == NONE or FX.dist2(u.goal, dest) > (TILE * 2) * (TILE * 2):
 			_goto(u, dest)

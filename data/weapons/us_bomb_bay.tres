@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="WeaponDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/weapon_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"us_bomb_bay"
+damage = 700
+range_mt = 1300
+min_range_mt = 0
+cooldown_ms = 300
+damage_type = &"demolition"
+splash_mt = 3000
+targets_air = false
+targets_ground = true
+vfx = &"bomb"
+min_tier = 0
+pre_attack_ms = 0
+pre_attack_type = &"attack"
+clip_size = 1
+reload_ms = 45000
+aim_deg = 90
+scatter_mt = 0
+scatter_inf_mt = 0

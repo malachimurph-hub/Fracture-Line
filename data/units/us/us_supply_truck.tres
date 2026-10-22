@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"us_supply_truck"
+faction = &"us"
+name_key = "UNIT_US_SUPPLY_TRUCK"
+desc_key = "UNIT_US_SUPPLY_TRUCK_DESC"
+cost = 700
+build_time_ms = 9000
+pop = 1
+prereqs = PackedStringArray()
+tags = PackedStringArray("vehicle", "harvester")
+max_hp = 650
+armor_type = &"light"
+weapons = PackedStringArray()
+speed_mtps = 1900
+move_layer = &"vehicle"
+sight = 7
+radius_mt = 500
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 350
+role = &"harvester"
+view_scene = "res://view/units/us/supply_truck.tscn"
+stubs = PackedStringArray()
+loco = &""
+turn_dps = 0
+accel_ms = 0
+turret_dps = 0
+abilities = PackedStringArray()
+transport_capacity = 0
+detector = false
+air_slots = 0

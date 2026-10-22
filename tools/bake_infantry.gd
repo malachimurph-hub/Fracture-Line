@@ -21,12 +21,28 @@ const SPECS := {
 	"tpla_rifleman": {"file": "Character_Enemy.gltf", "weapon": "AK", "keep": ["Character_Enemy", "Character_Enemy_Head"],
 		"node_colors": {"Character_Enemy_Head": {"Enemy_Red": "#8f7d56", "Black": "team"}},
 		"colors": {"Enemy_Red": "#a48c5f", "Grey": "#6b6a45", "DarkGrey": "#5e4d36", "Black": "#5a4c38", "Skin": "#b98a64", "Grey2": "#5a5b4a", "Wood": "#7a5530", "LightGrey": "#a89a80"}},
+	# M2.5 United States (Marines in coyote-brown; team colour on the shoulder pads / helmet band)
+	"us_rifleman": {"file": "Character_Soldier.gltf", "weapon": "AK", "keep": ["Body", "Head", "ShoulderPad.L", "ShoulderPad.R"],
+		"node_colors": {"Head": {"Black": "team"}},
+		"colors": {"Character_Main": "#7d6e52", "Pants": "#6e6250", "Grey": "team", "DarkGrey": "#3b3a33", "Black": "#24231f", "Skin": "#c79a76", "Grey2": "#5a564b", "Wood": "#6b5236", "LightGrey": "#a59d8a"}},
+	"us_javelin": {"file": "Character_Soldier.gltf", "weapon": "RocketLauncher", "keep": ["Body", "Head", "ShoulderPad.L", "ShoulderPad.R"],
+		"node_colors": {"Head": {"Black": "team"}},
+		"colors": {"Character_Main": "#7d6e52", "Pants": "#6e6250", "Grey": "team", "DarkGrey": "#3b3a33", "Black": "#24231f", "Skin": "#a8774f", "Grey2": "#5a564b", "Wood": "#6b5236", "LightGrey": "#a59d8a"}},
+	"us_jtac": {"file": "Character_Soldier.gltf", "weapon": "SMG", "keep": ["Body", "Head", "ShoulderPad.L", "ShoulderPad.R"],
+		"node_colors": {"Head": {"Black": "team"}},
+		"colors": {"Character_Main": "#6a5f4a", "Pants": "#5d5446", "Grey": "team", "DarkGrey": "#2f2e2a", "Black": "#1c1b18", "Skin": "#d2a681", "Grey2": "#4c4a42", "Wood": "#6b5236", "LightGrey": "#c9b46a"}},
+	"us_sniper": {"file": "Character_Soldier.gltf", "weapon": "Sniper", "keep": ["Body", "Head"],
+		"node_colors": {"Head": {"Black": "team"}},
+		"colors": {"Character_Main": "#5e6243", "Pants": "#585a40", "Grey": "#4d513a", "DarkGrey": "#3a3d2e", "Black": "#2a2c22", "Skin": "#b98a64", "Grey2": "#4c4f3c", "Wood": "#5a4a30", "LightGrey": "#7d7f62"}},
 	"wa_rifleman_placeholder": {"file": "Character_Hazmat.gltf", "weapon": "Shotgun", "keep": ["Character_Hazmat", "Character_Hazmat_Head"],
 		"colors": {"Hazmat_Main": "#5d6748", "DarkGrey": "#3a3f33", "Black": "#1e201c", "Grey": "team", "Grey2": "#55594c", "Wood": "#6b5236", "LightGrey": "#9aa08c"}},
 }
 
 func _initialize() -> void:
+	var only := OS.get_environment("FL_BAKE_ONLY")
 	for k in SPECS:
+		if only != "" and not String(k).begins_with(only):
+			continue
 		var r := await _bake(k, SPECS[k])
 		print("BAKED ", k, " ", r)
 	quit(0)

@@ -33,3 +33,4 @@ capture_income = 0
 buildable = true
 tags = PackedStringArray()
 aux_radius = 0
+air_slots = 0

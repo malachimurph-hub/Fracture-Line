@@ -90,4 +90,34 @@ static func fire(w: SimWorld, pid: int, id: StringName, pos: Vector2i) -> void:
 					u2.vet = 1
 					u2.max_hp = w.unit_max_hp(u2)
 					u2.hp = u2.max_hp
+		&"paradrop":
+			# US: a Marine rifle squad parachutes onto the target
+			for i in d.amount:
+				var pu := w.spawn_unit(&"us_grunt", pid, null, pos + Vector2i((i % 3 - 1) * FX.ONE, (i / 3) * FX.ONE))
+				pu.orders = [{"o": "guard", "pos": pu.pos}]
+		&"strike":
+			# US: precision air strike, three bombs along a short line (JTAC nearby: +25 %)
+			var src := SimEntity.new()
+			src.kind = SimEntity.Kind.BUILDING
+			src.owner = pid
+			src.team = p.team
+			src.def_id = id
+			var wd := WeaponDef.new()
+			wd.id = id
+			wd.damage = d.amount * (100 + AirSys.JTAC_BONUS) / 100 if AirSys.jtac_near(w, pid, pos) else d.amount
+			wd.damage_type = &"demolition"
+			wd.splash_mt = d.radius * 1000 / 2
+			wd.vfx = &"bomb"
+			for k in 3:
+				CombatSys.explode(w, src, pos + Vector2i((k - 1) * FX.ONE * 3 / 2, (k - 1) * FX.ONE / 2), wd, 100)
+		&"repair":
+			# US: field repair - own vehicles, aircraft and structures in the radius regain amount % HP
+			var rr := d.radius * FX.ONE
+			for ru: SimEntity in w.units_in_radius(pos, rr):
+				if ru.owner == pid and ru.res_id >= 0 and not w.udef(ru).tags.has("infantry"):
+					ru.hp = mini(ru.max_hp, ru.hp + ru.max_hp * d.amount / 100)
+			for bid in w.ids:
+				var rb: SimEntity = w.ents[bid]
+				if rb.alive and rb.owner == pid and rb.kind == SimEntity.Kind.BUILDING and rb.built and w.dist_to_building(pos, rb) <= rr:
+					rb.hp = mini(rb.max_hp, rb.hp + rb.max_hp * d.amount / 100)
 	w.events.append({"t": "power_fired", "owner": pid, "def": id, "pos": pos, "r": d.radius})

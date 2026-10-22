@@ -160,6 +160,8 @@ func _shove_units_out(b: SimEntity) -> void:
 		var u: SimEntity = ents[id]
 		if not u.alive or u.kind != SimEntity.Kind.UNIT:
 			continue
+		if is_air(u):
+			continue
 		var t := FX.to_tile(u.pos)
 		if map.occ[map.idx(t)] == b.id:
 			var veh := is_vehicle(u)
@@ -176,6 +178,14 @@ func bdef(e: SimEntity) -> BuildingDef:
 
 func is_vehicle(e: SimEntity) -> bool:
 	return Content.unit(e.def_id).move_layer == &"vehicle"
+
+## M2.5 air layer: aircraft (move_layer air) ignore terrain; only weapons with targets_air hit
+## them while airborne. A parked aircraft (air_state 1) is a ground target.
+func is_air(e: SimEntity) -> bool:
+	return e.kind == SimEntity.Kind.UNIT and Content.unit(e.def_id).move_layer == &"air"
+
+func flying(e: SimEntity) -> bool:
+	return e.kind == SimEntity.Kind.UNIT and e.air_state != AirSys.PARKED and Content.unit(e.def_id).move_layer == &"air"
 
 func faction_of(pid: int) -> StringName:
 	return players[pid].faction if pid >= 0 and pid < players.size() else &"neutral"
@@ -395,6 +405,8 @@ func step() -> void:
 	if prof != null: t = _pt("cmd", t)
 	# 2 orders (+ target acquisition) 3 path requests 4 movement
 	OrderSys.run(self)
+	# M2.5 aircraft: airfield binding, return / land / rearm, JTAC call-ins
+	AirSys.run(self)
 	if prof != null: t = _pt("orders", t)
 	MoveSys.run_paths(self)
 	if prof != null: t = _pt("paths", t)
@@ -419,6 +431,8 @@ func step() -> void:
 	TplaSys.run(self)
 	# M2.4 roster mechanics (transports, heal auras)
 	RosterSys.run(self)
+	# M2.5 US mechanics (stealth while stationary)
+	UsSys.run(self)
 	if prof != null: t = _pt("tpla", t)
 	# 11 fog (5 Hz)
 	if tick % 4 == 0:

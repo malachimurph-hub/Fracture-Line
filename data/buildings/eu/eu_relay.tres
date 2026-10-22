@@ -33,3 +33,4 @@ capture_income = 0
 buildable = true
 tags = PackedStringArray("heal_aura")
 aux_radius = 6
+air_slots = 0

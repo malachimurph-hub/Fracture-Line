@@ -40,6 +40,9 @@ static func run(w: SimWorld) -> void:
 		if p.pop + ud.pop > p.pop_cap:
 			b.hold_reason = "REASON_POP_CAP"
 			continue
+		if ud.air_slots > 0 and w.bdef(b).air_slots > 0 and AirSys.slots_free(w, b) < ud.air_slots:
+			b.hold_reason = "REASON_AIRFIELD_FULL"
+			continue
 		b.hold_reason = ""
 		var uid: StringName = b.queue.pop_front()
 		b.q_paid.pop_front()
@@ -48,7 +51,10 @@ static func run(w: SimWorld) -> void:
 		p.pop += ud.pop
 		p.stats["built"] += 1
 
-		_after_spawn(w, b, u)
+		if ud.air_slots > 0 and w.bdef(b).air_slots > 0:
+			AirSys.park_new(w, b, u)   # jets appear parked and armed on the pad
+		else:
+			_after_spawn(w, b, u)
 		if b.repeat:
 			if p.supply >= ud.cost and b.queue.size() < 9:
 				p.supply -= ud.cost

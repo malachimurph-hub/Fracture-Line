@@ -77,6 +77,11 @@ var tface: int = 0                      ## turret heading (absolute)
 var pre: Array = []                     ## per weapon: pre-attack ticks left (0 = idle)
 var pre_ok: Array = []                  ## per weapon: target id whose pre-attack is done
 var ammo: Array = []                    ## per weapon: rounds left in clip
+# M2.5 air layer / US mechanics
+var air_home: int = 0                   ## aircraft: airfield it parks at (0 = none)
+var air_state: int = 0                  ## aircraft: 0 flying, 1 parked/rearming, 2 returning; JTAC: unused
+var air_t: int = 0                      ## aircraft: rearm ticks left; JTAC: next call-in tick
+var still: int = 0                      ## ticks without moving (stealth while stationary)
 
 func is_unit() -> bool: return kind == Kind.UNIT
 func is_building() -> bool: return kind == Kind.BUILDING
@@ -92,7 +97,7 @@ const _FIELDS := ["id", "kind", "def_id", "owner", "team", "pos", "hp", "max_hp"
 	"carry", "res_id", "phase", "phase_t", "overcharge_until", "dir", "moving", "aura_tick", "tile", "fp", "rot", "built",
 	"progress", "build_ticks", "queue", "q_progress", "q_paid", "rally", "rally_attack", "repeat", "powered", "gridded", "hold_reason",
 	"amount", "max_amount", "tier", "aux_def", "aux_t", "stealthy", "stealth_mask",
-	"face", "spd", "tface", "pre", "pre_ok", "ammo"]
+	"face", "spd", "tface", "pre", "pre_ok", "ammo", "air_home", "air_state", "air_t", "still"]
 
 func to_dict() -> Dictionary:
 	var d := {}

@@ -14,6 +14,8 @@ const DEFAULTS := {
 	&"legs": [540, 200, 150],
 	&"treads": [110, 1200, 600],
 	&"wheels": [170, 800, 500],
+	&"jet": [110, 1500, 1500],     # M2.5 aircraft (AirSys.fly)
+	&"heli": [200, 900, 700],
 }
 const DAMAGED_PCT := 35        ## vehicles below this HP% are "damaged"...
 const DAMAGED_SPEED := 80      ## ...and move at this % of their speed

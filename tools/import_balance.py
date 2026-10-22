@@ -40,7 +40,8 @@ for r in rows("units.csv"):
         ("view_scene", s("res://view/units/%s/%s.tscn" % (fac, short))), ("stubs", psa(r["stubs"])),
         ("loco", sn(r.get("loco", ""))), ("turn_dps", r.get("turn_dps", "0") or "0"), ("accel_ms", r.get("accel_ms", "0") or "0"),
         ("turret_dps", r.get("turret_dps", "0") or "0"), ("abilities", psa(r.get("abilities", ""))),
-        ("transport_capacity", r.get("transport_capacity", "0") or "0"), ("detector", b(r.get("detector", "0")))])
+        ("transport_capacity", r.get("transport_capacity", "0") or "0"), ("detector", b(r.get("detector", "0"))),
+        ("air_slots", r.get("air_slots", "0") or "0")])
 
 for r in rows("buildings.csv"):
     short = r["id"].split("_", 1)[1]
@@ -56,7 +57,8 @@ for r in rows("buildings.csv"):
         ("weapons", psa(r["weapons"])), ("needs_power_to_fire", b(r["needs_power_to_fire"])),
         ("garrison_capacity", r["garrison_capacity"]), ("capturable", b(r["capturable"])),
         ("capture_income", r["capture_income"]), ("buildable", b(r["buildable"])),
-        ("tags", psa(r.get("tags", ""))), ("aux_radius", r.get("aux_radius", "0") or "0")])
+        ("tags", psa(r.get("tags", ""))), ("aux_radius", r.get("aux_radius", "0") or "0"),
+        ("air_slots", r.get("air_slots", "0") or "0")])
 
 for r in rows("weapons.csv"):
     write("data/weapons/%s.tres" % r["id"], "res://data/defs/weapon_def.gd", "WeaponDef", [

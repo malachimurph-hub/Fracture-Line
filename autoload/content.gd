@@ -15,6 +15,8 @@ var power_order: Array[StringName] = []
 const UNIT_ORDER := [&"eu_crawler", &"eu_harvester", &"eu_grenadier", &"eu_lancer", &"eu_wolfhound", &"eu_flakwerk", &"eu_leopold", &"eu_aegis", &"eu_salamander", &"eu_hearth", &"eu_spectre", &"eu_sentinel", &"eu_brennus", &"eu_thunderhead", &"eu_kestrel", &"eu_corvid"]
 const BUILDING_ORDER := [&"eu_hq", &"eu_reactor", &"eu_pylon", &"eu_hub", &"eu_barracks", &"eu_motor_pool", &"eu_heavy_factory", &"eu_gun_bunker", &"eu_flak_tower", &"eu_minefield", &"eu_signals", &"eu_relay", &"eu_exchange", &"eu_airstrip", &"eu_concord"]
 const TPLA_UNIT_ORDER := [&"tpla_laborer", &"tpla_militia", &"tpla_rocket_cell", &"tpla_rattler", &"tpla_scrapback", &"tpla_hailstorm", &"tpla_shrike", &"tpla_mule", &"tpla_blight", &"tpla_junkhammer", &"tpla_sprayer", &"tpla_earwig", &"tpla_jackal", &"tpla_bus"]
+const US_UNIT_ORDER := [&"us_dozer", &"us_supply_truck", &"us_grunt", &"us_javelin", &"us_jtac", &"us_sniper", &"us_lynx", &"us_halberd", &"us_picket", &"us_longreach", &"us_harrier", &"us_wraith", &"us_thunderlance"]
+const US_BUILDING_ORDER := [&"us_command", &"us_reactor", &"us_supply_center", &"us_barracks", &"us_garage", &"us_airfield", &"us_strategy", &"us_patriot", &"us_firebase", &"us_drop_zone"]
 const TPLA_BUILDING_ORDER := [&"tpla_den", &"tpla_stash", &"tpla_camp", &"tpla_chop_shop", &"tpla_tunnel", &"tpla_workshop", &"tpla_bazaar", &"tpla_demo_trap", &"tpla_camo_net", &"tpla_wasp_nest", &"tpla_decoy", &"tpla_rust_silo"]
 
 ## Playable factions (skirmish). "power": whether the faction uses the power economy.
@@ -25,6 +27,10 @@ const FACTIONS := {
 	&"tpla": {"name_key": "FACTION_TPLA", "hq": &"tpla_den", "builder": &"tpla_laborer", "start_units": [&"tpla_laborer", &"tpla_laborer"],
 		"units": TPLA_UNIT_ORDER, "buildings": TPLA_BUILDING_ORDER, "power": false, "personality": &"tpla_scrapjack",
 		"powers": [&"tpla_ambush", &"tpla_scrap_rain", &"tpla_blight_shells", &"tpla_uprising"]},
+	# M2.5: United States (Malachi's roster; unspecified slots are ZH USA equivalents, placeholders)
+	&"us": {"name_key": "FACTION_US", "hq": &"us_command", "builder": &"us_dozer", "start_units": [&"us_dozer"],
+		"units": US_UNIT_ORDER, "buildings": US_BUILDING_ORDER, "power": true, "personality": &"us_vanguard",
+		"powers": [&"us_uav_recon", &"us_paradrop", &"us_precision_strike", &"us_field_repair"]},
 }
 
 func faction(f) -> Dictionary:
@@ -43,6 +49,8 @@ static func faction_of_id(id) -> StringName:
 		return &"tpla"
 	if s.begins_with("eu_"):
 		return &"eu"
+	if s.begins_with("us_"):
+		return &"us"
 	return &"neutral"
 
 func btag(id, tag: String) -> bool:
@@ -69,8 +77,10 @@ func load_all() -> void:
 	units.clear(); buildings.clear(); weapons.clear(); powers.clear(); errors.clear()
 	_load_dir("res://data/units/eu", units)
 	_load_dir("res://data/units/tpla", units)
+	_load_dir("res://data/units/us", units)
 	_load_dir("res://data/buildings/eu", buildings)
 	_load_dir("res://data/buildings/tpla", buildings)
+	_load_dir("res://data/buildings/us", buildings)
 	_load_dir("res://data/buildings/neutral", buildings)
 	_load_dir("res://data/weapons", weapons)
 	_load_dir("res://data/powers", powers)

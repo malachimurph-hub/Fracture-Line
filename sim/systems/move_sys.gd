@@ -34,6 +34,10 @@ static func run(w: SimWorld) -> void:
 		if not u.alive or u.kind != SimEntity.Kind.UNIT or u.res_id < 0:
 			continue
 		u.moving = false
+		var ud: UnitDef = w.udef(u)
+		if ud.move_layer == &"air":
+			AirSys.fly(w, u, ud)
+			continue
 		if u.goal == NONE:
 			u.spd = 0
 		elif not u.path_pending:
@@ -150,12 +154,12 @@ static func _arrive(u: SimEntity) -> void:
 static func _separate(w: SimWorld) -> void:
 	for id in w.ids:
 		var u: SimEntity = w.ents[id]
-		if not u.alive or u.kind != SimEntity.Kind.UNIT or u.res_id < 0:
+		if not u.alive or u.kind != SimEntity.Kind.UNIT or u.res_id < 0 or w.is_air(u):
 			continue
 		var veh := w.is_vehicle(u)
 		var push := Vector2i.ZERO
 		for n: SimEntity in w.units_in_radius(u.pos, u.radius + 700):
-			if n.id == u.id or n.res_id < 0:
+			if n.id == u.id or n.res_id < 0 or w.is_air(n):
 				continue
 			var minr := u.radius + n.radius
 			var dx := u.pos.x - n.pos.x

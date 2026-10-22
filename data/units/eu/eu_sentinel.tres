@@ -33,3 +33,4 @@ turret_dps = 0
 abilities = PackedStringArray()
 transport_capacity = 2
 detector = true
+air_slots = 0

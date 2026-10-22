@@ -27,5 +27,6 @@ extends Resource
 @export var capturable: bool = false          ## neutral tech (Veridite Pump)
 @export var capture_income: int = 0           ## supply per second when owned
 @export var buildable: bool = true            ## shows in the build grid
+@export var air_slots: int = 0                ## M2.5: aircraft parking slots (US Airfield: 6)
 @export var tags: PackedStringArray = []      ## tunnel | trap | stealth | camo | hole | no_hole (TPLA mechanics)
 @export var aux_radius: int = 0               ## tiles; camo net cover radius

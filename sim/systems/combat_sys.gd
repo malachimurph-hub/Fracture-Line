@@ -45,6 +45,31 @@ static func run(w: SimWorld) -> void:
 		elif e.kind == SimEntity.Kind.NEUTRAL and e.owner >= 0 and (w.tick + e.id) % 2 == 0:
 			_garrison_fire(w, e)
 
+## M2.5 air layer: can `src` hit an airborne (air=true) or ground target with any of its weapons?
+## Unarmed sources answer true (target validity for non-combat orders is unchanged).
+static var _hit_cache := {}
+static func can_hit(w: SimWorld, src: SimEntity, air: bool) -> bool:
+	var key := src.def_id
+	if not _hit_cache.has(key):
+		var wl: PackedStringArray = []
+		if src.kind == SimEntity.Kind.UNIT:
+			wl = w.udef(src).weapons
+		elif src.kind == SimEntity.Kind.BUILDING or src.kind == SimEntity.Kind.NEUTRAL:
+			var bd: BuildingDef = Content.building(src.def_id)
+			if bd != null:
+				wl = bd.weapons
+		var ha := wl.is_empty()
+		var hg := wl.is_empty()
+		for wid in wl:
+			var wd: WeaponDef = Content.weapon(wid)
+			ha = ha or wd.targets_air
+			hg = hg or wd.targets_ground
+		_hit_cache[key] = [ha, hg]
+	return _hit_cache[key][0] if air else _hit_cache[key][1]
+
+static func layer_ok(w: SimWorld, wd: WeaponDef, t: SimEntity) -> bool:
+	return wd.targets_air if w.flying(t) else wd.targets_ground
+
 static func dmg_pct(u: SimEntity) -> int:
 	return VET_DMG[u.vet] * (100 + TplaSys.TIER_DMG * u.tier) / 100
 
@@ -53,6 +78,12 @@ static func _aim(w: SimWorld, u: SimEntity, t: SimEntity) -> void:
 	var d: UnitDef = w.udef(u)
 	var lp := Loco.params(d)
 	var tr: int = lp["turret"]
+	if tr == 0 and d.move_layer == &"air":
+		# aircraft aim with the whole airframe (AirSys.fly steers toward the target)
+		u.tface = u.face
+		if t == null:
+			_refill_idle(w, u, d)
+		return
 	if t == null:
 		if tr > 0:
 			u.tface = Loco.turn(u.tface, u.face, tr)
@@ -88,8 +119,8 @@ static func _ensure(u: SimEntity, d: UnitDef) -> void:
 
 ## Idle units reload a partly used clip once a full reload time has passed since the last shot.
 static func _refill_idle(w: SimWorld, u: SimEntity, d: UnitDef) -> void:
-	if (w.tick + u.id) % 10 != 0:
-		return
+	if (w.tick + u.id) % 10 != 0 or d.tags.has("jet"):
+		return   # jets only rearm on their airfield (AirSys)
 	_ensure(u, d)
 	for i in d.weapons.size():
 		var wd: WeaponDef = Content.weapon(d.weapons[i])
@@ -106,6 +137,10 @@ static func after_shot(u: SimEntity, i: int, wd: WeaponDef) -> void:
 	if wd.clip_size > 0 and i < u.ammo.size():
 		u.ammo[i] = int(u.ammo[i]) - 1
 		if int(u.ammo[i]) <= 0:
+			if Content.unit(u.def_id) != null and Content.unit(u.def_id).tags.has("jet"):
+				u.ammo[i] = 0   # sortie spent: AirSys flies the jet home to rearm
+				u.cds[i] = FX.ms_to_ticks(wd.cooldown_ms)
+				return
 			u.ammo[i] = wd.clip_size
 			u.cds[i] = FX.ms_to_ticks(wd.reload_ms * vet_pct / 100)
 			if wd.pre_attack_type == &"clip":
@@ -116,12 +151,20 @@ static func after_shot(u: SimEntity, i: int, wd: WeaponDef) -> void:
 static func _fire_unit(w: SimWorld, u: SimEntity, t: SimEntity) -> void:
 	var d: UnitDef = w.udef(u)
 	_ensure(u, d)
+	var air := d.move_layer == &"air"
+	if air and u.air_state != AirSys.FLYING:
+		return
+	var jet := air and d.tags.has("jet")
 	var dist := w.edge_dist(u, t)
 	for i in d.weapons.size():
 		if u.cds[i] > 0:
 			continue
 		var wd: WeaponDef = Content.weapon(d.weapons[i])
 		if wd.min_tier > u.tier:
+			continue
+		if not layer_ok(w, wd, t):
+			continue
+		if jet and wd.clip_size > 0 and int(u.ammo[i]) <= 0:
 			continue
 		if dist > FX.mt_to_fx(wd.range_mt) or dist < FX.mt_to_fx(wd.min_range_mt):
 			continue
@@ -151,8 +194,9 @@ static func _fire_unit(w: SimWorld, u: SimEntity, t: SimEntity) -> void:
 static func explode(w: SimWorld, src: SimEntity, center: Vector2i, wd: WeaponDef, pct: int) -> void:
 	var r := FX.mt_to_fx(wd.splash_mt)
 	w.events.append({"t": "explode", "id": src.id, "owner": src.owner, "trap": src.kind == SimEntity.Kind.BUILDING, "pos": center, "r": r, "vfx": wd.vfx})
+	pct = pct * AirSys.boost_pct(w, src, center) / 100
 	for o: SimEntity in w.units_in_radius(center, r):
-		if o.res_id < 0 or not w.enemies(src.team, o.team):
+		if o.res_id < 0 or not w.enemies(src.team, o.team) or w.flying(o):
 			continue
 		var frac := 100 - 50 * FX.dist(o.pos, center) / maxi(1, r)
 		var sd := wd.damage * Content.combat.mult(wd.damage_type, _armor_of(w, o)) / 100 * frac / 100 * pct / 100
@@ -170,6 +214,10 @@ static func fire(w: SimWorld, src: SimEntity, t: SimEntity, wd: WeaponDef, dmg_p
 	var impact := t.pos
 	var hit := true
 	var sc := scatter_of(w, t, wd)
+	var boost := AirSys.boost_pct(w, src, t.pos)
+	if boost > 100:
+		dmg_pct = dmg_pct * boost / 100
+		sc /= 2   # JTAC spotting: tighter artillery / air strikes
 	if sc > 0:
 		# radius uniform in [0, sc] (more shots land near the aim point), random bearing
 		var rr := w.rng.range_int(sc + 1)
@@ -185,8 +233,11 @@ static func fire(w: SimWorld, src: SimEntity, t: SimEntity, wd: WeaponDef, dmg_p
 		TplaSys.add_zone(w, impact, maxi(FX.ONE, FX.mt_to_fx(wd.splash_mt)), 120, wd.damage * dmg_pct / 100, src.owner, src.team)
 	if wd.splash_mt > 0:
 		var r := FX.mt_to_fx(wd.splash_mt)
+		var tair := w.flying(t)
 		for o: SimEntity in w.units_in_radius(impact, r):
 			if (hit and o.id == t.id) or not w.enemies(src.team, o.team) or o.res_id < 0:
+				continue
+			if w.flying(o) != tair:
 				continue
 			var frac := 100 - 50 * FX.dist(o.pos, impact) / maxi(1, r)
 			var sd := wd.damage * Content.combat.mult(wd.damage_type, _armor_of(w, o)) / 100 * frac / 100 * dmg_pct / 100
@@ -219,6 +270,8 @@ static func _structure_fire(w: SimWorld, b: SimEntity) -> void:
 			b.target = 0
 			if (w.tick + b.id) % 5 == 0:
 				t = _nearest_enemy_unit(w, b, b.pos, r + b.radius)
+		if t != null and not layer_ok(w, wd, t):
+			t = null
 		if t != null:
 			b.target = t.id
 			fire(w, b, t, wd, 100)
@@ -249,7 +302,7 @@ static func _garrison_fire(w: SimWorld, b: SimEntity) -> void:
 			var wd: WeaponDef = Content.weapon(d.weapons[i])
 			var r := FX.mt_to_fx(wd.range_mt) + GARRISON_RANGE_BONUS
 			var t := _nearest_enemy_unit(w, u, b.pos, r + b.radius)
-			if t == null:
+			if t == null or not layer_ok(w, wd, t):
 				continue
 			u.pos = b.pos
 			_ensure(u, d)

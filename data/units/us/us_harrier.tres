@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"us_harrier"
+faction = &"us"
+name_key = "UNIT_US_HARRIER"
+desc_key = "UNIT_US_HARRIER_DESC"
+cost = 1500
+build_time_ms = 15000
+pop = 3
+prereqs = PackedStringArray()
+tags = PackedStringArray("air", "helicopter")
+max_hp = 700
+armor_type = &"air"
+weapons = PackedStringArray("us_hellfire", "us_chaingun")
+speed_mtps = 3200
+move_layer = &"air"
+sight = 10
+radius_mt = 650
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 0
+role = &"air_strike"
+view_scene = "res://view/units/us/harrier.tscn"
+stubs = PackedStringArray()
+loco = &"heli"
+turn_dps = 200
+accel_ms = 900
+turret_dps = 180
+abilities = PackedStringArray()
+transport_capacity = 0
+detector = false
+air_slots = 0

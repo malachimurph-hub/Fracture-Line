@@ -33,3 +33,4 @@ capture_income = 0
 buildable = true
 tags = PackedStringArray("camo", "no_hole")
 aux_radius = 6
+air_slots = 0
