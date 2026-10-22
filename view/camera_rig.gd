@@ -30,7 +30,7 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if velocity.length_squared() > 0.0001:
 		focus += velocity * delta
-		velocity = velocity.lerp(Vector3.ZERO, minf(1.0, delta * 5.0))
+		velocity *= exp(-5.0 * delta)  # frame-rate independent decay
 	dist = lerpf(dist, target_dist, minf(1.0, delta * 10.0))
 	_apply()
 

@@ -48,8 +48,12 @@ func _hold_ms() -> int:
 func _offset() -> Vector2:
 	return Vector2(0, -UiScale.mm(float(Settings.g("ghost_offset_mm"))))
 
+## Test harness only: when >= 0 the gesture clock reads this instead of wall time, so the
+## touch test is independent of the (software-rendered, ~3 fps) frame rate on CI.
+static var test_clock_ms: int = -1
+
 func _now() -> int:
-	return Time.get_ticks_msec()
+	return test_clock_ms if test_clock_ms >= 0 else Time.get_ticks_msec()
 
 func _unhandled_input(ev: InputEvent) -> void:
 	if not enabled:

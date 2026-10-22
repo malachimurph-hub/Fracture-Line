@@ -41,7 +41,17 @@ func check(name: String, ok: bool, info = null) -> void:
 
 func frames(n: int) -> void:
 	for i in n:
+		if WorldInput.test_clock_ms >= 0:
+			WorldInput.test_clock_ms += 16
 		await get_tree().process_frame
+
+## Advance the virtual gesture clock (touch test) by ms, then let two frames run.
+func wait_ms(ms: int) -> void:
+	if WorldInput.test_clock_ms >= 0:
+		WorldInput.test_clock_ms += ms
+		await frames(2)
+	else:
+		await get_tree().create_timer(ms / 1000.0).timeout
 
 func shot(name: String) -> void:
 	await RenderingServer.frame_post_draw
@@ -248,6 +258,7 @@ func to_screen(m, e: SimEntity) -> Vector2:
 
 func run_touch() -> void:
 	Input.use_accumulated_input = false
+	WorldInput.test_clock_ms = Time.get_ticks_msec()
 	var m := await start_match(lobby_cfg(1))
 	fast_forward(m, 20 * 60)
 	var sim: SimWorld = m.runner.sim
@@ -320,7 +331,7 @@ func run_touch() -> void:
 	var c := to_screen(m, tgt)
 	var start := c + Vector2(-220, -160) * UiScale.dp / 2.0
 	touch(0, start, true)
-	await get_tree().create_timer(0.45).timeout
+	await wait_ms(450)
 	var q := start
 	for i in 12:
 		q += Vector2(40, 30) * UiScale.dp / 2.0
@@ -333,7 +344,7 @@ func run_touch() -> void:
 	var before: Array = sim.ents[tgt.id].orders.duplicate()
 	var hp := to_screen(m, tgt) + Vector2(200, 60) * UiScale.dp / 2.0
 	touch(0, hp, true)
-	await get_tree().create_timer(0.45).timeout
+	await wait_ms(450)
 	touch(0, hp, false)
 	await frames(2)
 	m.runner.advance()
