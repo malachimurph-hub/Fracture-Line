@@ -82,6 +82,8 @@ func _ready() -> void:
 			test_zh()
 		"roster":
 			test_roster()
+		"m24":
+			test_m24()
 		"stall":
 			var r2 := MatchRunner.new()
 			r2.record_replay = false
@@ -1480,3 +1482,172 @@ func _roster_heal_stub_prod() -> void:
 	r.issue({"p": 0, "t": "queue", "target": mp.id, "def": "eu_salamander", "n": 1})
 	_ticks(r, 20 * 30)
 	_check(w.count_owned(0, &"eu_salamander") > before, "Motor Pool produces the Salamander")
+
+
+## M2.4 view tests (headless, real WorldView): construction sites look like construction (rig,
+## no damage state) for every EU/TPLA structure, damage is relative to construction HP, paused
+## sites stand still, rigs are struck on completion; every weapon maps to a travelling-round
+## effect (no beams), rounds land at the sim impact point, misses on the ground; and attaching
+## the view does not change the simulation (state hashes equal with and without it).
+func test_m24() -> void:
+	var cfg := make_cfg("1v1", 424, [], ["eu", "tpla"])
+	var r := MatchRunner.new()
+	r.record_replay = false
+	r.start(cfg)
+	var wv := WorldView.new()
+	add_child(wv)
+	wv.setup(r, 0)
+	var sim: SimWorld = r.sim
+	# ---- construction
+	var defs: Array = []
+	for id in Content.buildings:
+		var sid := String(id)
+		if (sid.begins_with("eu_") or sid.begins_with("tpla_")) and id != &"tpla_hole":
+			defs.append(id)
+	var x := 6
+	var y := 30
+	var sites: Array = []
+	for id in defs:
+		var bd: BuildingDef = Content.building(id)
+		if x + bd.footprint.x > sim.map.w - 6:
+			x = 6
+			y += 6
+		var e: SimEntity = sim._place_building(bd, 0 if String(id).begins_with("eu_") else 1, Vector2i(x, y), 0, false)
+		e.progress = e.build_ticks / 2
+		e.hp = ProdSys.construction_hp_cap(e.max_hp, e.progress, e.build_ticks)
+		wv._ensure_view(e)
+		sites.append(e)
+		x += bd.footprint.x + 2
+	wv.frame(0.0, 0.016)
+	var dirty: Array = []
+	var no_rig: Array = []
+	for e in sites:
+		var v: EntityView = wv.views[e.id]
+		if not wv.rigs.has(e.id):
+			no_rig.append(e.def_id)
+		if v is BuildingView and ((v as BuildingView)._state != 0 or ((v as BuildingView).dmg_light != null and (v as BuildingView).dmg_light.visible)):
+			dirty.append(e.def_id)
+		if WorldView.build_relative_health(e) < 0.999:
+			dirty.append(e.def_id)
+	_check(no_rig.is_empty(), "every EU/TPLA structure under construction gets a construction rig (%d sites) %s" % [sites.size(), no_rig])
+	_check(dirty.is_empty(), "healthy construction sites show no damage state at 50 %% (HP %d%% of max) %s" % [100 * sites[0].hp / sites[0].max_hp, dirty])
+	var fresh: SimEntity = sites[0]
+	fresh.progress = 0
+	fresh.hp = ProdSys.construction_hp_cap(fresh.max_hp, 0, fresh.build_ticks)
+	wv.frame(0.0, 0.016)
+	_check(WorldView.build_relative_health(fresh) >= 0.999 and fresh.hp * 10 <= fresh.max_hp + 10, "fresh site at 10 %% HP reads as full condition")
+	var rig: ConstructionRig = wv.rigs[sites[1].id]
+	sites[1].progress += 5
+	wv.frame(0.0, 0.016)
+	_check(rig.working(), "site animates while its progress advances")
+	for i in 60:
+		wv.frame(0.0, 0.016)
+	_check(not rig.working(), "paused site (no progress) stands still")
+	# shot-at scaffold: light damage only, relative to the HP built so far
+	var hit: SimEntity = null
+	for e in sites:
+		if wv.views[e.id] is BuildingView:
+			hit = e
+			break
+	hit.hp = hit.hp * 45 / 100
+	wv.frame(0.0, 0.016)
+	var hv: BuildingView = wv.views[hit.id]
+	_check(hv._state == 1 and not hv.dmg_heavy.visible, "shot-at scaffold (45 %% of built HP) shows light damage only (state %d)" % hv._state)
+	# a finished building at the same absolute HP is heavily damaged
+	hit.progress = hit.build_ticks
+	hit.built = true
+	wv.frame(0.0, 0.016)
+	_check(hv._state == 2 and not wv.rigs.has(hit.id), "finished building at that HP shows heavy damage and the rig is struck (state %d)" % hv._state)
+	# a legacy (non-staged) view: clip materials restored on completion
+	var leg: SimEntity = null
+	for e in sites:
+		if not (wv.views[e.id] is BuildingView) and wv.rigs.has(e.id):
+			leg = e
+			break
+	var lr: ConstructionRig = wv.rigs[leg.id]
+	_check(lr.stats["swapped"] > 0, "legacy structure %s clips its meshes while building (%d surfaces)" % [leg.def_id, lr.stats["swapped"]])
+	leg.progress = leg.build_ticks
+	leg.built = true
+	wv.frame(0.0, 0.016)
+	var still_clipped := 0
+	var stack: Array = [wv.views[leg.id]]
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		if n is ConstructionRig or n.is_queued_for_deletion():
+			continue
+		if n is MeshInstance3D:
+			var mi := n as MeshInstance3D
+			var mats: Array = [mi.material_override]
+			for si in mi.get_surface_override_material_count():
+				mats.append(mi.get_surface_override_material(si))
+			for mt in mats:
+				if mt is ShaderMaterial and (mt as ShaderMaterial).shader != null and (mt as ShaderMaterial).shader.resource_path.contains("reveal"):
+					still_clipped += 1
+		stack.append_array(n.get_children())
+	_check(still_clipped == 0, "completed legacy structure is back on its normal materials (%d clipped left)" % still_clipped)
+	# ---- weapon effects
+	var unmapped: Array = []
+	for wid in Content.weapons:
+		var wd: WeaponDef = Content.weapon(wid)
+		if not WeaponFx.CLASSES.has(wid) and String(wd.vfx) != "bomb":
+			unmapped.append(wid)
+	_check(unmapped.is_empty(), "every weapon has a Zero Hour-style effect class %s" % [unmapped])
+	_check(not wv.vfx.has_method("tracer"), "beam / laser tracer removed from Vfx")
+	var wfx: WeaponFx = wv.wfx
+	var o := Vector3(20, 0, 20)
+	var classes := ["rifle", "mg", "quad", "autocannon", "cannon", "flak", "missile", "rocket", "salvo", "artillery", "mortar", "grenade", "rust", "flame", "spray"]
+	for c in classes:
+		wfx.fire(c, [o + Vector3(0, 0.5, 0)], Vector3(0, 0, 1), o + Vector3(0, 0, 6), 0, -1, Vector3.ZERO)
+	var flying := wfx.shots.size()
+	_check(flying >= 12 and wfx.streams.size() == 2, "rounds fly (not instant): %d in flight, %d streams" % [flying, wfx.streams.size()])
+	var max_glow := 0
+	for i in 120:
+		wfx._process(1.0 / 60.0)
+		max_glow = maxi(max_glow, wfx.glow.n)
+	_check(wfx.shots.is_empty() and wfx.streams.is_empty() and wfx.queued.is_empty(), "every round lands within 2 s")
+	_check(int(wfx.stats["ground_misses"]) >= 12, "misses land on the ground (%d)" % wfx.stats["ground_misses"])
+	_check(int(wfx.stats["airbursts"]) >= 1 and int(wfx.stats["trail_puffs"]) > 10 and int(wfx.stats["stream_particles"]) > 10, "flak airburst, rocket smoke trails and flame stream particles %s" % [wfx.stats])
+	_check(max_glow > 0 and max_glow <= wfx.glow.cap, "streaks are pooled in one MultiMesh (peak %d of %d)" % [max_glow, wfx.glow.cap])
+	# hits follow the target and delay its death visual until the round lands
+	var tgt: SimEntity = sim.spawn_unit(&"eu_leopold", 0, null, FX.tile_center(Vector2i(30, 24)))
+	wv._ensure_view(tgt)
+	wfx.fire("rocket", [o + Vector3(0, 0.5, 0)], Vector3(1, 0, 0), FX.to_world(tgt.pos), tgt.id, 1, Vector3(0, 0.35, 0))
+	_check(wfx.time_to_hit(tgt.id) > 0.1, "rocket in flight toward its target (%.2f s)" % wfx.time_to_hit(tgt.id))
+	var flood := 0
+	for i in 500:
+		wfx.fire("mg", [o], Vector3(0, 0, 1), o + Vector3(0, 0, 5), 0, -1, Vector3.ZERO)
+	for i in 3:
+		wfx._process(0.05)
+	flood = wfx.shots.size()
+	_check(flood <= WeaponFx.MAX_SHOTS and wfx.glow.n <= wfx.glow.cap, "round pool is capped under a flood (%d live)" % flood)
+	for i in 200:
+		wfx._process(0.05)
+	# ---- the sim is untouched by the view: fire events carry the weapon id; hashes match
+	var a := MatchRunner.new()
+	a.record_replay = false
+	a.start(make_cfg("1v1", 99, ["hard", "hard"], ["eu", "tpla"]))
+	var b := MatchRunner.new()
+	b.record_replay = false
+	b.start(make_cfg("1v1", 99, ["hard", "hard"], ["eu", "tpla"]))
+	var bv := WorldView.new()
+	add_child(bv)
+	bv.setup(b, 0)
+	var fires := 0
+	var with_w := 0
+	var mism := 0
+	for i in 20 * 60 * 8:
+		a.advance()
+		b.advance()
+		var evs: Array = b.sim.events.duplicate()
+		for ev in evs:
+			if ev["t"] == "fire":
+				fires += 1
+				with_w += 1 if ev.has("w") else 0
+		bv.on_tick(evs)
+		if i % 4 == 0:
+			bv.frame(0.5, 0.05)
+		if i % 600 == 599 and a.sim.state_hash() != b.sim.state_hash():
+			mism += 1
+	_check(fires > 0 and with_w == fires, "fire events carry the weapon id (%d of %d)" % [with_w, fires])
+	_check(mism == 0, "view attached vs headless: identical sim state hashes over 8 min (%d mismatches)" % mism)
+	print("M24 weapon fx stats: ", bv.wfx.stats)
