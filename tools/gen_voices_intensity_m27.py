@@ -93,6 +93,16 @@ def prompt(fac, uid, actor, key):
             sf.write(p, a, sr)
     return p
 
+NUM = {"0": "zero", "1": "one", "2": "two", "3": "three", "4": "four", "5": "five", "6": "six", "7": "seven", "8": "eight",
+       "9": "nine", "10": "ten", "50": "fifty", "50's": "fifty's", "50s": "fifties"}
+
+def rescore(text, heard):
+    got = set(g.words(re.sub(r"\d+('s|s)?", lambda m: " " + NUM.get(m.group(0), m.group(0)) + " ", heard)))
+    want = [w.rstrip("'") for w in g.words(text) if w not in g.SHOUTS]
+    import difflib
+    hit = lambda w: w in got or (len(w) >= 5 and any(difflib.SequenceMatcher(None, w, x).ratio() >= 0.7 for x in got))
+    return sum(1 for w in want if hit(w)) / max(1, len(want))
+
 def speech_span(a, sr):
     env = np.convolve(np.abs(a), np.ones(int(sr * 0.02)) / int(sr * 0.02), "same")
     on = np.where(env > env.max() * 0.06)[0]
@@ -175,6 +185,8 @@ def render(job):
             cand = os.path.join(td, f"{i}.ogg")
             dur = process(src, cand, radio, rstyle, pre, RADIO_CLIP if radio else "", lufs)
             sc, heard = g.score(wm, cand, text)
+            if re.search(r"\d", heard):     # Whisper writes "Splash 1" / "50 cal": spell digits before matching
+                sc = max(sc, rescore(text, heard))
             extra = len(g.words(heard)) - nw
             bad_len = dur > 0.9 + 0.45 * nw or extra >= 2          # babble / long tail
             eff = sc - (0.3 if bad_len else 0.25 if extra >= 1 else 0)
@@ -235,16 +247,18 @@ def main(argv):
     evs = arg("--event"); evs = evs.split(",") if evs else None
     rep = {r["file"]: r for r in (json.load(open(REP)) if os.path.exists(REP) else [])}
     def weak(r):        # under the word-match bar, or extra babble words heard (long tail)
-        return r["qa"] < THR or len(g.words(r["heard"])) > len(g.words(r["text"]))
+        return r["qa"] < THR or len(g.words(r["heard"])) > len(g.words(r["text"])) + (1 if re.search(r"\d", r["heard"]) else 0)
     js = [j for j in jobs(arg("--only"), arg("--unit"), out, evs)
           if "--force" in argv or os.path.relpath(j[7], ROOT) not in rep or ("--retake" in argv and weak(rep[os.path.relpath(j[7], ROOT)]))]
     # warm the prompt cache in this process (Kokoro), so workers don't race on it
     for j in js:
         if j[1] != "tpla_militia":
             prompt(j[0], j[1], j[8], j[9])
+    g._k = g._w = None          # free Kokoro + Whisper in the parent (workers load their own)
+    import gc; gc.collect()
     print("lines to render:", len(js), flush=True)
     import multiprocessing as mp
-    with mp.get_context("spawn").Pool(int(arg("--jobs", 2)), maxtasksperchild=20) as pool:
+    with mp.get_context("spawn").Pool(int(arg("--jobs", 2)), maxtasksperchild=8) as pool:
         for r in pool.imap_unordered(render, js):
             rep[r["file"]] = r
             print("%-52s %.2f t%d x%.2f c%.2f %s tempo %.2f %r" % (r["file"], r["qa"], r["take"], r["exag"], r["cfg"], r["lang"], r["tempo"], r["heard"]), flush=True)
