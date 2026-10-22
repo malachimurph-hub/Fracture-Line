@@ -1,0 +1,6 @@
+Toon Shooter Game Kit by Quaternius (https://quaternius.com/packs/toonshootergamekit.html)
+License: CC0 1.0 Universal (public domain dedication) https://creativecommons.org/publicdomain/zero/1.0/
+Downloaded 2026-10-22 from the author's public Google Drive folder linked on that page.
+Files here: Characters/glTF/Character_Soldier.gltf, Character_Enemy.gltf, Character_Hazmat.gltf (unmodified).
+They are source files only (.gdignore: not imported, not exported). tools/bake_infantry.gd bakes them
+into res://assets/models/infantry/*.res (decimated mesh + vertex-animation textures).
