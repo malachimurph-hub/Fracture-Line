@@ -639,6 +639,13 @@ func _army() -> void:
 			var t3 := _pick_target()
 			if t3.x >= 0 and FX.dist(t3, cen) > FX.ONE * 6:
 				cmd({"t": "amove", "ids": bb["wave"].duplicate(), "pos": t3})
+			elif seconds() > 600 and not _knows_enemy_structure():
+				# nothing known left to hit: sweep the map (spawns, centre, quadrants) so a
+				# hidden last structure cannot stall the game into a draw
+				var hp := _hunt_points()
+				var hi := int(bb.get("hunt_i", 0))
+				bb["hunt_i"] = hi + 1
+				cmd({"t": "amove", "ids": bb["wave"].duplicate(), "pos": hp[hi % hp.size()]})
 			else:
 				cmd({"t": "move", "ids": bb["wave"].duplicate(), "pos": _staging()})
 				bb["wave"] = []
@@ -649,6 +656,11 @@ func _army() -> void:
 				idle += 1
 		if idle * 2 >= bb["wave"].size():
 			var t2 := _pick_target()
+			if seconds() > 600 and not _knows_enemy_structure():
+				var hp2 := _hunt_points()
+				var hi2 := int(bb.get("hunt_i", 0))
+				bb["hunt_i"] = hi2 + 1
+				t2 = hp2[hi2 % hp2.size()]
 			if t2.x >= 0:
 				cmd({"t": "amove", "ids": bb["wave"].duplicate(), "pos": t2})
 		if _every("t_reinforce", 200) and army_value(staged) >= (1200 if seconds() > 960 else 2500):
@@ -766,6 +778,28 @@ func _pick_target() -> Vector2i:
 	if best.x < 0:
 		best = _spawn_of(tp)
 	return best
+
+func _knows_enemy_structure() -> bool:
+	var my_team := me().team
+	var mem: Dictionary = w.fog.memory.get(my_team, {})
+	for id in mem:
+		var m: Dictionary = mem[id]
+		var o := int(m["owner"])
+		if o >= 0 and w.enemies(my_team, w.players[o].team) and not w.players[o].eliminated:
+			return true
+	return false
+
+func _hunt_points() -> Array:
+	var out: Array = []
+	var map_def: MapDef = Content.maps[w.map_id]
+	for sp in map_def.spawns:
+		out.append(FX.tile_center(sp + Vector2i(2, 2)))
+	var W := w.map.w
+	var H := w.map.h
+	for f: Vector2 in [Vector2(0.5, 0.5), Vector2(0.25, 0.25), Vector2(0.75, 0.25), Vector2(0.25, 0.75), Vector2(0.75, 0.75), Vector2(0.5, 0.15), Vector2(0.5, 0.85), Vector2(0.15, 0.5), Vector2(0.85, 0.5)]:
+		var t := w.map.nearest_passable(Vector2i(int(W * f.x), int(H * f.y)), false)
+		out.append(FX.tile_center(t))
+	return out
 
 func _spawn_of(p_id: int) -> Vector2i:
 	var map_def: MapDef = Content.maps[w.map_id]
