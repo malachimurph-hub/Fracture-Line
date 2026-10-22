@@ -5,6 +5,9 @@
 //  5 lamp (emissive) 6 bare steel      7 wheel rubber*   8 wheel steel*    9 canvas
 // 10 concrete       11 corrugated      12 wood           13 sandbag        14 charred
 // 15 team lamp      16 dark interior   17 rusty scrap
+// 18 spinner (M2.7: fans / radar dishes turn about a vertical axis at UV = pivot xz, UV2.x = rad/s;
+//    UV2.y > 0.5: the part is painted (class 0 look) else bare steel)
+// 19 pulse lamp (M2.7: emissive that breathes, e.g. the fusion core; UV2.x = phase)
 // (* spins: UV = axle (y, z), UV2 = (axle x, radius [+10 = steers]))
 // Weathering (object-space triplanar, so it sticks to moving parts) as the M2 shader: panel
 // lines, chipped paint, rust, grime, ground dirt, stencils, plus damage soot / scorch.
@@ -42,6 +45,13 @@ void vertex() {
 	cls = int(COLOR.a * 20.0 + 0.5);
 	opos = VERTEX;
 	onrm = NORMAL;
+	if (cls == 18) {
+		float a = TIME * UV2.x;
+		float c = cos(a), s = sin(a);
+		vec2 q = VERTEX.xz - UV;
+		VERTEX.xz = UV + vec2(q.x * c - q.y * s, q.x * s + q.y * c);
+		NORMAL.xz = vec2(NORMAL.x * c - NORMAL.z * s, NORMAL.x * s + NORMAL.z * c);
+	}
 	if (cls == 7 || cls == 8) {
 		float r = UV2.y;
 		bool steers = r > 9.0;
@@ -93,6 +103,12 @@ void fragment() {
 		metal = mix(0.25, 0.75, link); rough = mix(0.9, 0.45, link); panel = 0.0; weather = 0.4;
 	} else if (cls == 5) {
 		emit = base * 3.0; panel = 0.0; weather = 0.0; rough = 0.2;
+	} else if (cls == 19) {
+		float pulse = 0.5 + 0.5 * sin(TIME * 2.1 + UV2.x);
+		emit = base * mix(1.6, 4.2, pulse * pulse); panel = 0.0; weather = 0.0; rough = 0.25;
+	} else if (cls == 18) {
+		if (UV2.y > 0.5) { metal = 0.3; rough = 0.6; } else { metal = 0.75; rough = 0.42; }
+		panel = 0.15; weather = 0.5;
 	} else if (cls == 6 || cls == 8) {
 		metal = 0.75; rough = 0.42; panel = 0.25; weather = 0.6;
 	} else if (cls == 9 || cls == 13) {
@@ -150,7 +166,7 @@ void fragment() {
 	}
 	// ---- M2.6 surface detail (Zero Hour-style crispness at RTS distance) ----
 	float side2 = 1.0 - abs(onrm.y);
-	if (hi && cls != 2 && cls != 5 && cls != 15) {
+	if (hi && cls != 2 && cls != 5 && cls != 15 && cls != 19) {
 		// vertical rain / grime streaks running down walls and hull sides
 		float sk = texture(weather_tex, vec2((opos.x + opos.z) * 2.3, opos.y * 0.22), bias).r;
 		float streak = smoothstep(0.45, 0.85, sk) * side2 * (cls == 10 || cls == 11 ? 0.32 : 0.2);
