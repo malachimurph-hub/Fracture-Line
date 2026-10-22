@@ -26,3 +26,4 @@ harvest_capacity = 400
 role = &"harvester"
 view_scene = "res://view/units/eu/harvester.tscn"
 stubs = PackedStringArray()
+turret_dps = 200

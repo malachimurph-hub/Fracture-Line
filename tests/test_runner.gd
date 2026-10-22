@@ -1063,6 +1063,7 @@ func _zh_move_ticks(r: MatchRunner, u: SimEntity, dest: Vector2i, limit: int = 4
 
 func test_zh() -> void:
 	_zh_loco()
+	_zh_weapons()
 
 func _zh_loco() -> void:
 	var r := _zh_runner()
@@ -1110,3 +1111,53 @@ func _zh_loco() -> void:
 	# fixed-point angle helpers
 	_check(FX.iatan2(0, 100) == 0 and FX.iatan2(100, 0) == 256 and FX.iatan2(0, -100) == 512 and FX.iatan2(-100, 0) == 768, "iatan2 cardinal directions")
 	_check(FX.dir_of(256) == Vector2i(1024, 0) and FX.adiff(1000, 20) == 44, "dir_of / adiff")
+
+## Spawn shooter (player 0) and a tough unarmed dummy (player 1) `off` tiles away; return shot ticks.
+func _zh_shots(def: String, off: Vector2i, ticks: int, face: int = 0) -> Array:
+	var r := _zh_runner(37)
+	var w := r.sim
+	var c := _zh_open(w, 7)
+	var u := w.spawn_unit(StringName(def), 0, null, FX.tile_center(c))
+	u.pos = FX.tile_center(c)
+	u.face = face
+	u.tface = face
+	u.dir = FX.dir_of(face)
+	var t := w.spawn_unit(&"eu_crawler", 1, null, FX.tile_center(c + off))
+	t.pos = FX.tile_center(c + off)
+	t.max_hp = 1000000
+	t.hp = 1000000
+	for p in [0, 1]:
+		var ex: PackedByteArray = w.fog.explored[p]
+		ex.fill(1)
+		w.fog.explored[p] = ex
+	r.issue({"p": 0, "t": "attack", "ids": [u.id], "target": t.id})
+	var shots: Array = []
+	var last := u.firing_tick
+	for i in ticks:
+		r.advance()
+		if u.firing_tick != last:
+			last = u.firing_tick
+			shots.append(i + 1)
+	return shots
+
+func _zh_weapons() -> void:
+	# turret traverse: a target behind the tank costs ~2 s of turret turn before the first shot
+	var ahead := _zh_shots("eu_leopold", Vector2i(0, 4), 120)
+	var behind := _zh_shots("eu_leopold", Vector2i(0, -4), 120)
+	print("  tank first shot: target ahead tick %s, behind tick %s" % [ahead.slice(0, 1), behind.slice(0, 1)])
+	_check(not ahead.is_empty() and not behind.is_empty() and int(behind[0]) - int(ahead[0]) >= 30, "turret must traverse before firing (behind +%s ticks)" % [(int(behind[0]) - int(ahead[0])) if not ahead.is_empty() and not behind.is_empty() else "-"])
+	# hull-mounted: infantry turns to face the target first (fast)
+	var inf_b := _zh_shots("eu_grenadier", Vector2i(0, -3), 60)
+	_check(not inf_b.is_empty() and int(inf_b[0]) <= 15, "infantry turns and fires quickly (tick %s)" % [inf_b.slice(0, 1)])
+	# pre-attack lock-on: Lancer waits 0.5 s on a new target, then fires on cooldown only
+	var lan := _zh_shots("eu_lancer", Vector2i(0, 3), 160)
+	var lan_ref := _zh_shots("eu_grenadier", Vector2i(0, 3), 160)
+	print("  lancer shots %s ; grenadier shots %s" % [lan, lan_ref.slice(0, 3)])
+	_check(lan.size() >= 2 and int(lan[0]) >= FX.ms_to_ticks(500) and int(lan[1]) - int(lan[0]) == FX.ms_to_ticks(2500), "lancer: pre-attack once per target, then plain cooldown")
+	# clip + reload: Rattler HMG fires 8 quick shots then reloads
+	var hmg := _zh_shots("tpla_rattler", Vector2i(0, 3), 140)
+	var gaps: Array = []
+	for i in range(1, hmg.size()):
+		gaps.append(int(hmg[i]) - int(hmg[i - 1]))
+	print("  rattler shot gaps %s" % [gaps])
+	_check(gaps.size() >= 10 and gaps.count(FX.ms_to_ticks(200)) >= 7 and gaps.max() >= FX.ms_to_ticks(1400), "HMG clip: bursts of quick shots with a reload pause")

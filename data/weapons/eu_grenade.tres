@@ -15,3 +15,5 @@ targets_air = false
 targets_ground = true
 vfx = &"grenade"
 min_tier = 0
+pre_attack_ms = 300
+scatter_mt = 300

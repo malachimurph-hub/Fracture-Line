@@ -15,3 +15,5 @@ targets_air = false
 targets_ground = true
 vfx = &"rocket"
 min_tier = 0
+pre_attack_ms = 400
+scatter_inf_mt = 700

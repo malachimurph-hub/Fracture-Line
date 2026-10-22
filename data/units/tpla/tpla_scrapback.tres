@@ -26,3 +26,4 @@ harvest_capacity = 0
 role = &"tank"
 view_scene = "res://view/units/tpla/scrapback.tscn"
 stubs = PackedStringArray()
+turret_dps = 80

@@ -26,3 +26,4 @@ harvest_capacity = 0
 role = &"ifv"
 view_scene = "res://view/units/tpla/rattler.tscn"
 stubs = PackedStringArray()
+turret_dps = 240

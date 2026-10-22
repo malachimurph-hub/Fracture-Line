@@ -15,3 +15,5 @@ targets_air = false
 targets_ground = true
 vfx = &"rust_shell"
 min_tier = 0
+pre_attack_ms = 800
+scatter_mt = 600

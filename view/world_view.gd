@@ -353,7 +353,11 @@ func frame(a: float, delta: float) -> void:
 			v.rotation.y = ny
 			if v.has_method("set_health"):
 				v.set_health(float(e.hp) / float(maxi(1, e.max_hp)))
-			if v.turret != null:
+			if v.turret != null and Content.unit(e.def_id).turret_dps > 0:
+				# M2.3: the sim owns turret traverse (units only fire once aimed)
+				var tang := float(e.tface) * TAU / float(FX.ANG) - ny
+				v.turret.rotation.y = lerp_angle(v.turret.rotation.y, tang, minf(1.0, delta * 12.0))
+			elif v.turret != null:
 				var tgt := sim.get_ent(e.target)
 				if tgt != null and sim.tick - e.firing_tick < 40:
 					var tp := FX.to_world(tgt.pos)

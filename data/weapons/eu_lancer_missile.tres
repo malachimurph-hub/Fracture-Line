@@ -15,3 +15,4 @@ targets_air = true
 targets_ground = true
 vfx = &"missile"
 min_tier = 0
+pre_attack_ms = 500

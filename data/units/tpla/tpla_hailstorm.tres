@@ -26,3 +26,4 @@ harvest_capacity = 0
 role = &"anti_air"
 view_scene = "res://view/units/tpla/hailstorm.tscn"
 stubs = PackedStringArray()
+turret_dps = 160
