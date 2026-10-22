@@ -59,7 +59,8 @@ def main(argv):
             exag = min(0.9, c["exag"] + (0.2 if ev in ("under_fire", "attack") else 0.0))
             log.append({"file": os.path.relpath(dst, ROOT), "text": text, "voice": vm._vname(c), "exag": exag, "tempo": tempo,
                         "engine": "chatterbox-multilingual (MIT), lang=ar"})
-            if os.path.exists(dst) and not force:
+            since = float(os.environ.get("FL_SINCE", "0"))   # resume a --force run: keep files made after this time
+            if os.path.exists(dst) and (not force or os.path.getmtime(dst) > since > 0):
                 continue
             if m is None:
                 m = ChatterboxMultilingualTTS.from_pretrained("cpu")

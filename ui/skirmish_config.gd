@@ -18,6 +18,12 @@ static func default_setup() -> Dictionary:
 		],
 	}
 
+## M2.5: skirmish maps in lobby order (Varno Crossing first, then by id).
+static func map_ids() -> Array:
+	var ids: Array = Content.maps.keys()
+	ids.sort_custom(func(a, b): return a == &"varno_crossing" or (b != &"varno_crossing" and String(a) < String(b)))
+	return ids
+
 static func active(cfg: Dictionary) -> Array:
 	var out: Array = []
 	for s in cfg["slots"]:

@@ -8,3 +8,4 @@ extends Resource
 @export var resources: Array[Dictionary] = [] ## {kind: seam|cache, tile: Vector2i, amount: int}
 @export var neutrals: Array[Dictionary] = []  ## {kind, tile}
 @export var description_key: String = ""
+@export var env: StringName = &"desert"   ## M2.5 view environment (MapEnv): desert | winter | temperate

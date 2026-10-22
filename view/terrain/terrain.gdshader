@@ -15,6 +15,8 @@ uniform sampler2DArray t_nrao : hint_default_white, filter_linear_mipmap_anisotr
 uniform sampler2D t_detail : hint_default_white, filter_linear_mipmap, repeat_enable;
 uniform sampler2D t_macro : hint_default_white, filter_linear_mipmap, repeat_enable;
 uniform vec2 map_size = vec2(128.0, 128.0);
+uniform float dry_scrub = 1.0;    // M2.5 env: desert sun-dried scrub on the grass layer (0 = lush / snow)
+uniform float desert_tint = 1.0;  // M2.5 env: warm desert per-layer tints (0 = neutral)
 varying vec3 wpos;
 varying vec3 wnrm;
 
@@ -56,11 +58,11 @@ void fragment() {
 		if (w[i] > 0.01) {
 			vec2 uv = p * sc[i];
 			if (i == 4) uv += vec2(0.0, wpos.y * 0.25);
-			vec3 c = texture(t_albedo, vec3(uv, float(i)), bias).rgb * tint[i];
+			vec3 c = texture(t_albedo, vec3(uv, float(i)), bias).rgb * mix(vec3(1.0), tint[i], desert_tint);
 			if (i == 2) { // grass: green layer vs sun-dried scrub
 				float l = dot(c, vec3(0.3, 0.59, 0.11));
 				vec3 dry = mix(vec3(l), c, 0.35) * vec3(1.45, 1.22, 0.72);
-				c = mix(dry, c * vec3(0.95, 1.08, 0.78), a.a / max(1e-4, a.b + a.a));
+				c = mix(mix(c, dry, dry_scrub), c * mix(vec3(1.0), vec3(0.95, 1.08, 0.78), desert_tint), a.a / max(1e-4, a.b + a.a));
 			}
 			col += w[i] * c;
 			if (hi) nr += w[i] * texture(t_nrao, vec3(uv, float(i)));
@@ -69,8 +71,8 @@ void fragment() {
 	// macro variation (baked, ~64 m period) against visible tiling
 	vec3 mac = texture(t_macro, p / 64.0, bias).rgb;
 	col *= mix(0.84, 1.1, mac.r);
-	col *= mix(vec3(1.04, 0.99, 0.92), vec3(0.95, 0.99, 1.04), mac.g * 0.6);
-	col = mix(col, col * vec3(1.08, 1.0, 0.86), (mac.b - 0.5) * 0.35 * (a.r + a.g));
+	col *= mix(mix(vec3(1.0), vec3(1.04, 0.99, 0.92), desert_tint), mix(vec3(1.0), vec3(0.95, 0.99, 1.04), desert_tint), mac.g * 0.6);
+	col = mix(col, col * mix(vec3(1.0), vec3(1.08, 1.0, 0.86), desert_tint), (mac.b - 0.5) * 0.35 * (a.r + a.g));
 	vec3 n_t = vec3(0.0, 0.0, 1.0);
 	float rough = 0.92 - b.r * 0.12;
 	float ao = 1.0;

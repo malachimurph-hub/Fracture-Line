@@ -73,6 +73,39 @@ def build_terrain():
     m3 = ImageOps.autocontrast(d.transpose(Image.FLIP_LEFT_RIGHT).filter(ImageFilter.GaussianBlur(18)))
     Image.merge("RGB", (m1, m2, m3)).save(f"{OUT}/terrain/terrain_macro.png", optimize=True)
 
+# ---------------------------------------------------------------- M2.5 map environments
+# Same 7 layers (same splat meaning) with environment materials; asphalt and concrete slices are
+# copied from the desert set (already built). ambientCG sets, all CC0.
+ENV_LAYERS = {
+    "winter": [("snow", "Snow006"), ("frozen_dirt", "Ground054"), ("snowy_grass", "Snow004"), None,
+               ("snowy_rock", "Rock035"), ("ice", "Ice002"), None],
+    "temperate": [("meadow", "Grass001"), ("mud", "Ground037"), ("grass", "Grass004"), None,
+                  ("rock", "Rock023"), ("riverbed", "Gravel035"), ("paving", "PavingStones130")],
+}
+
+def build_terrain_env(env):
+    base_a = Image.open(f"{OUT}/terrain/terrain_albedo.png").convert("RGB")
+    base_n = Image.open(f"{OUT}/terrain/terrain_nrao.png").convert("RGBA")
+    alb = Image.new("RGB", (S, S * 7))
+    nra = Image.new("RGBA", (S, S * 7))
+    for i, layer in enumerate(ENV_LAYERS[env]):
+        if layer is None:
+            alb.paste(base_a.crop((0, i * S, S, (i + 1) * S)), (0, i * S))
+            nra.paste(base_n.crop((0, i * S, S, (i + 1) * S)), (0, i * S))
+            continue
+        key, name = layer
+        c = square(src(name, "Color"), "RGB")
+        alb.paste(c, (0, i * S))
+        n = square(src(name, "NormalGL"), "RGB")
+        r = square(src(name, "Roughness"), "L")
+        ao = src(name, "AmbientOcclusion")
+        ao = square(ao, "L") if ao else Image.new("L", (S, S), 255)
+        nr, ng, _ = n.split()
+        nra.paste(Image.merge("RGBA", (nr, ng, r, ao)), (0, i * S))
+        print(env, "layer", i, key, name)
+    alb.save(f"{OUT}/terrain/terrain_albedo_{env}.png", optimize=True)
+    nra.save(f"{OUT}/terrain/terrain_nrao_{env}.png", optimize=True)
+
 # ---------------------------------------------------------------- decals (original, procedural)
 def cell_img():
     return Image.new("RGBA", (256, 256), (0, 0, 0, 0))
@@ -223,6 +256,9 @@ def build_weather():
     st = st.filter(ImageFilter.GaussianBlur(0.5))
     st.save(f"{OUT}/materials/stencils.png", optimize=True)
 
+if __name__ == "__main__" and len(__import__("sys").argv) > 2 and __import__("sys").argv[1] == "--env":
+    build_terrain_env(__import__("sys").argv[2])
+    raise SystemExit(0)
 if __name__ == "__main__":
     build_terrain(); build_decals(); build_weather()
     print("done")

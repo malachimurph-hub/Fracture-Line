@@ -77,6 +77,37 @@ static func make(kind: String) -> Mesh:
 			sph(st, Vector3(0, 0.95, 0), Vector3(0.55, 0.4, 0.5), Color("#7a7d3c"), 7)
 			sph(st, Vector3(0.25, 0.78, 0.15), Vector3(0.38, 0.3, 0.35), Color("#6c7034"), 6)
 			sph(st, Vector3(-0.22, 0.8, -0.18), Vector3(0.36, 0.28, 0.34), Color("#858a45"), 6)
+		"pine", "pine_snow":
+			# M2.5 conifer (temperate / winter maps); the snow variant carries white caps on each tier
+			var snow := kind == "pine_snow"
+			cyl(st, Vector3(0, 0.35, 0), 0.07, 0.1, 0.7, Color("#5a4632"), 6)
+			for k in 4:
+				var y := 0.55 + k * 0.52
+				var r := 0.95 - k * 0.2
+				var g := Color("#2f4a2c").lightened(k * 0.03)
+				cyl(st, Vector3(0, y + 0.3, 0), 0.03, r, 0.78, g, 8)
+				if snow:
+					cyl(st, Vector3(0, y + 0.42, 0), 0.02, r * 0.78, 0.42, Color("#e8eef5"), 8)
+		"oak":
+			cyl(st, Vector3(0, 0.55, 0), 0.08, 0.13, 1.1, Color("#5c4a36"), 6)
+			cyl(st, Vector3(0.18, 1.05, 0.05), 0.04, 0.06, 0.5, Color("#5c4a36"), 5, Vector3(0, 0, -35))
+			sph(st, Vector3(0, 1.55, 0), Vector3(0.95, 0.7, 0.9), Color("#4c6b2f"), 8)
+			sph(st, Vector3(0.45, 1.35, 0.3), Vector3(0.6, 0.48, 0.55), Color("#577a34"), 7)
+			sph(st, Vector3(-0.4, 1.4, -0.3), Vector3(0.62, 0.5, 0.58), Color("#45622b"), 7)
+		"bush":
+			sph(st, Vector3(0, 0.22, 0), Vector3(0.5, 0.3, 0.45), Color("#53702f"), 6)
+			sph(st, Vector3(0.3, 0.16, 0.18), Vector3(0.32, 0.22, 0.3), Color("#4a6229"), 5)
+		"fence":
+			for fx in [-0.9, -0.3, 0.3, 0.9]:
+				box(st, Vector3(fx, 0.3, 0), Vector3(0.08, 0.6, 0.08), Color("#6e5a42"))
+			for fy in [0.22, 0.45]:
+				box(st, Vector3(0, fy, 0), Vector3(1.9, 0.06, 0.04), Color("#7a6449"))
+		"hay_bale":
+			cyl(st, Vector3(0, 0.32, 0), 0.32, 0.32, 0.55, Color("#b89b55"), 9, Vector3(0, 0, 90))
+		"streetlight":
+			cyl(st, Vector3(0, 1.4, 0), 0.035, 0.05, 2.8, Color("#4b4f52"), 6)
+			box(st, Vector3(0.28, 2.78, 0), Vector3(0.6, 0.05, 0.08), Color("#4b4f52"))
+			box(st, Vector3(0.55, 2.72, 0), Vector3(0.22, 0.07, 0.14), Color("#d8d0b0"))
 		"rock":
 			sph(st, Vector3(0, 0.25, 0), Vector3(0.7, 0.55, 0.6), Color("#9c8a72"), 6)
 			sph(st, Vector3(0.45, 0.15, 0.25), Vector3(0.4, 0.35, 0.35), Color("#8b7a64"), 5)

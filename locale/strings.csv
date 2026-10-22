@@ -375,3 +375,9 @@ REASON_STUB,Not available yet [STUB]
 REASON_TRANSPORT_FULL,Transport is full.
 CMD_MORE,More
 CMD_MORE_TIP,Show the next page of this command card.
+MAP_KESSEL,Kessel Pass
+MAP_KESSEL_DESC,"Winter. A frozen river splits north from south: two bridges, two ice fords, snowy pine forests and rock ridges. Garrisonable village houses on both banks."
+MAP_HARROW,Harrow Junction
+MAP_HARROW_DESC,"Temperate. A canal runs through a small city: three bridges and a weir, a street grid of garrisonable blocks, farmland and oak woods around the bases."
+MAP_VARNO_DESC,"Desert. A river town with three bridges and two fords, oil derricks and supply piles by the town."
+LOBBY_MAP,Map

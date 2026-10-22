@@ -243,7 +243,7 @@ for r in res:
 res = res2
 lines = ['[gd_resource type="Resource" script_class="MapDef" load_steps=2 format=3]', '',
          '[ext_resource type="Script" path="res://data/defs/map_def.gd" id="1_s"]', '', '[resource]', 'script = ExtResource("1_s")',
-         'id = &"varno_crossing"', 'name_key = "MAP_VARNO"', 'description_key = "MAP_VARNO_DESC"', 'size = Vector2i(128, 128)',
+         'id = &"varno_crossing"', 'name_key = "MAP_VARNO_CROSSING"', 'description_key = "MAP_VARNO_DESC"', 'size = Vector2i(128, 128)',
          'tiles_path = "res://data/maps/varno_crossing.txt"',
          'spawns = Array[Vector2i]([%s])' % ", ".join("Vector2i(%d, %d)" % s for s in sp),
          'resources = Array[Dictionary]([%s])' % ", ".join('{"kind": "%s", "tile": Vector2i(%d, %d), "amount": %d}' % r for r in res),

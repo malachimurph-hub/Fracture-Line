@@ -361,7 +361,9 @@ static func make_cfg(mode: String, seed: int, diffs: Array = [], facs: Array = [
 		var f: String = facs[i] if i < facs.size() else "eu"
 		slots[i]["faction"] = f
 		slots[i]["personality"] = String(Content.faction(StringName(f))["personality"])
-	return {"map": "varno_crossing", "seed": seed, "options": {"fog": true, "start_money": 10000}, "slots": slots}
+	# M2.5: FL_MAP=<map id> runs soaks / tests on another skirmish map
+	var map_id := OS.get_environment("FL_MAP") if OS.get_environment("FL_MAP") != "" else "varno_crossing"
+	return {"map": map_id, "seed": seed, "options": {"fog": true, "start_money": 10000}, "slots": slots}
 
 func run_match(mode: String, seed: int, verbose: bool, max_minutes: int = 40, diffs: Array = [], facs: Array = [], spawn_rot: int = 0) -> Dictionary:
 	var r := MatchRunner.new()

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="MapDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/map_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"kessel_pass"
+name_key = "MAP_KESSEL"
+description_key = "MAP_KESSEL_DESC"
+size = Vector2i(128, 128)
+tiles_path = "res://data/maps/kessel_pass.txt"
+spawns = Array[Vector2i]([Vector2i(14, 14), Vector2i(110, 110), Vector2i(110, 14), Vector2i(14, 110)])
+resources = Array[Dictionary]([{"kind": "seam", "tile": Vector2i(6, 28), "amount": 30000}, {"kind": "seam", "tile": Vector2i(121, 28), "amount": 30000}, {"kind": "seam", "tile": Vector2i(6, 99), "amount": 30000}, {"kind": "seam", "tile": Vector2i(121, 99), "amount": 30000}, {"kind": "cache", "tile": Vector2i(28, 7), "amount": 6000}, {"kind": "cache", "tile": Vector2i(99, 7), "amount": 6000}, {"kind": "cache", "tile": Vector2i(28, 120), "amount": 6000}, {"kind": "cache", "tile": Vector2i(99, 120), "amount": 6000}, {"kind": "seam", "tile": Vector2i(40, 46), "amount": 40000}, {"kind": "seam", "tile": Vector2i(87, 46), "amount": 40000}, {"kind": "seam", "tile": Vector2i(40, 81), "amount": 40000}, {"kind": "seam", "tile": Vector2i(87, 81), "amount": 40000}, {"kind": "cache", "tile": Vector2i(51, 49), "amount": 8000}, {"kind": "cache", "tile": Vector2i(76, 49), "amount": 8000}, {"kind": "cache", "tile": Vector2i(51, 78), "amount": 8000}, {"kind": "cache", "tile": Vector2i(76, 78), "amount": 8000}])
+neutrals = Array[Dictionary]([{"kind": "neutral_pump", "tile": Vector2i(30, 40)}, {"kind": "neutral_pump", "tile": Vector2i(96, 40)}, {"kind": "neutral_pump", "tile": Vector2i(30, 86)}, {"kind": "neutral_pump", "tile": Vector2i(96, 86)}, {"kind": "neutral_pump", "tile": Vector2i(56, 16)}, {"kind": "neutral_pump", "tile": Vector2i(70, 16)}, {"kind": "neutral_pump", "tile": Vector2i(56, 110)}, {"kind": "neutral_pump", "tile": Vector2i(70, 110)}, {"kind": "neutral_civ_block", "tile": Vector2i(56, 52)}, {"kind": "neutral_civ_block", "tile": Vector2i(69, 52)}, {"kind": "neutral_civ_block", "tile": Vector2i(56, 73)}, {"kind": "neutral_civ_block", "tile": Vector2i(69, 73)}, {"kind": "neutral_civ_block", "tile": Vector2i(49, 55)}, {"kind": "neutral_civ_block", "tile": Vector2i(76, 55)}, {"kind": "neutral_civ_block", "tile": Vector2i(49, 70)}, {"kind": "neutral_civ_block", "tile": Vector2i(76, 70)}, {"kind": "neutral_civ_block", "tile": Vector2i(58, 44)}, {"kind": "neutral_civ_block", "tile": Vector2i(67, 44)}, {"kind": "neutral_civ_block", "tile": Vector2i(58, 81)}, {"kind": "neutral_civ_block", "tile": Vector2i(67, 81)}, {"kind": "neutral_civ_block", "tile": Vector2i(44, 52)}, {"kind": "neutral_civ_block", "tile": Vector2i(81, 52)}, {"kind": "neutral_civ_block", "tile": Vector2i(44, 73)}, {"kind": "neutral_civ_block", "tile": Vector2i(81, 73)}, {"kind": "neutral_civ_block", "tile": Vector2i(25, 53)}, {"kind": "neutral_civ_block", "tile": Vector2i(100, 53)}, {"kind": "neutral_civ_block", "tile": Vector2i(25, 72)}, {"kind": "neutral_civ_block", "tile": Vector2i(100, 72)}])
+env = &"winter"

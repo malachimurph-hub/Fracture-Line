@@ -25,11 +25,14 @@ var prop_sway_material: ShaderMaterial
 var prop_detail_material: ShaderMaterial
 var m: SimMap
 var biome: PackedStringArray = PackedStringArray()
+var prop_tint := Color(1, 1, 1)
 var heights: PackedFloat32Array
 var ground_decal_count := 0
 
-func build(map: SimMap, tiles_path: String = "") -> void:
+func build(map: SimMap, tiles_path: String = "", env: Dictionary = {}) -> void:
 	m = map
+	if env.is_empty():
+		env = MapEnv.of(&"desert")
 	fog_image = Image.create_empty(m.w, m.h, false, Image.FORMAT_L8)
 	fog_image.fill(Color(0, 0, 0))
 	fog_texture = ImageTexture.create_from_image(fog_image)
@@ -38,8 +41,10 @@ func build(map: SimMap, tiles_path: String = "") -> void:
 	material.shader = load("res://view/terrain/terrain.gdshader")
 	material.set_shader_parameter("fog_tex", fog_texture)
 	material.set_shader_parameter("map_size", Vector2(m.w, m.h))
-	material.set_shader_parameter("t_albedo", load(TEX + "terrain/terrain_albedo.png"))
-	material.set_shader_parameter("t_nrao", load(TEX + "terrain/terrain_nrao.png"))
+	material.set_shader_parameter("t_albedo", load(env["albedo"]))
+	material.set_shader_parameter("t_nrao", load(env["nrao"]))
+	material.set_shader_parameter("dry_scrub", env["dry"])
+	material.set_shader_parameter("desert_tint", env["tint"])
 	material.set_shader_parameter("t_detail", load(TEX + "terrain/terrain_detail.png"))
 	material.set_shader_parameter("t_macro", load(TEX + "terrain/terrain_macro.png"))
 	_build_splats()
@@ -47,6 +52,9 @@ func build(map: SimMap, tiles_path: String = "") -> void:
 	water_material.shader = load("res://view/terrain/water.gdshader")
 	water_material.set_shader_parameter("fog_tex", fog_texture)
 	water_material.set_shader_parameter("map_size", Vector2(m.w, m.h))
+	water_material.set_shader_parameter("deep_col", env["water_deep"])
+	water_material.set_shader_parameter("shallow_col", env["water_shallow"])
+	prop_tint = env["prop_tint"]
 	prop_material = _prop_mat(0.0, 0.0, null)
 	prop_sway_material = _prop_mat(1.0, 0.0, null)
 	prop_detail_material = _prop_mat(0.0, 0.55, load(TEX + "materials/concrete.png"))
@@ -325,9 +333,9 @@ func _build_props(tiles_path: String) -> void:
 		if mesh == null:
 			continue
 		var mat := prop_material
-		if kind == "palm" or kind == "scrub_tree":
+		if kind in ["palm", "scrub_tree", "pine", "pine_snow", "oak", "bush"]:
 			mat = prop_sway_material
-		elif kind in ["gas_station", "shack", "power_pole"]:
+		elif kind in ["gas_station", "shack", "power_pole", "streetlight"]:
 			mat = prop_detail_material
 		_multimesh(by_kind[kind], mesh, mat, kind)
 
@@ -337,7 +345,7 @@ func _multimesh(items: Array, mesh: Mesh, mat: Material, kind: String) -> void:
 	mm.use_colors = true
 	mm.mesh = mesh
 	mm.instance_count = items.size()
-	var jitter := kind in ["palm", "scrub_tree", "rock", "rock_small"]
+	var jitter := kind in ["palm", "scrub_tree", "rock", "rock_small", "pine", "pine_snow", "oak", "bush", "hay_bale"]
 	for i in items.size():
 		var it: Array = items[i]
 		var x: float = it[0]
@@ -348,7 +356,7 @@ func _multimesh(items: Array, mesh: Mesh, mat: Material, kind: String) -> void:
 		var y := heights[clampi(int(z), 0, m.h) * (m.w + 1) + clampi(int(x), 0, m.w)] if kind.begins_with("rock") else 0.0
 		var b := Basis(Vector3.UP, yaw).scaled(Vector3(s, s * lerpf(0.9, 1.15, _h(int(x), int(z))), s))
 		mm.set_instance_transform(i, Transform3D(b, Vector3(x, y, z)))
-		mm.set_instance_color(i, Color(1, 1, 1).darkened(n * 0.15) if jitter else Color(1, 1, 1))
+		mm.set_instance_color(i, (prop_tint.darkened(n * 0.15) if jitter else prop_tint))
 	var mmi := MultiMeshInstance3D.new()
 	mmi.name = "Props_" + kind
 	mmi.multimesh = mm

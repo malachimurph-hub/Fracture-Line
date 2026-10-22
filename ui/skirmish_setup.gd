@@ -49,7 +49,20 @@ func build() -> void:
 	right.custom_minimum_size = Vector2(172, 0)
 	right.add_theme_constant_override("separation", 4)
 	main.add_child(right)
-	right.add_child(UiTheme.label(tr("MAP_VARNO_CROSSING") + "  (4)", 13, UiTheme.CYAN))
+	# M2.5: map choice (every map is 4-player), with a biome preview below
+	var maps := OptionButton.new()
+	maps.custom_minimum_size = Vector2(172, 44)
+	var ids := SkirmishConfig.map_ids()
+	for mid in ids:
+		var mdef: MapDef = Content.maps[mid]
+		maps.add_item("%s  (%d)" % [tr(mdef.name_key), mdef.spawns.size()])
+	maps.selected = maxi(0, ids.find(StringName(cfg.get("map", "varno_crossing"))))
+	maps.item_selected.connect(func(i):
+		cfg["map"] = String(ids[i])
+		_preview_tex = null
+		preview.queue_redraw())
+	map_option = maps
+	right.add_child(maps)
 	preview = Control.new()
 	preview.custom_minimum_size = Vector2(110, 110)
 	preview.draw.connect(_draw_preview)
@@ -198,8 +211,12 @@ func _validate() -> bool:
 	return e == ""
 
 var _preview_tex: ImageTexture = null
+var map_option: OptionButton
 const BIOME_PREVIEW := {"s": Color("#c9a878"), "d": Color("#9c8160"), "g": Color("#a09656"), "G": Color("#5f7a3a"),
 	"a": Color("#4f4c47"), "c": Color("#b0aa9e"), "r": Color("#857563"), "w": Color("#3f6f8f")}
+## M2.5: natural ground colours per environment (asphalt / concrete / rock / water shared)
+const ENV_PREVIEW := {&"winter": {"s": Color("#e9eef3"), "d": Color("#8c8378"), "g": Color("#c9d3d6"), "G": Color("#7d9080"), "w": Color("#a9c3d2"), "r": Color("#7c7f86")},
+	&"temperate": {"s": Color("#8fa65a"), "d": Color("#7a6248"), "g": Color("#6f8f45"), "G": Color("#4f7034"), "c": Color("#9d9a92")}}
 
 ## Map preview from the map's biome layer (what the terrain actually looks like).
 func _biome_preview(md: MapDef) -> ImageTexture:
@@ -214,11 +231,12 @@ func _biome_preview(md: MapDef) -> ImageTexture:
 	for y in lines.size():
 		var ln: String = lines[y]
 		for x in mini(w, ln.length()):
-			img.set_pixel(x, y, BIOME_PREVIEW.get(ln[x], Color("#b59a6c")))
+			var pal: Dictionary = ENV_PREVIEW.get(md.env, {})
+			img.set_pixel(x, y, pal.get(ln[x], BIOME_PREVIEW.get(ln[x], Color("#b59a6c"))))
 	return ImageTexture.create_from_image(img)
 
 func _draw_preview() -> void:
-	var md: MapDef = Content.maps[&"varno_crossing"]
+	var md: MapDef = Content.maps.get(StringName(cfg.get("map", "varno_crossing")), Content.maps[&"varno_crossing"])
 	var s := preview.size
 	if _preview_tex == null:
 		_preview_tex = _biome_preview(md)
@@ -229,7 +247,7 @@ func _draw_preview() -> void:
 	preview.draw_rect(Rect2(Vector2.ZERO, s), UiTheme.GOLD, false, 1)
 	var f := preview.get_theme_default_font()
 	for i in md.spawns.size():
-		var p := Vector2(md.spawns[i]) / 128.0 * s
+		var p := (Vector2(md.spawns[i]) + Vector2(2, 2)) / Vector2(md.size) * s
 		var owner_color := Color(0.8, 0.8, 0.8, 0.6)
 		for sl in cfg["slots"]:
 			if int(sl["spawn"]) == i and sl["kind"] in ["human", "ai"]:
