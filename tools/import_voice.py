@@ -88,10 +88,9 @@ def style_for(rel):
         return "ann_eu"
     return MAN["factions"].get(top, {}).get("radio_style", "eu")
 
-def process(src, dst, radio, style=None, pre="", lufs=-16.0):
+def process(src, dst, radio, style=None):
     """radio: True -> unit radio filter of `style` (default EU); False -> clean, or the light
-    announcer colour when style starts with 'ann_'. pre: M2.6 per-character FX chain (grit,
-    intercom, helmet...) applied before the radio; lufs: loudness target (quiet characters)."""
+    announcer colour when style starts with 'ann_'."""
     os.makedirs(os.path.dirname(dst), exist_ok=True)
     with tempfile.TemporaryDirectory() as td:
         a = os.path.join(td, "a.wav")
@@ -102,18 +101,16 @@ def process(src, dst, radio, style=None, pre="", lufs=-16.0):
             chain = TRIM + "," + RADIO_STYLES[st]
         else:
             chain = TRIM
-        if pre:
-            chain = TRIM + "," + pre + chain[len(TRIM):]
         subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", src, "-ac", "1", "-ar", "48000", "-af", chain, a], check=True)
         dur = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", a], capture_output=True, text=True).stdout.strip() or 0)
         m = loud(a)
         if dur >= 0.5 and float(m["input_i"]) > -60:
-            norm = (f"loudnorm=I={lufs}:TP=-1.5:LRA=11:measured_I={m['input_i']}:measured_TP={m['input_tp']}:"
+            norm = (f"loudnorm=I=-16:TP=-1.5:LRA=11:measured_I={m['input_i']}:measured_TP={m['input_tp']}:"
                     f"measured_LRA={m['input_lra']}:measured_thresh={m['input_thresh']}:offset={m['target_offset']}:linear=true")
         else:   # very short clip: RMS-based gain (~ -16 LUFS for speech)
             r = subprocess.run(["ffmpeg", "-hide_banner", "-nostats", "-i", a, "-af", "volumedetect", "-f", "null", "-"], capture_output=True, text=True)
             mean = float(re.search(r"mean_volume: (-?[\d.]+)", r.stderr).group(1))
-            norm = f"volume={lufs - 3.0 - mean:.2f}dB"
+            norm = f"volume={-19.0 - mean:.2f}dB"
         subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", a, "-af", norm + ",alimiter=limit=0.84:attack=2:release=40,aresample=24000",
                         "-ac", "1", "-c:a", "libvorbis", "-q:a", "4", dst], check=True)
     return dur
