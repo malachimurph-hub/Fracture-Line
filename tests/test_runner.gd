@@ -43,6 +43,11 @@ func _ready() -> void:
 				if fpat.size() > 1 and nsl == 2:
 					var dk := ((i + off) / 2) % 3
 					dset = ["medium", "medium"] if dk == 0 else (["hard", "hard"] if dk == 1 else ["easy", "easy"])
+				# arg 5: force one difficulty for every slot (e.g. "medium")
+				if args.size() > 5 and args[5] != "":
+					dset = []
+					for k in nsl:
+						dset.append(args[5])
 				var res := run_match(mode2, 1000 + i + off, false, 40 if mode2 == "1v1" else 60, dset, facs, (i + off) / 2 if fpat.size() > 1 else 0)
 				wins[mode2 + ":" + str(res["winner"])] = wins.get(mode2 + ":" + str(res["winner"]), 0) + 1
 				var wf := "draw"
