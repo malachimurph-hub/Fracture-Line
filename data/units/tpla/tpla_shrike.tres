@@ -26,3 +26,5 @@ harvest_capacity = 0
 role = &"artillery"
 view_scene = "res://view/units/tpla/shrike.tscn"
 stubs = PackedStringArray()
+accel_ms = 500
+turn_dps = 240

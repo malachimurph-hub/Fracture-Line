@@ -16,4 +16,4 @@ targets_ground = true
 vfx = &"shell"
 min_tier = 2
 aim_deg = 8
-scatter_inf_mt = 800
+scatter_inf_mt = 500

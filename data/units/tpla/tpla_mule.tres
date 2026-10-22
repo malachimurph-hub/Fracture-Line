@@ -26,3 +26,5 @@ harvest_capacity = 0
 role = &"suicide"
 view_scene = "res://view/units/tpla/mule.tscn"
 stubs = PackedStringArray("disguise")
+accel_ms = 500
+turn_dps = 220

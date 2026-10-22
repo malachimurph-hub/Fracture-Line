@@ -26,4 +26,4 @@ harvest_capacity = 0
 role = &"tank"
 view_scene = "res://view/units/eu/leopold.tscn"
 stubs = PackedStringArray()
-turret_dps = 90
+turret_dps = 75

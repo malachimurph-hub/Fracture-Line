@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_s")
 id = &"tpla_rpg"
-damage = 62
+damage = 66
 range_mt = 5500
 min_range_mt = 0
 cooldown_ms = 2600
@@ -15,5 +15,5 @@ targets_air = false
 targets_ground = true
 vfx = &"rocket"
 min_tier = 0
-pre_attack_ms = 400
+pre_attack_ms = 250
 scatter_inf_mt = 700

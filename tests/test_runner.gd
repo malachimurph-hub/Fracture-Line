@@ -76,6 +76,8 @@ func _ready() -> void:
 			test_content()
 		"tpla":
 			test_tpla()
+		"duel":
+			test_duel()
 		"zh":
 			test_zh()
 		"stall":
@@ -1190,8 +1192,8 @@ func _zh_scatter() -> void:
 	var vs_veh := _zh_hit_rate(w, u, "eu_crawler", "eu_tank_cannon", 200)
 	var vs_inf := _zh_hit_rate(w, u, "tpla_laborer", "eu_tank_cannon", 200)
 	var rifle := _zh_hit_rate(w, u, "tpla_laborer", "eu_rifle", 200)
-	var arty := _zh_hit_rate(w, u, "eu_crawler", "tpla_rust_shell", 200)
-	print("  direct-hit rate: tank cannon vs vehicle %d%%, vs infantry %d%%; rifle vs infantry %d%%; rust shell vs vehicle %d%%" % [vs_veh, vs_inf, rifle, arty])
+	var arty := _zh_hit_rate(w, u, "eu_grenadier", "tpla_rust_shell", 200)
+	print("  direct-hit rate: tank cannon vs vehicle %d%%, vs infantry %d%%; rifle vs infantry %d%%; rust shell vs infantry %d%%" % [vs_veh, vs_inf, rifle, arty])
 	_check(vs_veh == 100 and rifle == 100, "accurate weapons always hit")
 	_check(vs_inf >= 20 and vs_inf <= 70, "tank cannon often misses infantry (%d%%)" % vs_inf)
 	_check(arty < 100, "artillery scatters (%d%%)" % arty)
@@ -1274,3 +1276,47 @@ func _zh_group() -> void:
 	_check(int(g[0]) == FX.speed_per_tick(1650), "group move caps the fast unit at the slowest member's speed (%d)" % g[0])
 	_check(absi(int(g[1])) * 2 <= absi(int(s[1])), "mixed group arrives together (gap %d vs %d)" % [g[1], s[1]])
 	_check(bool(g[2]), "single-unit move is not capped")
+
+func test_duel() -> void:
+	var comps := {
+		"rush": [["tpla_militia", 5], ["tpla_rattler", 2], ["tpla_rocket_cell", 2]],
+		"eu_def": [["eu_grenadier", 4], ["eu_wolfhound", 1], ["eu_lancer", 2]],
+		"tpla_mid": [["tpla_scrapback", 3], ["tpla_rocket_cell", 3], ["tpla_militia", 3]],
+		"eu_mid": [["eu_leopold", 3], ["eu_grenadier", 3], ["eu_lancer", 2]],
+	}
+	for pair in [["rush", "eu_def"], ["tpla_mid", "eu_mid"]]:
+		var tw := 0
+		var ew := 0
+		for seed in range(5):
+			var r := MatchRunner.new()
+			r.record_replay = false
+			var slots := [{"team": 0, "spawn": 0}, {"team": 1, "spawn": 1}]
+			r.start(load("res://tests/test_runner.gd").make_cfg("1v1", seed + 50, [], ["eu", "tpla"]))
+			r.ais.clear()
+			var w := r.sim
+			var c := Vector2i(48, 94)
+			var a: Array = []
+			var b: Array = []
+			var k := 0
+			for e in comps[pair[0]]:
+				for n in e[1]:
+					var u := w.spawn_unit(StringName(e[0]), 1, null, FX.tile_center(c + Vector2i(k % 5 - 2, 6 + k / 5)))
+					a.append(u); k += 1
+			k = 0
+			for e in comps[pair[1]]:
+				for n in e[1]:
+					var u := w.spawn_unit(StringName(e[0]), 0, null, FX.tile_center(c + Vector2i(k % 5 - 2, -6 - k / 5)))
+					b.append(u); k += 1
+			var ia: Array = []; for u in a: ia.append(u.id)
+			var ib: Array = []; for u in b: ib.append(u.id)
+			r.issue({"p": 1, "t": "amove", "ids": ia, "pos": FX.tile_center(c + Vector2i(0, -8))})
+			r.issue({"p": 0, "t": "amove", "ids": ib, "pos": FX.tile_center(c + Vector2i(0, 8))})
+			for i in 1800:
+				r.advance()
+			var va := 0; var vb := 0
+			for u in a: if u.alive: va += Content.unit(u.def_id).cost
+			for u in b: if u.alive: vb += Content.unit(u.def_id).cost
+			if va > vb: tw += 1
+			elif vb > va: ew += 1
+			print("%s vs %s seed %d: tpla left $%d, eu left $%d" % [pair[0], pair[1], seed, va, vb])
+		print("== %s vs %s: tpla wins %d, eu wins %d" % [pair[0], pair[1], tw, ew])
