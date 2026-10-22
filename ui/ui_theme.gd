@@ -73,7 +73,7 @@ const PALETTES := {
 	&"us": {"bg": Color(0.06, 0.09, 0.14, 0.96), "btn": Color("#22344c"), "btn_hover": Color("#2c4462"), "btn_pressed": Color("#0f1a28"),
 		"edge": Color("#41648c"), "frame": Color("#7fb0e6"), "accent": Color("#ffffff"), "title": Color("#cfe4ff"),
 		"money": Color("#9fe0a0"), "text": Color("#e6eef8"), "radius": 2, "btn_radius": 2, "frame_w": 1, "skew": 0.0,
-		"embolden": 0.15, "spacing": 0, "slant": 0.0},
+		"embolden": 0.0, "spacing": 0, "slant": 0.0},
 }
 static var _fthemes: Dictionary = {}
 
