@@ -103,7 +103,7 @@ func _new_battle() -> void:
 		_pools[pid] = []
 		_wave(pid)
 	cam.jump_to(Vector3(c.x, 0, c.y), false)
-	cam.set_level(1)
+	cam.set_level(0)      # close: the units are the show
 	_drift = Vector3(dir.y, 0, -dir.x) * 0.6
 	_map_t = 0.0
 

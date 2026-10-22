@@ -46,6 +46,7 @@ func _add_battle_backdrop() -> void:
 	svc.name = "BattleBackdrop"
 	svc.stretch = true
 	svc.stretch_shrink = 2
+	svc.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR   # smooth upscale of the half-res render
 	svc.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	svc.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(svc)
