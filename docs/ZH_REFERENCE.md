@@ -167,12 +167,12 @@ This compares how Zero Hour does each system with how FRACTURE LINE does it toda
 
 | # | Gap | Impact | Plan |
 |---|---|---|---|
-| 1 | Locomotors: heading, turn rate, accel/brake; treads slow with turn angle, wheels clamp to turn speed, legs nimble; damaged speed | H | implement |
-| 2 | Weapon timing: pre-attack delay (per shot / attack / clip), clip + reload, turret/hull aim with turn rate before firing | H | implement |
-| 3 | Accuracy: scatter radius, extra scatter vs infantry (cannons and artillery miss infantry) | H | implement |
-| 4 | AI difficulty victim selection (Easy random / Medium nearest / Hard focus fire) | M–H | implement |
-| 5 | Group move at the slowest member's speed | M | implement |
-| 6 | Damaged-state movement penalty (SpeedDamaged) | M | implement with #1 |
+| 1 | Locomotors: heading, turn rate, accel/brake; treads slow with turn angle, wheels clamp to turn speed, legs nimble; damaged speed | H | DONE a6352d3 |
+| 2 | Weapon timing: pre-attack delay (per shot / attack / clip), clip + reload, turret/hull aim with turn rate before firing | H | DONE 9f9d09d |
+| 3 | Accuracy: scatter radius, extra scatter vs infantry (cannons and artillery miss infantry) | H | DONE 75d6d83 |
+| 4 | AI difficulty victim selection (Easy random / Medium nearest / Hard focus fire) | M–H | DONE e5abd48 |
+| 5 | Group move at the slowest member's speed | M | DONE 0231771 |
+| 6 | Damaged-state movement penalty (SpeedDamaged) | M | DONE a6352d3 (with #1) |
 | 7 | Two-ring primary/secondary splash | L–M | deferred |
 | 8 | Idle builder auto-repair ("bored" dozer) | L–M | deferred |
 | 9 | Projectile travel time | L–M | deferred (keeps hitscan determinism simple) |
@@ -181,3 +181,11 @@ This compares how Zero Hour does each system with how FRACTURE LINE does it toda
 | 12 | Stealth delay / detectors for stealth units | L | deferred: no stealth units yet |
 
 All numbers we add (turn rates, delays, clip sizes, scatter) are **our own tuning values**, chosen to give ZH-like behaviour. They are not ZH data.
+
+
+## M2.3 implementation status
+Gaps 1-6 are implemented in our own GDScript (no EA code in the project); every number used
+(turn rates, acceleration, clip sizes, reload / pre-attack times, scatter radii, damaged-speed
+penalty) is FRACTURE LINE tuning chosen to reproduce the *feel*, not data from Zero Hour (the
+INI data is not in the released repository). Tests: `test_runner.tscn -- zh`.
+Gaps 7+ remain deferred as listed above.
