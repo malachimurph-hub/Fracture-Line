@@ -12,15 +12,15 @@ Voices: modern American soldiers + announcer (Kokoro-82M American voices, Apache
 |---|---|---|---|---|
 | Dozer | armoured bulldozer | 1000 | 500 | builder |
 | Supply Truck | logistics truck | 700 | 650 | gatherer (350 per load) |
-| Marine Rifleman | Marine rifleman | 225 | 180 | rifle (13 dmg), garrisons |
-| Javelin Team | Javelin ATGM team | 450 | 260 | **2 soldiers**; fire-and-forget AT missile, hits helicopters |
+| Marine Rifleman | Marine rifleman | 225 | 180 | rifle (12 dmg; M2.6, was 13), garrisons |
+| Javelin Team | Javelin ATGM team | 500 (M2.6, was 450) | 260 | **2 soldiers**; fire-and-forget AT missile, hits helicopters |
 | JTAC Observer | joint terminal attack controller | 500 | 243 (= Rifleman +35%) | sight 12 (Rifleman 7); every 10 s sends an idle aircraft (within 70 tiles) at his target; artillery and air strikes landing within 8 tiles of him do +25% damage with half the scatter |
 | Scout Sniper | Marine scout sniper | 600 | 150 | invisible after 2 s standing still (revealed by nearby enemies / detectors); 400-damage rifle one-shots any infantry, ~nothing vs vehicles; needs Strategy Center |
 | Lynx | JLTV | 700 | 550 | fast, roof HMG, carries 5 infantry |
-| Halberd | Abrams | 1100 | 1050 | main battle tank, heavy armour |
+| Halberd | Abrams | 1200 (M2.6, was 1100) | 980 (M2.6, was 1050) | main battle tank, heavy armour; gun 110 dmg (M2.6, was 125) |
 | Picket | Avenger SHORAD | 850 | 520 | Stinger-style AA pods + MG |
 | Longreach | M777 | 1400 | 420 | 175-dmg howitzer, range 15, minimum range; needs Strategy Center |
-| Harrier Gunship | Apache | 1500 | 700 | helicopter: Hellfire-style missiles (4) + chain gun; hovers, reloads in the air, **no airfield slot, never lands** |
+| Harrier Gunship | Apache | 1600 (M2.6, was 1500) | 540 (M2.6, was 700) | helicopter: Hellfire-style missiles (4, 70 dmg, 11 s reload) + chain gun (12 dmg, 20-round belt, 3.5 s reload); hovers, reloads in the air, **no airfield slot, never lands** |
 | Wraith Fighter | modern fighter | 1500 | 520 | **2 airfield slots**; best anti-air (4 air-to-air missiles) + one light bomb; short rearm |
 | Thunderlance Bomber | heavy bomber | 2500 | 900 | **4 airfield slots**; one 700-damage bomb run, then lands and rearms 45 s; needs Strategy Center |
 

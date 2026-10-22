@@ -74,9 +74,33 @@ TPLA:
 - Rocket Cell HP 130 → 150.
 - Hailstorm cost 700 → 650.
 
+## Graphics (asset track, branch assets-m26, merged)
+- Upgraded unit and building models with LODs.
+- Re-proportioned infantry.
+- Shader updates.
+- CREDITS for the models.
+- Showcase test: tests/assets_m26_showcase.tscn.
+
+## AI
+- **Late-game hunt.** When the attacker knows no enemy structure, it now sweeps the enemy
+  spawns, then every resource site (where expansions are built), then a 20-tile grid, starting
+  nearest the enemy. Stalemates still happen; see KNOWN_ISSUES.
+
+## HUD text
+- A single word too wide for a command card at 9 dp gets 1 px tighter letter spacing
+  ("Thunderlance Bomber" now fits).
+
 ## Voices / licence
+- **M2.6 ships the M2.5 voices unchanged.** New voices come in a later update.
+  - The voice audio, manifest, index and import tool were restored to the M2.5 state after
+    the asset merge.
+  - The new voice tools from the asset branch are in tools/ but are not used.
+- No shipped voice line says "Grunt".
 - The licence review of the Persian Piper voices behind the TPLA prompts is in
   docs/m2_6/LICENCE_REVIEW.md.
   - All three voices descend from the research-only "lessac" voice.
-  - That is not clearly permissive, so TPLA voices are being regenerated without them by the
-    asset track.
+  - That licence is not clearly permissive, so the TPLA voices are being regenerated without
+    them for a later update.
+  - The in-game credits flag this.
+
+See KNOWN_ISSUES.md and SOAK.md.
