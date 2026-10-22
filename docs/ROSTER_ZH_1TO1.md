@@ -1,0 +1,138 @@
+# FRACTURE LINE: 1:1 roster map to C&C Generals: Zero Hour (M2.4)
+
+Zero Hour (ZH) is used **only as a structural reference**: which roles exist in each base faction,
+and how they gate each other. The checks were made against EA's GPL-3.0 source release at
+/workspace/reference/cnc-zh and public knowledge of the game.
+- The source names the faction templates (e.g. `ChinaNuclearMissileLauncher`, `GLAScudStorm`,
+  `ChinaTankOverlord*`), but the INI data with the unit stats is not in the release.
+- Every FRACTURE LINE name, model, sound and number is original. Costs and times are our own tuning.
+- ZH names appear only in the left column of this design document, as the reference role. They
+  never appear in the game.
+
+## Faction mapping
+
+| FRACTURE LINE | ZH base faction | Why | In this build |
+|---|---|---|---|
+| **TPLA** | GLA | Insurgents, tunnels, salvage upgrades, toxins, cheap swarms, no power, holes that rebuild (GDD §3, §21) | Yes |
+| **EU Alliance** | China | Heavy armour in mass, attrition, slow late-game front, power grid, EMP and jamming. The GDD gives no explicit ZH mapping; the EU is the closest match to China's tank-and-mass doctrine | Yes |
+| United States | USA | Air power, drones and precision strikes (GDD §3) | No (M4+) |
+| Western Alliance | Spread across ZH USA and China roles: special forces, stealth infantry, artillery, fortification. There is no clean 1:1 | | No (M5) |
+
+**Status key**
+- **exists:** already in the game before M2.4.
+- **added:** new in M2.4 as a real, working unit or structure.
+- **stub:** in the build tree with a model, but its core mechanic is not implemented; shown as `[STUB]` in game.
+- **later:** not in M2.4.
+
+Tier key: T0 base, T1 basic production, T2 needs a T1 production building, T3 needs a tech centre.
+
+---
+## EU Alliance (ZH China)
+
+### Vehicles
+| ZH role (reference) | FRACTURE LINE | Role | Cost / build s / tier | Prereqs (built at) | Special | Status |
+|---|---|---|---|---|---|---|
+| Dozer | **Construction Crawler** | Builder | 1000 / 10 / T0 | HQ | Armoured builder | exists |
+| Supply Truck | **Harvester Rig** | Gatherer | 800 / 10 / T0 | Logistics Hub | Free MG turret, 400 per load | exists |
+| Battlemaster | **Leopold MBT** | Main battle tank | 1000 / 14 / T2 | Heavy Factory | Turret 75°/s | exists |
+| Overlord | **Brennus Siege Tank** | Super-heavy tank | 1800 / 18 / T3 | Heavy Factory + Signals Center | Twin cannon (2-round clip), slow, very tough. Bolt-on add-ons [STUB] | added |
+| Gattling Tank | **Flakwerk AA** | Anti-air / anti-infantry | 800 / 10 / T2 | Motor Pool | Flak bursts | exists |
+| Dragon Tank | **Salamander Flame Tank** | Anti-infantry / anti-garrison | 900 / 12 / T2 | Motor Pool | Short-range flame. New `flame` damage type (strong vs infantry, weak vs armour) | added |
+| Troop Crawler | **Wolfhound IFV** | APC / raider | 750 / 10 / T2 | Motor Pool | Autocannon. Carries 4 infantry (load / unload is real from M2.4; was a stub) | exists (transport added) |
+| Nuke Cannon | **Thunderhead Howitzer** | Long-range heavy artillery | 1600 / 16 / T3 | Heavy Factory + Signals Center | 14-tile range, 4-tile minimum, 1.5 s set-up before firing, big splash with scatter | added |
+| Inferno Cannon | **Hearth Mortar Carrier** | Medium artillery | 1000 / 12 / T2 | Motor Pool | 10-tile incendiary mortar, scatter | added |
+| ECM Tank | **Spectre Jammer** | Electronic warfare | 900 / 10 / T3 | Motor Pool + Signals Center | Jamming field: enemy vehicles within 6 tiles cannot fire. Unarmed | added |
+| Listening Outpost | **Sentinel Outpost** | Detector / scout | 800 / 10 / T2 | Motor Pool | Detector: reveals stealthed units and structures in sight (12). Carries 2 infantry | added |
+| Helix (helicopter) | **Kestrel Lift Helo** | Air transport / gunship | 1500 / 15 / T3 | Airstrip | No air layer yet | stub |
+| MiG (jet) | **Corvid Strike Jet** | Air strike | 1500 / 15 / T3 | Airstrip | No air layer yet | stub |
+| (no ZH equivalent) | **Aegis Shield Carrier** | Mobile shield | 1200 / 14 / T2 | Heavy Factory | Area shield aura | exists (EU extra) |
+
+### Structures
+| ZH role (reference) | FRACTURE LINE | Role | Cost / build s / tier | Prereqs | Special | Status |
+|---|---|---|---|---|---|---|
+| Command Center | **Directorate HQ** | HQ | 2500 / 45 / T0 | - | Builds Crawlers, +5 power | exists |
+| Nuclear Reactor | **Grid Reactor** | Power | 800 / 10 / T0 | - | +10 power | exists |
+| (grid extension) | **Pylon** | Power / shield grid | 300 / 5 / T0 | Reactor | EU extra | exists |
+| Supply Center | **Logistics Hub** | Refinery | 1500 / 15 / T0 | Reactor | Passive +3/s | exists |
+| Barracks | **Barracks** | Infantry | 600 / 10 / T1 | Reactor | | exists |
+| War Factory | **Motor Pool** + **Heavy Factory** | Vehicles (light / heavy) | 1500 / 15, 2000 / 20 / T1–T2 | Barracks / Motor Pool | | exists |
+| Bunker | **Gun Bunker** | Defence | 1000 / 12 / T1 | Barracks | Armed bunker (cannon) | exists |
+| Gattling Cannon | **Flak Tower** | AA / anti-infantry defence | 1000 / 12 / T1 | Barracks | Rapid-fire, hits ground and air, needs power | added |
+| Propaganda Center | **Signals Center** | Tech centre (T3 gate) | 1500 / 15 / T2 | Motor Pool | Unlocks T3. Research upgrades [STUB] | added |
+| Speaker Tower | **Field Relay Mast** | Support | 600 / 8 / T3 | Signals Center | Repairs friendly units within 6 tiles by 1% HP/s | added |
+| Internet Center | **Data Exchange** | Economy / intel | 2000 / 16 / T3 | Signals Center | Passive +4 supply/s. Shared-radar hacking [STUB] | added |
+| Airfield | **Airstrip** | Aircraft | 1500 / 15 / T3 | Signals Center | Real building. Its aircraft are stubs | added (products stub) |
+| Land Mines upgrade | **Minefield** | Mines | 300 / 4 / T1 | Barracks | Hidden, detonates under enemy ground units (built by the Crawler) | added |
+| Nuclear Missile | **Concord Pylon** | Superweapon | 5000 / 60 / T3 | Signals Center | EMP storm not implemented | stub |
+
+### Infantry (for completeness)
+| ZH role | FRACTURE LINE | Status |
+|---|---|---|
+| Red Guard | Grenadier Squad | exists |
+| Tank Hunter | Lancer Squad | exists |
+| Hacker | Signals Tech (hacks buildings for income) | later |
+| Black Lotus (hero) | Col. Ilse Vantongeren (hero, a tank in our design) | later |
+
+---
+## TPLA (ZH GLA)
+
+### Vehicles
+| ZH role (reference) | FRACTURE LINE | Role | Cost / build s / tier | Prereqs (built at) | Special | Status |
+|---|---|---|---|---|---|---|
+| Worker (infantry) | **Laborer** | Builder / gatherer | 150 / 5 / T0 | Den / Stash | On foot | exists |
+| Technical | **Rattler Technical** | Raider | 400 / 7 / T1 | Chop Shop | Salvage tiers 1–3 | exists |
+| Scorpion Tank | **Scrapback Tank** | Light tank | 650 / 10 / T1 | Chop Shop | Second gun at tier 2 | exists |
+| Marauder Tank | **Junkhammer Tank** | Heavy salvage tank | 900 / 12 / T2 | Chop Shop + Workshop | Heavy cannon, salvage tiers | added |
+| Quad Cannon | **Hailstorm AA** | AA / anti-infantry | 700 / 9 / T1 | Chop Shop | Quad guns (12-round clip) | exists |
+| Rocket Buggy | **Shrike Rocket Buggy** | Hit-and-run artillery | 600 / 9 / T1 | Chop Shop | Rocket salvos | exists |
+| Toxin Tractor | **Rot Sprayer** | Anti-infantry / area denial | 600 / 9 / T1 | Chop Shop | Short-range corrosive spray, leaves rust zones | added |
+| SCUD Launcher | **Blight Mortar** | Long-range artillery | 900 / 12 / T2 | Chop Shop | Corrosive shells | exists |
+| Radar Van | **Earwig Van** | Detector / scout | 500 / 8 / T1 | Chop Shop | Detector, 14-tile sight. Radar scan [STUB] | added |
+| Bomb Truck | **Mule Bomb Truck** | Suicide | 500 / 8 / T1 | Chop Shop | Detonates on target. Disguise [STUB] | exists |
+| Combat Cycle | **Jackal Bike** | Fast scout / raider | 350 / 5 / T1 | Chop Shop | Fastest unit, light MG. Rider swap [STUB] | added |
+| Battle Bus | **Rust Bus** | Transport | 800 / 10 / T2 | Chop Shop + Workshop | Carries 8 infantry. Becomes a bunker when destroyed [STUB] | added |
+
+### Structures
+| ZH role (reference) | FRACTURE LINE | Role | Cost / build s / tier | Prereqs | Special | Status |
+|---|---|---|---|---|---|---|
+| Command Center | **Den** | HQ | 2500 / 45 / T0 | - | Builds Laborers | exists |
+| Supply Stash | **Stash** | Supply drop-off | 1500 / 14 / T0 | - | | exists |
+| Barracks | **Recruitment Camp** | Infantry | 500 / 9 / T1 | - | | exists |
+| Arms Dealer | **Chop Shop** | Vehicles | 1600 / 16 / T1 | Camp | | exists |
+| Palace | **Workshop of Grievances** | Tech centre | 1500 / 15 / T2 | Chop Shop | Upgrade research [STUB] (tech gate is real) | exists |
+| Black Market | **Bazaar** | Tech / economy | 2500 / 18 / T3 | Workshop | | exists |
+| Tunnel Network | **Tunnel** | Shared garrison network | 600 / 8 / T1 | Camp | MG, shared network, heals inside | exists |
+| Stinger Site | **Wasp Nest** | AA / anti-vehicle defence | 900 / 10 / T1 | Camp | Missile team (3-round clip), hits ground and air | added |
+| Demo Trap | **Demo Trap** | Mine | 200 / 4 / T1 | Camp | Hidden, detonates | exists |
+| Fake buildings | **Decoy Yard** | Deception | 300 / 5 / T1 | Camp | Cheap plywood structure. The AI and fog treat it as a real building | added |
+| Building holes | **Rebuild Hole** | Auto-rebuild | - | - | | exists |
+| Camouflage | **Camo Net** | Stealth | 400 / 6 / T1 | Camp | Hides structures | exists |
+| SCUD Storm | **Rust Bloom Silo** | Superweapon | 4500 / 60 / T3 | Bazaar | Spore barrage not implemented | stub |
+
+### Infantry (for completeness)
+| ZH role | FRACTURE LINE | Status |
+|---|---|---|
+| Rebel | Militia | exists |
+| RPG Trooper | Rocket Cell | exists |
+| Terrorist | (suicide infantry) | later |
+| Angry Mob | (mob) | later |
+| Hijacker | "The Tinker" (hero hijacker) | later |
+| Jarmen Kell (hero) | (sniper hero) | later |
+| Saboteur | (saboteur) | later |
+
+---
+## Counts (M2.4)
+| Faction | Vehicles exist / added / stub | Structures exist / added / stub |
+|---|---|---|
+| EU Alliance | 6 / 6 / 2 (+ the Wolfhound's transport made real) | 9 / 5 / 1 (+ the Airstrip's aircraft stubbed) |
+| TPLA | 8 / 4 / 0 | 10 / 2 / 1 |
+
+---
+## Appendix: ZH general sub-faction units (later)
+These map to our sub-generals (GDD §4) and are **not** in M2.4.
+- **China, Tank General** → EU "Ironclad": the *Bastion* super-heavy (an Emperor-type Overlord), tank veterancy perks.
+- **China, Nuke General** → EU "Static": the *Tempest* EMP mortar (nuke-cannon variant), the *Blackout* doctrine.
+- **China, Infantry General** → (no EU equivalent, later): massed infantry, Minigunner-type, Assault Troop Crawler.
+- **GLA, Toxin General** → TPLA "Mother Rust": Blight Wagon variants, toxin upgrades on all infantry.
+- **GLA, Stealth General** → TPLA "The Mole": hidden buildings, cheaper tunnels, stealthed Rattler variant.
+- **GLA, Demolition General** → (partly) TPLA "Scrapjack": salvage bonuses. Demo-type units come later.
