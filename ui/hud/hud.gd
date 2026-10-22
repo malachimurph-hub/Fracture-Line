@@ -5,9 +5,12 @@ extends CanvasLayer
 ## top strip with filters, 5 control groups, clock, pause and menu; alerts with jump/Back;
 ## placement Confirm/Rotate/Cancel; General powers tray; pause menu. All sizes in dp.
 
-const BAR_H := 118.0
-const PORTRAIT := Vector2(72, 52)
-const BTN := Vector2(70, 54)
+## M2.1: every HUD bubble is 10% smaller than M2 (user feedback: cluttered); tap targets stay >= 44 dp.
+const BAR_H := 106.0
+const PORTRAIT := Vector2(65, 47)
+const BTN := Vector2(63, 49)
+const TOP_H := 44.0
+const XBTN := Vector2(44, 44)
 
 var m  ## Match node
 var ctl: PlayerController
@@ -38,6 +41,10 @@ var idle_btn: HudButton
 var army_btn: HudButton
 var top: HBoxContainer
 var group_btns: Array = []
+var groups_btn: HudButton   ## chevron that expands / collapses the 1-5 row
+var groups_open := false
+var deselect_btn: Button
+var resume_btn: HudButton
 var clock_lbl: Label
 var pause_btn: Button
 var alerts_box: VBoxContainer
@@ -94,11 +101,22 @@ func _build() -> void:
 	# selection panel
 	sel_panel = Control.new()
 	bar.add_child(sel_panel)
+	deselect_btn = UiTheme.button("X", XBTN)
+	deselect_btn.name = "Deselect"
+	deselect_btn.tooltip_text = tr("HUD_DESELECT")
+	deselect_btn.visible = false
+	deselect_btn.pressed.connect(func(): ctl.set_selection([]))
+	sel_panel.add_child(deselect_btn)
+	resume_btn = _hud_btn(tr("CMD_RESUME_BUILD"), Vector2(78, 44))
+	resume_btn.visible = false
+	resume_btn.accent = Color("#7dff8a")
+	resume_btn.primary.connect(resume_selected_builders)
+	sel_panel.add_child(resume_btn)
 	sel_portrait = Control.new()
 	sel_portrait.custom_minimum_size = PORTRAIT
 	sel_portrait.draw.connect(_draw_portrait)
 	sel_panel.add_child(sel_portrait)
-	sel_name = UiTheme.label("", 14, UiTheme.GOLD)
+	sel_name = UiTheme.label("", 13, UiTheme.GOLD)
 	sel_panel.add_child(sel_name)
 	sel_info = UiTheme.label("", 10)
 	sel_info.clip_text = true
@@ -142,10 +160,10 @@ func _build() -> void:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 4)
 	rp.add_child(row)
-	general_btn = _hud_btn(tr("HUD_GENERAL"), Vector2(86, 48))
+	general_btn = _hud_btn(tr("HUD_GENERAL"), Vector2(77, 44))
 	general_btn.primary.connect(toggle_tray)
 	row.add_child(general_btn)
-	build_btn = _hud_btn(tr("HUD_BUILD"), Vector2(56, 48))
+	build_btn = _hud_btn(tr("HUD_BUILD"), Vector2(50, 44))
 	build_btn.primary.connect(open_build)
 	row.add_child(build_btn)
 	rank_lbl = UiTheme.label("", 11, UiTheme.CYAN)
@@ -153,20 +171,27 @@ func _build() -> void:
 	top = HBoxContainer.new()
 	top.add_theme_constant_override("separation", 4)
 	root.add_child(top)
-	var army := _hud_btn(tr("HUD_ARMY"), Vector2(64, 48))
+	var army := _hud_btn(tr("HUD_ARMY"), Vector2(58, TOP_H))
 	army.primary.connect(ctl.select_all_army)
 	top.add_child(army)
 	army_btn = army
-	var idle := _hud_btn(tr("HUD_IDLE_BUILDER") % tr(Content.unit(Content.faction(sim.faction_of(pid) if pid >= 0 else &"eu")["builder"]).name_key), Vector2(72, 48))
+	var idle := _hud_btn(tr("HUD_IDLE_BUILDER") % tr(Content.unit(Content.faction(sim.faction_of(pid) if pid >= 0 else &"eu")["builder"]).name_key), Vector2(65, TOP_H))
 	idle.primary.connect(ctl.select_idle_builder)
 	top.add_child(idle)
 	idle_btn = idle
 	var sp := Control.new()
 	sp.custom_minimum_size = Vector2(8, 1)
 	top.add_child(sp)
+	groups_btn = HudButton.new()
+	groups_btn.custom_minimum_size = Vector2(TOP_H, TOP_H)
+	groups_btn.label_text = "›"
+	groups_btn.tooltip_text = tr("HUD_GROUPS_TIP")
+	groups_btn.primary.connect(toggle_groups)
+	top.add_child(groups_btn)
 	for i in 5:
 		var gb := HudButton.new()
-		gb.custom_minimum_size = Vector2(48, 48)
+		gb.custom_minimum_size = Vector2(TOP_H, TOP_H)
+		gb.visible = false   # collapsed by default (M2.1)
 		gb.label_text = str(i + 1)
 		gb.primary.connect(func(): if not ctl.group_select(i): toast(tr("HUD_GROUP_HINT")))
 		gb.secondary.connect(func(): ctl.group_assign(i))
@@ -178,13 +203,13 @@ func _build() -> void:
 	top.add_child(fill)
 	clock_lbl = UiTheme.label("00:00", 14)
 	top.add_child(clock_lbl)
-	pause_btn = UiTheme.button("II", Vector2(48, 48))
+	pause_btn = UiTheme.button("II", Vector2(TOP_H, TOP_H))
 	pause_btn.pressed.connect(toggle_pause)
 	top.add_child(pause_btn)
-	var menu_btn := UiTheme.button(tr("HUD_MENU"), Vector2(64, 48))
+	var menu_btn := UiTheme.button(tr("HUD_MENU"), Vector2(58, TOP_H))
 	menu_btn.pressed.connect(toggle_pause_menu)
 	top.add_child(menu_btn)
-	for c in [army, idle, pause_btn, menu_btn] + group_btns:
+	for c in [army, idle, pause_btn, menu_btn, groups_btn] + group_btns:
 		blockers.append(c)
 	# alerts
 	alerts_box = VBoxContainer.new()
@@ -287,8 +312,8 @@ func _layout() -> void:
 	var pad := 4.0
 	minimap.position = Vector2(pad, pad)
 	minimap.size = Vector2(bh - pad * 2, bh - pad * 2)
-	var res_w := 150.0
-	var grid_w := BTN.x * 5 + 12
+	var res_w := 135.0
+	var grid_w := BTN.x * 5 + 12.0
 	var res: Control = bar.get_node("Res")
 	res.position = Vector2(bar.size.x - res_w - pad, pad)
 	res.size = Vector2(res_w, bh - pad * 2)
@@ -297,18 +322,26 @@ func _layout() -> void:
 	var sw := grid.position.x - sx - 8
 	sel_panel.position = Vector2(sx, pad)
 	sel_panel.size = Vector2(sw, bh - pad * 2)
-	sel_portrait.position = Vector2(0, 2)
+	# X (clear selection) sits left of the portrait
+	deselect_btn.position = Vector2(0, 2)
+	deselect_btn.size = XBTN
+	var px := XBTN.x + 3
+	sel_portrait.position = Vector2(px, 2)
 	sel_portrait.size = PORTRAIT
-	sel_name.position = Vector2(PORTRAIT.x + 6, 0)
-	sel_name.size = Vector2(sw - PORTRAIT.x - 6, 20)
-	sel_info.position = Vector2(PORTRAIT.x + 6, 19)
-	sel_info.size = Vector2(sw - PORTRAIT.x - 6, 36)
-	sel_types.position = Vector2(0, bh - pad * 2 - 49)
-	queue_box.position = Vector2(0, bh - pad * 2 - 49)
+	var tx := px + PORTRAIT.x + 5
+	sel_name.position = Vector2(tx, 0)
+	sel_name.size = Vector2(sw - tx, 18)
+	sel_info.position = Vector2(tx, 17)
+	sel_info.size = Vector2(sw - tx, 32)
+	var row_y := bh - pad * 2 - 44
+	sel_types.position = Vector2(0, row_y)
+	queue_box.position = Vector2(0, row_y)
+	resume_btn.size = Vector2(78, 44)
+	resume_btn.position = Vector2(sw - 78, row_y)
 	top.position = sr.position + Vector2(4, 4)
-	top.size = Vector2(sr.size.x - 8, 48)
-	alerts_box.position = sr.position + Vector2(6, 58)
-	alerts_box.size = Vector2(minf(320, sr.size.x * 0.4), 10)
+	top.size = Vector2(sr.size.x - 8, TOP_H)
+	alerts_box.position = sr.position + Vector2(6, 52)
+	alerts_box.size = Vector2(minf(288, sr.size.x * 0.36), 10)
 	back_btn.position = sr.position + Vector2(6, sr.size.y - bh - 56)
 	toast_lbl.position = Vector2(sr.position.x, sr.end.y - bh - 34)
 	toast_lbl.size = Vector2(sr.size.x, 24)
@@ -368,10 +401,16 @@ func _refresh() -> void:
 	clock_lbl.text = "%02d:%02d" % [secs / 60, secs % 60]
 	paused_lbl.visible = m.paused
 	pause_btn.text = ">" if m.paused else "II"
+	var assigned := 0
 	for i in 5:
 		var gb: HudButton = group_btns[i]
 		gb.badge = str(ctl.groups[i].size()) if not ctl.groups[i].is_empty() else ""
 		gb.queue_redraw()
+		if not ctl.groups[i].is_empty():
+			assigned += 1
+	# collapsed arrow shows how many groups are assigned
+	groups_btn.badge = str(assigned) if assigned > 0 and not groups_open else ""
+	groups_btn.queue_redraw()
 	if pid < 0:
 		money_lbl.text = tr("HUD_OBSERVER")
 		power_lbl.text = ""
@@ -443,6 +482,8 @@ func ent_name(e: SimEntity) -> String:
 func _refresh_selection_info() -> void:
 	sel_portrait.queue_redraw()
 	var e := ctl.primary()
+	deselect_btn.visible = e != null
+	resume_btn.visible = e != null and pid >= 0 and resume_site_for(ctl.own_units_selected()) != null
 	for c in queue_box.get_children():
 		c.queue_free()
 	if e == null:
@@ -530,13 +571,13 @@ func _fill_types(units: Array) -> void:
 	for id in units:
 		var d: StringName = sim.ents[id].def_id
 		counts[d] = counts.get(d, 0) + 1
-	var tmax := _chips_fit(66.0, 0.0)
+	var tmax := _chips_fit(59.0, _resume_reserve())
 	var listed := 0
 	for d in counts:
 		if listed >= tmax:
 			break
 		listed += 1
-		var b := _hud_btn(tr(Content.unit(d).name_key), Vector2(66, 48))
+		var b := _hud_btn(tr(Content.unit(d).name_key), Vector2(59, 44))
 		b.sub = "×%d" % counts[d]
 		b.primary.connect(func():
 			var only: Array = []
@@ -675,6 +716,7 @@ func _make_card() -> Array:
 		return out
 	var bd2: BuildingDef = Content.building(e.def_id)
 	if not e.built:
+		out.append({"text": tr("CMD_RESUME_BUILD"), "act": resume_site.bind(e), "accent": Color("#7dff8a"), "tip": tr("CMD_RESUME_BUILD_TIP")})
 		out.append({"text": tr("CMD_CANCEL_BUILD"), "act": func(): ctl.issue({"t": "cancel_build", "target": e.id}), "tip": tr("CMD_CANCEL_BUILD_TIP")})
 		return out
 	if TplaSys.is_tunnel(sim, e):
@@ -705,7 +747,7 @@ func _make_card() -> Array:
 
 const TYPE_MAX := 3
 const QUEUE_MAX := 4
-const QUEUE_CHIP := Vector2(66, 48)
+const QUEUE_CHIP := Vector2(59, 44)
 
 func _hud_btn(caption: String, sz: Vector2) -> HudButton:
 	var b := HudButton.new()
@@ -714,6 +756,61 @@ func _hud_btn(caption: String, sz: Vector2) -> HudButton:
 	b.label_text = caption
 	b.add_theme_font_size_override("font_size", 11)
 	return b
+
+func toggle_groups() -> void:
+	groups_open = not groups_open
+	for gb in group_btns:
+		gb.visible = groups_open
+	groups_btn.label_text = "‹" if groups_open else "›"
+	_refresh_t = 0.0
+
+func _resume_reserve() -> float:
+	return 81.0 if resume_btn != null and resume_btn.visible else 0.0
+
+## An unfinished own structure nobody is working on, nearest to the selected builders
+## (Zero Hour: an interrupted build stays as a scaffold until a builder resumes it).
+func resume_site_for(units: Array) -> SimEntity:
+	var bl := ctl._filter(units, "builder")
+	if bl.is_empty():
+		return null
+	var from: Vector2i = sim.ents[bl[0]].pos
+	var busy := {}
+	for id in sim.ids:
+		var u: SimEntity = sim.ents[id]
+		if u.alive and u.owner == pid and u.kind == SimEntity.Kind.UNIT and not u.orders.is_empty() and u.orders[0].get("o", "") == "build":
+			busy[int(u.orders[0]["target"])] = true
+	var best: SimEntity = null
+	for id in sim.ids:
+		var b: SimEntity = sim.ents[id]
+		if b.alive and b.owner == pid and b.kind == SimEntity.Kind.BUILDING and not b.built and not busy.has(b.id):
+			if best == null or FX.dist2(b.pos, from) < FX.dist2(best.pos, from):
+				best = b
+	return best
+
+func resume_selected_builders() -> void:
+	var units := ctl.own_units_selected()
+	var site := resume_site_for(units)
+	if site != null:
+		ctl.issue({"t": "resume_build", "ids": ctl._filter(units, "builder"), "target": site.id})
+		world.marker(site.pos, Color("#7dff8a"))
+
+## Selected unfinished structure: send the nearest idle builder (else the nearest builder).
+func resume_site(site: SimEntity) -> void:
+	var best: SimEntity = null
+	var best_idle := false
+	for id in sim.ids:
+		var u: SimEntity = sim.ents[id]
+		if not u.alive or u.owner != pid or u.kind != SimEntity.Kind.UNIT or not Content.unit(u.def_id).tags.has("builder") or u.res_id < 0:
+			continue
+		var idle := u.is_idle() or (Content.unit(u.def_id).harvest_capacity > 0 and u.phase >= 0)
+		if best == null or (idle and not best_idle) or (idle == best_idle and FX.dist2(u.pos, site.pos) < FX.dist2(best.pos, site.pos)):
+			best = u
+			best_idle = idle
+	if best == null:
+		toast(tr("REASON_NO_BUILDER"))
+		return
+	ctl.issue({"t": "resume_build", "ids": [best.id], "target": site.id})
+	world.marker(site.pos, Color("#7dff8a"))
 
 func _prereq_names(p: PackedStringArray) -> String:
 	var n: Array = []
@@ -821,9 +918,9 @@ func alert(key: String, text: String, pos: Vector2i, throttle_s: float = 8.0) ->
 			alerts.erase(a)
 			blockers.erase(a["node"])
 			a["node"].queue_free()
-	var b := UiTheme.button(text, Vector2(160, 40))
+	var b := UiTheme.button(text, Vector2(144, 40))   # width -10%; height stays 40 (was already below the floor; alerts are a secondary tap)
 	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	b.add_theme_font_size_override("font_size", 12)
+	b.add_theme_font_size_override("font_size", 11)
 	b.pressed.connect(func():
 		cam.jump_to(FX.to_world(pos))
 		back_btn.visible = true)

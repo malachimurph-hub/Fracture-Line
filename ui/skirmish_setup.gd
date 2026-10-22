@@ -1,9 +1,13 @@
 extends ScreenBase
-## Generals-style skirmish lobby: 4 slots (player / open / closed / AI difficulty), faction,
+## Generals-style skirmish lobby: 4 slots (player: You / AI / Closed; a separate Difficulty
+## column for AI slots, default Medium), faction,
 ## color, team 1-4, start position; map, starting money, fog, superweapons. Start is blocked
 ## with a clear message when the setup is invalid (e.g. everyone on one team).
 
-const KIND_ITEMS := ["human", "open", "closed", "ai:easy", "ai:medium", "ai:hard"]
+const KIND_ITEMS := ["ai", "closed"]          ## slots 2-4 (slot 1 is always You)
+const DIFFS := ["easy", "medium", "hard"]
+## column widths (M2.1: 10% smaller UI, difficulty split out of the player column)
+const COLS := {"player": 100, "diff": 100, "faction": 118, "color": 100, "team": 58, "start": 82}
 const FACTIONS := [["eu", "FACTION_EU", true], ["tpla", "FACTION_TPLA", true], ["us", "FACTION_US", false], ["wa", "FACTION_WA", false]]
 
 var cfg: Dictionary
@@ -32,7 +36,7 @@ func build() -> void:
 	left.clip_contents = true
 	main.add_child(left)
 	var hdr := HBoxContainer.new()
-	for t in [["LOBBY_PLAYER", 144], ["LOBBY_FACTION", 134], ["LOBBY_COLOR", 114], ["LOBBY_TEAM", 68], ["LOBBY_START", 96]]:
+	for t in [["LOBBY_PLAYER", COLS["player"] + 4], ["LOBBY_DIFFICULTY", COLS["diff"] + 4], ["LOBBY_FACTION", COLS["faction"] + 4], ["LOBBY_COLOR", COLS["color"] + 4], ["LOBBY_TEAM", COLS["team"] + 4], ["LOBBY_START", COLS["start"] + 4]]:
 		var l := UiTheme.label(tr(t[0]), 11, Color(0.7, 0.7, 0.7))
 		l.custom_minimum_size = Vector2(t[1], 0)
 		hdr.add_child(l)
@@ -42,7 +46,7 @@ func build() -> void:
 	left.add_child(rows)
 	_build_rows()
 	var right := VBoxContainer.new()
-	right.custom_minimum_size = Vector2(190, 0)
+	right.custom_minimum_size = Vector2(172, 0)
 	right.add_theme_constant_override("separation", 6)
 	main.add_child(right)
 	right.add_child(UiTheme.label(tr("MAP_VARNO_CROSSING") + "  (4)", 13, UiTheme.CYAN))
@@ -51,7 +55,7 @@ func build() -> void:
 	preview.draw.connect(_draw_preview)
 	right.add_child(preview)
 	var money := OptionButton.new()
-	money.custom_minimum_size = Vector2(190, 44)
+	money.custom_minimum_size = Vector2(172, 44)
 	for mv in SkirmishConfig.MONEY:
 		money.add_item(tr("LOBBY_MONEY") % mv)
 	money.selected = SkirmishConfig.MONEY.find(int(cfg["options"]["start_money"]))
@@ -60,14 +64,14 @@ func build() -> void:
 	var fog := CheckButton.new()
 	fog.text = tr("LOBBY_FOG")
 	fog.button_pressed = bool(cfg["options"]["fog"])
-	fog.custom_minimum_size = Vector2(190, 44)
+	fog.custom_minimum_size = Vector2(172, 44)
 	fog.toggled.connect(func(on): cfg["options"]["fog"] = on)
 	right.add_child(fog)
 	var sw := CheckButton.new()
 	sw.text = tr("LOBBY_SUPERWEAPONS") + " [STUB]"
 	sw.button_pressed = bool(cfg["options"]["superweapons"])
 	sw.tooltip_text = tr("STUB_SUPERWEAPONS")
-	sw.custom_minimum_size = Vector2(190, 44)
+	sw.custom_minimum_size = Vector2(172, 44)
 	sw.toggled.connect(func(on): cfg["options"]["superweapons"] = on)
 	right.add_child(sw)
 	var foot := HBoxContainer.new()
@@ -90,29 +94,39 @@ func _build_rows() -> void:
 		var r := HBoxContainer.new()
 		r.add_theme_constant_override("separation", 4)
 		rows.add_child(r)
+		if s["kind"] == "open":
+			s["kind"] = "closed"   # skirmish only: no open (network) slots
 		var kind := OptionButton.new()
-		kind.custom_minimum_size = Vector2(140, 44)
+		kind.name = "Kind"
+		kind.custom_minimum_size = Vector2(COLS["player"], 44)
 		kind.fit_to_longest_item = false
 		if i == 0:
 			kind.add_item(tr("LOBBY_YOU"))
 			kind.disabled = true
 		else:
-			for k in KIND_ITEMS.slice(1):
-				kind.add_item(tr("LOBBY_KIND_" + k.replace(":", "_").to_upper()))
-			var cur: String = s["kind"] if s["kind"] != "ai" else "ai:" + s["difficulty"]
-			kind.selected = KIND_ITEMS.slice(1).find(cur)
+			for k in KIND_ITEMS:
+				kind.add_item(tr("LOBBY_KIND_" + k.to_upper()))
+			kind.selected = KIND_ITEMS.find(s["kind"])
 			kind.item_selected.connect(func(idx):
-				var k: String = KIND_ITEMS.slice(1)[idx]
-				if k.begins_with("ai:"):
-					s["kind"] = "ai"
-					s["difficulty"] = k.substr(3)
-				else:
-					s["kind"] = k
+				s["kind"] = KIND_ITEMS[idx]
+				if s["kind"] == "ai" and not String(s.get("difficulty", "")) in DIFFS:
+					s["difficulty"] = "medium"
 				_refresh_row_state()
 				_validate())
 		r.add_child(kind)
+		var diff := OptionButton.new()
+		diff.name = "Difficulty"
+		diff.custom_minimum_size = Vector2(COLS["diff"], 44)
+		diff.fit_to_longest_item = false
+		for d in DIFFS:
+			diff.add_item(tr("LOBBY_DIFF_" + d.to_upper()))
+		if s["kind"] != "human" and not String(s.get("difficulty", "")) in DIFFS:
+			s["difficulty"] = "medium"
+		diff.selected = maxi(0, DIFFS.find(String(s.get("difficulty", "medium")))) if s["kind"] != "human" else 1
+		diff.item_selected.connect(func(idx): s["difficulty"] = DIFFS[idx]; _validate())
+		r.add_child(diff)
 		var fac := OptionButton.new()
-		fac.custom_minimum_size = Vector2(130, 44)
+		fac.custom_minimum_size = Vector2(COLS["faction"], 44)
 		fac.fit_to_longest_item = false
 		fac.clip_text = true
 		for f in FACTIONS:
@@ -126,7 +140,7 @@ func _build_rows() -> void:
 		fac.item_selected.connect(func(idx): s["faction"] = FACTIONS[idx][0]; _validate())
 		r.add_child(fac)
 		var col := OptionButton.new()
-		col.custom_minimum_size = Vector2(110, 44)
+		col.custom_minimum_size = Vector2(COLS["color"], 44)
 		col.fit_to_longest_item = false
 		for ci in Palette.COLORS.size():
 			col.add_icon_item(_swatch(Palette.COLORS[ci]), tr(Palette.COLOR_KEYS[ci]))
@@ -134,7 +148,7 @@ func _build_rows() -> void:
 		col.item_selected.connect(func(idx): s["color"] = idx; _validate())
 		r.add_child(col)
 		var team := OptionButton.new()
-		team.custom_minimum_size = Vector2(64, 44)
+		team.custom_minimum_size = Vector2(COLS["team"], 44)
 		team.fit_to_longest_item = false
 		for t in 4:
 			team.add_item(str(t + 1))
@@ -142,7 +156,7 @@ func _build_rows() -> void:
 		team.item_selected.connect(func(idx): s["team"] = idx; _validate())
 		r.add_child(team)
 		var sp := OptionButton.new()
-		sp.custom_minimum_size = Vector2(92, 44)
+		sp.custom_minimum_size = Vector2(COLS["start"], 44)
 		sp.fit_to_longest_item = false
 		sp.add_item(tr("LOBBY_RANDOM"))
 		for t in 4:
@@ -155,10 +169,15 @@ func _build_rows() -> void:
 func _refresh_row_state() -> void:
 	for i in rows.get_child_count():
 		var r := rows.get_child(i)
-		var on: bool = cfg["slots"][i]["kind"] in ["human", "ai"]
+		var kind: String = cfg["slots"][i]["kind"]
+		var on: bool = kind in ["human", "ai"]
 		for j in range(1, r.get_child_count()):
 			(r.get_child(j) as OptionButton).disabled = not on
 			r.get_child(j).modulate = Color(1, 1, 1, 1.0 if on else 0.35)
+		# difficulty only means something for AI slots: hidden (blank) for You and Closed
+		var dd: OptionButton = r.get_node("Difficulty")
+		dd.disabled = kind != "ai"
+		dd.modulate = Color(1, 1, 1, 1.0 if kind == "ai" else 0.0)
 	if preview:
 		preview.queue_redraw()
 

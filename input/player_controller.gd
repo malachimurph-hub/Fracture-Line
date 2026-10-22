@@ -297,6 +297,16 @@ func _queue_flag() -> bool:
 	return Input.is_key_pressed(KEY_SHIFT)
 
 ## Context-sensitive order at a screen point (tap with a selection, right click).
+## The own unfinished structure under the finger, when builders are selected (resume tap).
+func resume_site_at(screen: Vector2) -> SimEntity:
+	if _filter(own_units_selected(), "builder").is_empty():
+		return null
+	for oid in pick_all(screen):
+		var o: SimEntity = sim.get_ent(oid)
+		if o != null and o.owner == pid and o.kind == SimEntity.Kind.BUILDING and not o.built:
+			return o
+	return null
+
 func smart_command(screen: Vector2) -> void:
 	var units := own_units_selected()
 	var g := cam.ground_point(screen)
@@ -309,6 +319,11 @@ func smart_command(screen: Vector2) -> void:
 	var tid := pick(screen)
 	var t := sim.get_ent(tid)
 	var q := _queue_flag()
+	if t != null and t.owner == pid and t.kind == SimEntity.Kind.UNIT:
+		# a builder standing on its scaffold must not hide the site from a resume tap (ZH)
+		var rs := resume_site_at(screen)
+		if rs != null:
+			t = rs
 	if t != null and t.owner != pid:
 		if t.kind == SimEntity.Kind.RESOURCE:
 			var hv := _filter(units, "harvester")

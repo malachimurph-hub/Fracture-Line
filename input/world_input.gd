@@ -260,6 +260,10 @@ func _tap(p: Vector2) -> void:
 ## Tap rules: own entity -> select it. Otherwise, with own units selected -> smart order.
 ## Otherwise select whatever is there (enemy/neutral info) or deselect on empty ground.
 func tap_select_or_order(p: Vector2) -> void:
+	# ZH: with builders selected, tapping an own unfinished structure resumes it (not select)
+	if ctl.resume_site_at(p) != null:
+		ctl.smart_command(p)
+		return
 	var id := ctl.pick(p, true)
 	var e := ctl.sim.get_ent(id)
 	if e != null and ctl.is_own(e):

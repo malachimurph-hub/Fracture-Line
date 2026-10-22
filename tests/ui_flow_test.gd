@@ -80,6 +80,17 @@ func _run() -> void:
 	_check(start != null and not start.disabled, "lobby built: Start battle button present and enabled")
 	_check(cs != null and cs.find_children("*", "OptionButton", true, false).size() >= 16, "lobby built: slot dropdowns present")
 	_check(not _overlay_up(), "no error panel on the lobby")
+	if cs != null:
+		# M2.1: Player (You / AI / Closed) + separate Difficulty column, 10% smaller UI
+		var diffs: Array = []
+		for o in cs.find_children("*", "OptionButton", true, false):
+			if String(o.name).begins_with("Difficulty"):
+				diffs.append(o)
+		var vis := diffs.filter(func(o): return o.is_visible_in_tree() and not o.disabled and o.modulate.a > 0.5)
+		_check(diffs.size() == 4 and vis.size() == 1, "lobby: Difficulty column (%d dropdowns, %d shown for AI slots)" % [diffs.size(), vis.size()])
+		_check(vis.size() == 1 and vis[0].get_item_text(vis[0].selected) == tr("LOBBY_DIFF_MEDIUM"), "lobby: AI difficulty defaults to Medium")
+		var lp: Array = HudTextCheck.lobby_problems(cs)
+		_check(lp.is_empty(), "lobby fits 2340x1080, no clipped text %s" % [lp])
 	await _shot("ui_02_lobby")
 	if start != null:
 		await _tap(start)

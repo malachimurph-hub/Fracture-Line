@@ -19,9 +19,11 @@ LOBBY_START,Start
 LOBBY_YOU,You
 LOBBY_KIND_OPEN,Open
 LOBBY_KIND_CLOSED,Closed
-LOBBY_KIND_AI_EASY,AI — Easy
-LOBBY_KIND_AI_MEDIUM,AI — Medium
-LOBBY_KIND_AI_HARD,AI — Hard
+LOBBY_KIND_AI,AI
+LOBBY_DIFFICULTY,Difficulty
+LOBBY_DIFF_EASY,Easy
+LOBBY_DIFF_MEDIUM,Medium
+LOBBY_DIFF_HARD,Hard
 LOBBY_COMING_LATER,coming later
 LOBBY_RANDOM,Random
 LOBBY_MONEY,Starting cash $%d
@@ -129,6 +131,10 @@ CMD_LOAD,Load
 CMD_UNLOAD,Evacuate
 CMD_CANCEL_BUILD,"Cancel
 build"
+CMD_RESUME_BUILD,Resume build
+CMD_RESUME_BUILD_TIP,Send the nearest idle builder to finish this structure
+HUD_GROUPS_TIP,Control groups 1–5 (tap to show or hide)
+HUD_DESELECT,Clear selection
 CMD_CANCEL_BUILD_TIP,Cancel construction (full refund)
 CMD_RALLY,Rally
 CMD_REPEAT_TIP,Repeat build: re-queue each unit when it finishes

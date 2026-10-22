@@ -1,5 +1,5 @@
 class_name SkirmishConfig
-## Lobby model (Generals-style): 4 slots, each Human / Open / Closed / AI Easy / Medium / Hard,
+## Lobby model (Generals-style): 4 slots, each Human / Closed / AI (difficulty Easy / Medium / Hard),
 ## with team 1-4, color, faction and start position (or random). resolve() turns a lobby
 ## into a MatchRunner cfg; validate() returns "" or a localization key explaining the error.
 
@@ -13,8 +13,8 @@ static func default_setup() -> Dictionary:
 		"slots": [
 			{"kind": "human", "team": 0, "color": 0, "difficulty": "", "spawn": -1, "faction": "eu"},
 			{"kind": "ai", "team": 1, "color": 1, "difficulty": "medium", "spawn": -1, "faction": "eu"},
-			{"kind": "open", "team": 2, "color": 2, "difficulty": "medium", "spawn": -1, "faction": "eu"},
-			{"kind": "open", "team": 3, "color": 3, "difficulty": "medium", "spawn": -1, "faction": "eu"},
+			{"kind": "closed", "team": 2, "color": 2, "difficulty": "medium", "spawn": -1, "faction": "eu"},
+			{"kind": "closed", "team": 3, "color": 3, "difficulty": "medium", "spawn": -1, "faction": "eu"},
 		],
 	}
 

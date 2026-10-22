@@ -251,6 +251,18 @@ func tap(p: Vector2) -> void:
 	touch(0, p, false)
 	await frames(2)
 
+## Window-pixel centre of a HUD control (event positions are window pixels).
+func _hud_pt(c: Control) -> Vector2:
+	return c.get_global_rect().get_center() * UiScale.dp
+
+## One sim tick from the test, with its events routed to the world view and HUD the way
+## Match._process does (a bare runner.advance() would leave new sites without a view).
+func _adv(m) -> void:
+	m.runner.advance()
+	var evs: Array = m.runner.sim.events.duplicate()
+	m.world.on_tick(evs)
+	m.hud.on_events(evs)
+
 func to_screen(m, e: SimEntity) -> Vector2:
 	# event positions are window pixels; the stretch transform maps them to logical units
 	var lp: Vector2 = m.ctl.screen_of(e)
@@ -347,12 +359,12 @@ func run_touch() -> void:
 	await wait_ms(450)
 	touch(0, hp, false)
 	await frames(2)
-	m.runner.advance()
+	_adv(m)
 	var o: Array = sim.ents[tgt.id].orders
 	check("hold+release issues attack-move", not o.is_empty() and o[0].get("o", "") == "amove", o.duplicate(true))
 	# 7. tap ground with selection = move order
 	await tap(to_screen(m, tgt) + Vector2(-150, 40) * UiScale.dp / 2.0)
-	m.runner.advance()
+	_adv(m)
 	o = sim.ents[tgt.id].orders
 	check("tap ground with selection moves", not o.is_empty() and o[0].get("o", "") == "move", o)
 	# 8. double-tap selects all of type on screen
@@ -379,7 +391,7 @@ func run_touch() -> void:
 		await frames(1)
 	touch(0, gq, false)
 	await frames(2)
-	m.runner.advance()
+	_adv(m)
 	check("releasing finger does not place building", sim.count_owned(0, &"eu_reactor") == sites_before)
 	check("ghost follows finger", m.ctl.mode == PlayerController.Mode.PLACE)
 	# find a valid spot then confirm through the HUD button path
@@ -392,20 +404,65 @@ func run_touch() -> void:
 				m.ctl.move_ghost_tile(FX.to_tile(crawler.pos) + Vector2i(dx, dy))
 				if m.ctl.place_reason == "":
 					placed = m.ctl.confirm_place()
-	m.runner.advance()
+	_adv(m)
 	check("confirm places building site", placed and sim.count_owned(0, &"eu_reactor") == sites_before + 1)
-	# 10. HUD tap targets >= 48 dp
+	# 10. HUD tap targets >= 44 dp (M2.1: HUD 10% smaller, floor 44 dp)
 	var small: Array = []
-	for b2 in m.hud.grid_buttons + m.hud.group_btns:
-		if b2.size.x < 48 or b2.size.y < 48 and b2.size.y < 44:
-			small.append(b2.size)
-	check("command buttons >= 48 dp", small.is_empty(), small)
-	# 11. control groups
+	for b2 in m.hud.grid_buttons + m.hud.group_btns + [m.hud.groups_btn, m.hud.deselect_btn, m.hud.resume_btn, m.hud.general_btn, m.hud.build_btn]:
+		if minf(b2.size.x, b2.size.y) < 44:
+			small.append([b2.name, b2.size])
+	check("HUD buttons >= 44 dp", small.is_empty(), small)
+	# 11. control groups: collapsed behind a chevron; tap expands, assign/recall, collapse shows a badge
+	check("groups row starts collapsed", not m.hud.group_btns[0].visible and m.hud.groups_btn.visible)
+	await tap(_hud_pt(m.hud.groups_btn))
+	check("tapping the arrow expands 1-5", m.hud.group_btns[0].visible and m.hud.group_btns[4].visible)
 	m.ctl.set_selection(army)
 	m.ctl.group_assign(0)
 	m.ctl.set_selection([])
-	m.ctl.group_select(0)
-	check("control group recall", m.ctl.selection.size() == army.size())
+	await tap(_hud_pt(m.hud.group_btns[0]))
+	check("control group recall (tap 1)", m.ctl.selection.size() == army.size(), m.ctl.selection.size())
+	await tap(_hud_pt(m.hud.groups_btn))
+	m.hud._refresh()
+	check("tapping again collapses; arrow shows assigned-group badge", not m.hud.group_btns[0].visible and m.hud.groups_btn.badge == "1", m.hud.groups_btn.badge)
+	# 12. X clears the selection
+	check("X visible with a selection", m.hud.deselect_btn.is_visible_in_tree())
+	await tap(_hud_pt(m.hud.deselect_btn))
+	check("X clears the selection", m.ctl.selection.is_empty(), m.ctl.selection)
+	m.hud._refresh()
+	check("X hidden with nothing selected", not m.hud.deselect_btn.is_visible_in_tree())
+	# 13. resume build (Zero Hour scaffold): interrupt the Crawler, tap the site to resume
+	var site: SimEntity = null
+	for id in sim.ids:
+		var se: SimEntity = sim.ents[id]
+		if se.owner == 0 and se.kind == SimEntity.Kind.BUILDING and not se.built:
+			site = se
+	if site != null:
+		m.runner.issue({"p": 0, "t": "stop", "ids": [crawler.id]})
+		_adv(m)
+		m.ctl.set_selection([crawler.id])
+		m.hud._refresh()
+		check("interrupted builder gets a Resume build button", m.hud.resume_btn.is_visible_in_tree())
+		m.cam.jump_to(FX.to_world(site.pos), false)
+		await frames(6)
+		await tap(to_screen(m, site))
+		_adv(m)
+		check("tapping the scaffold with the builder resumes it", not crawler.orders.is_empty() and crawler.orders[0].get("o", "") == "build" and int(crawler.orders[0]["target"]) == site.id, crawler.orders.slice(0, 1))
+		m.runner.issue({"p": 0, "t": "stop", "ids": [crawler.id]})
+		_adv(m)
+		m.ctl.set_selection([site.id])
+		m.hud._refresh()
+		var rb: HudButton = null
+		for gb2 in m.hud.grid_buttons:
+			if gb2.visible and gb2.label_text == tr("CMD_RESUME_BUILD"):
+				rb = gb2
+		check("selected scaffold shows Resume build", rb != null)
+		if rb != null:
+			await tap(_hud_pt(rb))
+			_adv(m)
+			check("Resume build sends the idle builder", not crawler.orders.is_empty() and int(crawler.orders[0].get("target", 0)) == site.id, crawler.orders.slice(0, 1))
+	else:
+		check("an unfinished site exists for the resume test", false)
+	m.ctl.set_selection([])
 	# 12. touches over the HUD don't reach the world
 	var sel_before: Array = m.ctl.selection.duplicate()
 	var hud_pt: Vector2 = (m.hud.bar.get_global_rect().get_center()) * UiScale.dp
@@ -523,7 +580,7 @@ func run_m2() -> void:
 		m.ctl.queue_unit(cs, &"tpla_scrapback", 1)
 		m.ctl.queue_unit(cs, &"tpla_hailstorm", 1)
 		m.ctl.queue_unit(cs, &"tpla_shrike", 1)
-		m.runner.advance()
+		_adv(m)
 		await frames(20)
 		await shot("m2_tpla_production")
 	await _hud_states(m, &"tpla")

@@ -3,7 +3,7 @@ extends RefCounted
 ## UI test helper (M2): walks the HUD and returns every button whose text overflows or would
 ## be clipped. HudButtons use their own fit result (full name, <= 2 lines, >= 9 dp font,
 ## price/count on its own line); plain Buttons are measured against their content box. Also
-## checks the 48 dp minimum tap target on the command card, filters, queue chips, top bar.
+## checks the 44 dp minimum tap target (M2.1: 10% smaller HUD) on the command card, filters, queue chips, top bar.
 
 static func problems(hud) -> Array:
 	var out: Array = []
@@ -31,10 +31,12 @@ static func _walk(n: Node, out: Array) -> void:
 					out.append("'%s' / '%s' does not fit in %s (font %d)" % [b.label_text.replace("\n", " "), b.sub, b.size, b.fit_size])
 				if b.fit_size < HudButton.MIN_FONT and b.label_text != "":
 					out.append("'%s' font below minimum" % b.label_text)
-				if minf(b.size.x, b.size.y) < 47.5 and b.label_text.length() > 1:
-					out.append("'%s' tap target %s < 48 dp" % [b.label_text.replace("\n", " "), b.size])
+				if minf(b.size.x, b.size.y) < 43.5:
+					out.append("'%s' tap target %s < 44 dp" % [b.label_text.replace("\n", " "), b.size])
 		elif c is Button:
 			var pb: Button = c
+			if minf(pb.size.x, pb.size.y) < 39.5:
+				out.append("button '%s' tap target %s too small" % [pb.text, pb.size])
 			if pb.text != "":
 				var f := pb.get_theme_font("font")
 				var fs := pb.get_theme_font_size("font_size")
@@ -133,3 +135,33 @@ static func _sel(m, def_id: StringName) -> SimEntity:
 	if e != null:
 		m.ctl.set_selection([e.id])
 	return e
+
+## M2.1: the skirmish lobby at the phone size. Every visible button / dropdown (Player,
+## Difficulty, Faction, Color, Team, Start) must keep its full text (dropdown arrow
+## excluded), be at least 40 dp tall/wide, and lie fully on screen.
+static func lobby_problems(root: Control) -> Array:
+	var out: Array = []
+	var screen := root.get_viewport_rect().grow(0.5)
+	for c in root.find_children("*", "BaseButton", true, false):
+		var b := c as Control
+		if b == null or not b.is_visible_in_tree():
+			continue
+		if not screen.encloses(b.get_global_rect()):
+			out.append("'%s' partly off screen %s" % [b.get("text"), b.get_global_rect()])
+		if b is Button:
+			var pb: Button = b
+			if minf(pb.size.x, pb.size.y) < 39.5:
+				out.append("'%s' tap target %s too small" % [pb.text, pb.size])
+			if pb.text == "":
+				continue
+			var f := pb.get_theme_font("font")
+			var fs := pb.get_theme_font_size("font_size")
+			var sb := pb.get_theme_stylebox("normal")
+			var avail := pb.size.x - (sb.get_margin(SIDE_LEFT) + sb.get_margin(SIDE_RIGHT) if sb != null else 0.0)
+			if pb is OptionButton:
+				var arrow := pb.get_theme_icon("arrow")
+				avail -= (arrow.get_width() if arrow != null else 0) + pb.get_theme_constant("arrow_margin") + pb.get_theme_constant("h_separation")
+			var w := f.get_string_size(pb.text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
+			if w > avail + 0.5:
+				out.append("'%s' text %.0f > %.0f" % [pb.text, w, avail])
+	return out
