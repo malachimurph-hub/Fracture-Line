@@ -6,7 +6,7 @@
   call-in. Balance pass pending Malachi's US building list.
 - **Doubling supplies lengthens games.** In the supply soak one hard-vs-hard match ran to the
   40:00 cap without a winner (stalemate). Others ended normally.
-- **TPLA voice quality is not perfect.** Chatterbox sometimes swallows or bends a word: the
+- **TPLA voice quality is not perfect (v2 retune).** Chatterbox sometimes swallows or bends a word: the
   accent is deliberate, but a few takes are still under the 0.7 Whisper word-match threshold
   after the re-render pass (see voice QA in SOAK.md / builds/m2_5/voice_qa.json). Short unit
   names ("Rattler", "Scrapback") are heard by Whisper as "Radcliffe" / "Skrubback", but are

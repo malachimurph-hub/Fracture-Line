@@ -31,3 +31,13 @@ Everything else is plain English.
 Pipeline: `tools/gen_ai_voices_me.py` (render) → `tools/voice_qa_me.py` (Whisper check,
 re-render any line under 0.7 word match with new seeds, keep the best take) → `tools/import_voice.py`
 (trim, radio, loudness). Samples: `builds/m2_5/voice_samples/*.mp3`.
+
+## v2 retune (after Malachi's listening test)
+- **Feedback:** "slightly too Russian, but not bad"; the Militia set was his favourite.
+- **Cause:** the v1 prompts used Persian phoneme rules that turn English w into v ("ve"), with a
+  trilled r and reduced vowels. These read as Slavic.
+- **v2 prompts:** Arabic rules instead: p→b, v→f, full vowels, a tapped r, and emphatic t/d/s
+  before back vowels (Arabic pharyngeal colouring).
+- **Shifts:** prompt shifts stay within −2…+2 st, so every unit voice stays clearly male.
+- **Militia:** unchanged, kept as the reference.
+- **QA:** the same Whisper pass re-renders weak takes. Results are in builds/m2_5/voice_qa_v2.json.

@@ -11,7 +11,18 @@ APK: FractureLine-M2.5.apk, versionName 0.2.5, versionCode 9 (Android, arm64).
   walkie-talkie filter and are matched to −16 LUFS.
 - New QA pass: Whisper transcribes every TPLA line; lines under 70% word match are re-rendered
   with new seeds and the best take is kept (`tools/voice_qa_me.py`).
-- EU voices are unchanged. Your own recordings in `res://audio/voice/` still override everything.
+- **v2 retune (Malachi: v1 sounded "slightly too Russian"; he loved the Militia):**
+  - The announcer and every TPLA unit set except the Militia were regenerated from new prompts.
+    The prompts use Arabic accent rules: p→b, v→f, full unreduced vowels, a single tapped r,
+    and emphatic t/d/s before back vowels.
+  - The old Persian rule w→v, a Slavic-sounding trait, is gone. Prompt pitch shifts are now kept
+    within −2…+2 semitones.
+  - The Militia keeps its v1 takes as the style reference.
+- **Male-only unit voices (Malachi's rule; announcers may be female):**
+  - EU Wolfhound, Aegis and Flakwerk, and US Picket and Harrier, were re-voiced with male voices.
+  - TPLA Rocket Cell, Shrike and Blight lost their high (+3.5…+5 st) prompt shifts.
+  - The voice manifest refuses female unit casts, and the audio test checks every unit line.
+- Your own recordings in `res://audio/voice/` still override everything.
 - TTS comparison: docs/m2_5/TTS_COMPARISON.md. Samples: builds/m2_5/voice_samples/*.mp3.
 
 ## Economy and minimap
