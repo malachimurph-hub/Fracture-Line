@@ -8,9 +8,9 @@ extends AIPlayer
 ## and fog rules as the EU AI.
 
 const TDIFF := {
-	"easy":   {"lps": 4, "builders": 1, "raid": 0, "traps": 1, "tunnels": 1, "salvage": false, "stashes": 2, "guards": 0, "nets": 0, "bazaars": 1},
-	"medium": {"lps": 5, "builders": 2, "raid": 3, "traps": 2, "tunnels": 2, "salvage": true, "stashes": 3, "guards": 2, "nets": 1, "bazaars": 1},
-	"hard":   {"lps": 6, "builders": 2, "raid": 4, "traps": 4, "tunnels": 3, "salvage": true, "stashes": 4, "guards": 3, "nets": 2, "bazaars": 2},
+	"easy":   {"lps": 5, "builders": 1, "raid": 0, "traps": 1, "tunnels": 1, "salvage": false, "stashes": 2, "guards": 0, "nets": 0, "bazaars": 1},
+	"medium": {"lps": 6, "builders": 2, "raid": 3, "traps": 2, "tunnels": 2, "salvage": true, "stashes": 3, "guards": 2, "nets": 1, "bazaars": 1},
+	"hard":   {"lps": 7, "builders": 2, "raid": 4, "traps": 4, "tunnels": 3, "salvage": true, "stashes": 4, "guards": 3, "nets": 2, "bazaars": 2},
 }
 const MAX_LABORERS := 26
 
@@ -42,6 +42,7 @@ func think() -> void:
 		_salvage()
 	_tunnels()
 	_army()
+	_gather_wave()
 	if cfg["scout"]:
 		_scout()
 	if cfg["capture"]:
@@ -621,3 +622,46 @@ func _enemy_clump() -> Vector2i:
 				bv = v
 				best = e.pos
 	return best
+
+# ------------------------------------------------------------------ wave gathering
+## Mixed-speed TPLA armies (3000 mm/s Rattlers next to 1150 mm/s Rocket Cells) used to arrive
+## strung out and die piecemeal at the enemy's defences. A new wave first regroups at a
+## forward rally point (40% of the way), then attacks together once 75% are there or after
+## 40 s, ZH-style.
+func _gather_wave() -> void:
+	if bb["wave"].is_empty():
+		bb["hold_wave"] = false
+		bb.erase("rally")
+		return
+	if int(bb.get("rally_wave", 0)) != int(bb["wave_n"]):
+		var tgt := _pick_target()
+		if tgt.x < 0:
+			return
+		var st := _staging()
+		var rp: Vector2i = st + (tgt - st) * 2 / 5
+		bb["rally"] = rp
+		bb["rally_tgt"] = tgt
+		bb["rally_t"] = w.tick
+		bb["rally_wave"] = int(bb["wave_n"])
+		bb["hold_wave"] = true
+		cmd({"t": "move", "ids": bb["wave"].duplicate(), "pos": rp})
+		return
+	if not bb.has("rally"):
+		return
+	var rp2: Vector2i = bb["rally"]
+	var near := 0
+	var n := 0
+	for id in bb["wave"]:
+		var e := w.get_ent(id)
+		if e == null:
+			continue
+		n += 1
+		if FX.dist(e.pos, rp2) < FX.ONE * 8:
+			near += 1
+	if near * 4 >= n * 3 or w.tick - int(bb["rally_t"]) > 20 * 40:
+		var tgt2 := _pick_target()
+		if tgt2.x < 0:
+			tgt2 = bb["rally_tgt"]
+		cmd({"t": "amove", "ids": bb["wave"].duplicate(), "pos": tgt2})
+		bb.erase("rally")
+		bb["hold_wave"] = false

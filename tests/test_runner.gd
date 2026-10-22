@@ -147,7 +147,12 @@ func _ready() -> void:
 					re.advance()
 					for ev in re.sim.events:
 						if ev["t"] == "death" and ev.get("kind", -1) == SimEntity.Kind.UNIT and ev.get("by", &"") != &"":
-							var kk := "%s<-%s" % [ev["def"], ev["by"]]
+							var zone := "field"
+							for b9 in re.sim.ids:
+								var hq9: SimEntity = re.sim.ents[b9]
+								if hq9.alive and hq9.kind == SimEntity.Kind.BUILDING and Content.building(hq9.def_id).is_hq and FX.dist(hq9.pos, ev["pos"]) < FX.ONE * 22:
+									zone = "own_base" if hq9.owner == int(ev["owner"]) else "enemy_base"
+							var kk := "%s<-%s @%s t%d" % [ev["def"], ev["by"], zone, re.sim.tick / 1200]
 							deaths[kk] = deaths.get(kk, 0) + 1
 					if re.sim.game_over:
 						break
@@ -170,6 +175,15 @@ func _ready() -> void:
 								harv += 1
 							elif not ud.tags.has("builder") and not ud.tags.has("harvester"):
 								army += ud.cost
+					var oh := {}
+					for id in re.sim.ids:
+						var e7: SimEntity = re.sim.ents[id]
+						if e7.alive and e7.owner == pid and e7.kind == SimEntity.Kind.UNIT and not Content.unit(e7.def_id).tags.has("builder") and not Content.unit(e7.def_id).tags.has("harvester"):
+							var ok2: String = (e7.orders[0].get("o", "?") if not e7.orders.is_empty() else "idle") + ("+tgt" if e7.target != 0 else "")
+							if e7.res_id < 0:
+								ok2 = "inside"
+							oh[ok2] = oh.get(ok2, 0) + 1
+					print("   orders P%d %s" % [pid, str(oh)])
 					print("min %d P%d %s supply=%d harvested=%d harvesting=%d army$=%d bld=%d %s kills=%d lost=%d" % [mi + 1, pid, re.sim.faction_of(pid), pl.supply, pl.stats["harvested"], harv, army, nb, str(bl), pl.stats["kills"], pl.stats["lost"]])
 				if re.sim.game_over:
 					print("game over")
@@ -212,6 +226,43 @@ func _ready() -> void:
 			worst.sort_custom(func(a, b): return a[0] > b[0])
 			for x in worst.slice(0, 8):
 				print("tick %d total %.1f ms parts %s" % [x[1], x[0] / 1000.0, str(x[2])])
+		"duel":
+			# unit-vs-unit check without AI: duel eu_wolfhound*3 tpla_rocket_cell*5,tpla_militia*5
+			var rd := MatchRunner.new()
+			rd.record_replay = false
+			rd.start(make_cfg("1v1", 5, [], ["eu", "tpla"]))
+			rd.ais.clear()
+			var wd := rd.sim
+			wd.fog.disabled = true
+			var mid := Vector2i(wd.map.w / 2, wd.map.h / 2)
+			var sides := [[], []]
+			for side in 2:
+				var k := 0
+				for spec in String(args[1 + side]).split(","):
+					var parts2 := spec.split("*")
+					for n in int(parts2[1]) if parts2.size() > 1 else 1:
+						var at := mid + Vector2i(-7 if side == 0 else 7, -4 + k % 9) + Vector2i((k / 9) * (-1 if side == 0 else 1), 0)
+						var u := wd.spawn_unit(StringName(parts2[0]), side, null, FX.tile_center(wd.map.nearest_passable(at, true)))
+						sides[side].append(u)
+						k += 1
+			for side in 2:
+				var ids2: Array = []
+				for u: SimEntity in sides[side]:
+					ids2.append(u.id)
+				rd.issue({"p": side, "t": "amove", "ids": ids2, "pos": FX.tile_center(mid + Vector2i(7 if side == 0 else -7, 0))})
+			for i in 20 * 90:
+				rd.advance()
+			for side in 2:
+				var alive := 0
+				var val := 0
+				for u: SimEntity in sides[side]:
+					if u.alive:
+						alive += 1
+						val += Content.unit(u.def_id).cost
+				var spent := 0
+				for u: SimEntity in sides[side]:
+					spent += Content.unit(u.def_id).cost
+				print("DUEL side %d (%s): %d/%d alive, $%d of $%d left" % [side, args[1 + side], alive, sides[side].size(), val, spent])
 		"aidiag":
 			var r := MatchRunner.new()
 			r.start(make_cfg("1v1", 5))

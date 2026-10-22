@@ -642,7 +642,7 @@ func _army() -> void:
 			else:
 				cmd({"t": "move", "ids": bb["wave"].duplicate(), "pos": _staging()})
 				bb["wave"] = []
-	if not bb["wave"].is_empty():
+	if not bb["wave"].is_empty() and not bb.get("hold_wave", false):
 		var idle := 0
 		for id in bb["wave"]:
 			if w.get_ent(id).is_idle():
