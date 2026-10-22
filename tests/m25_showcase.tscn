@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://tests/m25_showcase.gd" id="1"]
+
+[node name="M25Showcase" type="Node"]
+script = ExtResource("1")
