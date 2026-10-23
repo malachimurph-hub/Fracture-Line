@@ -227,6 +227,10 @@ func asset_categories() -> Array:
 		if Content.faction_of_id(id) == &"neutral":
 			neu.append({"t": "neutral", "kind": String(id), "label": MapStore._name(id)})
 	cats.append(["Neutral structures", neu])
+	var props: Array = []   # M2.9: city props (tall buildings block the ground; cars / lights are decor)
+	for k in MapBuilderCanvas.PROP_LABELS:
+		props.append({"t": "prop", "kind": k, "label": MapBuilderCanvas.PROP_LABELS[k]})
+	cats.append(["City & scenery props", props])
 	for f in [[&"us", "US"], [&"eu", "EU"], [&"tpla", "TPLA"]]:
 		var fd: Dictionary = Content.faction(f[0])
 		var us: Array = []

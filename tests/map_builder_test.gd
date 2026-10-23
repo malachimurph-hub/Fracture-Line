@@ -31,7 +31,7 @@ static func run(t: Node) -> void:
 	var n := 0
 	for c in scr.asset_categories():
 		n += c[1].size()
-	var want := 4 + 2
+	var want := 4 + 2 + MapBuilderCanvas.PROP_LABELS.size()
 	for id in Content.buildings:
 		if Content.faction_of_id(id) == &"neutral":
 			want += 1
@@ -114,6 +114,11 @@ static func run(t: Node) -> void:
 	cv.place_at(Vector2i(46, 34), {"t": "pre", "kind": "eu_gun_bunker", "slot": 0})
 	cv.place_at(Vector2i(210, 210), {"t": "pre", "kind": "tpla_rattler", "slot": 1})
 	cv.place_at(Vector2i(200, 214), {"t": "pre", "kind": "us_firebase", "slot": 1})
+	# M2.9 city props: a tower saves as blocking Cliff + decor, a car as decor only
+	cv.place_at(Vector2i(60, 120), {"t": "prop", "kind": "tower_glass"})
+	cv.place_at(Vector2i(66, 120), {"t": "prop", "kind": "car_taxi"})
+	var pd := cv.to_doc()
+	t._check(pd["decor"].size() == 2 and String(pd["tiles"][120])[60] == "^" and String(pd["tiles"][120])[66] != "^", "city props saved (tower blocks its footprint, car is decor)")
 	# select + move by touch
 	cv.tool = "select"
 	cv.size = Vector2(560, 320)   # phone-sized canvas (headless layout is tiny)
@@ -133,7 +138,7 @@ static func run(t: Node) -> void:
 	t._check(SkirmishConfig.map_ids().has(StringName(id)) and (Content.maps[StringName(id)] as MapDef).custom, "custom map listed in skirmish (marked custom)")
 	var saved := cv.to_doc()
 	scr.open_map(id)
-	t._check(MapStore.hash_of(cv.to_doc()) == MapStore.hash_of(saved) and cv.items.size() == saved["spawns"].size() + saved["resources"].size() + saved["neutrals"].size() + saved["prebuilt"].size(), "reload gives the same map")
+	t._check(MapStore.hash_of(cv.to_doc()) == MapStore.hash_of(saved) and cv.items.size() == saved["spawns"].size() + saved["resources"].size() + saved["neutrals"].size() + saved["prebuilt"].size() + saved["decor"].size(), "reload gives the same map")
 	Content.load_all()
 	t._check(Content.maps.has(StringName(id)), "custom map re-registered by Content.load_all()")
 	scr.queue_free()

@@ -13,6 +13,12 @@ const TILE_NAMES := ["Grass", "Road", "Rough", "Water", "Ford", "Bridge", "Cliff
 const BRUSHES := [1, 3, 5, 9, 15]
 const UNDO_MAX := 40
 const TAP_PX := 14.0
+## M2.9 props (view-only decor). Tall buildings block: their footprint is saved as Cliff.
+const PROP_LABELS := {"tower_glass": "Glass tower", "tower_office": "Office tower", "tower_apart": "Apartment block",
+	"tower_slim": "Slim tower", "shops": "Shop row", "car_red": "Car (red)", "car_white": "Car (white)", "car_blue": "Car (blue)",
+	"car_silver": "Car (silver)", "car_taxi": "Taxi", "car_van": "Van", "car_suv": "SUV", "streetlight": "Street light",
+	"streetlight_double": "Double street light", "wreck_car": "Burnt-out car", "palm": "Palm tree", "oak": "Oak tree",
+	"pine": "Pine tree", "bush": "Bush", "rock": "Rock"}
 const FAC_COL := {&"eu": Color("#6fe3ff"), &"us": Color("#cfe4ff"), &"tpla": Color("#f0b860"), &"neutral": Color("#c8c2b4")}
 
 var w := 64
@@ -87,6 +93,18 @@ func load_doc(d: Dictionary) -> void:
 		items.append({"t": "neutral", "kind": String(n["kind"]), "tile": MapStore._v(n["tile"])})
 	for p in d.get("prebuilt", []):
 		items.append({"t": "pre", "kind": String(p["kind"]), "slot": int(p["spawn"]), "tile": MapStore._v(p["tile"])})
+	for e in d.get("decor", []):
+		var pit := {"t": "prop", "kind": String(e[0]), "rot": int(e[3])}
+		var pfp := item_fp(pit)
+		pit["tile"] = Vector2i(roundi(float(e[1]) - pfp.x * 0.5), roundi(float(e[2]) - pfp.y * 0.5))
+		items.append(pit)
+		if PropMeshes.FOOTPRINT.has(pit["kind"]):   # un-stamp: the Cliff is re-applied on save
+			for yy in pfp.y:
+				for xx in pfp.x:
+					var tx: int = pit["tile"].x + xx
+					var ty: int = pit["tile"].y + yy
+					if tx < w and ty < h and tiles[ty * w + tx] == SimMap.T.CLIFF:
+						tiles[ty * w + tx] = SimMap.T.GRASS
 	_undo.clear()
 	_redo.clear()
 	selected = -1
@@ -98,10 +116,20 @@ func load_doc(d: Dictionary) -> void:
 
 func to_doc() -> Dictionary:
 	var rows: Array = []
+	var out := tiles.duplicate()
+	var dc: Array = []
+	for it in items:
+		if it["t"] == "prop":
+			var fp := item_fp(it)
+			dc.append([it["kind"], it["tile"].x + fp.x * 0.5, it["tile"].y + fp.y * 0.5, int(it.get("rot", 0))])
+			if PropMeshes.FOOTPRINT.has(it["kind"]):
+				for yy in fp.y:
+					for xx in fp.x:
+						out[(it["tile"].y + yy) * w + it["tile"].x + xx] = SimMap.T.CLIFF
 	for y in h:
 		var row := ""
 		for x in w:
-			row += MapStore.T_TO_CHAR[tiles[y * w + x]]
+			row += MapStore.T_TO_CHAR[out[y * w + x]]
 		rows.append(row)
 	var spawn_items: Array = []
 	for it in items:
@@ -122,7 +150,7 @@ func to_doc() -> Dictionary:
 			"neutral": ns.append({"kind": it["kind"], "tile": MapStore._a(it["tile"])})
 			"pre": pb.append({"kind": it["kind"], "spawn": int(slot_to_i.get(int(it["slot"]), -1)), "tile": MapStore._a(it["tile"])})
 	return {"format": MapStore.FORMAT, "id": map_id, "name": map_name, "size": [w, h], "env": String(env), "tiles": rows,
-		"spawns": sp, "resources": rs, "neutrals": ns, "prebuilt": pb}
+		"spawns": sp, "resources": rs, "neutrals": ns, "prebuilt": pb, "decor": dc}
 
 func _snapshot() -> Dictionary:
 	return {"tiles": tiles.duplicate(), "items": items.duplicate(true)}
@@ -226,6 +254,7 @@ static func item_fp(it: Dictionary) -> Vector2i:
 	match it["t"]:
 		"spawn": return MapStore.HQ_FP
 		"neutral": return MapStore.footprint_of(it["kind"])
+		"prop": return PropMeshes.FOOTPRINT.get(it["kind"], Vector2i.ONE)
 		"pre":
 			if Content.is_building(it["kind"]):
 				return MapStore.footprint_of(it["kind"])
@@ -253,6 +282,9 @@ func place_at(t: Vector2i, what: Dictionary = {}) -> int:
 		"pre":
 			it["kind"] = p["kind"]
 			it["slot"] = int(p.get("slot", owner_slot))
+		"prop":
+			it["kind"] = p["kind"]
+			it["rot"] = int(p.get("rot", 0))
 	var fp := item_fp(it)
 	it["tile"] = Vector2i(clampi(t.x - fp.x / 2, 0, w - fp.x), clampi(t.y - fp.y / 2, 0, h - fp.y))
 	items.append(it)
@@ -402,6 +434,7 @@ func item_label(it: Dictionary) -> String:
 	match it["t"]:
 		"spawn": return "Start %d" % (int(it["slot"]) + 1)
 		"res": return ("Supply seam" if it["kind"] == "seam" else "Supply cache") + " %d" % int(it["amount"])
+		"prop": return PROP_LABELS.get(it["kind"], String(it["kind"]))
 	return MapStore._name(it["kind"])
 
 func _draw() -> void:
@@ -446,6 +479,11 @@ func _draw() -> void:
 				var rn := r.grow(maxf(0.0, 6.0 - r.size.x) * 0.5)
 				draw_rect(rn, Color(0.62, 0.62, 0.6, 0.9))
 				draw_rect(rn, Color(0.15, 0.15, 0.15), false, 1.0)
+			"prop":
+				var big := PropMeshes.FOOTPRINT.has(it["kind"])
+				var rp := r.grow(maxf(0.0, (6.0 if big else 3.0) - r.size.x) * 0.5)
+				draw_rect(rp, Color(0.45, 0.5, 0.58, 0.92) if big else Color(0.85, 0.8, 0.55, 0.9))
+				draw_rect(rp, Color(0.1, 0.1, 0.12), false, 1.0)
 			"pre":
 				var fac := Content.faction_of_id(it["kind"])
 				var pc: Color = Palette.color(int(it["slot"]))

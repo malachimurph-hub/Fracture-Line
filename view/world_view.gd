@@ -44,6 +44,7 @@ func setup(r: MatchRunner, pid: int) -> void:
 	local_team = sim.players[pid].team if pid >= 0 else -1
 	terrain = TerrainView.new()
 	add_child(terrain)
+	terrain.decor_override = (Content.maps[sim.map_id] as MapDef).decor
 	terrain.build(sim.map, Content.maps[sim.map_id].tiles_path, MapEnv.for_map(sim.map_id))
 	vfx = Vfx.new()
 	add_child(vfx)

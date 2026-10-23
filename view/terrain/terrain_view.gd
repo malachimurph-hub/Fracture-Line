@@ -29,6 +29,7 @@ var prop_tint := Color(1, 1, 1)
 var heights: PackedFloat32Array
 var ground_decal_count := 0
 
+var decor_override: Array = []   ## M2.9: props placed in the map builder (MapDef.decor)
 var _tree_kind := "scrub_tree"   ## M2.8: forest prop for maps without a decor layer (map builder)
 
 func build(map: SimMap, tiles_path: String = "", env: Dictionary = {}) -> void:
@@ -389,7 +390,31 @@ func _box(st: SurfaceTool, c: Vector3, s: Vector3, col: Color) -> void:
 func _build_props(tiles_path: String) -> void:
 	var by_kind := {}
 	var dp := tiles_path.replace(".txt", ".decor.txt")
-	if tiles_path != "" and FileAccess.file_exists(dp):
+	if not decor_override.is_empty():
+		# M2.9: map-builder maps carry their placed props in MapDef.decor ([kind, x, y, rot])
+		for d in decor_override:
+			if not by_kind.has(String(d[0])):
+				by_kind[String(d[0])] = []
+			by_kind[String(d[0])].append([float(d[1]), float(d[2]), int(d[3])])
+		var covered := {}
+		for d in decor_override:
+			var fp: Vector2i = PropMeshes.FOOTPRINT.get(String(d[0]), Vector2i.ZERO)
+			if fp != Vector2i.ZERO:
+				var o := Vector2i(roundi(float(d[1]) - fp.x * 0.5), roundi(float(d[2]) - fp.y * 0.5))
+				for yy in fp.y:
+					for xx in fp.x:
+						covered[o + Vector2i(xx, yy)] = true
+		for k in [_tree_kind, "rock"]:
+			if not by_kind.has(k):
+				by_kind[k] = []
+		for y in m.h:
+			for x in m.w:
+				var tt := m.ttype(Vector2i(x, y))
+				if tt == SimMap.T.FOREST and _h(x, y) < 0.6:
+					by_kind[_tree_kind].append([x + 0.5, y + 0.5, 0])
+				elif tt == SimMap.T.CLIFF and _h(x, y) < 0.2 and not covered.has(Vector2i(x, y)):
+					by_kind["rock"].append([x + 0.5, y + 0.5, 0])
+	elif tiles_path != "" and FileAccess.file_exists(dp):
 		var f := FileAccess.open(dp, FileAccess.READ)
 		while not f.eof_reached():
 			var parts := f.get_line().split(" ", false)
@@ -415,7 +440,7 @@ func _build_props(tiles_path: String) -> void:
 		var mat := prop_material
 		if kind in ["palm", "scrub_tree", "pine", "pine_snow", "oak", "bush"]:
 			mat = prop_sway_material
-		elif kind in ["gas_station", "shack", "power_pole", "streetlight"]:
+		elif kind in ["gas_station", "shack", "power_pole", "streetlight", "streetlight_double"] or PropMeshes.FOOTPRINT.has(kind):
 			mat = prop_detail_material
 		_multimesh(by_kind[kind], mesh, mat, kind)
 

@@ -12,6 +12,9 @@ extends Resource
 ## M2.8 map builder: optional pre-placed units / buildings, {kind, spawn, tile}. Each belongs to
 ## the player who starts on spawn slot `spawn`; skipped when no player uses that slot.
 @export var prebuilt: Array[Dictionary] = []
+## M2.9 map builder props (view only): [kind, centre_x, centre_y, rot90]. Blocking props sit on
+## Cliff tiles stamped into the tile grid when placed, so the sim needs nothing extra.
+@export var decor: Array = []
 ## M2.8 custom (user://maps) maps: not exported, set by MapStore.
 var custom := false
 var transient := false          ## embedded copy restored from a save (hidden from the lobby)

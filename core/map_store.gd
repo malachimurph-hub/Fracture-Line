@@ -44,7 +44,7 @@ static func to_dict(md: MapDef) -> Dictionary:
 	for p in md.prebuilt:
 		pb.append({"kind": String(p["kind"]), "spawn": int(p["spawn"]), "tile": _a(p["tile"])})
 	return {"format": FORMAT, "id": String(md.id), "name": tr_name(md), "size": _a(md.size), "env": String(md.env),
-		"tiles": Array(rows), "spawns": sp, "resources": rs, "neutrals": ns, "prebuilt": pb}
+		"tiles": Array(rows), "spawns": sp, "resources": rs, "neutrals": ns, "prebuilt": pb, "decor": md.decor.duplicate(true)}
 
 static func tr_name(md: MapDef) -> String:
 	return TranslationServer.translate(md.name_key) if md.name_key != "" else String(md.id)
@@ -76,6 +76,11 @@ static func from_dict(d: Dictionary) -> MapDef:
 	for p in d.get("prebuilt", []):
 		pb.append({"kind": String(p["kind"]), "spawn": int(p.get("spawn", 0)), "tile": _v(p["tile"])})
 	md.prebuilt = pb
+	var dc: Array = []
+	for e in d.get("decor", []):
+		if e is Array and e.size() >= 4:
+			dc.append([String(e[0]), float(e[1]), float(e[2]), int(e[3])])
+	md.decor = dc
 	md.custom = true
 	md.content_hash = hash_of(d)
 	return md
