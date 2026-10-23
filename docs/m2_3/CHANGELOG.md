@@ -1,4 +1,4 @@
-# Last Command (formerly FRACTURE LINE) M2.3 (0.2.3, versionCode 7) - "Zero Hour feel"
+# Rules of Engagement (formerly FRACTURE LINE) M2.3 (0.2.3, versionCode 7) - "Zero Hour feel"
 
 Built from a study of EA's GPL-3.0 C&C Generals / Zero Hour source release, used as a
 **reference only** (see docs/ZH_REFERENCE.md). All code is our own GDScript; no EA code, art,

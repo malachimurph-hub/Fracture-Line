@@ -344,7 +344,7 @@ func test_credits() -> void:
 		"h max %.1f view %.1f" % [sc.get_h_scroll_bar().max_value, sc.size.x])
 	check("credits text-fit: text wraps within the panel", t.size.x <= sc.size.x + 0.5 and screen.encloses(sc.get_global_rect()), "label %.1f panel %.1f" % [t.size.x, sc.size.x])
 	check("credits text-fit: body scrolls vertically", t.size.y > sc.size.y and sc.get_v_scroll_bar().max_value > sc.size.y, "text h %.0f view h %.0f" % [t.size.y, sc.size.y])
-	check("credits text-fit: starts with the new name", t.text.begins_with("LAST COMMAND"))
+	check("credits text-fit: starts with the new name", t.text.begins_with("RULES OF ENGAGEMENT"))
 	await shot("m27_credits_top")
 	sc.scroll_vertical = int(sc.get_v_scroll_bar().max_value)
 	await frames(3)

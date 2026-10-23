@@ -1,11 +1,11 @@
-# Last Command (formerly FRACTURE LINE)
+# Rules of Engagement (formerly FRACTURE LINE)
 
 Original mobile RTS for Android, made in Godot 4.7.2 for Malachi Murphy. Main scene: `res://ui/main_menu.tscn`.
 
 ## Rename (M2.7)
 
-The player-visible name is now **Last Command**: main-menu title, credits, Android launcher label
-(`application/config/name`, export `package/name`) and the APK file name (`LastCommand-M<x>.apk`).
+The player-visible name is now **Rules of Engagement**: main-menu title, credits, Android launcher label
+(`application/config/name`, export `package/name`) and the APK file name (`RulesOfEngagement-M<x>.apk`).
 
 These stay the same so the new APK installs as an update and keeps settings and saves:
 

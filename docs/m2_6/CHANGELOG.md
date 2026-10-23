@@ -1,4 +1,4 @@
-# Last Command (formerly FRACTURE LINE) M2.6 (0.2.6, versionCode 10)
+# Rules of Engagement (formerly FRACTURE LINE) M2.6 (0.2.6, versionCode 10)
 
 Built from Malachi's M2.5 feedback (FEEDBACK_malachi_2026-10-22_m25.md).
 
