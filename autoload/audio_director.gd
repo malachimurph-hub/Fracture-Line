@@ -32,7 +32,12 @@ const VARIANTS := {
 }
 const UI := {"click": "res://audio/ui/click.ogg", "select": "res://audio/ui/select.ogg", "error": "res://audio/ui/error.ogg",
 	"confirm": "res://audio/ui/confirm.ogg", "alert": "res://audio/ui/alert.ogg", "build_ready": "res://audio/ui/build_ready.ogg"}
-const MUSIC := {"menu": "res://audio/music/menu_dust_over_varno.ogg", "battle": "res://audio/music/battle_steel_rain.ogg"}
+const MUSIC := {"menu": "res://audio/music/menu_breach_point.ogg", "battle": "res://audio/music/battle_iron_convoy.ogg"}
+## M2.9: in-match rock shuffle (original synthesized tracks, tools/gen_music_m29.py + gen_music.py)
+const BATTLE_PLAYLIST := ["res://audio/music/battle_iron_convoy.ogg", "res://audio/music/battle_dust_devils.ogg",
+	"res://audio/music/battle_last_light.ogg", "res://audio/music/battle_steel_rain.ogg"]
+var _shuffle: Array = []
+var _last_battle := ""
 const AMBIENT := {"wind": "res://audio/ambient/desert_wind.ogg", "river": "res://audio/ambient/river.ogg"}
 
 var manifest: Dictionary = {}
@@ -89,6 +94,7 @@ func _ready() -> void:
 		if j2 is Dictionary:
 			faction_audio = j2
 	_music = _player("Music")
+	_music.finished.connect(_on_music_finished)
 	_ambient = _player("SFX")
 	_ambient.volume_db = -14.0
 	_unit_voice = _player("Voice")
@@ -192,6 +198,9 @@ func play_music(track: String) -> void:
 	if track == music_track and _music.playing:
 		return
 	music_track = track
+	if track == "battle":
+		_next_battle_track()
+		return
 	var s := stream(MUSIC.get(track, ""))
 	if s == null:
 		_music.stop()
@@ -199,6 +208,28 @@ func play_music(track: String) -> void:
 	_music.stream = s
 	_music.volume_db = -4.0
 	_music.play()
+
+## Shuffle without repeats: each pass plays every battle track once, never the same one twice in a row.
+func _next_battle_track() -> void:
+	if _shuffle.is_empty():
+		_shuffle = BATTLE_PLAYLIST.duplicate()
+		_shuffle.shuffle()
+		if _shuffle.size() > 1 and _shuffle[0] == _last_battle:
+			_shuffle.push_back(_shuffle.pop_front())
+	_last_battle = _shuffle.pop_front()
+	var s := stream(_last_battle)
+	if s == null:
+		_music.stop()
+		return
+	if s is AudioStreamOggVorbis:
+		(s as AudioStreamOggVorbis).loop = false
+	_music.stream = s
+	_music.volume_db = -5.0
+	_music.play()
+
+func _on_music_finished() -> void:
+	if music_track == "battle":
+		_next_battle_track()
 
 func play_ambient(key: String) -> void:
 	var s := stream(AMBIENT.get(key, ""))
