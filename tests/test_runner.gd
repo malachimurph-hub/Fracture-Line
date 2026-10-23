@@ -153,7 +153,7 @@ func _ready() -> void:
 				rt.advance()
 			var ta = rt.ais[1]
 			print("tpla? ", ta is AITpla, " builders=", ta.bb["builders"], " next=", ta._next_building(), " fs=", ta.bb.get("fs"), " supply=", rt.sim.players[1].supply)
-			for u in ta._laborers():
+			for u in ta._gatherers():
 				print(" lab ", u.id, " orders=", u.orders, " phase=", u.phase, " idle=", u.is_idle())
 			var nb2: StringName = ta._next_building()
 			if nb2 != &"":
@@ -1022,7 +1022,42 @@ func _ticks(r: MatchRunner, n: int) -> void:
 	for i in n:
 		r.advance()
 
+## M2.9 TPLA roster mechanics: Marksman hidden unless shooting, Insurgent always hidden,
+## Koksan waits its 5 s setup before the first shot.
+func _m29_tpla() -> void:
+	var r := _zh_runner(29)
+	var w := r.sim
+	var c := _zh_open(w, 7)
+	var mk := w.spawn_unit(&"tpla_marksman", 1, null, FX.tile_center(c))
+	var ins := w.spawn_unit(&"tpla_insurgent", 1, null, FX.tile_center(c + Vector2i(2, 0)))
+	_ticks(r, 80)
+	_check(mk.stealthy and ins.stealthy, "Marksman and Insurgent are hidden while not shooting")
+	var dummy := w.spawn_unit(&"eu_crawler", 0, null, FX.tile_center(c + Vector2i(0, 6)))
+	dummy.max_hp = 100000
+	dummy.hp = 100000
+	r.issue({"p": 1, "t": "attack", "ids": [mk.id], "target": dummy.id})
+	var seen := false
+	for i in 120:
+		r.advance()
+		if not mk.stealthy:
+			seen = true
+	_check(seen and dummy.hp < 100000 and ins.stealthy, "Marksman is revealed when he fires; the Insurgent stays hidden")
+	mk.alive = false
+	var ks := w.spawn_unit(&"tpla_blight", 1, null, FX.tile_center(c + Vector2i(0, -6)))
+	ks.pos = FX.tile_center(c + Vector2i(0, -6))
+	var d2 := w.spawn_unit(&"eu_crawler", 0, null, FX.tile_center(c + Vector2i(0, 5)))
+	d2.max_hp = 100000
+	d2.hp = 100000
+	r.issue({"p": 1, "t": "attack", "ids": [ks.id], "target": d2.id})
+	var first := -1
+	for i in 400:
+		r.advance()
+		if first < 0 and ks.firing_tick > 0 and ks.firing_tick >= w.tick - 1:
+			first = i
+	_check(first >= UsSys.SETUP_TICKS - 2, "Koksan sets up for 5 s before its first shot (first shot after %d ticks)" % first)
+
 func test_tpla() -> void:
+	_m29_tpla()
 	var r := MatchRunner.new()
 	r.record_replay = false
 	r.start(make_cfg("1v1", 11, [], ["tpla", "eu"]))
@@ -1053,18 +1088,25 @@ func test_tpla() -> void:
 		if e2.alive and e2.owner == 0 and e2.def_id == &"tpla_militia":
 			mil.append(e2)
 	_check(mil.size() == 3, "camp trains militia at full speed without any power plant (%d)" % mil.size())
-	# --- laborers harvest
+	# --- M2.9: Pickups gather, the Backhoe builds (separate jobs)
 	var lab: SimEntity = null
+	var hoe: SimEntity = null
 	for id in w.ids:
 		var e3: SimEntity = w.ents[id]
-		if e3.alive and e3.owner == 0 and e3.def_id == &"tpla_laborer":
+		if e3.alive and e3.owner == 0 and e3.def_id == &"tpla_pickup":
 			lab = e3
-	_tpla_place(w, 0, &"tpla_stash", FX.to_tile(EconSys.nearest_resource(w, den.pos).pos))   # laborers drop off at a Supply Stash
+		if e3.alive and e3.owner == 0 and e3.def_id == &"tpla_backhoe":
+			hoe = e3
+	var pk: UnitDef = Content.unit(&"tpla_pickup")
+	var bh: UnitDef = Content.unit(&"tpla_backhoe")
+	_check(lab != null and hoe != null and bh.harvest_capacity == 0 and not bh.tags.has("harvester") and pk.harvest_capacity > 0 and not pk.tags.has("builder"),
+		"TPLA starts with a Backhoe (builds, never gathers) and a Pickup (gathers, never builds)")
+	_tpla_place(w, 0, &"tpla_stash", FX.to_tile(EconSys.nearest_resource(w, den.pos).pos))   # pickups drop off at a Supply Stash
 	var h0: int = p0.stats["harvested"]
 	var res := EconSys.nearest_resource(w, den.pos)
 	r.issue({"p": 0, "t": "harvest", "ids": [lab.id], "target": res.id})
 	_ticks(r, 20 * 60)
-	_check(p0.stats["harvested"] > h0, "Laborer harvests into a Supply Stash (+%d)" % (p0.stats["harvested"] - h0))
+	_check(p0.stats["harvested"] > h0, "Pickup harvests into a Supply Stash (+%d)" % (p0.stats["harvested"] - h0))
 	# --- tunnel network
 	var ta := _tpla_place(w, 0, &"tpla_tunnel", base)
 	var tb := _tpla_place(w, 0, &"tpla_tunnel", base + Vector2i(14, 0) if w.map.in_bounds(base + Vector2i(14, 0)) else base - Vector2i(14, 0), 0)
@@ -1155,7 +1197,7 @@ func test_tpla() -> void:
 			if e9.alive and e9.kind == SimEntity.Kind.BUILDING and e9.owner == 0:
 				print("   dbg bld ", e9.def_id, " tile=", e9.tile, " built=", e9.built, " aux_t=", e9.aux_t, " tick=", w.tick)
 		print("   dbg ct=", ct)
-	_check(site != null, "a Laborer climbs out of the hole and starts rebuilding")
+	_check(site != null, "a Backhoe climbs out of the hole and starts rebuilding")
 	_ticks(r, 20 * 15)
 	_check(site != null and site.built, "the structure is rebuilt for free")
 	# --- demo trap + stealth
@@ -1336,8 +1378,8 @@ func _zh_scatter() -> void:
 	var c := _zh_open(w, 7)
 	var u := w.spawn_unit(&"eu_leopold", 0, null, FX.tile_center(c))
 	var vs_veh := _zh_hit_rate(w, u, "eu_crawler", "eu_tank_cannon", 200)
-	var vs_inf := _zh_hit_rate(w, u, "tpla_laborer", "eu_tank_cannon", 200)
-	var rifle := _zh_hit_rate(w, u, "tpla_laborer", "eu_rifle", 200)
+	var vs_inf := _zh_hit_rate(w, u, "tpla_militia", "eu_tank_cannon", 200)
+	var rifle := _zh_hit_rate(w, u, "tpla_militia", "eu_rifle", 200)
 	var arty := _zh_hit_rate(w, u, "eu_grenadier", "tpla_rust_shell", 200)
 	print("  direct-hit rate: tank cannon vs vehicle %d%%, vs infantry %d%%; rifle vs infantry %d%%; rust shell vs infantry %d%%" % [vs_veh, vs_inf, rifle, arty])
 	_check(vs_veh == 100 and rifle == 100, "accurate weapons always hit")
@@ -1470,7 +1512,7 @@ func test_duel() -> void:
 
 # ------------------------------------------------------------------ M2.4 roster (ZH 1:1 widening)
 const ROSTER_NEW_UNITS := ["eu_brennus", "eu_salamander", "eu_thunderhead", "eu_hearth", "eu_spectre", "eu_sentinel", "eu_kestrel", "eu_corvid",
-	"tpla_junkhammer", "tpla_sprayer", "tpla_earwig", "tpla_jackal", "tpla_bus"]
+	"tpla_bus", "tpla_marksman", "tpla_insurgent"]
 const ROSTER_NEW_BUILDINGS := ["eu_flak_tower", "eu_signals", "eu_relay", "eu_exchange", "eu_airstrip", "eu_minefield", "eu_concord",
 	"tpla_wasp_nest", "tpla_decoy", "tpla_rust_silo"]
 
@@ -1547,7 +1589,7 @@ func _roster_transport() -> void:
 	var tank := w.spawn_unit(&"eu_leopold", 0, null, FX.tile_center(c + Vector2i(1, 1)))
 	r.issue({"p": 0, "t": "garrison", "ids": [tank.id], "target": bus.id})
 	_ticks(r, 40)
-	_check(Content.unit(&"tpla_bus").transport_capacity == 8 and tank.res_id >= 0, "Rust Bus capacity 8; vehicles cannot board")
+	_check(Content.unit(&"tpla_bus").transport_capacity == 8 and tank.res_id >= 0, "BMP-2 capacity 8; vehicles cannot board")
 
 func _roster_jammer() -> void:
 	var dmg := []
@@ -1579,10 +1621,10 @@ func _roster_mines() -> void:
 	var mine := w._place_building(Content.building(&"eu_minefield"), 0, c + Vector2i(0, 2), 0, true)
 	_ticks(r, 10)
 	_check(mine.stealthy and (mine.stealth_mask & (1 << w.player_team(1))) == 0, "EU minefield is hidden from the enemy")
-	var ear := w.spawn_unit(&"tpla_earwig", 1, null, FX.tile_center(c + Vector2i(0, -6)))
+	var ear := w.spawn_unit(&"eu_sentinel", 1, null, FX.tile_center(c + Vector2i(0, -6)))
 	ear.pos = FX.tile_center(c + Vector2i(0, -6))
 	_ticks(r, 10)
-	_check((mine.stealth_mask & (1 << w.player_team(1))) != 0, "Earwig detector reveals the mine from 8 tiles")
+	_check((mine.stealth_mask & (1 << w.player_team(1))) != 0, "a detector (Sentinel) reveals the mine from 8 tiles")
 	var rat := w.spawn_unit(&"tpla_rattler", 1, null, FX.tile_center(c + Vector2i(0, 6)))
 	rat.pos = FX.tile_center(c + Vector2i(0, 6))
 	r.issue({"p": 1, "t": "move", "ids": [rat.id], "pos": FX.tile_center(c + Vector2i(0, -2))})
