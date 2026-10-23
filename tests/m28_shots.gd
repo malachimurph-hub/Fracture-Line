@@ -85,16 +85,17 @@ func _find(ch: Array, from: Vector2i) -> Vector2i:
 	return from
 
 func run_water() -> void:
-	await _start("kessel_pass", ["us", "eu"], false)
-	var t := _find([SimMap.T.WATER], Vector2i(40, 128))
-	_look(Vector2(t.x + 2, t.y + 3), 0)
+	await _start("harrow_junction", ["us", "eu"], false)
+	var t := _find([SimMap.T.WATER], Vector2i(128, 60))
+	_look(Vector2(t.x + 1, t.y + 2), 1)
 	await frames(40)
-	await shot("water_kessel_winter")
+	await shot("water_shoreline")
 
 func run_map() -> void:
 	await _start("varno_crossing", ["us", "eu"], false)
-	m.cam.jump_to(Vector3(128, 0, 128), false)
-	m.cam.set_level(2)
+	_look(Vector2(128, 128), 2)
+	m.cam.dist = 120.0
+	m.cam.target_dist = 120.0
 	await frames(30)
 	await shot("map_varno_256_overview")
 
