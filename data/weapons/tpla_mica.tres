@@ -4,21 +4,21 @@
 
 [resource]
 script = ExtResource("1_s")
-id = &"tpla_bomb"
-damage = 520
-range_mt = 700
+id = &"tpla_mica"
+damage = 100
+range_mt = 9000
 min_range_mt = 0
-cooldown_ms = 1000
-damage_type = &"demolition"
-splash_mt = 2400
-targets_air = false
-targets_ground = true
-vfx = &"bomb"
+cooldown_ms = 700
+damage_type = &"aa_missile"
+splash_mt = 0
+targets_air = true
+targets_ground = false
+vfx = &"missile"
 min_tier = 0
 pre_attack_ms = 0
 pre_attack_type = &"attack"
-clip_size = 0
-reload_ms = 0
-aim_deg = 12
+clip_size = 2
+reload_ms = 8000
+aim_deg = 30
 scatter_mt = 0
 scatter_inf_mt = 0

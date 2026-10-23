@@ -4,21 +4,21 @@
 
 [resource]
 script = ExtResource("1_s")
-id = &"tpla_rot_spray"
-damage = 18
-range_mt = 3000
+id = &"tpla_30mm"
+damage = 14
+range_mt = 5500
 min_range_mt = 0
-cooldown_ms = 600
-damage_type = &"corrosive"
-splash_mt = 800
-targets_air = false
+cooldown_ms = 300
+damage_type = &"hmg"
+splash_mt = 0
+targets_air = true
 targets_ground = true
-vfx = &"rust_shell"
+vfx = &"tracer_heavy"
 min_tier = 0
 pre_attack_ms = 0
 pre_attack_type = &"attack"
-clip_size = 0
-reload_ms = 0
-aim_deg = 20
+clip_size = 6
+reload_ms = 1800
+aim_deg = 12
 scatter_mt = 0
 scatter_inf_mt = 0

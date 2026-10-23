@@ -7,7 +7,7 @@ config/quit_on_go_back=false
 
 config/name="Rules of Engagement"
 config/description="RULES OF ENGAGEMENT (formerly FRACTURE LINE) - original mobile RTS"
-config/version="0.2.8"
+config/version="0.2.9"
 run/main_scene="res://ui/main_menu.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 boot_splash/bg_color=Color(0.07, 0.08, 0.1, 1)

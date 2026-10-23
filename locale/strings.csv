@@ -6,7 +6,7 @@ MENU_SKIRMISH,Skirmish
 MENU_CONTINUE,Continue suspended match
 MENU_SETTINGS,Settings
 MENU_MAP_BUILDER,Map Builder
-LOBBY_CUSTOM_TAG,"  · custom"
+LOBBY_CUSTOM_TAG,  · custom
 MENU_CREDITS,Credits / About
 MENU_QUIT,Quit
 BACK,Back
@@ -252,7 +252,7 @@ POWER_OVERCHARGE,Shield Overcharge
 POWER_OVERCHARGE_DESC,Your units in the area gain a strong temporary shield.
 POWER_BLACKOUT,Grid Blackout
 POWER_BLACKOUT_DESC,[STUB] Not implemented yet.
-CREDITS_BODY,"RULES OF ENGAGEMENT (formerly FRACTURE LINE) — Milestone 2.8 (skirmish: EU Alliance, TPLA and United States).
+CREDITS_BODY,"RULES OF ENGAGEMENT (formerly FRACTURE LINE) — Milestone 2.9 (skirmish: EU Alliance, TPLA and United States).
 Design, code, procedural 3D models (M2.6 model upgrade with automatic LODs), weathering and surface-detail shaders, decals, effects, maps, faction HUD themes, UI and text: original work made for Malachi Murphy with Grok Bot. US unit names are original and only inspired by real equipment roles.
 Textures: ambientCG (ambientcg.com), CC0 1.0 public domain — Ground097, Ground109, Grass004, Rock063, Asphalt033, Gravel035, Concrete034, CorrugatedSteel005, Rust004; winter: Snow006, Ground054, Snow004, Rock035, Ice002, Snow010A; temperate: Grass001, Ground037, Rock023, PavingStones130; arid: Ground090, Ground102, Rock061, Ground079S.
 Soldier models and animations: Quaternius, ""Toon Shooter Game Kit"" (quaternius.com), CC0 1.0 public domain — recoloured and re-equipped per faction, re-proportioned, decimated and baked to vertex animation.
@@ -267,15 +267,13 @@ UI font: Godot's built-in default font. Title font: Black Ops One by James Gries
 CREDITS_ENGINE,"Built with Godot Engine %s (MIT license, see below)."
 FACTION_TPLA,TPLA
 FACTION_TPLA_FULL,The Peoples Liberation Army
-UNIT_TPLA_LABORER,Laborer
-UNIT_TPLA_MILITIA,Militia
-UNIT_TPLA_ROCKET_CELL,Rocket Cell
-UNIT_TPLA_RATTLER,Rattler Truck
-UNIT_TPLA_HAILSTORM,Hailstorm Quad Gun
-UNIT_TPLA_SCRAPBACK,Scrapback Tank
-UNIT_TPLA_SHRIKE,Shrike Rocket Buggy
-UNIT_TPLA_MULE,Mule Bomb Truck
-UNIT_TPLA_BLIGHT,Blight Launcher
+UNIT_TPLA_MILITIA,Rifleman
+UNIT_TPLA_ROCKET_CELL,Rocket Man
+UNIT_TPLA_RATTLER,Technical
+UNIT_TPLA_HAILSTORM,BHX-35
+UNIT_TPLA_SCRAPBACK,Striker
+UNIT_TPLA_SHRIKE,Fajr Rocket Launcher
+UNIT_TPLA_BLIGHT,Koksan Heavy Gun
 BLD_TPLA_DEN,Command Den
 BLD_TPLA_STASH,Supply Stash
 BLD_TPLA_CAMP,Militia Camp
@@ -339,16 +337,8 @@ UNIT_EU_KESTREL,Kestrel Helo
 UNIT_EU_KESTREL_DESC,[STUB] Transport helicopter. Aircraft are not in the game yet; listed for the full roster.
 UNIT_EU_CORVID,Corvid Jet
 UNIT_EU_CORVID_DESC,[STUB] Strike jet. Aircraft are not in the game yet; listed for the full roster.
-UNIT_TPLA_JUNKHAMMER,Junkhammer Tank
-UNIT_TPLA_JUNKHAMMER_DESC,Heavy scrap tank with a big cannon. Collects salvage like other TPLA vehicles. Needs a Workshop.
-UNIT_TPLA_SPRAYER,Rot Sprayer
-UNIT_TPLA_SPRAYER_DESC,Truck that hoses corrosive slurry. Strong against infantry and light vehicles at short range.
-UNIT_TPLA_EARWIG,Earwig Van
-UNIT_TPLA_EARWIG_DESC,Unarmed listening van. Wide sight; detects hidden mines and traps.
-UNIT_TPLA_JACKAL,Jackal Bike
-UNIT_TPLA_JACKAL_DESC,Very fast raider bike with a light machine gun. Fragile.
-UNIT_TPLA_BUS,Rust Bus
-UNIT_TPLA_BUS_DESC,Armoured bus. Carries 8 infantry. Needs a Workshop.
+UNIT_TPLA_BUS,BMP-2 Transport
+UNIT_TPLA_BUS_DESC,BMP-2-based armoured transport with a 30 mm cannon on top. Carries 8 infantry.
 BLD_EU_FLAK_TOWER,Flak Tower
 BLD_EU_FLAK_TOWER_DESC,Rapid-fire rotary gun tower. Hits ground and air targets. Needs power to fire.
 BLD_EU_SIGNALS,Signals Center
@@ -451,3 +441,26 @@ HUD_AIR_SLOTS,Airfield slots %d / %d
 ALERT_AIR_SUPPORT,JTAC: air support inbound
 MAP_OCHRE,Ochre Wells
 MAP_OCHRE_DESC,"Arid. A walled market town in a dry basin, ringed by a sandy wadi you can ford almost anywhere, with deep oasis pools on the diagonals. Mesas and salt flats outside; garrisonable town blocks inside."
+UNIT_TPLA_BACKHOE,Backhoe
+UNIT_TPLA_BACKHOE_DESC,Construction backhoe. Builds and repairs TPLA structures. Does not gather supplies.
+UNIT_TPLA_PICKUP,Supply Pickup
+UNIT_TPLA_PICKUP_DESC,White civilian pickup that hauls supplies to a Supply Stash. Cannot build.
+UNIT_TPLA_MILITIA_DESC,"AK-74 insurgent rifleman. Cheap, single soldier, can garrison."
+UNIT_TPLA_ROCKET_CELL_DESC,Shoulder-fired RPG. Strong against vehicles.
+UNIT_TPLA_MARKSMAN,Marksman
+UNIT_TPLA_MARKSMAN_DESC,SVD marksman. Hidden from the enemy unless shooting (nearby units and detectors still see him). Needs a Workshop.
+UNIT_TPLA_INSURGENT,Insurgent
+UNIT_TPLA_INSURGENT_DESC,"Unarmed scout who blends in with the civilian population: always hidden, wide sight. Gives vision outside the base."
+UNIT_TPLA_RATTLER_DESC,Toyota-style pickup with a .50 cal heavy machine gun. Fast raider; hits ground and air.
+UNIT_TPLA_SCRAPBACK_DESC,Karrar-based main battle tank.
+UNIT_TPLA_HAILSTORM_DESC,Tracked anti-air platform with a single 35 mm cannon and a counter-drone laser.
+UNIT_TPLA_BLIGHT_DESC,Koksan-based 170 mm heavy artillery. Very long range; needs 5 s to set up after moving. Needs a Workshop.
+UNIT_TPLA_SHRIKE_DESC,"Fajr-5-based rocket launcher truck. Lighter artillery, fires without setting up. Needs a Workshop."
+UNIT_TPLA_F16,Falcon Bomber
+UNIT_TPLA_F16_DESC,F-16 Block 60-based light bomber. Uses 2 airfield slots. Needs a Workshop.
+UNIT_TPLA_MIRAGE,Mirage Fighter
+UNIT_TPLA_MIRAGE_DESC,Mirage 2000-based fighter: air-to-air missiles and light ground-attack rockets. Uses 2 airfield slots.
+UNIT_TPLA_MIG29,Fulcrum Interceptor
+UNIT_TPLA_MIG29_DESC,"MiG-29-based interceptor: the best TPLA air-to-air fighter, no ground attack. Uses 2 airfield slots."
+BLD_TPLA_AIRFIELD,Airfield
+BLD_TPLA_AIRFIELD_DESC,Builds TPLA jets. 6 parking slots; every TPLA jet uses 2. Jets land here to rearm.

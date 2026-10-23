@@ -8,11 +8,11 @@ extends AIPlayer
 ## and fog rules as the EU AI.
 
 const TDIFF := {
-	"easy":   {"lps": 5, "builders": 1, "raid": 0, "traps": 1, "tunnels": 1, "salvage": false, "stashes": 2, "guards": 0, "nets": 0, "bazaars": 1},
-	"medium": {"lps": 6, "builders": 2, "raid": 3, "traps": 2, "tunnels": 2, "salvage": true, "stashes": 3, "guards": 2, "nets": 1, "bazaars": 1},
-	"hard":   {"lps": 7, "builders": 2, "raid": 4, "traps": 4, "tunnels": 3, "salvage": true, "stashes": 4, "guards": 3, "nets": 2, "bazaars": 2},
+	"easy":   {"lps": 2, "builders": 1, "raid": 0, "traps": 1, "tunnels": 1, "salvage": false, "stashes": 2, "guards": 0, "nets": 0, "bazaars": 1},
+	"medium": {"lps": 3, "builders": 2, "raid": 3, "traps": 2, "tunnels": 2, "salvage": true, "stashes": 3, "guards": 2, "nets": 1, "bazaars": 1},
+	"hard":   {"lps": 3, "builders": 2, "raid": 4, "traps": 4, "tunnels": 3, "salvage": true, "stashes": 4, "guards": 3, "nets": 2, "bazaars": 2},
 }
-const MAX_LABORERS := 26
+const MAX_PICKUPS := 12
 
 var tc: Dictionary
 
@@ -52,79 +52,53 @@ func think() -> void:
 		_powers()
 
 # ------------------------------------------------------------------ economy
-func _laborers() -> Array:
+## M2.9: Pickups gather, Backhoes build (separate jobs; the base _builders() returns the Backhoes).
+func _gatherers() -> Array:
 	var out: Array = []
 	for u: SimEntity in my_ents(SimEntity.Kind.UNIT):
-		if w.udef(u).tags.has("harvester") and w.udef(u).tags.has("builder"):
+		if w.udef(u).tags.has("harvester"):
 			out.append(u)
 	return out
 
-func _builders() -> Array:
-	var labs := _laborers()
-	var keep: Array = []
-	var by_id := {}
-	for u: SimEntity in labs:
-		by_id[u.id] = u
-	for id in bb["builders"]:
-		if by_id.has(int(id)):
-			keep.append(int(id))
-	var want: int = tc["builders"] if seconds() > 120 else 1
-	if keep.size() < want:
-		# prefer an idle laborer, else pull the newest one off harvesting
-		var pick: SimEntity = null
-		for u: SimEntity in labs:
-			if not (u.id in keep) and u.is_idle():
-				pick = u
-				break
-		if pick == null:
-			for i in range(labs.size() - 1, -1, -1):
-				var u2: SimEntity = labs[i]
-				if not (u2.id in keep) and u2.phase != 3:
-					pick = u2
-					break
-		if pick != null:
-			keep.append(pick.id)
-	bb["builders"] = keep
-	var out: Array = []
-	for id in keep:
-		var b: SimEntity = by_id[id]
-		out.append(b)
-		# a reserved builder must not drift back to harvesting (idle laborers auto-harvest)
-		if b.phase >= 0 or (not b.orders.is_empty() and b.orders[0].get("o", "") == "harvest"):
-			cmd({"t": "stop", "ids": [b.id]})
-	return out
+func _queued(producers: Array, id: StringName) -> int:
+	var n := 0
+	for b: SimEntity in producers:
+		for q in b.queue:
+			if StringName(q) == id:
+				n += 1
+	return n
 
 func _economy() -> void:
 	var p := me()
-	_builders()
-	var labs := _laborers()
+	var labs := _gatherers()
 	var stashes: Array = []
-	var producers: Array = []
+	var dens: Array = []
+	var pick_src: Array = []
 	for b: SimEntity in my_ents(SimEntity.Kind.BUILDING):
 		if not b.built:
 			continue
 		var bd: BuildingDef = w.bdef(b)
 		if bd.is_refinery:
 			stashes.append(b)
-		if bd.produces.has(&"tpla_laborer") or bd.produces.has("tpla_laborer"):
-			producers.append(b)
-	var want: int = mini(MAX_LABORERS, maxi(1, stashes.size()) * int(tc["lps"]) + int(tc["builders"]))
-	var queued := 0
-	for b: SimEntity in producers:
-		for q in b.queue:
-			if StringName(q) == &"tpla_laborer":
-				queued += 1
-	var cost: int = Content.unit(&"tpla_laborer").cost
-	if labs.size() + queued < want and p.supply >= cost and not producers.is_empty():
+		if bd.produces.has("tpla_backhoe"):
+			dens.append(b)
+		if bd.produces.has("tpla_pickup"):
+			pick_src.append(b)
+	# builders: keep tc["builders"] Backhoes (1 in the opening)
+	var want_b: int = int(tc["builders"]) if seconds() > 120 else 1
+	var cost_b: int = Content.unit(&"tpla_backhoe").cost
+	if _builders().size() + _queued(dens, &"tpla_backhoe") < want_b and p.supply >= cost_b and not dens.is_empty():
+		cmd({"t": "queue", "target": dens[0].id, "def": "tpla_backhoe", "n": 1})
+	# gatherers: "lps" Pickups per Supply Stash (each Stash also brings one free)
+	var want: int = mini(MAX_PICKUPS, maxi(1, stashes.size()) * int(tc["lps"]))
+	var cost: int = Content.unit(&"tpla_pickup").cost
+	if labs.size() + _queued(pick_src, &"tpla_pickup") < want and p.supply >= cost and not pick_src.is_empty():
 		var best: SimEntity = null
-		for b2: SimEntity in producers:
+		for b2: SimEntity in pick_src:
 			if b2.queue.is_empty() and (best == null or w.bdef(b2).is_refinery):
 				best = b2
 		if best != null:
-			cmd({"t": "queue", "target": best.id, "def": "tpla_laborer", "n": 1})
-	var builders := {}
-	for id in bb["builders"]:
-		builders[int(id)] = true
+			cmd({"t": "queue", "target": best.id, "def": "tpla_pickup", "n": 1})
 	# idle gatherers back to the seam nearest a stash; spread some to the expansion
 	var er := w.get_ent(int(bb["expand_res"]))
 	var n_exp := 0
@@ -137,7 +111,7 @@ func _economy() -> void:
 			if u.res_id == er.id:
 				n_exp += 1
 	for u: SimEntity in labs:
-		if builders.has(u.id) or not u.is_idle() or stashes.is_empty():
+		if not u.is_idle() or stashes.is_empty():
 			continue
 		var res: SimEntity = null
 		if exp_stash and n_exp < int(tc["lps"]):
@@ -285,21 +259,21 @@ func _pick_unit(bd: BuildingDef) -> StringName:
 		var sid := StringName(uid)
 		var ud: UnitDef = Content.unit(sid)
 		var wgt: int = int(persona.unit_weights.get(uid, persona.unit_weights.get(String(uid), 1))) * 10
-		if sid == &"tpla_laborer":
+		if ud.tags.has("builder") or ud.tags.has("harvester") or ud.air_slots > 0:
 			wgt = 0
 		if ud.tags.has("at") and enemy_armor > enemy_inf:
 			wgt *= 2
 		elif ud.tags.has("at") and enemy_inf > enemy_armor * 2:
 			wgt = wgt / 2       # rockets are wasted on infantry; grenadiers shred slow AT teams
 		if sid == &"tpla_hailstorm":
-			wgt = wgt * 4 if enemy_air > 0 else (wgt * 3 if enemy_inf > enemy_armor else wgt)   # the quad gun is the GLA answer to infantry
+			wgt = wgt * 4 if enemy_air > 0 else (wgt * 3 if enemy_inf > enemy_armor else wgt)   # the BHX-35's 35 mm gun also shreds infantry
 		if sid == &"tpla_militia" and enemy_inf > enemy_armor:
 			wgt = wgt * 3 / 2
 		elif sid == &"tpla_militia" and enemy_armor > enemy_inf:
 			wgt = wgt / 2       # carbines barely scratch vehicles
 		if sid == &"tpla_scrapback" and enemy_armor > enemy_inf:
 			wgt = wgt * 3 / 2
-		if sid == &"tpla_mule" and int(have.get(sid, 0)) >= 1 + n_combat / 14:
+		if (sid == &"tpla_marksman" or sid == &"tpla_insurgent") and int(have.get(sid, 0)) >= 1 + n_combat / 12:
 			wgt = 0
 		if sid == &"tpla_blight" and int(have.get(sid, 0)) >= 1 + n_combat / 10:
 			wgt = 0

@@ -4,21 +4,21 @@
 
 [resource]
 script = ExtResource("1_s")
-id = &"tpla_scrap_rockets"
-damage = 50
-range_mt = 6500
+id = &"tpla_f16_bombs"
+damage = 320
+range_mt = 1600
 min_range_mt = 0
 cooldown_ms = 400
-damage_type = &"anti_tank"
-splash_mt = 0
+damage_type = &"demolition"
+splash_mt = 2000
 targets_air = false
 targets_ground = true
-vfx = &"rocket"
-min_tier = 2
-pre_attack_ms = 300
-pre_attack_type = &"clip"
+vfx = &"bomb"
+min_tier = 0
+pre_attack_ms = 0
+pre_attack_type = &"attack"
 clip_size = 2
-reload_ms = 8000
-aim_deg = 12
+reload_ms = 40000
+aim_deg = 90
 scatter_mt = 0
-scatter_inf_mt = 700
+scatter_inf_mt = 0

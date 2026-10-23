@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1_s")
 id = &"tpla_scrap_cannon"
-damage = 72
-range_mt = 6000
+damage = 88
+range_mt = 6500
 min_range_mt = 0
 cooldown_ms = 2300
 damage_type = &"cannon"

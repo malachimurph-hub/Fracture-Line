@@ -5,10 +5,10 @@
 [resource]
 script = ExtResource("1_s")
 id = &"tpla_carbine"
-damage = 11
+damage = 12
 range_mt = 4500
 min_range_mt = 0
-cooldown_ms = 700
+cooldown_ms = 650
 damage_type = &"small_arms"
 splash_mt = 0
 targets_air = false

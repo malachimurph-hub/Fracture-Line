@@ -216,7 +216,7 @@ static func _holes(w: SimWorld) -> void:
 			continue
 		var site := w._place_building(d, h.owner, h.tile, h.rot, false)
 		w.events.append({"t": "site", "id": site.id, "owner": h.owner})
-		var lab := w.spawn_unit(&"tpla_laborer", h.owner, null, site.pos)
+		var lab := w.spawn_unit(&"tpla_backhoe", h.owner, null, site.pos)
 		lab.orders = [{"o": "build", "target": site.id}]
 		w.events.append({"t": "hole_rebuild", "id": site.id, "owner": h.owner})
 

@@ -10,15 +10,14 @@ extends Node3D
 const CLASSES := {
 	# weapon id -> effect class (falls back to the weapon's vfx kind)
 	&"eu_tank_cannon": "cannon", &"eu_twin_cannon": "cannon", &"tpla_scrap_cannon": "cannon",
-	&"tpla_junk_cannon": "cannon", &"tpla_tech_cannon": "cannon",
 	&"eu_autocannon": "autocannon", &"eu_bunker_cannon": "autocannon",
-	&"tpla_hmg": "mg", &"tpla_tunnel_mg": "mg", &"tpla_bike_mg": "mg", &"eu_harvester_mg": "mg",
+	&"tpla_hmg": "mg", &"tpla_tunnel_mg": "mg", &"tpla_30mm": "autocannon", &"eu_harvester_mg": "mg",
 	&"eu_rifle": "rifle", &"tpla_carbine": "rifle",
-	&"eu_gatling": "quad", &"tpla_quad": "quad", &"eu_flak": "flak",
+	&"eu_gatling": "quad", &"tpla_quad": "autocannon", &"eu_flak": "flak",
 	&"eu_lancer_missile": "missile", &"tpla_wasp_missile": "missile",
-	&"tpla_rpg": "rocket", &"tpla_scrap_rockets": "rocket", &"tpla_buggy_rockets": "salvo",
+	&"tpla_rpg": "rocket", &"tpla_mirage_rockets": "salvo", &"tpla_mica": "missile", &"tpla_r73": "missile", &"tpla_buggy_rockets": "salvo",
 	&"eu_howitzer": "artillery", &"eu_mortar": "mortar", &"eu_grenade": "grenade",
-	&"tpla_rust_shell": "rust", &"tpla_rot_spray": "spray", &"eu_flamer": "flame",
+	&"tpla_rust_shell": "artillery", &"tpla_svd": "rifle", &"tpla_cd_laser": "rifle", &"tpla_f16_bombs": "mortar", &"eu_flamer": "flame",
 	# M2.5 United States
 	&"us_m16": "rifle", &"us_m4": "rifle", &"us_sniper_rifle": "rifle", &"us_lynx_hmg": "mg", &"us_avenger_mg": "mg",
 	&"us_chaingun": "autocannon", &"us_tank_gun": "cannon", &"us_javelin": "missile", &"us_hellfire": "missile",

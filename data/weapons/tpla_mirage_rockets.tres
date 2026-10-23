@@ -4,21 +4,21 @@
 
 [resource]
 script = ExtResource("1_s")
-id = &"tpla_bike_mg"
-damage = 9
-range_mt = 4500
+id = &"tpla_mirage_rockets"
+damage = 40
+range_mt = 4000
 min_range_mt = 0
-cooldown_ms = 400
-damage_type = &"hmg"
-splash_mt = 0
+cooldown_ms = 250
+damage_type = &"explosive"
+splash_mt = 700
 targets_air = false
 targets_ground = true
-vfx = &"tracer"
+vfx = &"rocket_salvo"
 min_tier = 0
 pre_attack_ms = 0
 pre_attack_type = &"attack"
-clip_size = 0
-reload_ms = 0
-aim_deg = 15
-scatter_mt = 0
+clip_size = 6
+reload_ms = 8000
+aim_deg = 45
+scatter_mt = 300
 scatter_inf_mt = 0

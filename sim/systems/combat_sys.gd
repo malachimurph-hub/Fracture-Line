@@ -154,6 +154,9 @@ static func _fire_unit(w: SimWorld, u: SimEntity, t: SimEntity) -> void:
 	var air := d.move_layer == &"air"
 	if air and u.air_state != AirSys.FLYING:
 		return
+	# M2.9: heavy artillery (tag "setup", TPLA Koksan) needs SETUP_TICKS standing still before firing
+	if d.tags.has("setup") and u.still < UsSys.SETUP_TICKS:
+		return
 	var jet := air and d.tags.has("jet")
 	var dist := w.edge_dist(u, t)
 	for i in d.weapons.size():

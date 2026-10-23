@@ -5,10 +5,10 @@
 [resource]
 script = ExtResource("1_s")
 id = &"tpla_quad"
-damage = 9
-range_mt = 6500
+damage = 16
+range_mt = 7000
 min_range_mt = 0
-cooldown_ms = 150
+cooldown_ms = 220
 damage_type = &"quad"
 splash_mt = 0
 targets_air = true
@@ -17,8 +17,8 @@ vfx = &"tracer_quad"
 min_tier = 0
 pre_attack_ms = 0
 pre_attack_type = &"attack"
-clip_size = 12
-reload_ms = 1350
+clip_size = 10
+reload_ms = 1600
 aim_deg = 12
 scatter_mt = 0
 scatter_inf_mt = 0

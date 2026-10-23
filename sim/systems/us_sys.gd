@@ -2,7 +2,12 @@ class_name UsSys
 ## M2.5 US mechanics that are not air-related.
 ##  - Scout Sniper (tag "stealth_still"): hidden from enemies after STILL_TICKS without moving;
 ##    reuses the M2.4 stealth mask: enemy units within TplaSys.DETECT and detectors in sight see it.
+##  - M2.9 TPLA: Marksman (tag "stealth_fire") is hidden unless it fired in the last FIRE_REVEAL_TICKS;
+##    Insurgent (tag "stealth_always") always blends in; both are seen the same way (nearby enemies,
+##    detectors). Heavy artillery (tag "setup") counts ticks standing still (CombatSys waits SETUP_TICKS).
 const STILL_TICKS := 40
+const FIRE_REVEAL_TICKS := 60    ## 3 s
+const SETUP_TICKS := 100         ## 5 s
 
 static func run(w: SimWorld) -> void:
 	var dets: Array = []
@@ -11,13 +16,22 @@ static func run(w: SimWorld) -> void:
 		var u: SimEntity = w.ents[id]
 		if not u.alive or u.kind != SimEntity.Kind.UNIT or u.res_id < 0:
 			continue
-		if not w.udef(u).tags.has("stealth_still"):
+		var tags: PackedStringArray = w.udef(u).tags
+		var still_t := tags.has("stealth_still")
+		if still_t or tags.has("setup"):
+			if u.moving or u.goal != MoveSys.NONE:
+				u.still = 0
+			elif u.still < 10000:
+				u.still += 1
+		var hide := false
+		if still_t:
+			hide = u.still >= STILL_TICKS
+		elif tags.has("stealth_fire"):
+			hide = w.tick - u.firing_tick >= FIRE_REVEAL_TICKS
+		elif tags.has("stealth_always"):
+			hide = true
+		else:
 			continue
-		if u.moving or u.goal != MoveSys.NONE:
-			u.still = 0
-		elif u.still < 10000:
-			u.still += 1
-		var hide := u.still >= STILL_TICKS
 		if hide != u.stealthy:
 			u.stealthy = hide
 			w.events.append({"t": "stealth", "id": u.id, "on": hide})
