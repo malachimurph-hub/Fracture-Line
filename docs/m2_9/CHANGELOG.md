@@ -60,3 +60,32 @@
     no sorting cost.
 13. **Dark asphalt roads.** On city maps (any map with tall-building props), roads are drawn in dark asphalt. This
     includes Crescent City in the desert.
+14. **EU Hearth is now light rocket artillery.** The Hearth Mortar is now the **Hearth Rocket Artillery**.
+    - New model: a tracked carrier with an armoured cab (glass, hatch, antenna, exhaust), stowage bins and rails,
+      jerrycans, a reload crate, a turntable with elevation ram, and a trainable 6-tube (2 x 3) rocket pod with
+      straps and red rocket noses.
+    - New weapon `eu_hearth_rockets` (replaces `eu_mortar`): a 6-rocket salvo, 29 dmg per rocket, 1.0 splash,
+      0.3 s between rockets and a 12 s reload. It is drawn as rockets with trails.
+    - Same range (10 tiles, minimum 2.5), same cost and HP, and about the same damage per second
+      (≈12.9, the mortar's was ≈12.9).
+15. **Dead structures removed.** I checked every faction's build list. These were removed because they did
+    nothing in the sim, or only showed a [STUB]:
+    - **EU Grid Pylon**: it only extended the Grid shield radius. The HQ and Reactors still project the Grid.
+    - **EU Concord Pylon** (stub superweapon, no strike implemented).
+    - **TPLA Decoy Yard**: its "decoy" tag was not used by any system, so it was just a 300 HP block.
+    - **TPLA Rust Bloom Silo** (stub superweapon).
+    - The data, views, strings, build orders, AI (EU pylon role, TPLA decoy build) and tests were updated. The lobby's
+      stub "Superweapons" toggle is hidden; the option is kept in the config for old saves.
+    - No US structure was removed: each one powers, produces, supplies, defends or unlocks tech. Built-in maps had
+      no pre-placed copies of the removed structures.
+16. **Ground graphics pass** (`terrain.gdshader`, `tools/gen_terrain_macro_m29.py`):
+    - The macro variation texture was not seamless (edge difference 59 vs 1 inside). That caused the straight lines
+      every 64 m. It is regenerated as periodic, smooth noise and now sampled at two unrelated scales and rotations.
+    - Every ground layer, including city asphalt, blends in a rotated and rescaled second copy using low-frequency
+      noise, which breaks up repeats. A second texture fetch happens only where that blend is mid-way.
+    - The micro detail layer is about half as strong and still fades out with distance. Albedo and NRAO use a
+      +0.4 mip bias, and the detail texture now uses anisotropic filtering. Together these remove grain and shimmer.
+    - Blends between ground types are smoother: the splat map gets two blur passes and its edges get a
+      larger-scale noise wobble.
+    - The layer textures were checked and are already seamless; their imports keep mipmaps and VRAM compression.
+

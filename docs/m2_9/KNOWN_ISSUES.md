@@ -16,4 +16,8 @@
 - **Map Builder props are decoration only,** except the five building types, which block their footprint.
 - **Old saves from M2.8** that contain removed TPLA units (Laborer, Mule, Junkhammer, Sprayer, Earwig, Jackal) may not
   load.
+- **Hearth voices.** The Hearth still uses the Wolfhound voice set, which has no mortar or rocket lines.
+- **The Superweapons lobby option is hidden.** No superweapon structures exist any more.
+- **Slower map load.** The terrain splat blur now takes two passes, which adds roughly 0.5 s to map load on large
+  maps.
 - Carried over from M2.8: see `docs/m2_8/KNOWN_ISSUES.md`.
