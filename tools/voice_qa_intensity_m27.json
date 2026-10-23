@@ -1306,9 +1306,9 @@
 "dur": 4.49,
 "wps": 0.69,
 "lid": {
-"en": 0.04,
-"ar_fa": 0.924,
-"ru": 0.002
+"en": 0.033,
+"ar_fa": 0.929,
+"ru": 0.001
 }
 },
 {
@@ -2390,17 +2390,17 @@
 "unit": "us_grunt",
 "faction": "us",
 "qa": 1.0,
-"take": 0,
-"heard": "Engaging.  Engaging.",
+"take": 2,
+"heard": "Engaging.",
 "lufs_target": -13.0,
 "ref": "us_grunt_0.wav",
 "engine": "chatterbox-multilingual (MIT) intensity m27, ref kokoro-82m m26 cast voice",
-"exag": 1.0,
-"cfg": 0.3,
+"exag": 0.8,
+"cfg": 0.4,
 "lang": "en",
 "tempo": 1.08,
-"dur": 1.29,
-"wps": 0.85,
+"dur": 0.71,
+"wps": 1.83,
 "lid": null
 },
 {
