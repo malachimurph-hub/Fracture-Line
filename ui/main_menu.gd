@@ -12,9 +12,7 @@ func build() -> void:
 	left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	left.alignment = BoxContainer.ALIGNMENT_CENTER
 	h.add_child(left)
-	left.add_child(UiTheme.label(tr("APP_TITLE"), 40, UiTheme.GOLD))
-	left.add_child(UiTheme.label(tr("MENU_SUBTITLE"), 14, UiTheme.CYAN))
-	left.add_child(UiTheme.label(tr("MENU_BUILD") % ProjectSettings.get_setting("application/config/version", "M1"), 11, Color(0.6, 0.6, 0.6)))
+	left.add_child(_title_block())
 	var right := VBoxContainer.new()
 	right.alignment = BoxContainer.ALIGNMENT_CENTER
 	right.add_theme_constant_override("separation", 10)
@@ -37,6 +35,95 @@ func build() -> void:
 		var q := UiTheme.button(tr("MENU_QUIT"), Vector2(260, 52))
 		q.pressed.connect(func(): get_tree().quit())
 		right.add_child(q)
+
+## M2.7b: ZH-style title treatment that reads on every map (snow, desert, night): a dark
+## band behind the title block that fades out to the right, a heavy stencil face with a
+## thick dark outline and drop shadow, and a gold rule. The band hugs its content, and the
+## title shrinks to fit the column, so any APP_TITLE length works.
+const TITLE_FONT := "res://ui/fonts/BlackOpsOne-Regular.ttf"
+const TITLE_SIZE := 46
+const TITLE_MIN := 22
+
+var _title: Label
+
+func _title_block() -> Control:
+	var grad := Gradient.new()
+	grad.set_color(0, Color(0.015, 0.02, 0.028, 0.86))
+	grad.set_color(1, Color(0.015, 0.02, 0.028, 0.0))
+	grad.add_point(0.62, Color(0.015, 0.02, 0.028, 0.7))
+	var gt := GradientTexture2D.new()
+	gt.gradient = grad
+	gt.fill_from = Vector2(0, 0)
+	gt.fill_to = Vector2(1, 0)
+	gt.width = 128
+	gt.height = 4
+	var band := StyleBoxTexture.new()
+	band.texture = gt
+	band.content_margin_left = 22
+	band.content_margin_right = 64
+	band.content_margin_top = 14
+	band.content_margin_bottom = 14
+	var panel := PanelContainer.new()
+	panel.name = "TitleBand"
+	panel.add_theme_stylebox_override("panel", band)
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 4)
+	panel.add_child(col)
+	_title = _shadowed(UiTheme.label(tr("APP_TITLE"), TITLE_SIZE, UiTheme.GOLD.lightened(0.08)), 10)
+	_title.name = "Title"
+	var f := load(TITLE_FONT) as Font
+	if f != null:
+		_title.add_theme_font_override("font", f)
+	_title.add_theme_constant_override("shadow_offset_x", 3)
+	_title.add_theme_constant_override("shadow_offset_y", 4)
+	col.add_child(_title)
+	var rule := ColorRect.new()
+	rule.color = Color(UiTheme.GOLD, 0.85)
+	rule.custom_minimum_size = Vector2(0, 3)
+	rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	col.add_child(rule)
+	col.add_child(_shadowed(UiTheme.label(tr("MENU_SUBTITLE"), 15, UiTheme.CYAN), 5))
+	col.add_child(_shadowed(UiTheme.label(tr("MENU_BUILD") % ProjectSettings.get_setting("application/config/version", "M1"), 11, Color(0.78, 0.78, 0.78)), 4))
+	panel.resized.connect(_fit_title.bind(panel))
+	return panel
+
+## Shrink the title until it fits the left column (long or localised titles); past the
+## minimum size it wraps onto more lines instead of pushing the buttons off screen.
+func _fit_title(panel: Control) -> void:
+	var host := panel.get_parent() as Control
+	var row := host.get_parent() as Control if host != null else null
+	if _title == null or row == null or row.size.x <= 0.0:
+		return
+	var col_w := row.size.x
+	for c in row.get_children():
+		if c != host and c is Control:
+			col_w -= (c as Control).size.x + float(row.get_theme_constant("separation"))
+	var avail := col_w - 22.0 - 64.0 - 8.0
+	var f := _title.get_theme_font("font")
+	var sz := TITLE_SIZE
+	while sz > TITLE_MIN and f.get_string_size(_title.text, HORIZONTAL_ALIGNMENT_LEFT, -1, sz).x + 20.0 > avail:
+		sz -= 2
+	var wrap := f.get_string_size(_title.text, HORIZONTAL_ALIGNMENT_LEFT, -1, sz).x + 20.0 > avail
+	var mode := TextServer.AUTOWRAP_WORD_SMART if wrap else TextServer.AUTOWRAP_OFF
+	var min_w := maxf(avail, 80.0) if wrap else 0.0
+	if _title.get_theme_font_size("font_size") != sz:
+		_title.add_theme_font_size_override("font_size", sz)
+	if _title.autowrap_mode != mode or not is_equal_approx(_title.custom_minimum_size.x, min_w):
+		_title.autowrap_mode = mode
+		_title.custom_minimum_size.x = min_w
+
+## M2.7b: title text stays readable over bright (snow) battle maps: dark outline + soft drop
+## shadow on the label itself (the backdrop also gets a gradient behind the title column).
+func _shadowed(l: Label, outline: int) -> Label:
+	l.add_theme_color_override("font_outline_color", Color(0.01, 0.012, 0.016, 0.95))
+	l.add_theme_constant_override("outline_size", outline)
+	l.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.7))
+	l.add_theme_constant_override("shadow_offset_x", 2)
+	l.add_theme_constant_override("shadow_offset_y", 3)
+	l.add_theme_constant_override("shadow_outline_size", outline + 4)
+	return l
 
 ## M2.6: live battle behind the menu (reduced-resolution 3D, 30 FPS cap while shown).
 ## M2.7: 3D at 67% scale instead of a half-size viewport (sharper models), lighter veil.
@@ -75,6 +162,30 @@ func _add_battle_backdrop() -> void:
 	side.anchor_left = 0.6
 	add_child(side)
 	move_child(side, 3)
+	# M2.7b: soft dark backing behind the title column (fades out toward the middle and
+	# toward the top and bottom), so the title reads over snow without boxing it in
+	var grad := Gradient.new()
+	grad.set_color(0, Color(0.02, 0.025, 0.035, 0.62))
+	grad.set_color(1, Color(0.02, 0.025, 0.035, 0.0))
+	grad.add_point(0.55, Color(0.02, 0.025, 0.035, 0.42))
+	var gt := GradientTexture2D.new()
+	gt.gradient = grad
+	gt.fill = GradientTexture2D.FILL_RADIAL
+	gt.fill_from = Vector2(0.0, 0.5)
+	gt.fill_to = Vector2(0.5, 0.5)
+	gt.width = 256
+	gt.height = 128
+	var back := TextureRect.new()
+	back.name = "TitleBacking"
+	back.texture = gt
+	back.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	back.stretch_mode = TextureRect.STRETCH_SCALE
+	back.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	back.set_anchors_preset(Control.PRESET_FULL_RECT)
+	back.anchor_top = 0.12
+	back.anchor_bottom = 0.88
+	add_child(back)
+	move_child(back, 4)
 	_old_fps = Engine.max_fps
 	Engine.max_fps = 30
 
