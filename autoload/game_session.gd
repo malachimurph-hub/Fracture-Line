@@ -101,7 +101,7 @@ static func broken_dependencies(path: String, seen: Dictionary = {}) -> PackedSt
 	return out
 
 func error_log_text() -> String:
-	return "FRACTURE LINE %s (%s, %s)\n%s\n\nRecent errors:\n%s" % [
+	return "LAST COMMAND %s (%s, %s)\n%s\n\nRecent errors:\n%s" % [
 		ProjectSettings.get_setting("application/config/version", "?"), OS.get_name(),
 		RenderingServer.get_current_rendering_method(), last_error_text, logger.text(60)]
 
