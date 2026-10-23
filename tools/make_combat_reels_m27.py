@@ -43,6 +43,10 @@ with tempfile.TemporaryDirectory() as td:
                     break
             if t >= TARGET:
                 break
+        if not pl:
+            log.append(f"combat_intensity_{fac}.mp3: no intensity lines yet")
+            print("skip", fac, "(no lines yet)")
+            continue
         lst = os.path.join(td, fac + ".txt")
         with open(lst, "w") as fh:
             for i, r in enumerate(pl):
