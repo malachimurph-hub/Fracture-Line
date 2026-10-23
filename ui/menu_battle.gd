@@ -21,6 +21,8 @@ extends Node3D
 ## the fight behind it, 3 a close 3/4 shot on the unit that fired last. The bases sit closer to
 ## the front and waves attack-move into the enemy base, so fights spill around the buildings.
 
+## Test hook (tests/gfx_m27_menu.gd): pin the backdrop map; empty = random.
+static var force_map: StringName = &""
 const DT := 0.05
 const WAVE := 9              ## units per side per wave
 const REFILL_BELOW := 4      ## new wave when a side drops under this many units
@@ -115,6 +117,8 @@ func _new_battle() -> void:
 	var maps: Array = Content.maps.keys()
 	maps.sort()
 	var mid: StringName = maps[_rng.randi() % maps.size()]
+	if force_map != &"" and Content.maps.has(force_map):
+		mid = force_map
 	var facs: Array = Content.FACTIONS.keys()
 	facs.shuffle()
 	_facs = [facs[0], facs[1]]

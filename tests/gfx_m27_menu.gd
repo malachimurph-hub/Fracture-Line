@@ -1,6 +1,6 @@
 extends Node
 ## M2.7 graphics pass: captures each cinematic shot of the main-menu background battle.
-##   godot --path . --resolution 2340x1080 res://tests/gfx_m27_menu.tscn -- <out_dir> [prefix]
+##   godot --path . --resolution 2340x1080 res://tests/gfx_m27_menu.tscn -- <out_dir> [prefix] [map_id]
 
 var out_dir := "/tmp"
 var prefix := "menu"
@@ -11,6 +11,8 @@ func _ready() -> void:
 		out_dir = a[0]
 	if a.size() > 1:
 		prefix = a[1]
+	if a.size() > 2:
+		MenuBattle.force_map = StringName(a[2])
 	DirAccess.make_dir_recursive_absolute(out_dir)
 	var mm: Node = (load("res://ui/main_menu.tscn") as PackedScene).instantiate()
 	add_child(mm)
