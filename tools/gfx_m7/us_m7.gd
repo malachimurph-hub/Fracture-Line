@@ -3,7 +3,7 @@ extends RefCounted
 ## modern US equipment roles only (no EA assets; the C&C source is reference for nothing here).
 ## Kit: tools/gfx_m7/kit7.gd (chamfers, lathes, rails, pipes, spinners, pulse lamps) on the
 ## m3 shader; AO baked afterwards by tools/gfx_m7/bake_ao.gd.
-const K := preload("res://tools/gfx_m7/kit7.gd")
+const K := preload("res://tools/gfx_m7/kit8.gd")
 const Geo := preload("res://tools/gfx_m3/geo.gd")
 const VK := preload("res://tools/gfx_m3/vehicle_kit.gd")
 const V4 := preload("res://tools/gfx_m4/vehicles_m4.gd")
@@ -46,6 +46,7 @@ static func build(only: Array) -> void:
 	var et = load("res://tools/gfx_m7/eu_tp_m7.gd")
 	jobs.merge(et.jobs())
 	jobs.merge(et.vjobs())
+	jobs.merge(load("res://tools/gfx_m7/us_v8.gd").jobs(), true)   # M2.7b vehicle remodel supersedes M2.7
 	for k in jobs:
 		if all or k in only:
 			jobs[k].call()

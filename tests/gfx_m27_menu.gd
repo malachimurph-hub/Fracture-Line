@@ -1,6 +1,6 @@
 extends Node
 ## M2.7 graphics pass: captures each cinematic shot of the main-menu background battle.
-##   godot --path . --resolution 2340x1080 res://tests/gfx_m27_menu.tscn -- <out_dir> [prefix]
+##   godot --path . --resolution 2340x1080 res://tests/gfx_m27_menu.tscn -- <out_dir> [prefix] [map_id]
 
 var out_dir := "/tmp"
 var prefix := "menu"
@@ -11,6 +11,8 @@ func _ready() -> void:
 		out_dir = a[0]
 	if a.size() > 1:
 		prefix = a[1]
+	if a.size() > 2:
+		MenuBattle.force_map = StringName(a[2])
 	DirAccess.make_dir_recursive_absolute(out_dir)
 	var mm: Node = (load("res://ui/main_menu.tscn") as PackedScene).instantiate()
 	add_child(mm)
@@ -43,5 +45,11 @@ func _ready() -> void:
 				bl += 1
 				if s == 0:
 					print("  BLD ", bg.runner.sim.ents[id].def_id, " ", bg.runner.sim.ents[id].tile, " owner ", bg.runner.sim.ents[id].owner)
+		var kinds: Array = []
+		for pid in 2:
+			for id in bg._alive(pid):
+				var vv = bg.world.views.get(id)
+				kinds.append("%s:%s" % [bg.runner.sim.get_ent(id).def_id, (vv.scene_file_path.get_file() if vv != null else "none")])
+		print("UNITS ", kinds, " subject ", bg._subject, " nviews ", bg.world.views.size(), " keys ", bg.world.views.keys().slice(0, 6), " alive ", bg._alive(0).slice(0, 4))
 		print("SHOT ", p, " map ", bg.runner.sim.map_id, " look ", bg._look, " eye ", bg.cam.cam.global_position, " bases ", bg._bases, " units ", us.size(), " ", us.slice(0, 4), " owned bld ", bl)
 	get_tree().quit(0)

@@ -7,6 +7,7 @@ extends RefCounted
 ## All shapes original; "inspired by" vehicle roles only.
 const Geo := preload("res://tools/gfx_m3/geo.gd")
 const VK := preload("res://tools/gfx_m3/vehicle_kit.gd")
+const K8 := preload("res://tools/gfx_m7/kit8.gd")   # M2.7b
 const V4 := preload("res://tools/gfx_m4/vehicles_m4.gd")
 const B4 := preload("res://tools/gfx_m4/buildings_m4.gd")
 const Y0 := 0.08
@@ -57,7 +58,7 @@ static func _smoke_launchers(t, x: float, y: float, z: float, yaw: float) -> voi
 static func _wolfhound(mat: Material) -> void:
 	var root := VK._root({"selection_radius": 0.8, "bar_height": 1.3, "recoil": 0.06, "wreck_s": 7.0, "steer_max": 0.45})
 	var model := VK._n3(root, root, "Model")
-	var h = Geo.new()
+	var h = K8.new()
 	V4._wheelset(h, 0.37, [0.56, 0.22, -0.18, -0.52], 0.125, 0.12, 2, EU_S)
 	# V-shaped belly and faceted upper hull (side profile z,y)
 	h.color(EU_D, Geo.PAINT)
@@ -102,7 +103,7 @@ static func _wolfhound(mat: Material) -> void:
 	_band(h, 0.43, 0.43, 1.1)
 	V4._antenna(h, Vector3(-0.28, 0.6, -0.62), 0.5)
 	var piv := VK._n3(model, root, "TurretPivot", Vector3(0, 0.6, 0.02))
-	var t = Geo.new()
+	var t = K8.new()
 	t.color(EU_S, Geo.STEEL)
 	t.cyl(0.26, 0.26, 0.03, 14, Transform3D(Basis.IDENTITY, Vector3(0, -0.01, 0)))
 	t.color(EU, Geo.PAINT)
@@ -137,7 +138,7 @@ static func _wolfhound(mat: Material) -> void:
 static func _flakwerk(mat: Material) -> void:
 	var root := VK._root({"selection_radius": 0.8, "bar_height": 1.6, "recoil": 0.05, "wreck_s": 7.0})
 	var model := VK._n3(root, root, "Model")
-	var h = Geo.new()
+	var h = K8.new()
 	V4._tracks(h, 0.44, 1.56, 5, 0.085, EU_D, EU_S, 0.2)
 	V4._armour_hull(h, 0.56, 1.56, 0.12, 0.38, EU, EU_D, 0.26, 0.06)
 	for s in [-1.0, 1.0]:
@@ -155,7 +156,7 @@ static func _flakwerk(mat: Material) -> void:
 	for z in [-0.72, -0.64]:
 		h.jerrycan(Vector3(0.42, 0.44, z), 90)
 	var piv := VK._n3(model, root, "TurretPivot", Vector3(0, 0.45, -0.08))
-	var t = Geo.new()
+	var t = K8.new()
 	t.color(EU_S, Geo.STEEL)
 	t.cyl(0.32, 0.32, 0.03, 14, Transform3D(Basis.IDENTITY, Vector3(0, -0.01, 0)))
 	t.color(EU, Geo.PAINT)
@@ -163,7 +164,7 @@ static func _flakwerk(mat: Material) -> void:
 	# gun pods on both sides
 	for s in [-1.0, 1.0]:
 		t.color(EU_D, Geo.PAINT)
-		t.bbox(Vector3(s * 0.36, 0.2, 0.0), Vector3(0.1, 0.16, 0.42), 0.012)
+		t.xloft([[0.22, K8.sect(-0.06, -0.04, 0.06, 0.04, 0.05, 0.04, 0.02)], [0.1, K8.sect(-0.08, -0.05, 0.08, 0.05, 0.055, 0.05, 0.025)], [-0.21, K8.sect(-0.08, -0.05, 0.08, 0.05, 0.055, 0.05, 0.025)]], Transform3D(Basis.IDENTITY, Vector3(s * 0.36, 0.2, 0.0)))   # M2.7b chamfered gun pods
 		t.color("#ffffff", Geo.TEAM)
 		t.box(Vector3(s * 0.413, 0.22, -0.05), Vector3(0.006, 0.04, 0.3))
 	# search radar (back) and tracking radar (front)
@@ -190,7 +191,7 @@ static func _flakwerk(mat: Material) -> void:
 static func _aegis(mat: Material) -> void:
 	var root := VK._root({"selection_radius": 0.8, "bar_height": 1.95, "recoil": 0.0, "wreck_s": 7.0, "steer_max": 0.4})
 	var model := VK._n3(root, root, "Model")
-	var h = Geo.new()
+	var h = K8.new()
 	V4._wheelset(h, 0.36, [0.5, 0.0, -0.5], 0.13, 0.12, 1, EU_S)
 	h.color(EU_D, Geo.PAINT)
 	h.prism_x([Vector2(-0.74, 0.22), Vector2(0.6, 0.22), Vector2(0.78, 0.36), Vector2(0.78, 0.44), Vector2(-0.76, 0.44)], -0.3, 0.3)
@@ -231,7 +232,7 @@ static func _aegis(mat: Material) -> void:
 static func _scrapback(mat: Material) -> void:
 	var root := VK._root({"selection_radius": 0.8, "bar_height": 1.33, "recoil": 0.14, "wreck_s": 8.0})
 	var model := VK._n3(root, root, "Model")
-	var h = Geo.new()
+	var h = K8.new()
 	V4._tracks(h, 0.44, 1.6, 5, 0.1, "#5d5a52", TP_S, 0.22)
 	V4._armour_hull(h, 0.56, 1.6, 0.12, 0.36, TP, TP_D, 0.3, 0.06)
 	# mismatched welded plates and rust patches
@@ -254,7 +255,7 @@ static func _scrapback(mat: Material) -> void:
 	h.bbox(Vector3(-0.38, 0.47, 0.0), Vector3(0.12, 0.08, 0.4), 0.02)   # tarp roll
 	h.color("#ffffff", Geo.TEAM)
 	h.rbox(Vector3(0.3, 0.44, 0.3), Vector3(0.22, 0.01, 0.24), Vector3(0, 12, 0))   # team cloth
-	var t1 = Geo.new()
+	var t1 = K8.new()
 	t1.color("#7a7048", Geo.SANDBAG)
 	for i in 4:
 		t1.sandbag(Vector3(-0.27 + i * 0.18, 0.42, 0.66), 0.16, 0)
@@ -262,7 +263,7 @@ static func _scrapback(mat: Material) -> void:
 	for s in [-0.6, 0.6]:
 		t1.rbox(Vector3(s, 0.3, 0.0), Vector3(0.015, 0.2, 1.1), Vector3(0, 0, -signf(s) * 8))
 	_tier(model, root, mat, "Tier1", t1, 1)
-	var t3 = Geo.new()
+	var t3 = K8.new()
 	t3.color("#4a4640", Geo.STEEL)
 	for i in 8:
 		var z := -0.6 + i * 0.17
@@ -273,7 +274,7 @@ static func _scrapback(mat: Material) -> void:
 			t3.tube(Vector3(s, y, -0.62), Vector3(s, y, 0.62), 0.008, 4)
 	_tier(model, root, mat, "Tier3", t3, 3)
 	var piv := VK._n3(model, root, "TurretPivot", Vector3(0, 0.42, 0.04))
-	var t = Geo.new()
+	var t = K8.new()
 	t.color(TP_S, Geo.STEEL)
 	t.cyl(0.36, 0.36, 0.03, 16, Transform3D(Basis.IDENTITY, Vector3(0, -0.01, 0)))
 	t.color(TP_D, Geo.PAINT)
@@ -289,12 +290,12 @@ static func _scrapback(mat: Material) -> void:
 	t.sandbag(Vector3(-0.22, 0.14, -0.26), 0.18, 30)
 	t.sandbag(Vector3(0.06, 0.14, -0.32), 0.18, 0)
 	VK._mi(piv, root, "Turret", t.commit(mat))
-	var t2 = Geo.new()
+	var t2 = K8.new()
 	t2.color("#5d6f7a", Geo.SCRAP)
 	for s in [-1.0, 1.0]:
 		t2.rbox(Vector3(s * 0.33, 0.08, 0.05), Vector3(0.02, 0.15, 0.32), Vector3(0, s * 20, -s * 12))
 	_tier(piv, root, mat, "TurretTier2", t2, 2)
-	var t3t = Geo.new()
+	var t3t = K8.new()
 	t3t.color(TP_S, Geo.STEEL)
 	t3t.bbox(Vector3(0.22, 0.24, -0.12), Vector3(0.12, 0.08, 0.2), 0.01)   # salvaged rocket pod
 	t3t.color("#2b2a28", Geo.DARK)
@@ -315,7 +316,7 @@ static func _scrapback(mat: Material) -> void:
 static func _hailstorm(mat: Material) -> void:
 	var root := VK._root({"selection_radius": 0.8, "bar_height": 1.2, "recoil": 0.04, "wreck_s": 7.0, "steer_max": 0.45})
 	var model := VK._n3(root, root, "Model")
-	var h = Geo.new()
+	var h = K8.new()
 	V4._wheelset(h, 0.36, [0.5, -0.32, -0.6], 0.14, 0.12, 1, TP_S)
 	h.color("#3a3631", Geo.STEEL)
 	h.box(Vector3(0, 0.27, -0.05), Vector3(0.46, 0.07, 1.5))   # chassis
@@ -345,13 +346,13 @@ static func _hailstorm(mat: Material) -> void:
 	h.color("#ffffff", Geo.TEAM)
 	h.rbox(Vector3(0, 0.69, 0.46), Vector3(0.5, 0.01, 0.3), Vector3(0, 6, 0))   # team cloth on roof
 	V4._antenna(h, Vector3(0.3, 0.68, 0.32), 0.4)
-	var t1 = Geo.new()
+	var t1 = K8.new()
 	t1.color("#6e5a46", Geo.SCRAP)
 	t1.rbox(Vector3(0, 0.5, 0.88), Vector3(0.6, 0.18, 0.015), Vector3(-6, 0, 0))
 	for s in [-0.37, 0.37]:
 		t1.rbox(Vector3(s, 0.55, 0.48), Vector3(0.015, 0.2, 0.34), Vector3(0, 0, -signf(s) * 5))
 	_tier(model, root, mat, "Tier1", t1, 1)
-	var t3 = Geo.new()
+	var t3 = K8.new()
 	t3.color("#4a4640", Geo.STEEL)
 	for i in 6:
 		var z := 0.28 + i * 0.08
@@ -359,7 +360,7 @@ static func _hailstorm(mat: Material) -> void:
 			t3.tube(Vector3(s, 0.32, z), Vector3(s, 0.7, z), 0.008, 4)
 	_tier(model, root, mat, "Tier3", t3, 3)
 	var piv := VK._n3(model, root, "TurretPivot", Vector3(0, 0.42, -0.4))
-	var t = Geo.new()
+	var t = K8.new()
 	t.color(TP_S, Geo.STEEL)
 	t.cyl(0.2, 0.2, 0.04, 12, Transform3D(Basis.IDENTITY, Vector3.ZERO))
 	t.tube(Vector3(0, 0.04, 0), Vector3(0, 0.2, 0), 0.05, 8)
@@ -374,7 +375,7 @@ static func _hailstorm(mat: Material) -> void:
 	t.color("#5f6b4a", Geo.SCRAP)
 	t.rbox(Vector3(0, 0.3, 0.2), Vector3(0.36, 0.14, 0.015), Vector3(-15, 0, 0))   # gun shield
 	VK._mi(piv, root, "Turret", t.commit(mat))
-	var t2 = Geo.new()
+	var t2 = K8.new()
 	t2.color("#6f6a52", Geo.SCRAP)
 	for s in [-1.0, 1.0]:
 		t2.rbox(Vector3(s * 0.24, 0.3, 0.14), Vector3(0.12, 0.16, 0.014), Vector3(-12, -s * 30, 0))

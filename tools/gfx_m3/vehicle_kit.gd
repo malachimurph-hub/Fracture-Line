@@ -271,10 +271,10 @@ static func _rattler(mat: Material) -> void:
 	var steel := "#34322f"
 	var root := _root({"selection_radius": 0.8, "bar_height": 1.23, "recoil": 0.035, "steer_max": 0.5, "wreck_s": 7.0})
 	var model := _n3(root, root, "Model")
-	var h = Geo.new()
+	var h = load("res://tools/gfx_m7/kit8.gd").new()
 	for z in [0.4, -0.36]:
 		for sx in [-0.29, 0.29]:
-			h.wheel(Vector3(sx, 0.13, z), 0.13, 0.11, z > 0.0, "#5d5a52", 12, 12)
+			h.tyre(Vector3(sx, 0.13, z), 0.13, 0.11, z > 0.0, "#5d5a52", 12)   # M2.7b treaded tyre
 	h.color(steel, Geo.STEEL)
 	h.box(Vector3(0, 0.2, 0.02), Vector3(0.44, 0.08, 1.22))                      # chassis
 	h.tube(Vector3(-0.25, 0.13, -0.36), Vector3(0.25, 0.13, -0.36), 0.025, 6)    # rear axle
@@ -344,7 +344,7 @@ static func _rattler(mat: Material) -> void:
 	var hull := _mi(model, root, "Hull", h.commit(mat))
 	hull.set_meta("moves", true)
 	# ---- tier bolt-ons (TPLA salvage upgrades)
-	var t1 = Geo.new()
+	var t1 = load("res://tools/gfx_m7/kit8.gd").new()
 	t1.color("#6e5a46", Geo.SCRAP)
 	t1.rbox(Vector3(0, 0.37, 0.70), Vector3(0.5, 0.13, 0.015), Vector3(-8, 0, 0))
 	for sx in [-0.31, 0.31]:
@@ -355,7 +355,7 @@ static func _rattler(mat: Material) -> void:
 	var m1 := _mi(model, root, "Tier1", t1.commit(mat))
 	m1.visible = false
 	m1.set_meta("tier", 1)
-	var t3 = Geo.new()
+	var t3 = load("res://tools/gfx_m7/kit8.gd").new()
 	t3.color("#4a4640", Geo.STEEL)
 	for i in 6:   # slat cage around the cab
 		var z := -0.12 + i * 0.07
@@ -369,7 +369,7 @@ static func _rattler(mat: Material) -> void:
 	m3.set_meta("tier", 3)
 	# ---- gun mount (TurretPivot over the bed)
 	var piv := _n3(model, root, "TurretPivot", Vector3(0, 0.33, -0.4))
-	var t = Geo.new()
+	var t = load("res://tools/gfx_m7/kit8.gd").new()
 	t.color(steel, Geo.STEEL)
 	t.tube(Vector3(0, 0, 0), Vector3(0, 0.26, 0), 0.03, 6)
 	t.cyl(0.06, 0.05, 0.03, 8, Transform3D(Basis.IDENTITY, Vector3(0, 0.25, 0)))
@@ -384,7 +384,7 @@ static func _rattler(mat: Material) -> void:
 	for sx in [-0.03, 0.03]:
 		t.tube(Vector3(sx, 0.31, -0.06), Vector3(sx, 0.29, -0.13), 0.008, 4)
 	_mi(piv, root, "Turret", t.commit(mat))
-	var t2 = Geo.new()
+	var t2 = load("res://tools/gfx_m7/kit8.gd").new()
 	t2.color("#6f6a52", Geo.SCRAP)
 	for sx in [-1.0, 1.0]:
 		t2.rbox(Vector3(sx * 0.21, 0.36, 0.09), Vector3(0.14, 0.15, 0.016), Vector3(-10, -sx * 28, 0))
@@ -394,7 +394,7 @@ static func _rattler(mat: Material) -> void:
 	m2.visible = false
 	m2.set_meta("tier", 2)
 	var bn := _n3(piv, root, "Barrel", Vector3(0, 0.33, 0.02))
-	var b = Geo.new()
+	var b = load("res://tools/gfx_m7/kit8.gd").new()
 	b.color("#2b2a28", Geo.STEEL)
 	b.bbox(Vector3(0, 0, 0.0), Vector3(0.06, 0.06, 0.2), 0.008)
 	b.tube(Vector3(0, 0, 0.1), Vector3(0, 0, 0.6), 0.013, 6)

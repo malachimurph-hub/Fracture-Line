@@ -2,7 +2,7 @@ extends RefCounted
 ## M2.7 detail pass, EU Alliance + TPLA (tool-time only). Replaces the last flat-box views of
 ## key EU / TPLA structures with kit7 models (same node layout as the US pass, AO baked after).
 ## Original shapes; real-world equipment roles as loose inspiration only.
-const K := preload("res://tools/gfx_m7/kit7.gd")
+const K := preload("res://tools/gfx_m7/kit8.gd")
 const Geo := preload("res://tools/gfx_m3/geo.gd")
 const U := preload("res://tools/gfx_m7/us_m7.gd")
 const Y0 := 0.08
@@ -652,11 +652,14 @@ static func _eu_salamander() -> void:
 	h.color(EU_D, Geo.PAINT)
 	h.prism_x([Vector2(-0.82, 0.14), Vector2(0.62, 0.14), Vector2(0.86, 0.3), Vector2(0.84, 0.36), Vector2(-0.84, 0.38), Vector2(-0.86, 0.2)], -0.36, 0.36)
 	h.color(EU, Geo.PAINT)
-	h.prism_x([Vector2(-0.86, 0.36), Vector2(0.84, 0.36), Vector2(0.86, 0.38), Vector2(0.5, 0.46), Vector2(-0.8, 0.47), Vector2(-0.88, 0.42)], -0.6, 0.6)
+	# M2.7b: chamfered upper hull with a long glacis, raked skirts with a lower lip
+	h.xloft([[0.87, K.sect(0.35, 0.36, 0.39, 0.54, 0.57, 0.55, 0.012)], [0.5, K.sect(0.35, 0.38, 0.465, 0.58, 0.6, 0.58, 0.03)],
+		[-0.8, K.sect(0.35, 0.38, 0.475, 0.58, 0.6, 0.58, 0.03)], [-0.88, K.sect(0.35, 0.37, 0.43, 0.56, 0.58, 0.56, 0.02)]])
 	for s in [-1.0, 1.0]:   # side skirts with EU shield emitters
 		for i in 5:
 			h.color(EU if i % 2 == 0 else "#7b846a", Geo.PAINT)
-			h.cbox(Vector3(s * 0.62, 0.3, -0.66 + i * 0.32), Vector3(0.035, 0.16, 0.31), 0.008)
+			h.plate(Vector3(s * 0.625, 0.31, -0.66 + i * 0.32), Vector3(0.035, 0.14, 0.31), Vector3(0, 0, -s * 6.0))
+			h.plate(Vector3(s * 0.615, 0.225, -0.66 + i * 0.32), Vector3(0.03, 0.045, 0.31), Vector3(0, 0, s * 28.0))
 		h.color("#6fe3ff", Geo.TEAM_LAMP)
 		h.box(Vector3(s * 0.645, 0.33, 0.0), Vector3(0.01, 0.04, 0.12))
 	h.color("#2b2d2c", Geo.DARK)
@@ -665,6 +668,7 @@ static func _eu_salamander() -> void:
 	h.hatch(Vector3(-0.2, 0.44, 0.55), 0.13)
 	# armoured napalm tanks on the rear deck with pipework to the turret ring
 	for s in [-0.3, 0.3]:
+		h.plain = true
 		h.color("#a0573a", Geo.PAINT)
 		h.tube(Vector3(s, 0.6, -0.78), Vector3(s, 0.6, -0.2), 0.13, 12)
 		h.color(EU_D, Geo.STEEL)
@@ -672,6 +676,7 @@ static func _eu_salamander() -> void:
 			h.tube(Vector3(s, 0.6, z), Vector3(s, 0.6, z + 0.04), 0.137, 12)
 		h.color("#d8a531", Geo.PAINT)
 		h.tube(Vector3(s, 0.6, -0.5), Vector3(s, 0.6, -0.46), 0.138, 12)
+		h.plain = false
 		h.color(EU_S, Geo.STEEL)
 		h.pipe([Vector3(s, 0.6, -0.18), Vector3(s * 0.6, 0.5, 0.05), Vector3(s * 0.3, 0.48, 0.15)], 0.02, 6)
 	h.color("#ffffff", Geo.TEAM)
