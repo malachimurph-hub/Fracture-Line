@@ -32,9 +32,9 @@
      lights on every pavement corner; double lights on the boulevard. Plazas hold the supplies and garrisonable blocks.
    - Starting stashes are 85000 / 20000, like M2.8.
    - Towers stand on blocking tiles, so units path around them.
-7. **City props in the Map Builder.** A new "City & scenery props" category has the 5 building types, 7 car types,
+7. **City props in the Map Builder.** Selected props can be rotated in 90° steps with the new Rotate button. A new "City & scenery props" category has the 5 building types, 7 car types,
    single and double street lights, wrecks, trees and rocks. Buildings block their footprint, saved as Cliff. The
-   other props are decoration only. Props are saved in the map file (`decor`).
+   other props are decoration only. Props are saved in the map file (`decor`). Non-square footprints swap when rotated.
 8. **Performance.** Props are now drawn as one MultiMesh per kind per 32 x 32-tile chunk, so props off screen are
    frustum-culled. Cars cast no shadows.
 9. **Music.** Four new original rock tracks, synthesized by `tools/gen_music_m29.py` (no samples, no third-party
@@ -42,3 +42,21 @@
    - Menu: **Breach Point**, a 150 bpm E-minor banger.
    - In-match: **Iron Convoy**, **Dust Devils** and **Last Light Rising** shuffle with the existing **Steel Rain**.
      The shuffle never repeats a track back to back.
+10. **TPLA AI uses the Airfield.** On medium (after about 16 min) and hard (after about 13 min), once a Chop Shop is
+    running, the TPLA AI builds an Airfield and fills its free slots with the Mirage, Fulcrum and Falcon. Fighters are
+    weighted up when enemy aircraft are seen. The jets stay out of the ground waves and fly sorties instead: fighters
+    scramble at enemy aircraft over the base or the wave, and bombers hit home threats or the wave's objective. The
+    US AI already had this air layer, which now lives in `AIPlayer` and is shared by both. A new `tpla` test checks it.
+11. **New TPLA voices.** Every new or renamed unit has its own voice set, with lines that say the unit's new name:
+    Striker, Technical, BHX-35, Fajr, Koksan, BMP-2, Rocket Man, Marksman, Insurgent, Backhoe, Supply Pickup, Mirage,
+    Fulcrum and Falcon.
+    - Made with `tools/gen_voices_m29.py`: Chatterbox Multilingual (MIT) cloning the M2.5 Militia's male prompts with
+      the Arabic language token, so it is the same Middle-Eastern-accented style.
+    - Attack and under-fire lines are shouted (M2.7 intensity settings) and go through the TPLA radio chain.
+    - Checked with Whisper, with retakes (`tools/voice_qa_m29.json`).
+    - The old folders (rattler, hailstorm, scrapback, shrike, blight, rocket_cell, laborer) are gone.
+12. **Towers go see-through.** Where a tall building stands between the camera and a unit near the screen centre,
+    that part of the tower dithers out (`prop.gdshader`, up to 24 units). It stays in the opaque pipeline, so there is
+    no sorting cost.
+13. **Dark asphalt roads.** On city maps (any map with tall-building props), roads are drawn in dark asphalt. This
+    includes Crescent City in the desert.
