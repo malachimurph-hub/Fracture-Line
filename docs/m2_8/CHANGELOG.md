@@ -9,7 +9,7 @@
 2. **Spawn stashes last ~17 min** — the home seam is now 85000 and the home cache 20000 (were 30000 / 6000).
    TPLA spawns get x1.2 through the new `home_stash_pct` faction field in `autoload/content.gd`, because 8 Laborers drain
    faster than 2 trucks or harvesters. Measured with the new headless `stash` test (AI vs AI medium 1v1, Varno Crossing):
-   US 16.9 / 17.6 min, EU 16.6 / 17.2 min, TPLA 15.8 / 16.2 min, median 16.9 min.
+   US 16.9 / 17.8 min, EU 16.6 / 17.2 min, TPLA 15.7 / 16.2 min, median 16.9 min.
 3. **Water** — one new `water.gdshader`. Shorelines are smooth and curved, cut from a blurred wet field
    (4 px per tile) instead of per-tile quads. Bank heights are relaxed. The shader adds three scrolling layers of
    wave normals, depth colour, animated shore foam, a fresnel sky reflection and sun glints. The terrain gets a damp band
