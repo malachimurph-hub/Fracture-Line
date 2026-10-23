@@ -142,7 +142,7 @@ func run_infantry() -> void:
 	for r in row:
 		var x := 0
 		for def in r[1]:
-			var u := sim.spawn_unit(def, r[0], null, FX.tile_center(c + Vector2i(2 + x * 2, 1 + z * 2)))
+			var u := sim.spawn_unit(def, 0, null, FX.tile_center(c + Vector2i(2 + x * 2, 1 + z * 2)))
 			u.pos = FX.tile_center(c + Vector2i(2 + x * 2, 1 + z * 2))
 			u.face = FX.ANG / 2
 			u.dir = FX.dir_of(u.face)
@@ -151,9 +151,9 @@ func run_infantry() -> void:
 			x += 1
 		z += 1
 	await frames(5)
-	_look(Vector2(c.x + 5, c.y + 3.5), 0)
-	m.cam.dist = 9.0
-	m.cam.target_dist = 9.0
+	_look(Vector2(c.x + 5, c.y + 4), 0)
+	m.cam.dist = 8.0
+	m.cam.target_dist = 8.0
 	await frames(40)
 	await shot("infantry_weapons_us_eu_tpla")
 
