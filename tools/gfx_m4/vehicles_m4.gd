@@ -117,7 +117,8 @@ static func _brennus(mat: Material) -> void:
 	for s in [-0.73, 0.73]:
 		for i in 5:
 			h.color(EU if i % 2 == 0 else "#69725d", Geo.PAINT)
-			h.box(Vector3(s, 0.32, -0.76 + i * 0.38), Vector3(0.035, 0.16, 0.37))
+			h.plate(Vector3(s, 0.33, -0.76 + i * 0.38), Vector3(0.035, 0.15, 0.37), Vector3(0, 0, -signf(s) * 6.0))
+			h.plate(Vector3(s * 0.99, 0.235, -0.76 + i * 0.38), Vector3(0.03, 0.05, 0.37), Vector3(0, 0, signf(s) * 28.0))
 		h.color("#6fe3ff", Geo.TEAM_LAMP)
 		h.box(Vector3(s * 1.03, 0.36, 0.0), Vector3(0.01, 0.05, 0.12))
 	h.color(EU_S, Geo.STEEL)
@@ -131,12 +132,16 @@ static func _brennus(mat: Material) -> void:
 	t.color(EU_S, Geo.STEEL)
 	t.cyl(0.4, 0.4, 0.04, 16, Transform3D(Basis.IDENTITY, Vector3(0, -0.01, 0)))
 	t.color(EU, Geo.PAINT)
-	t.plan_loft([Vector2(-0.44, -0.5), Vector2(0.44, -0.5), Vector2(0.5, 0.1), Vector2(0.3, 0.5), Vector2(-0.3, 0.5), Vector2(-0.5, 0.1)], 0.0, 0.26, Vector2(0.84, 0.84), Vector2(0, -0.03))
+	t.color(EU_D, Geo.PAINT)
+	t.plan_loft([Vector2(-0.4, -0.45), Vector2(0.4, -0.45), Vector2(0.45, 0.09), Vector2(0.27, 0.45), Vector2(-0.27, 0.45), Vector2(-0.45, 0.09)], -0.02, 0.06, Vector2(1.1, 1.1))
+	t.color(EU, Geo.PAINT)
+	t.plan_loft([Vector2(-0.44, -0.5), Vector2(0.44, -0.5), Vector2(0.5, 0.1), Vector2(0.3, 0.5), Vector2(-0.3, 0.5), Vector2(-0.5, 0.1)], 0.06, 0.22, Vector2(0.9, 0.9), Vector2(0, -0.02))
+	t.plan_loft([Vector2(-0.4, -0.47), Vector2(0.4, -0.47), Vector2(0.45, 0.07), Vector2(0.27, 0.43), Vector2(-0.27, 0.43), Vector2(-0.45, 0.07)], 0.22, 0.26, Vector2(0.9, 0.9), Vector2(0, -0.02))
 	t.color("#ffffff", Geo.TEAM)
 	t.box(Vector3(0, 0.15, -0.5), Vector3(0.7, 0.05, 0.02))
 	t.color(EU_D, Geo.PAINT)
-	t.bbox(Vector3(0, 0.13, 0.52), Vector3(0.5, 0.18, 0.12), 0.02)
-	t.bbox(Vector3(0, 0.12, -0.56), Vector3(0.7, 0.16, 0.16), 0.02)
+	t.xloft([[0.6, K8.sect(0.05, 0.08, 0.2, 0.22, 0.25, 0.22, 0.04)], [0.44, K8.sect(0.03, 0.06, 0.22, 0.25, 0.27, 0.25, 0.04)]])
+	t.xloft([[-0.48, K8.sect(0.04, 0.07, 0.2, 0.34, 0.35, 0.33, 0.03)], [-0.64, K8.sect(0.05, 0.08, 0.19, 0.32, 0.33, 0.31, 0.03)]])
 	t.cyl(0.09, 0.085, 0.07, 10, Transform3D(Basis.IDENTITY, Vector3(-0.2, 0.26, -0.15)))
 	t.cyl(0.07, 0.07, 0.05, 10, Transform3D(Basis.IDENTITY, Vector3(0.22, 0.26, -0.1)))
 	_antenna(t, Vector3(-0.34, 0.26, -0.4), 0.6)
@@ -144,12 +149,10 @@ static func _brennus(mat: Material) -> void:
 	VK._mi(piv, root, "Turret", t.commit(mat))
 	_barrel(piv, root, mat, Vector3(0, 0.13, 0.56), func(b) -> void:
 		for x in [-0.12, 0.12]:
+			b.xf = Transform3D(Basis.IDENTITY, Vector3(x, 0, 0))
 			b.color(EU, Geo.PAINT)
-			b.tube(Vector3(x, 0, 0), Vector3(x, 0, 1.02), 0.045, 10, 0.038)
-			b.color(EU_D, Geo.PAINT)
-			b.tube(Vector3(x, 0, 0.45), Vector3(x, 0, 0.6), 0.062, 10)
-			b.color("#2b2b2a", Geo.STEEL)
-			b.tube(Vector3(x, 0, 0.98), Vector3(x, 0, 1.06), 0.05, 10))
+			b.gun(0.0, 1.02, 0.046, 0.037, 0.5, true, 10)
+			b.xf = Transform3D.IDENTITY)
 	_finish(root, model, h, mat, "brennus", [t], "res://view/units/eu/brennus.tscn", 1.7)
 
 # ------------------------------------------------------------------ EU Salamander flame tank
@@ -235,9 +238,19 @@ static func _hearth(mat: Material) -> void:
 	_armour_hull(h, 0.54, 1.5, 0.1, 0.4, EU, EU_D, 0.26)
 	# open-topped rear compartment walls
 	h.color(EU, Geo.PAINT)
-	for x in [-0.5, 0.5]:
-		h.box(Vector3(x, 0.55, -0.25), Vector3(0.04, 0.22, 0.85))
-	h.box(Vector3(0, 0.55, -0.66), Vector3(1.0, 0.22, 0.04))
+	for x in [-0.46, 0.46]:   # M2.7b: inward-raked open-top walls with a lip, rear ramp
+		h.plate(Vector3(x, 0.55, -0.22), Vector3(0.04, 0.22, 0.9), Vector3(0, 0, signf(x) * 10.0))
+		h.color(EU_D, Geo.PAINT)
+		h.plate(Vector3(x * 0.96, 0.665, -0.22), Vector3(0.07, 0.02, 0.9), Vector3(0, 0, signf(x) * 10.0))
+		h.color(EU, Geo.PAINT)
+	h.plate(Vector3(0, 0.53, -0.66), Vector3(0.92, 0.22, 0.04), Vector3(-8, 0, 0))
+	h.plate(Vector3(0, 0.53, 0.22), Vector3(0.92, 0.2, 0.04), Vector3(12, 0, 0))   # front bulkhead
+	h.color(EU_S, Geo.STEEL)
+	h.rail([Vector3(-0.44, 0.67, 0.22), Vector3(0.44, 0.67, 0.22)], 0.05, 0.2, 0.005)
+	h.color("#7f7556", Geo.CANVAS)
+	h.tube(Vector3(-0.38, 0.69, -0.6), Vector3(-0.38, 0.69, 0.1), 0.04, 6)   # rolled tarp
+	h.color(EU_D, Geo.PAINT)
+	h.hatch(Vector3(0.2, 0.47, 0.5), 0.14)
 	h.color("#7a5c3a", Geo.WOOD)
 	for i in 3:
 		h.bbox(Vector3(-0.32, 0.5, -0.5 + i * 0.13), Vector3(0.16, 0.1, 0.11), 0.01)   # ammo crates
@@ -254,9 +267,12 @@ static func _hearth(mat: Material) -> void:
 	bn.rotation.x = -1.0
 	var b = K8.new()
 	b.color(EU_D, Geo.PAINT)
-	b.tube(Vector3(0, 0, -0.1), Vector3(0, 0, 0.6), 0.075, 10, 0.07)
+	b.gun(-0.1, 0.62, 0.068, 0.062, -1.0, false, 10)
 	b.color(EU_S, Geo.STEEL)
-	b.tube(Vector3(0, 0, 0.55), Vector3(0, 0, 0.64), 0.085, 10)
+	b.tube(Vector3(0, 0, 0.58), Vector3(0, 0, 0.66), 0.078, 10, 0.072)
+	b.tube(Vector3(0, 0, -0.14), Vector3(0, 0, -0.08), 0.08, 10)   # breech
+	b.tube(Vector3(0, -0.07, 0.25), Vector3(0, -0.2, 0.05), 0.012, 4)   # bipod
+	b.tube(Vector3(0, 0.07, 0.25), Vector3(0, 0.16, 0.08), 0.01, 4)
 	VK._mi(bn, root, "BarrelMesh", b.commit(mat))
 	_finish(root, model, h, mat, "hearth", [t, b], "res://view/units/eu/hearth.tscn", 1.25)
 
@@ -273,7 +289,14 @@ static func _spectre(mat: Material) -> void:
 	h.color("#2a3a46", Geo.GLASS)
 	h.prism_x([Vector2(0.75, 0.44), Vector2(0.63, 0.61), Vector2(0.64, 0.615), Vector2(0.765, 0.445)], -0.3, 0.3)
 	h.color(EU_D, Geo.PAINT)
-	h.bbox(Vector3(0, 0.5, -0.2), Vector3(0.66, 0.5, 1.0), 0.03)     # electronics shelter
+	h.xloft([[0.3, K8.sect(0.25, 0.3, 0.75, 0.32, 0.33, 0.3, 0.05)], [-0.7, K8.sect(0.25, 0.3, 0.75, 0.32, 0.33, 0.3, 0.05)]])   # electronics shelter
+	h.color(EU_S, Geo.STEEL)
+	for z in [0.15, -0.2, -0.55]:
+		h.box(Vector3(0, 0.76, z), Vector3(0.56, 0.012, 0.03))   # roof ribs
+	h.rail([Vector3(-0.28, 0.76, 0.25), Vector3(-0.28, 0.76, -0.65)], 0.06, 0.15, 0.005)
+	h.color("#4d5741", Geo.PAINT)
+	for z in [-0.1, -0.02]:
+		h.jerrycan(Vector3(-0.36, 0.38, z), 90)
 	h.color("#ffffff", Geo.TEAM)
 	for s in [-0.335, 0.335]:
 		h.box(Vector3(s, 0.6, -0.2), Vector3(0.01, 0.05, 0.9))
@@ -286,7 +309,9 @@ static func _spectre(mat: Material) -> void:
 	t.color(EU_S, Geo.STEEL)
 	t.tube(Vector3(0, 0, 0), Vector3(0, 0.55, 0), 0.03, 6)
 	t.color(EU, Geo.PAINT)
-	t.cyl(0.3, 0.05, 0.12, 14, Transform3D(Basis(Vector3.RIGHT, -1.2), Vector3(0, 0.55, 0.02)))   # dish
+	t.lathe([Vector2(0.0, 0.04), Vector2(0.03, 0.14), Vector2(0.07, 0.24), Vector2(0.11, 0.3)], 14, Transform3D(Basis(Vector3.RIGHT, -1.2), Vector3(0, 0.55, 0.02)), true, false)   # parabolic dish
+	t.color(EU_S, Geo.STEEL)
+	t.tube(Vector3(0, 0.55, 0.02), Vector3(0, 0.6, 0.18), 0.01, 4)
 	t.color("#6fe3ff", Geo.TEAM_LAMP)
 	t.box(Vector3(0, 0.6, 0.18), Vector3(0.03, 0.03, 0.03))
 	t.color(EU_S, Geo.STEEL)
@@ -302,16 +327,36 @@ static func _sentinel(mat: Material) -> void:
 	var model := VK._n3(root, root, "Model")
 	var h = K8.new()
 	_tracks(h, 0.42, 1.4, 5, 0.08, EU_D, EU_S, 0.2)
-	h.color(EU, Geo.PAINT)
-	h.plan_loft([Vector2(-0.48, -0.7), Vector2(0.48, -0.7), Vector2(0.48, 0.55), Vector2(0.3, 0.72), Vector2(-0.3, 0.72), Vector2(-0.48, 0.55)], 0.24, 0.66, Vector2(0.92, 0.92))
-	h.color("#ffffff", Geo.TEAM)
-	for s in [-0.47, 0.47]:
-		h.box(Vector3(s, 0.5, 0), Vector3(0.02, 0.04, 1.1))
+	# M2.7b: armoured sensor carrier: raked nose, tumblehome superstructure, sponsons
 	h.color(EU_D, Geo.PAINT)
-	h.box(Vector3(0, 0.45, -0.71), Vector3(0.4, 0.3, 0.02))         # rear troop door
+	h.xloft([[0.74, K8.sect(0.2, 0.26, 0.36, 0.3, 0.36, 0.38, 0.0)], [0.56, K8.sect(0.14, 0.22, 0.4, 0.33, 0.38, 0.4, 0.0)], [-0.66, K8.sect(0.14, 0.22, 0.4, 0.33, 0.38, 0.4, 0.0)], [-0.72, K8.sect(0.18, 0.24, 0.4, 0.32, 0.37, 0.39, 0.0)]])
+	h.color(EU, Geo.PAINT)
+	var s0 := K8.sect(0.36, 0.42, 0.5, 0.5, 0.52, 0.42, 0.04)
+	var s1 := K8.sect(0.36, 0.44, 0.66, 0.52, 0.53, 0.42, 0.06)
+	h.xloft([[0.76, s0], [0.42, s1], [-0.68, K8.sect(0.36, 0.44, 0.66, 0.52, 0.53, 0.43, 0.06)], [-0.72, K8.sect(0.36, 0.44, 0.63, 0.5, 0.51, 0.42, 0.05)]])
+	h.color("#ffffff", Geo.TEAM)
+	for s in [-1.0, 1.0]:
+		h.plate(Vector3(s * 0.493, 0.55, -0.1), Vector3(0.012, 0.04, 0.9), Vector3(0, 0, s * 33.0))
+	h.color(EU_D, Geo.PAINT)
+	h.box(Vector3(0, 0.5, -0.725), Vector3(0.4, 0.24, 0.02))         # rear troop door
+	h.color(EU_S, Geo.STEEL)
+	h.box(Vector3(0.12, 0.5, -0.74), Vector3(0.05, 0.015, 0.015))
 	h.color("#2a3a46", Geo.GLASS)
-	for x in [-0.15, 0.15]:
-		h.box(Vector3(x, 0.58, 0.66), Vector3(0.14, 0.05, 0.02))
+	for x in [-0.18, 0.18]:   # driver's vision blocks on the raked nose
+		h.plate(Vector3(x, 0.56, 0.62), Vector3(0.16, 0.05, 0.01), Vector3(-50, 0, 0))
+	for s in [-1.0, 1.0]:
+		for z in [-0.4, 0.0]:
+			h.plate(Vector3(s * 0.485, 0.6, z), Vector3(0.008, 0.035, 0.08), Vector3(0, 0, s * 33.0))   # firing-port blocks
+	h.color(EU_D, Geo.PAINT)
+	h.hatch(Vector3(0.22, 0.66, 0.2), 0.14)
+	h.hatch(Vector3(-0.2, 0.66, -0.5), 0.16)
+	h.color("#7f7556", Geo.CANVAS)
+	h.cbox(Vector3(0.3, 0.7, -0.45), Vector3(0.18, 0.08, 0.3), 0.03)
+	h.color(EU_S, Geo.STEEL)
+	h.rail([Vector3(0.2, 0.66, -0.25), Vector3(0.4, 0.66, -0.25), Vector3(0.4, 0.66, -0.65), Vector3(0.2, 0.66, -0.65)], 0.06, 0.12, 0.005)
+	for i in 3:   # smoke launchers
+		h.tube(Vector3(0.38, 0.6, 0.3 + i * 0.04), Vector3(0.44, 0.65, 0.34 + i * 0.04), 0.012, 6)
+		h.tube(Vector3(-0.38, 0.6, 0.3 + i * 0.04), Vector3(-0.44, 0.65, 0.34 + i * 0.04), 0.012, 6)
 	# sensor mast (fixed) with rotating head on the pivot
 	h.color(EU_S, Geo.STEEL)
 	h.tube(Vector3(0, 0.66, -0.2), Vector3(0, 1.2, -0.2), 0.035, 6)
@@ -319,9 +364,15 @@ static func _sentinel(mat: Material) -> void:
 	var piv := VK._n3(model, root, "TurretPivot", Vector3(0, 1.2, -0.2))
 	var t = K8.new()
 	t.color(EU_D, Geo.PAINT)
-	t.bbox(Vector3(0, 0.05, 0), Vector3(0.5, 0.1, 0.12), 0.015)
+	t.xloft([[0.06, K8.sect(0.0, 0.03, 0.1, 0.25, 0.26, 0.24, 0.02)], [-0.06, K8.sect(0.0, 0.03, 0.1, 0.25, 0.26, 0.24, 0.02)]])
 	t.color("#2a3a46", Geo.GLASS)
 	t.box(Vector3(0, 0.05, 0.065), Vector3(0.42, 0.06, 0.01))
+	t.color(EU_S, Geo.STEEL)
+	for s in [-1.0, 1.0]:
+		t.cbox(Vector3(s * 0.31, 0.05, 0.0), Vector3(0.1, 0.09, 0.1), 0.015)   # EO / laser heads
+		t.color("#2a3a46", Geo.GLASS)
+		t.box(Vector3(s * 0.31, 0.05, 0.052), Vector3(0.06, 0.05, 0.006))
+		t.color(EU_S, Geo.STEEL)
 	t.color("#6fe3ff", Geo.TEAM_LAMP)
 	t.box(Vector3(0, 0.12, 0), Vector3(0.05, 0.03, 0.05))
 	VK._mi(piv, root, "Turret", t.commit(mat))
@@ -401,7 +452,17 @@ static func _junkhammer(mat: Material) -> void:
 	var piv := VK._n3(model, root, "TurretPivot", Vector3(0, 0.48, -0.05))
 	var t = K8.new()
 	t.color(TP_D, Geo.PAINT)
-	t.plan_loft([Vector2(-0.36, -0.4), Vector2(0.36, -0.4), Vector2(0.4, 0.2), Vector2(0.18, 0.42), Vector2(-0.18, 0.42), Vector2(-0.4, 0.2)], 0.0, 0.24, Vector2(0.86, 0.86))
+	t.lathe([Vector2(0.0, 0.37), Vector2(0.07, 0.38), Vector2(0.15, 0.33), Vector2(0.21, 0.24), Vector2(0.25, 0.1), Vector2(0.26, 0.0)], 12, Transform3D(Basis.IDENTITY.scaled(Vector3(1.0, 1.0, 1.12)), Vector3(0, 0, 0.02)))   # M2.7b cast dome turret
+	t.color(TP_S, Geo.STEEL)
+	t.cyl(0.4, 0.4, 0.03, 14, Transform3D(Basis.IDENTITY, Vector3(0, -0.01, 0)))
+	t.color(TP_D, Geo.PAINT)
+	t.ccyl(0.07, 0.05, 0.012, 8, Transform3D(Basis.IDENTITY, Vector3(-0.12, 0.22, -0.1)))
+	t.hatch(Vector3(0.13, 0.23, -0.08), 0.12)
+	t.color(TP_S, Geo.STEEL)
+	t.tube(Vector3(0.13, 0.33, -0.08), Vector3(0.13, 0.34, 0.14), 0.01, 5)   # DShK
+	t.box(Vector3(0.13, 0.32, -0.06), Vector3(0.04, 0.05, 0.08))
+	t.color("#ffe2a0", Geo.LAMP)
+	t.box(Vector3(-0.2, 0.2, 0.36), Vector3(0.05, 0.05, 0.02))   # IR searchlight
 	t.color("#6f6a52", Geo.SCRAP)
 	t.rbox(Vector3(0.3, 0.12, 0.1), Vector3(0.02, 0.2, 0.36), Vector3(0, 0, -10))
 	t.color("#ffffff", Geo.TEAM)
@@ -411,12 +472,12 @@ static func _junkhammer(mat: Material) -> void:
 		t.sandbag(Vector3(-0.2 + i * 0.2, 0.28, -0.32), 0.18, 0)
 	VK._mi(piv, root, "Turret", t.commit(mat))
 	_barrel(piv, root, mat, Vector3(0, 0.12, 0.42), func(b) -> void:
+		b.color(TP_D, Geo.PAINT)
+		b.tube(Vector3(0, 0, -0.04), Vector3(0, 0, 0.08), 0.075, 10, 0.06)   # mantlet
 		b.color(TP_S, Geo.STEEL)
-		b.tube(Vector3(0, 0, 0), Vector3(0, 0, 0.95), 0.05, 10, 0.045)
+		b.gun(0.0, 0.95, 0.048, 0.038, 0.8, true, 10)
 		b.color("#5d6f7a", Geo.SCRAP)
-		b.tube(Vector3(0, 0, 0.3), Vector3(0, 0, 0.5), 0.065, 10)
-		b.color(TP_S, Geo.STEEL)
-		b.bbox(Vector3(0, 0, 0.98), Vector3(0.14, 0.08, 0.1), 0.01))   # muzzle brake
+		b.tube(Vector3(0, 0, 0.3), Vector3(0, 0, 0.5), 0.062, 10))
 	_finish(root, model, h, mat, "junkhammer", [t], "res://view/units/tpla/junkhammer.tscn", 1.45)
 
 # ------------------------------------------------------------------ TPLA Rot Sprayer (farm tractor + tank + boom)
