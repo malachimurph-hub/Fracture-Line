@@ -1051,7 +1051,7 @@
 "faction": "eu",
 "qa": 1.0,
 "take": 2,
-"heard": "Auto cannon firing.",
+"heard": "Auto cannon firing",
 "lufs_target": -13.0,
 "ref": "eu_wolfhound_0.wav",
 "engine": "chatterbox-multilingual (MIT) intensity m27, ref kokoro-82m m26 cast voice",
