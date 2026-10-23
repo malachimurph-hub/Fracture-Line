@@ -50,6 +50,8 @@ func think() -> void:
 		_capture()
 	if cfg["powers"]:
 		_powers()
+	if _every("t_air", 40):
+		_air()   # M2.9: jets fly sorties from the TPLA Airfield (shared AIPlayer air layer)
 
 # ------------------------------------------------------------------ economy
 ## M2.9: Pickups gather, Backhoes build (separate jobs; the base _builders() returns the Backhoes).
@@ -174,6 +176,10 @@ func _next_building() -> StringName:
 		return &"tpla_wasp_nest"
 	if s > 660 and difficulty == "hard" and counts.get(&"tpla_decoy", 0) < 1 and p.supply > 700:
 		return &"tpla_decoy"
+	# M2.9: an Airfield for the Mirage / Fulcrum / Falcon once the Chop Shop economy is running
+	if s > (780 if difficulty == "hard" else 960) and difficulty != "easy" and counts.get(&"tpla_chop_shop", 0) >= 1 \
+			and counts.get(&"tpla_airfield", 0) < 1 and p.supply > 2400:
+		return &"tpla_airfield"
 	return &""
 
 func _enemy_spawn() -> Vector2i:
@@ -259,8 +265,14 @@ func _pick_unit(bd: BuildingDef) -> StringName:
 		var sid := StringName(uid)
 		var ud: UnitDef = Content.unit(sid)
 		var wgt: int = int(persona.unit_weights.get(uid, persona.unit_weights.get(String(uid), 1))) * 10
-		if ud.tags.has("builder") or ud.tags.has("harvester") or ud.air_slots > 0:
+		if ud.tags.has("builder") or ud.tags.has("harvester"):
 			wgt = 0
+		if ud.air_slots > 0:
+			# M2.9 jets: only with a free Airfield slot; fighters when enemy aircraft are about
+			if not _air_slot_ok(ud):
+				wgt = 0
+			elif ud.tags.has("fighter") and enemy_air > 0:
+				wgt *= 2
 		if ud.tags.has("at") and enemy_armor > enemy_inf:
 			wgt *= 2
 		elif ud.tags.has("at") and enemy_inf > enemy_armor * 2:
@@ -306,6 +318,9 @@ func _reserved_ids() -> Dictionary:
 		out[int(id)] = true
 	for id in bb["guards"]:
 		out[int(id)] = true
+	for u: SimEntity in my_ents(SimEntity.Kind.UNIT):
+		if w.udef(u).tags.has("jet"):
+			out[u.id] = true   # M2.9: jets fly their own sorties, never in the ground waves
 	return out
 
 func _is_scout_type(u: SimEntity) -> bool:

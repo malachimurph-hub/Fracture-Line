@@ -1028,6 +1028,57 @@ func _ticks(r: MatchRunner, n: int) -> void:
 
 ## M2.9 TPLA roster mechanics: Marksman hidden unless shooting, Insurgent always hidden,
 ## Koksan waits its 5 s setup before the first shot.
+## M2.9: the TPLA AI fills its Airfield with jets and flies fighters at enemy aircraft over the base.
+func _m29_tpla_air() -> void:
+	var r := MatchRunner.new()
+	r.record_replay = false
+	r.start(make_cfg("1v1", 30, ["hard", "hard"], ["tpla", "eu"]))
+	r.ais.erase(1)
+	var w := r.sim
+	var ai: AIPlayer = r.ais[0]
+	w.players[0].supply = 40000
+	var base: Vector2i = ai.base_pos()
+	var placed := {}
+	for id in [&"tpla_chop_shop", &"tpla_workshop", &"tpla_airfield"]:
+		var bd: BuildingDef = Content.building(id)
+		var bt := FX.to_tile(base)
+		var spot := Vector2i(-1, -1)
+		for rr in range(6, 60):
+			for dy in range(-rr, rr + 1):
+				for dx in range(-rr, rr + 1):
+					if spot.x >= 0 or maxi(absi(dx), absi(dy)) != rr:
+						continue
+					var t := bt + Vector2i(dx, dy)
+					var ok := true
+					for yy in bd.footprint.y + 2:
+						for xx in bd.footprint.x + 2:
+							var c := t + Vector2i(xx - 1, yy - 1)
+							ok = ok and w.map.in_bounds(c) and w.map.passable(c, true) and w.map.occ[c.y * w.map.w + c.x] == 0
+					if ok:
+						spot = t
+		placed[id] = w._place_building(bd, 0, spot, 0, true)
+	_ticks(r, 2400)
+	var jets: Array = []
+	for e: SimEntity in w.ents.values():
+		if e.alive and e.owner == 0 and e.kind == SimEntity.Kind.UNIT and w.udef(e).tags.has("jet"):
+			jets.append(e)
+	_check(jets.size() >= 2, "TPLA AI builds jets at its Airfield (%d)" % jets.size())
+	var res: Dictionary = ai._reserved_ids()
+	var kept := true
+	for j: SimEntity in jets:
+		kept = kept and res.has(j.id) and not ai.bb["wave"].has(j.id)
+	_check(kept, "TPLA jets stay out of the ground waves")
+	var bandit := w.spawn_unit(&"us_wraith", 1, null, placed[&"tpla_airfield"].pos + Vector2i(FX.ONE * 6, 0))
+	var engaged := false
+	for i in 40:
+		_ticks(r, 15)
+		for j: SimEntity in jets:
+			if j.alive and j.target == bandit.id:
+				engaged = true
+		if engaged or not bandit.alive:
+			break
+	_check(engaged or not bandit.alive, "TPLA fighters scramble at an enemy jet over the base")
+
 func _m29_tpla() -> void:
 	var r := _zh_runner(29)
 	var w := r.sim
@@ -1062,6 +1113,7 @@ func _m29_tpla() -> void:
 
 func test_tpla() -> void:
 	_m29_tpla()
+	_m29_tpla_air()
 	var r := MatchRunner.new()
 	r.record_replay = false
 	r.start(make_cfg("1v1", 11, [], ["tpla", "eu"]))

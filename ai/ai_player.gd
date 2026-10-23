@@ -1053,3 +1053,80 @@ func _powers() -> void:
 		var tgt := _pick_target()
 		if tgt.x >= 0:
 			cmd({"t": "power", "def": "eu_recon_sweep", "pos": tgt})
+
+# ------------------------------------------------------------------ air layer (M2.9: shared by the US and TPLA AIs)
+func _air() -> void:
+	var wave_units: Array = []
+	for id in bb["wave"]:
+		var e := w.get_ent(int(id))
+		if e != null:
+			wave_units.append(e)
+	var wave_c := _centroid(wave_units) if not wave_units.is_empty() else Vector2i(-1, -1)
+	var threat: bool = w.tick - int(bb["threat_tick"]) < 200
+	for u: SimEntity in my_ents(SimEntity.Kind.UNIT):
+		var d: UnitDef = w.udef(u)
+		if not d.tags.has("jet") or not u.orders.is_empty() or u.target != 0:
+			continue
+		if u.air_state == AirSys.RETURNING or (u.air_state == AirSys.PARKED and u.air_t > 0) or not AirSys.has_ammo(u, d):
+			continue
+		if d.tags.has("fighter"):
+			var air := _enemy_air_near([base_pos(), wave_c], 28)
+			if air != null:
+				cmd({"t": "attack", "ids": [u.id], "target": air.id})
+				continue
+			var gt := _engaged_enemy(wave_units)
+			if gt == null and threat:
+				gt = _visible_enemy_near(bb["threat_pos"], 10)
+			if gt != null:
+				cmd({"t": "attack", "ids": [u.id], "target": gt.id})
+		else:
+			# bomber: the threat at home first, then the wave's objective once the wave is out
+			if threat and _enemy_strength_near(bb["threat_pos"], 10) >= 1500:
+				cmd({"t": "amove", "ids": [u.id], "pos": bb["threat_pos"]})
+			elif wave_c.x >= 0 and int(bb["wave_n"]) >= 1:
+				var tgt := _pick_target()
+				if tgt.x >= 0 and FX.dist(tgt, wave_c) < FX.ONE * 30:
+					cmd({"t": "amove", "ids": [u.id], "pos": tgt})
+
+func _enemy_air_near(points: Array, tiles: int) -> SimEntity:
+	var best: SimEntity = null
+	var bd := 1 << 60
+	for p: Vector2i in points:
+		if p.x < 0:
+			continue
+		for e: SimEntity in w.units_in_radius(p, tiles * FX.ONE):
+			if w.enemies(me().team, e.team) and w.flying(e) and e.res_id >= 0 and w.fog.is_visible_ent(w, me().team, e):
+				var dd := FX.dist2(e.pos, p)
+				if dd < bd:
+					bd = dd
+					best = e
+	return best
+
+func _visible_enemy_near(p: Vector2i, tiles: int) -> SimEntity:
+	var best: SimEntity = null
+	var bd := 1 << 60
+	for e: SimEntity in w.units_in_radius(p, tiles * FX.ONE):
+		if w.enemies(me().team, e.team) and e.res_id >= 0 and not w.flying(e) and w.fog.is_visible_ent(w, me().team, e):
+			var dd := FX.dist2(e.pos, p)
+			if dd < bd:
+				bd = dd
+				best = e
+	return best
+
+func _engaged_enemy(wave_units: Array) -> SimEntity:
+	for u: SimEntity in wave_units:
+		if u.target != 0:
+			var t := w.get_ent(u.target)
+			if t != null and t.alive and t.kind == SimEntity.Kind.UNIT and not w.flying(t):
+				return t
+	return null
+
+## Airfield slot check for jets at the producer being filled (_cur_b).
+func _air_slot_ok(ud: UnitDef) -> bool:
+	if _cur_b == null or w.bdef(_cur_b).air_slots <= 0:
+		return false
+	var queued := 0
+	for q in _cur_b.queue:
+		queued += Content.unit(q).air_slots
+	return AirSys.slots_free(w, _cur_b) - queued >= ud.air_slots
+

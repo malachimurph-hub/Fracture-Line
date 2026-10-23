@@ -11,6 +11,6 @@ expansion = 4
 tech_rush = 1
 harass = 4
 opening = PackedStringArray("tpla_stash", "tpla_camp", "tpla_chop_shop", "tpla_tunnel", "tpla_stash", "tpla_workshop", "tpla_demo_trap", "tpla_bazaar", "tpla_tunnel", "tpla_camo_net")
-unit_weights = {"tpla_militia": 4, "tpla_rocket_cell": 3, "tpla_marksman": 1, "tpla_insurgent": 1, "tpla_rattler": 7, "tpla_scrapback": 6, "tpla_hailstorm": 2, "tpla_shrike": 2, "tpla_blight": 2, "tpla_bus": 1}
+unit_weights = {"tpla_militia": 4, "tpla_rocket_cell": 3, "tpla_marksman": 1, "tpla_insurgent": 1, "tpla_rattler": 7, "tpla_scrapback": 6, "tpla_hailstorm": 2, "tpla_shrike": 2, "tpla_blight": 2, "tpla_bus": 1, "tpla_mirage": 2, "tpla_mig29": 2, "tpla_f16": 2}
 wave_growth_pct = 30
 first_wave_value = 4000
