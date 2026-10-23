@@ -292,6 +292,28 @@ func test_themes() -> void:
 	check("three distinct faction looks", looks["eu"][0] != looks["tpla"][0] and looks["tpla"][0] != looks["us"][0] and looks["eu"][1] != looks["us"][1], looks)
 
 # ------------------------------------------------------------------ 6 main menu battle
+## Menu layout: whatever the title (renamed game, long localisation), every menu button sits
+## fully inside the screen and the title column never pushes the button column off the edge.
+func test_menu_layout(mm: Node) -> void:
+	var orig: String = mm._title.text
+	for t in ["RULES OF ENGAGEMENT", "RULES OF ENGAGEMENT: THE EXTREMELY LONG LOCALISED SUBTITLE EDITION"]:
+		mm._title.text = t
+		mm._fit_title()
+		await frames(4)
+		var screen := get_viewport().get_visible_rect().grow(0.5)
+		var bad: Array = []
+		var n := 0
+		for b in mm.find_children("*", "Button", true, false):
+			if (b as Control).is_visible_in_tree():
+				n += 1
+				if not screen.encloses((b as Control).get_global_rect()):
+					bad.append([(b as Button).text, (b as Control).get_global_rect()])
+		var tr_ok := screen.encloses(mm._title.get_global_rect())
+		check("menu buttons inside the screen with title '%s'" % t, n >= 3 and bad.is_empty() and tr_ok,
+			"buttons %d outside %s title %s font %d screen %s" % [n, bad, mm._title.get_global_rect(), mm._title.get_theme_font_size("font_size"), screen])
+	mm._title.text = orig
+	mm._fit_title()
+
 func test_menu_battle() -> void:
 	if m != null:
 		m.queue_free()
@@ -300,6 +322,7 @@ func test_menu_battle() -> void:
 	var mm: Node = (load("res://ui/main_menu.tscn") as PackedScene).instantiate()
 	add_child(mm)
 	await secs(1.0)
+	await test_menu_layout(mm)
 	var bg: Node = mm.find_child("MenuBattle", true, false)
 	check("main menu has a live battle behind it", bg != null)
 	if bg == null:

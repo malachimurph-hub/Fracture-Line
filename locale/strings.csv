@@ -260,7 +260,7 @@ Voices (AI-generated, original lines, no real person's voice cloned):
 • TPLA (English with Middle Eastern accents): Chatterbox Multilingual (Resemble AI, MIT; output carries Resemble's Perth audio watermark), prompted with synthetic speakers derived from Piper Persian voices amir, ganji and reza_ibrahim (CC0 datasets, but fine-tuned from Piper's research-only ""lessac"" voice — licence not clearly permissive; these TPLA voices will be replaced in a later update; Piper GPL-3.0 build tool only). Checked with faster-whisper / Whisper (MIT).
 Your own recordings in audio/voice replace the AI voices.
 Inspired by the classic base-building RTS genre; no names, art, audio or text from any other game are used.
-UI font: Godot's built-in default font."
+UI font: Godot's built-in default font. Title font: Black Ops One by James Grieshaber and Eben Sorkin (SIL Open Font License 1.1, ui/fonts/BlackOpsOne-OFL.txt)."
 CREDITS_ENGINE,"Built with Godot Engine %s (MIT license, see below)."
 FACTION_TPLA,TPLA
 FACTION_TPLA_FULL,The Peoples Liberation Army
