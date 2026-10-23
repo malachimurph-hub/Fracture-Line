@@ -31,11 +31,19 @@ func load_from(def: MapDef) -> void:
 	occ.resize(w * h)
 	nobuild = PackedByteArray()
 	nobuild.resize(w * h)
-	var f := FileAccess.open(def.tiles_path, FileAccess.READ)
-	assert(f != null, "map tiles missing: " + def.tiles_path)
+	# M2.8: custom maps carry their grid in memory (MapDef.tiles_text)
+	var lines := PackedStringArray()
+	if def.tiles_text != "":
+		lines = def.tiles_text.split("\n", false)
+	else:
+		var f := FileAccess.open(def.tiles_path, FileAccess.READ)
+		assert(f != null, "map tiles missing: " + def.tiles_path)
+		while not f.eof_reached():
+			lines.append(f.get_line())
 	var y := 0
-	while not f.eof_reached() and y < h:
-		var line := f.get_line()
+	for line in lines:
+		if y >= h:
+			break
 		if line.length() < w:
 			continue
 		for x in w:

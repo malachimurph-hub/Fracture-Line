@@ -85,6 +85,20 @@ func setup(map_def: MapDef, slots: Array, opts: Dictionary, p_seed: int) -> void
 				if r.kind == SimEntity.Kind.RESOURCE and absi(r.tile.x - t.x) <= 20 and absi(r.tile.y - t.y) <= 20:
 					r.amount = r.amount * pct / 100
 					r.max_amount = r.amount
+	# M2.8 map builder: pre-placed units / buildings, owned by the player on that start slot
+	for pb in map_def.prebuilt:
+		var owner := -1
+		for i in slots.size():
+			if int(slots[i].get("spawn", i)) == int(pb["spawn"]):
+				owner = i
+		if owner < 0:
+			continue
+		var pt: Vector2i = pb["tile"]
+		if Content.is_building(pb["kind"]):
+			_place_building(Content.building(pb["kind"]), owner, pt, _spawn_rot(pt), true)
+		elif Content.unit(pb["kind"]) != null:
+			var pu := spawn_unit(StringName(pb["kind"]), owner, null, FX.tile_center(pt))
+			pu.home = pu.pos
 	power_dirty = true
 	PowerSys.run(self)
 	FogSys.run(self, true)
@@ -607,10 +621,15 @@ func serialize() -> Dictionary:
 		"players": pd, "ents": ed, "next_id": next_id, "options": options.duplicate(), "fog": fog.to_dict(),
 		"winner_team": winner_team, "game_over": game_over, "temp_vision": temp_vision.duplicate(true),
 		"pending": pending.duplicate(true), "zones": zones.duplicate(true), "pending_holes": pending_holes.duplicate(true),
-		"has_tpla": has_tpla, "path_queue": path_queue.duplicate(), "hash": state_hash()}
+		"has_tpla": has_tpla, "path_queue": path_queue.duplicate(), "hash": state_hash(), "map_data": _map_data()}
+
+## M2.8: custom maps travel inside the save (resume works after the map is edited or deleted).
+func _map_data() -> Dictionary:
+	var md: MapDef = Content.maps.get(map_id)
+	return MapStore.to_dict(md) if md != null and md.custom else {}
 
 func deserialize(d: Dictionary) -> void:
-	var map_def: MapDef = Content.maps.get(StringName(d["map_id"]))
+	var map_def: MapDef = MapStore.resolve(StringName(d["map_id"]), d.get("map_data", {}))
 	map_id = map_def.id
 	map.load_from(map_def)
 	for r in map_def.resources:

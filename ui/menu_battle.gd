@@ -114,7 +114,10 @@ func _new_battle() -> void:
 		world.queue_free()
 	if cam != null:
 		cam.queue_free()
-	var maps: Array = Content.maps.keys()
+	var maps: Array = []
+	for k in Content.maps:
+		if not (Content.maps[k] as MapDef).custom:   # M2.8: built-in maps only behind the menu
+			maps.append(k)
 	maps.sort()
 	var mid: StringName = maps[_rng.randi() % maps.size()]
 	if force_map != &"" and Content.maps.has(force_map):

@@ -9,3 +9,11 @@ extends Resource
 @export var neutrals: Array[Dictionary] = []  ## {kind, tile}
 @export var description_key: String = ""
 @export var env: StringName = &"desert"   ## M2.5 view environment (MapEnv): desert | winter | temperate
+## M2.8 map builder: optional pre-placed units / buildings, {kind, spawn, tile}. Each belongs to
+## the player who starts on spawn slot `spawn`; skipped when no player uses that slot.
+@export var prebuilt: Array[Dictionary] = []
+## M2.8 custom (user://maps) maps: not exported, set by MapStore.
+var custom := false
+var transient := false          ## embedded copy restored from a save (hidden from the lobby)
+var tiles_text := ""            ## in-memory tile grid (used instead of tiles_path when set)
+var content_hash := ""          ## MapStore.hash_of() of the map's sim-relevant data

@@ -5,6 +5,8 @@ MENU_BUILD,"Milestone %s · original game, not affiliated with any other RTS"
 MENU_SKIRMISH,Skirmish
 MENU_CONTINUE,Continue suspended match
 MENU_SETTINGS,Settings
+MENU_MAP_BUILDER,Map Builder
+LOBBY_CUSTOM_TAG,"  · custom"
 MENU_CREDITS,Credits / About
 MENU_QUIT,Quit
 BACK,Back

@@ -88,6 +88,7 @@ func load_all() -> void:
 	_load_dir("res://data/powers", powers)
 	_load_dir("res://data/ai", ai_personalities)
 	_load_dir("res://data/maps", maps)
+	MapStore.register_all(maps)   # M2.8: map-builder maps from user://maps
 	combat = load("res://data/combat_table.tres")
 	power_order = []
 	for f in FACTIONS:
