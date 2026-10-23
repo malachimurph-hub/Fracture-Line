@@ -16,7 +16,7 @@ const CLASSES := {
 	&"eu_gatling": "quad", &"tpla_quad": "autocannon", &"eu_flak": "flak",
 	&"eu_lancer_missile": "missile", &"tpla_wasp_missile": "missile",
 	&"tpla_rpg": "rocket", &"tpla_mirage_rockets": "salvo", &"tpla_mica": "missile", &"tpla_r73": "missile", &"tpla_buggy_rockets": "salvo",
-	&"eu_howitzer": "artillery", &"eu_mortar": "mortar", &"eu_grenade": "grenade",
+	&"eu_howitzer": "artillery", &"eu_hearth_rockets": "salvo", &"eu_grenade": "grenade",
 	&"tpla_rust_shell": "artillery", &"tpla_svd": "rifle", &"tpla_cd_laser": "rifle", &"tpla_f16_bombs": "mortar", &"eu_flamer": "flame",
 	# M2.5 United States
 	&"us_m16": "rifle", &"us_m4": "rifle", &"us_sniper_rifle": "rifle", &"us_lynx_hmg": "mg", &"us_avenger_mg": "mg",

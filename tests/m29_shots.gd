@@ -18,7 +18,7 @@ func _ready() -> void:
 	await frames(60)
 	await shot("m29_urban_crescent_city")
 	# TPLA defences in the base
-	var defs := [&"tpla_tunnel", &"tpla_wasp_nest", &"tpla_demo_trap", &"tpla_camo_net", &"tpla_decoy"]
+	var defs := [&"tpla_tunnel", &"tpla_wasp_nest", &"tpla_demo_trap", &"tpla_camo_net"]
 	var x := 40
 	for d in defs:
 		var bd: BuildingDef = Content.building(d)

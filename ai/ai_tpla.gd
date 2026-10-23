@@ -171,11 +171,9 @@ func _next_building() -> StringName:
 		return &"tpla_camo_net"
 	if s > 900 and difficulty == "hard" and counts.get(&"tpla_chop_shop", 0) < 3 and p.supply > 2000:
 		return &"tpla_chop_shop"
-	# M2.4: rocket nests for anti-vehicle / AA cover, decoys to soak fire (not on easy)
+	# M2.4: rocket nests for anti-vehicle / AA cover (not on easy)
 	if s > 420 and difficulty != "easy" and counts.get(&"tpla_wasp_nest", 0) < (2 if difficulty == "hard" else 1) and p.supply > 1100:
 		return &"tpla_wasp_nest"
-	if s > 660 and difficulty == "hard" and counts.get(&"tpla_decoy", 0) < 1 and p.supply > 700:
-		return &"tpla_decoy"
 	# M2.9: an Airfield for the Mirage / Fulcrum / Falcon once the Chop Shop economy is running
 	if s > (780 if difficulty == "hard" else 960) and difficulty != "easy" and counts.get(&"tpla_chop_shop", 0) >= 1 \
 			and counts.get(&"tpla_airfield", 0) < 1 and p.supply > 2400:
@@ -212,7 +210,7 @@ func _toward_for(id: StringName) -> Vector2i:
 				return res.pos if res != null else base
 			var er := _pick_expansion()
 			return er.pos if er != null else base
-		&"tpla_wasp_nest", &"tpla_decoy":
+		&"tpla_wasp_nest":
 			return base + (_enemy_spawn() - base) * 22 / 100
 		&"tpla_tunnel":
 			var n := w.count_owned(pid, &"tpla_tunnel")

@@ -216,7 +216,6 @@ UNIT_EU_AEGIS,Aegis Shield Carrier
 UNIT_EU_FLAKWERK,Flakwerk Flak Gun
 BLD_EU_HQ,Command HQ
 BLD_EU_REACTOR,Fusion Reactor
-BLD_EU_PYLON,Grid Pylon
 BLD_EU_HUB,Supply Hub
 BLD_EU_BARRACKS,Barracks
 BLD_EU_MOTOR_POOL,Motor Pool
@@ -234,7 +233,6 @@ SHORT_EU_AEGIS,AEG
 SHORT_EU_FLAKWERK,FLAK
 SHORT_EU_HQ,HQ
 SHORT_EU_REACTOR,REACT
-SHORT_EU_PYLON,PYLON
 SHORT_EU_HUB,HUB
 SHORT_EU_BARRACKS,BARR
 SHORT_EU_MOTOR_POOL,MOTOR
@@ -327,8 +325,8 @@ UNIT_EU_SALAMANDER,Salamander Flame Tank
 UNIT_EU_SALAMANDER_DESC,"Short-range flame projector. Burns infantry and structures, weak against heavy armour."
 UNIT_EU_THUNDERHEAD,Thunderhead Howitzer
 UNIT_EU_THUNDERHEAD_DESC,"Long-range self-propelled howitzer. Slow to aim, cannot hit close targets. Needs a Signals Center."
-UNIT_EU_HEARTH,Hearth Mortar
-UNIT_EU_HEARTH_DESC,Light mortar carrier. Indirect fire against infantry and light vehicles.
+UNIT_EU_HEARTH,Hearth Rocket Artillery
+UNIT_EU_HEARTH_DESC,Light rocket artillery. A 6-tube pod fires a rocket salvo against infantry and light vehicles.
 UNIT_EU_SPECTRE,Spectre Jammer
 UNIT_EU_SPECTRE_DESC,Unarmed electronic-warfare truck. Enemy vehicles within 6 tiles cannot fire. Needs a Signals Center.
 UNIT_EU_SENTINEL,Sentinel Outpost
@@ -351,14 +349,8 @@ BLD_EU_AIRSTRIP,Airstrip
 BLD_EU_AIRSTRIP_DESC,[STUB] Aircraft production. Aircraft are not in the game yet.
 BLD_EU_MINEFIELD,Minefield
 BLD_EU_MINEFIELD_DESC,Hidden mine. Explodes when an enemy steps or drives onto it. Detectors reveal it.
-BLD_EU_CONCORD,Concord Pylon
-BLD_EU_CONCORD_DESC,[STUB] Superweapon. The strike itself is not implemented yet.
 BLD_TPLA_WASP_NEST,Wasp Nest
 BLD_TPLA_WASP_NEST_DESC,Rocket nest. Fires 3-missile salvos at vehicles and aircraft.
-BLD_TPLA_DECOY,Decoy Yard
-BLD_TPLA_DECOY_DESC,Cheap fake structure that draws enemy fire and attention.
-BLD_TPLA_RUST_SILO,Rust Bloom Silo
-BLD_TPLA_RUST_SILO_DESC,[STUB] Superweapon. The strike itself is not implemented yet.
 ROLE_FLAME,Flame
 ROLE_JAMMER,Jammer
 ROLE_DETECTOR,Detector

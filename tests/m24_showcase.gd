@@ -151,10 +151,10 @@ func _clean(e: SimEntity) -> Array:
 	return bad
 
 # ------------------------------------------------------------------ construction
-const EU_ROW := [&"eu_hq", &"eu_barracks", &"eu_reactor", &"eu_motor_pool", &"eu_heavy_factory", &"eu_gun_bunker", &"eu_hub", &"eu_pylon",
-	&"eu_flak_tower", &"eu_signals", &"eu_relay", &"eu_exchange", &"eu_airstrip", &"eu_minefield", &"eu_concord"]
+const EU_ROW := [&"eu_hq", &"eu_barracks", &"eu_reactor", &"eu_motor_pool", &"eu_heavy_factory", &"eu_gun_bunker", &"eu_hub",
+	&"eu_flak_tower", &"eu_signals", &"eu_relay", &"eu_exchange", &"eu_airstrip", &"eu_minefield"]
 const TPLA_ROW := [&"tpla_den", &"tpla_camp", &"tpla_stash", &"tpla_workshop", &"tpla_chop_shop", &"tpla_bazaar", &"tpla_tunnel",
-	&"tpla_camo_net", &"tpla_demo_trap", &"tpla_wasp_nest", &"tpla_decoy", &"tpla_rust_silo"]
+	&"tpla_camo_net", &"tpla_demo_trap", &"tpla_wasp_nest"]
 
 func _row(defs: Array, owner: int, o: Vector2i, k: float) -> Array:
 	var out: Array = []

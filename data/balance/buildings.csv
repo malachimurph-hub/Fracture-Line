@@ -1,7 +1,6 @@
 id,name_key,category,cost,build_time_ms,footprint_w,footprint_h,max_hp,power,grid_radius,sight,prereqs,produces,is_hq,is_refinery,passive_income,free_unit,shield_pct,weapons,needs_power_to_fire,garrison_capacity,capturable,capture_income,buildable,stubs,tags,aux_radius,air_slots
 eu_hq,BLD_EU_HQ,base,2500,45000,4,4,5000,5,8,10,,eu_crawler,1,0,0,,25,,0,0,0,0,1,,,0,0
 eu_reactor,BLD_EU_REACTOR,base,800,10000,3,3,1000,10,7,6,,,0,0,0,,25,,0,0,0,0,1,,,0,0
-eu_pylon,BLD_EU_PYLON,base,300,5000,1,1,400,0,9,6,eu_reactor,,0,0,0,,0,,0,0,0,0,1,,,0,0
 eu_hub,BLD_EU_HUB,base,1500,15000,3,3,1500,-2,0,6,eu_reactor,eu_harvester,0,1,3,eu_harvester,25,,0,0,0,0,1,,,0,0
 eu_barracks,BLD_EU_BARRACKS,production,600,10000,3,3,1200,-3,0,6,eu_reactor,eu_grenadier|eu_lancer,0,0,0,,25,,0,0,0,0,1,,,0,0
 eu_motor_pool,BLD_EU_MOTOR_POOL,production,1500,15000,4,4,1800,-4,0,6,eu_barracks,eu_wolfhound|eu_flakwerk|eu_salamander|eu_hearth|eu_spectre|eu_sentinel,0,0,0,,25,,0,0,0,0,1,,,0,0
@@ -25,10 +24,7 @@ eu_relay,BLD_EU_RELAY,support,600,8000,2,2,600,-1,0,7,eu_signals,,0,0,0,,25,,0,0
 eu_exchange,BLD_EU_EXCHANGE,tech,2000,16000,3,3,1400,-4,0,6,eu_signals,,0,0,4,,25,,0,0,0,0,1,,,0,0
 eu_airstrip,BLD_EU_AIRSTRIP,production,1500,15000,8,8,1800,-4,0,6,eu_signals,eu_kestrel|eu_corvid,0,0,0,,25,,0,0,0,0,1,aircraft,,0,0
 eu_minefield,BLD_EU_MINEFIELD,defense,300,4000,1,1,150,0,0,3,eu_barracks,,0,0,0,,0,,0,0,0,0,1,,trap|stealth|no_hole|mine,0,0
-eu_concord,BLD_EU_CONCORD,superweapon,5000,60000,3,3,2500,-6,0,8,eu_signals,,0,0,0,,25,,0,0,0,0,1,superweapon,,0,0
 tpla_wasp_nest,BLD_TPLA_WASP_NEST,defense,900,10000,2,2,1000,0,0,9,tpla_camp,,0,0,0,,0,tpla_wasp_missile,0,0,0,0,1,,,0,0
-tpla_decoy,BLD_TPLA_DECOY,defense,300,5000,3,3,300,0,0,3,tpla_camp,,0,0,0,,0,,0,0,0,0,1,,decoy,0,0
-tpla_rust_silo,BLD_TPLA_RUST_SILO,superweapon,4500,50000,3,3,2200,0,0,8,tpla_bazaar,,0,0,0,,0,,0,0,0,0,1,superweapon,,0,0
 tpla_airfield,BLD_TPLA_AIRFIELD,production,1800,16000,8,8,1800,0,0,7,tpla_chop_shop,tpla_mirage|tpla_mig29|tpla_f16,0,0,0,,0,,0,0,0,0,1,,airfield,0,6
 us_command,BLD_US_COMMAND,base,2500,45000,4,4,5000,5,0,10,,us_dozer,1,0,0,,0,,0,0,0,0,1,,,0,0
 us_reactor,BLD_US_REACTOR,base,800,10000,3,3,1000,10,0,6,,,0,0,0,,0,,0,0,0,0,1,,,0,0

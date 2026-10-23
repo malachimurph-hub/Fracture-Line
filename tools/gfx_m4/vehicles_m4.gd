@@ -229,50 +229,74 @@ static func _thunderhead(mat: Material) -> void:
 	VK._mi(bn, root, "BarrelMesh", b.commit(mat))
 	_finish(root, model, h, mat, "thunderhead", [t, b], "res://view/units/eu/thunderhead.tscn", 1.5)
 
-# ------------------------------------------------------------------ EU Hearth mortar carrier (open box, vertical tube)
+# ------------------------------------------------------------------ EU Hearth light rocket artillery (M2.9)
+## Tracked carrier with an armoured cab and a trainable 6-tube (2 x 3) rocket pod at the rear.
 static func _hearth(mat: Material) -> void:
-	var root := VK._root({"selection_radius": 0.8, "bar_height": 1.25, "recoil": 0.1, "wreck_s": 8.0})
+	var root := VK._root({"selection_radius": 0.8, "bar_height": 1.3, "recoil": 0.04, "wreck_s": 8.0})
 	var model := VK._n3(root, root, "Model")
 	var h = K8.new()
 	_tracks(h, 0.42, 1.5, 5, 0.085, EU_D, EU_S)
 	_armour_hull(h, 0.54, 1.5, 0.1, 0.4, EU, EU_D, 0.26)
-	# open-topped rear compartment walls
+	# armoured cab at the front: raked glacis, windows, roof hatch, antenna
 	h.color(EU, Geo.PAINT)
-	for x in [-0.46, 0.46]:   # M2.7b: inward-raked open-top walls with a lip, rear ramp
-		h.plate(Vector3(x, 0.55, -0.22), Vector3(0.04, 0.22, 0.9), Vector3(0, 0, signf(x) * 10.0))
-		h.color(EU_D, Geo.PAINT)
-		h.plate(Vector3(x * 0.96, 0.665, -0.22), Vector3(0.07, 0.02, 0.9), Vector3(0, 0, signf(x) * 10.0))
-		h.color(EU, Geo.PAINT)
-	h.plate(Vector3(0, 0.53, -0.66), Vector3(0.92, 0.22, 0.04), Vector3(-8, 0, 0))
-	h.plate(Vector3(0, 0.53, 0.22), Vector3(0.92, 0.2, 0.04), Vector3(12, 0, 0))   # front bulkhead
-	h.color(EU_S, Geo.STEEL)
-	h.rail([Vector3(-0.44, 0.67, 0.22), Vector3(0.44, 0.67, 0.22)], 0.05, 0.2, 0.005)
-	h.color("#7f7556", Geo.CANVAS)
-	h.tube(Vector3(-0.38, 0.69, -0.6), Vector3(-0.38, 0.69, 0.1), 0.04, 6)   # rolled tarp
+	h.bbox(Vector3(0, 0.6, 0.42), Vector3(0.84, 0.26, 0.46), 0.03)
+	h.plate(Vector3(0, 0.62, 0.68), Vector3(0.8, 0.22, 0.04), Vector3(-28, 0, 0))
+	h.color("#2c3a44", Geo.GLASS)
+	h.plate(Vector3(0, 0.67, 0.695), Vector3(0.62, 0.08, 0.02), Vector3(-28, 0, 0))
+	for x in [-0.425, 0.425]:
+		h.plate(Vector3(x, 0.66, 0.44), Vector3(0.02, 0.07, 0.22), Vector3.ZERO)
 	h.color(EU_D, Geo.PAINT)
-	h.hatch(Vector3(0.2, 0.47, 0.5), 0.14)
+	h.hatch(Vector3(-0.18, 0.74, 0.36), 0.12)
+	h.color(EU_S, Geo.STEEL)
+	h.tube(Vector3(0.3, 0.73, 0.3), Vector3(0.3, 1.25, 0.26), 0.008, 4)   # whip antenna
+	h.tube(Vector3(0.36, 0.55, 0.1), Vector3(0.36, 0.78, 0.05), 0.03, 6)  # exhaust stack
+	# rear deck: turntable plinth, side stowage, jerrycans, spare reload crates
+	h.color(EU_D, Geo.PAINT)
+	h.bbox(Vector3(0, 0.5, -0.3), Vector3(0.86, 0.06, 0.8), 0.01)
+	for x in [-0.47, 0.47]:
+		h.bbox(Vector3(x, 0.5, -0.3), Vector3(0.08, 0.14, 0.62), 0.01)   # stowage bins
+		h.color(EU_S, Geo.STEEL)
+		h.rail([Vector3(x * 0.98, 0.58, -0.6), Vector3(x * 0.98, 0.58, 0.0)], 0.03, 0.15, 0.004)
+		h.color(EU_D, Geo.PAINT)
+	h.color("#4c5a3a", Geo.PAINT)
+	for i in 2:
+		h.bbox(Vector3(0.36, 0.6, -0.62 + i * 0.12), Vector3(0.1, 0.16, 0.08), 0.008)   # jerrycans
 	h.color("#7a5c3a", Geo.WOOD)
-	for i in 3:
-		h.bbox(Vector3(-0.32, 0.5, -0.5 + i * 0.13), Vector3(0.16, 0.1, 0.11), 0.01)   # ammo crates
+	h.bbox(Vector3(-0.32, 0.58, -0.64), Vector3(0.2, 0.1, 0.12), 0.01)   # reload crate
+	h.color("#7f7556", Geo.CANVAS)
+	h.tube(Vector3(-0.3, 0.63, -0.1), Vector3(-0.3, 0.63, 0.12), 0.04, 6)  # rolled tarp
 	_lamps(h, 0.4, 0.4, 0.76)
-	var piv := VK._n3(model, root, "TurretPivot", Vector3(0.08, 0.46, -0.2))
+	var piv := VK._n3(model, root, "TurretPivot", Vector3(0.0, 0.53, -0.32))
 	var t = K8.new()
 	t.color(EU_S, Geo.STEEL)
-	t.cyl(0.18, 0.18, 0.05, 12, Transform3D.IDENTITY)
-	t.box(Vector3(0, 0.12, 0), Vector3(0.12, 0.18, 0.12))
+	t.cyl(0.22, 0.22, 0.06, 14, Transform3D.IDENTITY)                     # turntable ring
+	t.color(EU_D, Geo.PAINT)
+	t.box(Vector3(-0.2, 0.14, 0), Vector3(0.05, 0.22, 0.2))                 # elevation cheeks
+	t.box(Vector3(0.2, 0.14, 0), Vector3(0.05, 0.22, 0.2))
+	t.color(EU_S, Geo.STEEL)
+	t.tube(Vector3(0.12, 0.04, 0.1), Vector3(0.12, 0.2, 0.02), 0.022, 6)  # elevation ram
 	t.color("#ffffff", Geo.TEAM)
-	t.box(Vector3(0, 0.06, -0.17), Vector3(0.2, 0.04, 0.02))
+	t.box(Vector3(0, 0.05, -0.2), Vector3(0.24, 0.04, 0.02))
 	VK._mi(piv, root, "Turret", t.commit(mat))
-	var bn := VK._n3(piv, root, "Barrel", Vector3(0, 0.2, 0.0))
-	bn.rotation.x = -1.0
+	var bn := VK._n3(piv, root, "Barrel", Vector3(0, 0.24, 0.0))
+	bn.rotation.x = -0.42
 	var b = K8.new()
+	b.color(EU, Geo.PAINT)
+	b.bbox(Vector3(0, 0, 0.1), Vector3(0.36, 0.25, 0.78), 0.02)             # 6-tube pod (2 rows x 3)
 	b.color(EU_D, Geo.PAINT)
-	b.gun(-0.1, 0.62, 0.068, 0.062, -1.0, false, 10)
+	b.bbox(Vector3(0, 0, 0.1), Vector3(0.375, 0.04, 0.6), 0.005)           # strap bands
+	for z in [-0.18, 0.38]:
+		b.bbox(Vector3(0, 0, z), Vector3(0.38, 0.27, 0.04), 0.005)
+	b.color("#1d1f1c", Geo.DARK)
+	for r in 2:
+		for c in 3:
+			b.tube(Vector3(-0.115 + c * 0.115, -0.058 + r * 0.116, 0.46), Vector3(-0.115 + c * 0.115, -0.058 + r * 0.116, 0.5), 0.045, 8)
+	b.color("#a83a2a", Geo.PAINT)
+	for r in 2:
+		for c in 3:   # rocket nose caps just inside the tubes
+			b.cyl(0.03, 0.0, 0.03, 6, Transform3D(Basis(Vector3.RIGHT, PI / 2), Vector3(-0.115 + c * 0.115, -0.058 + r * 0.116, 0.47)))
 	b.color(EU_S, Geo.STEEL)
-	b.tube(Vector3(0, 0, 0.58), Vector3(0, 0, 0.66), 0.078, 10, 0.072)
-	b.tube(Vector3(0, 0, -0.14), Vector3(0, 0, -0.08), 0.08, 10)   # breech
-	b.tube(Vector3(0, -0.07, 0.25), Vector3(0, -0.2, 0.05), 0.012, 4)   # bipod
-	b.tube(Vector3(0, 0.07, 0.25), Vector3(0, 0.16, 0.08), 0.01, 4)
+	b.tube(Vector3(0, -0.13, -0.2), Vector3(0, -0.13, 0.4), 0.015, 4)     # cable run
 	VK._mi(bn, root, "BarrelMesh", b.commit(mat))
 	_finish(root, model, h, mat, "hearth", [t, b], "res://view/units/eu/hearth.tscn", 1.25)
 

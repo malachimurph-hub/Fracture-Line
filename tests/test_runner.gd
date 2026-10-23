@@ -1569,8 +1569,8 @@ func test_duel() -> void:
 # ------------------------------------------------------------------ M2.4 roster (ZH 1:1 widening)
 const ROSTER_NEW_UNITS := ["eu_brennus", "eu_salamander", "eu_thunderhead", "eu_hearth", "eu_spectre", "eu_sentinel", "eu_kestrel", "eu_corvid",
 	"tpla_bus", "tpla_marksman", "tpla_insurgent"]
-const ROSTER_NEW_BUILDINGS := ["eu_flak_tower", "eu_signals", "eu_relay", "eu_exchange", "eu_airstrip", "eu_minefield", "eu_concord",
-	"tpla_wasp_nest", "tpla_decoy", "tpla_rust_silo"]
+const ROSTER_NEW_BUILDINGS := ["eu_flak_tower", "eu_signals", "eu_relay", "eu_exchange", "eu_airstrip", "eu_minefield",
+	"tpla_wasp_nest"]
 
 func test_roster() -> void:
 	_roster_content()

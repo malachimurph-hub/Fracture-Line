@@ -17,7 +17,7 @@ tpla_blight,UNIT_TPLA_BLIGHT,1200,13000,3,tpla_workshop,vehicle|artillery|setup,
 eu_brennus,UNIT_EU_BRENNUS,1800,18000,4,eu_signals,vehicle|tank|heavy_tank,1500,heavy,eu_twin_cannon,1200,vehicle,8,750,0,0,0,tank,,,0,0,60,0,0,0
 eu_salamander,UNIT_EU_SALAMANDER,900,12000,2,,vehicle|flame,700,heavy,eu_flamer,1700,vehicle,8,560,0,0,0,flame,,,0,0,120,0,0,0
 eu_thunderhead,UNIT_EU_THUNDERHEAD,1600,16000,3,eu_signals,vehicle|artillery,500,light,eu_howitzer,1300,vehicle,9,620,0,0,0,artillery,,,0,0,0,0,0,0
-eu_hearth,UNIT_EU_HEARTH,1000,12000,2,,vehicle|artillery,450,light,eu_mortar,1700,vehicle,9,520,0,0,0,artillery,,,0,0,0,0,0,0
+eu_hearth,UNIT_EU_HEARTH,1000,12000,2,,vehicle|artillery,450,light,eu_hearth_rockets,1700,vehicle,9,520,0,0,0,artillery,,,0,0,0,0,0,0
 eu_spectre,UNIT_EU_SPECTRE,900,10000,2,eu_signals,vehicle|jammer,450,light,,2000,vehicle,10,520,0,0,0,jammer,,,0,0,0,0,0,0
 eu_sentinel,UNIT_EU_SENTINEL,800,10000,2,,vehicle|detector|scout|transport,500,light,,2200,vehicle,12,520,0,0,0,detector,,,0,0,0,2,1,0
 eu_kestrel,UNIT_EU_KESTREL,1200,12000,3,eu_airstrip,vehicle|air|stub,600,air,,3000,vehicle,10,700,0,0,0,air_transport,aircraft,,0,0,0,0,0,0

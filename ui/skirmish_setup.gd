@@ -86,6 +86,7 @@ func build() -> void:
 	sw.tooltip_text = tr("STUB_SUPERWEAPONS")
 	sw.custom_minimum_size = Vector2(172, 44)
 	sw.toggled.connect(func(on): cfg["options"]["superweapons"] = on)
+	sw.visible = false   # M2.9: the stub superweapon structures were removed; option kept for old saves
 	right.add_child(sw)
 	# M2.1: Start sits under the slot rows so the lobby fits 2340x1080 (384 dp tall)
 	var foot := HBoxContainer.new()
