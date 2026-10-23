@@ -254,7 +254,9 @@ static func item_fp(it: Dictionary) -> Vector2i:
 	match it["t"]:
 		"spawn": return MapStore.HQ_FP
 		"neutral": return MapStore.footprint_of(it["kind"])
-		"prop": return PropMeshes.FOOTPRINT.get(it["kind"], Vector2i.ONE)
+		"prop":
+			var pf: Vector2i = PropMeshes.FOOTPRINT.get(it["kind"], Vector2i.ONE)
+			return Vector2i(pf.y, pf.x) if int(it.get("rot", 0)) % 2 == 1 else pf
 		"pre":
 			if Content.is_building(it["kind"]):
 				return MapStore.footprint_of(it["kind"])
@@ -340,6 +342,19 @@ func set_selected_amount(a: int) -> void:
 	var s := _snapshot()
 	items[selected]["amount"] = clampi(a, 1000, 200000)
 	amounts[items[selected]["kind"]] = items[selected]["amount"]
+	_push_undo(s)
+	selection_changed.emit()
+	queue_redraw()
+
+## M2.9: turn the selected prop by 90° (non-square footprints swap and stay on the map).
+func rotate_selected() -> void:
+	if selected < 0 or items[selected]["t"] != "prop":
+		return
+	var s := _snapshot()
+	var it: Dictionary = items[selected]
+	it["rot"] = (int(it.get("rot", 0)) + 1) % 4
+	var fp := item_fp(it)
+	it["tile"] = Vector2i(clampi(it["tile"].x, 0, w - fp.x), clampi(it["tile"].y, 0, h - fp.y))
 	_push_undo(s)
 	selection_changed.emit()
 	queue_redraw()

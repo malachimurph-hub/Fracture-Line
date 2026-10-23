@@ -7,6 +7,9 @@ uniform sampler2D detail : source_color, filter_linear_mipmap, repeat_enable;
 uniform float detail_amount = 0.0;
 uniform float sway = 0.0;
 uniform vec2 map_size = vec2(128.0, 128.0);
+// M2.9 tall towers: dither out the parts that stand between the camera and a unit
+uniform int occl_n = 0;
+uniform vec4 occl_pts[24];
 varying vec3 wpos;
 varying vec3 vcol;
 varying vec3 wn;
@@ -22,6 +25,22 @@ void vertex() {
 	wn = normalize((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
 }
 void fragment() {
+	if (occl_n > 0 && wpos.y > 0.35) {
+		vec3 C = CAMERA_POSITION_WORLD;
+		float hide = 0.0;
+		for (int i = 0; i < occl_n; i++) {
+			vec3 v = occl_pts[i].xyz - C;
+			float t = dot(wpos - C, v) / dot(v, v);
+			if (t > 0.0 && t < 0.96) {
+				float d = length(C + v * t - wpos);
+				hide = max(hide, smoothstep(2.4, 1.3, d));
+			}
+		}
+		// ordered dither keeps the opaque pipeline (no sorting); ~75 % of the pixels go
+		vec2 q = mod(floor(FRAGCOORD.xy), 2.0);
+		float th = (q.x * 2.0 + q.y + 1.0) * 0.2;
+		if (hide * 0.8 > th) discard;
+	}
 	vec3 c = vcol;
 	if (detail_amount > 0.0) {
 		vec3 bw = pow(abs(wn), vec3(4.0)); bw /= (bw.x + bw.y + bw.z);

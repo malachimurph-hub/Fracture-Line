@@ -117,8 +117,11 @@ static func run(t: Node) -> void:
 	# M2.9 city props: a tower saves as blocking Cliff + decor, a car as decor only
 	cv.place_at(Vector2i(60, 120), {"t": "prop", "kind": "tower_glass"})
 	cv.place_at(Vector2i(66, 120), {"t": "prop", "kind": "car_taxi"})
+	cv.place_at(Vector2i(60, 110), {"t": "prop", "kind": "shops"})
+	cv.rotate_selected()
+	t._check(int(cv.items[cv.selected]["rot"]) == 1 and MapBuilderCanvas.item_fp(cv.items[cv.selected]) == Vector2i(3, 4), "prop rotates (shop row footprint swaps)")
 	var pd := cv.to_doc()
-	t._check(pd["decor"].size() == 2 and String(pd["tiles"][120])[60] == "^" and String(pd["tiles"][120])[66] != "^", "city props saved (tower blocks its footprint, car is decor)")
+	t._check(pd["decor"].size() == 3 and String(pd["tiles"][120])[60] == "^" and String(pd["tiles"][120])[66] != "^", "city props saved (tower blocks its footprint, car is decor)")
 	# select + move by touch
 	cv.tool = "select"
 	cv.size = Vector2(560, 320)   # phone-sized canvas (headless layout is tiny)

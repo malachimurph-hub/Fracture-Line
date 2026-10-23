@@ -17,6 +17,7 @@ uniform sampler2D t_macro : hint_default_white, filter_linear_mipmap, repeat_ena
 uniform vec2 map_size = vec2(128.0, 128.0);
 uniform sampler2D shore_tex : hint_default_black, filter_linear, repeat_disable; // M2.8 wet field (R)
 uniform float dry_scrub = 1.0;    // M2.5 env: desert sun-dried scrub on the grass layer (0 = lush / snow)
+uniform float asphalt_dark = 0.0; // M2.9 city maps: dark asphalt roads (any env)
 uniform float desert_tint = 1.0;  // M2.5 env: warm desert per-layer tints (0 = neutral)
 varying vec3 wpos;
 varying vec3 wnrm;
@@ -60,6 +61,10 @@ void fragment() {
 			vec2 uv = p * sc[i];
 			if (i == 4) uv += vec2(0.0, wpos.y * 0.25);
 			vec3 c = texture(t_albedo, vec3(uv, float(i)), bias).rgb * mix(vec3(1.0), tint[i], desert_tint);
+			if (i == 3 && asphalt_dark > 0.0) { // M2.9: dark city asphalt, keeps the texture's grain
+				float la = dot(c, vec3(0.3, 0.59, 0.11));
+				c = mix(c, vec3(0.1, 0.104, 0.11) + vec3(la * 0.22), asphalt_dark);
+			}
 			if (i == 2) { // grass: green layer vs sun-dried scrub
 				float l = dot(c, vec3(0.3, 0.59, 0.11));
 				vec3 dry = mix(vec3(l), c, 0.35) * vec3(1.45, 1.22, 0.72);

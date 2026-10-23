@@ -16,6 +16,7 @@ var sel_lbl: Label
 var sel_amount: HBoxContainer
 var sel_amount_lbl: Label
 var sel_owner: Button
+var sel_rot: Button
 var toast: Label
 var overlay: Control = null
 var _tabs: Dictionary = {}
@@ -125,6 +126,10 @@ func _build_panel(row: Control) -> void:
 		if canvas.selected >= 0:
 			canvas.set_selected_slot((int(canvas.items[canvas.selected]["slot"]) + 1) % 4))
 	srow.add_child(sel_owner)
+	sel_rot = UiTheme.button("Rotate 0°", Vector2(110, 44))   # M2.9 props
+	sel_rot.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sel_rot.pressed.connect(func(): canvas.rotate_selected())
+	srow.add_child(sel_rot)
 	var del := UiTheme.button("Delete", Vector2(80, 44))
 	del.add_theme_color_override("font_color", Color("#ff8a7a"))
 	del.pressed.connect(func(): canvas.delete_selected())
@@ -296,6 +301,9 @@ func _refresh_sel() -> void:
 	if it["t"] == "res":
 		sel_amount_lbl.text = "Amount %d" % int(it["amount"])
 	sel_owner.visible = it["t"] == "pre"
+	sel_rot.visible = it["t"] == "prop"
+	if it["t"] == "prop":
+		sel_rot.text = "Rotate %d°" % (int(it.get("rot", 0)) * 90)
 	if it["t"] == "pre":
 		sel_owner.text = "Owner: Start %d" % (int(it["slot"]) + 1)
 

@@ -23,6 +23,8 @@ var water_material: ShaderMaterial
 var prop_material: ShaderMaterial
 var prop_sway_material: ShaderMaterial
 var prop_detail_material: ShaderMaterial
+var prop_tower_material: ShaderMaterial   ## M2.9 tall buildings: see-through where they hide units
+var has_towers := false
 var m: SimMap
 var biome: PackedStringArray = PackedStringArray()
 var prop_tint := Color(1, 1, 1)
@@ -63,6 +65,7 @@ func build(map: SimMap, tiles_path: String = "", env: Dictionary = {}) -> void:
 	prop_material = _prop_mat(0.0, 0.0, null)
 	prop_sway_material = _prop_mat(1.0, 0.0, null)
 	prop_detail_material = _prop_mat(0.0, 0.55, load(TEX + "materials/concrete.png"))
+	prop_tower_material = _prop_mat(0.0, 0.55, load(TEX + "materials/concrete.png"))
 	heights = _corner_heights()
 	for cy in range(0, m.h, CHUNK):
 		for cx in range(0, m.w, CHUNK):
@@ -399,6 +402,8 @@ func _build_props(tiles_path: String) -> void:
 		var covered := {}
 		for d in decor_override:
 			var fp: Vector2i = PropMeshes.FOOTPRINT.get(String(d[0]), Vector2i.ZERO)
+			if int(d[3]) % 2 == 1:
+				fp = Vector2i(fp.y, fp.x)
 			if fp != Vector2i.ZERO:
 				var o := Vector2i(roundi(float(d[1]) - fp.x * 0.5), roundi(float(d[2]) - fp.y * 0.5))
 				for yy in fp.y:
@@ -433,6 +438,10 @@ func _build_props(tiles_path: String) -> void:
 					by_kind[_tree_kind].append([x + 0.5, y + 0.5, 0])
 				elif tt == SimMap.T.CLIFF and _h(x, y) < 0.2:
 					by_kind["rock"].append([x + 0.5, y + 0.5, 0])
+	var urban := false
+	for kind in by_kind:
+		urban = urban or (PropMeshes.FOOTPRINT.has(kind) and by_kind[kind].size() >= 8)
+	material.set_shader_parameter("asphalt_dark", 1.0 if urban else 0.0)
 	for kind in by_kind:
 		var mesh: Mesh = PropMeshes.make(kind)
 		if mesh == null:
@@ -440,7 +449,10 @@ func _build_props(tiles_path: String) -> void:
 		var mat := prop_material
 		if kind in ["palm", "scrub_tree", "pine", "pine_snow", "oak", "bush"]:
 			mat = prop_sway_material
-		elif kind in ["gas_station", "shack", "power_pole", "streetlight", "streetlight_double"] or PropMeshes.FOOTPRINT.has(kind):
+		elif PropMeshes.FOOTPRINT.has(kind):
+			mat = prop_tower_material
+			has_towers = true
+		elif kind in ["gas_station", "shack", "power_pole", "streetlight", "streetlight_double"]:
 			mat = prop_detail_material
 		# M2.9: one MultiMesh per kind per 32x32-tile chunk so off-screen props are frustum-culled
 		# (dense urban maps carry thousands of cars / lights / towers)
@@ -477,6 +489,16 @@ func _multimesh(items: Array, mesh: Mesh, mat: Material, kind: String, suffix: S
 	mmi.material_override = mat
 	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if kind.begins_with("car_") else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	add_child(mmi)
+
+## M2.9: up to 24 unit positions (world space, nearest the camera focus) that tall towers fade around.
+func set_occluded_units(pts: PackedVector4Array) -> void:
+	if prop_tower_material == null:
+		return
+	prop_tower_material.set_shader_parameter("occl_n", pts.size())
+	if pts.size() > 0:
+		var full := pts.duplicate()
+		full.resize(24)
+		prop_tower_material.set_shader_parameter("occl_pts", full)
 
 ## Rebuild the fog texture for the local team (called at 5 Hz when fog changes).
 func update_fog(fog: SimFog, team: int) -> void:

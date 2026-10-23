@@ -422,6 +422,33 @@ func _forget_view(id: int) -> void:
 	cur.erase(id)
 
 ## ---------------------------------------------------------------- M2.8 aircraft crashes
+## M2.9: tell the tower material which visible units are near the screen centre (nearest 24).
+func _update_tower_fade() -> void:
+	var camn := get_viewport().get_camera_3d()
+	if camn == null:
+		return
+	var fwd := -camn.global_transform.basis.z
+	var c := camn.global_position
+	var focus := c + fwd * (-c.y / minf(-0.05, fwd.y))
+	var best: Array = []
+	for id in views:
+		var v: EntityView = views[id]
+		if not v.visible or not cur.has(id):
+			continue
+		var e: SimEntity = sim.ents.get(id)
+		if e == null or e.kind != SimEntity.Kind.UNIT:
+			continue
+		var p: Vector3 = cur[id]
+		var d := Vector2(p.x - focus.x, p.z - focus.z).length_squared()
+		if d < 1600.0:
+			best.append([d, p])
+	best.sort_custom(func(x, y): return x[0] < y[0])
+	var pts := PackedVector4Array()
+	for i in mini(24, best.size()):
+		var p: Vector3 = best[i][1]
+		pts.append(Vector4(p.x, p.y + 0.4, p.z, 0.0))
+	terrain.set_occluded_units(pts)
+
 var crashes: Array = []     ## [{v, vel, spin, heli, acc, t, down}]
 static var _burnt: StandardMaterial3D
 
@@ -487,6 +514,8 @@ func _update_crashes(delta: float) -> void:
 func frame(a: float, delta: float) -> void:
 	alpha = a
 	_update_crashes(delta)
+	if terrain.has_towers:
+		_update_tower_fade()
 	var mem: Dictionary = sim.fog.memory.get(local_team, {}) if local_team >= 0 else {}
 	for id in views:
 		var e: SimEntity = sim.ents.get(id)
