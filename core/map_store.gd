@@ -10,9 +10,10 @@ class_name MapStore
 const DIR := "user://maps"
 const FORMAT := 1
 const PREFIX := "custom_"
-const SIZES := [Vector2i(64, 64), Vector2i(96, 96), Vector2i(128, 128), Vector2i(160, 160)]
+const SIZES := [Vector2i(64, 64), Vector2i(128, 128), Vector2i(192, 192), Vector2i(256, 256)]
+const DEFAULT_SIZE := 3        ## 256x256 (Malachi: large maps, double the M2.7 128x128)
 const HQ_FP := Vector2i(4, 4)
-const SUPPLY_NEAR := 26          ## tiles from an HQ centre to its nearest supply
+const SUPPLY_NEAR := 32          ## tiles from an HQ centre to its nearest supply
 const T_TO_CHAR := [".", ":", ",", "~", "=", "#", "^", "T"]
 
 static func _v(a) -> Vector2i:
@@ -114,7 +115,10 @@ static func save_dict(d: Dictionary) -> Error:
 		return FileAccess.get_open_error()
 	f.store_string(JSON.stringify(d, "\t"))
 	f.close()
-	register(Content.maps, d)
+	if d.get("draft", false):
+		Content.maps.erase(StringName(d["id"]))   # drafts (failed the check) stay out of Skirmish
+	else:
+		register(Content.maps, d)
 	return OK
 
 static func load_dict(id) -> Dictionary:
@@ -153,7 +157,7 @@ static func register_all(into: Dictionary) -> void:
 			into.erase(k)
 	for id in list_ids():
 		var d := load_dict(id)
-		if not d.is_empty() and not into.has(StringName(d["id"])):
+		if not d.is_empty() and not d.get("draft", false) and not into.has(StringName(d["id"])):
 			register(into, d)
 
 ## Save/resume: the map for a saved match. Uses the registered map when its content still
@@ -222,6 +226,8 @@ static func validate(d: Dictionary) -> PackedStringArray:
 	for p in md.prebuilt:
 		if Content.is_building(p["kind"]):
 			claim.call(p["tile"], footprint_of(p["kind"]), _name(p["kind"]))
+			if int(p["spawn"]) < 0 or int(p["spawn"]) >= md.spawns.size():
+				errs.append("%s at %d,%d belongs to a start position that is not placed." % [_name(p["kind"]), p["tile"].x, p["tile"].y])
 		else:
 			var u: UnitDef = Content.unit(p["kind"])
 			var t: Vector2i = p["tile"]
@@ -229,8 +235,8 @@ static func validate(d: Dictionary) -> PackedStringArray:
 				errs.append("Unknown unit %s." % p["kind"])
 			elif u.move_layer != &"air" and not m.terrain_passable(t, u.move_layer == &"vehicle"):
 				errs.append("%s at %d,%d is on ground it cannot stand on." % [_name(p["kind"]), t.x, t.y])
-			if int(p["spawn"]) >= md.spawns.size():
-				errs.append("%s at %d,%d belongs to Start %d, which does not exist." % [_name(p["kind"]), t.x, t.y, int(p["spawn"]) + 1])
+			if int(p["spawn"]) < 0 or int(p["spawn"]) >= md.spawns.size():
+				errs.append("%s at %d,%d belongs to a start position that is not placed." % [_name(p["kind"]), t.x, t.y])
 	for r in md.resources:
 		var t: Vector2i = r["tile"]
 		if not m.terrain_passable(t, true) or occ.has(t):

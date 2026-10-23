@@ -27,6 +27,9 @@ func build() -> void:
 		var c := UiTheme.button(tr("MENU_CONTINUE"), Vector2(260, 52))
 		c.pressed.connect(_continue)
 		right.add_child(c)
+	var mb := UiTheme.button(tr("MENU_MAP_BUILDER"), Vector2(260, 52))   # M2.8
+	mb.pressed.connect(func(): GameSession.goto("res://ui/map_builder.tscn"))
+	right.add_child(mb)
 	var s := UiTheme.button(tr("MENU_SETTINGS"), Vector2(260, 52))
 	s.pressed.connect(func(): GameSession.goto("res://ui/settings_screen.tscn"))
 	right.add_child(s)
