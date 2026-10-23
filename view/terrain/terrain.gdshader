@@ -12,7 +12,7 @@ uniform sampler2D splat_a : filter_linear, repeat_disable; // sand, dirt, dry sc
 uniform sampler2D splat_b : filter_linear, repeat_disable; // asphalt, rock, riverbed, concrete
 uniform sampler2DArray t_albedo : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2DArray t_nrao : hint_default_white, filter_linear_mipmap_anisotropic, repeat_enable;
-uniform sampler2D t_detail : hint_default_white, filter_linear_mipmap, repeat_enable;
+uniform sampler2D t_detail : hint_default_white, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D t_macro : hint_default_white, filter_linear_mipmap, repeat_enable;
 uniform vec2 map_size = vec2(128.0, 128.0);
 uniform sampler2D shore_tex : hint_default_black, filter_linear, repeat_disable; // M2.8 wet field (R)
@@ -29,6 +29,13 @@ float vnoise(vec2 p) {
 	return mix(mix(hash(i), hash(i + vec2(1, 0)), f.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), f.x), f.y);
 }
 
+// M2.9 anti-tiling: a second, rotated + rescaled copy of each layer blended in by low-frequency
+// noise, so no repeat lines or repeated features line up across the map (2 fetches only where the
+// blend is mid-way; most pixels take one).
+const mat2 ROT2 = mat2(vec2(0.8, -0.6), vec2(0.6, 0.8));
+vec2 uv_alt(vec2 uv, float layer) { return ROT2 * uv * 0.83 + vec2(0.37 + layer * 0.21, 0.11 + layer * 0.13); }
+float tile_mix(vec2 p, float layer) { return smoothstep(0.32, 0.68, vnoise(p * 0.09 + vec2(layer * 7.3, layer * 3.1))); }
+
 void vertex() {
 	wpos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	wnrm = normalize((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
@@ -38,9 +45,10 @@ void vertex() {
 void fragment() {
 	vec2 p = wpos.xz;
 	bool hi = fl_tex_quality > 0.5;
-	float bias = hi ? 0.0 : 1.0;
+	float bias = hi ? 0.4 : 1.0;   // M2.9: a little mip bias against shimmer / grain at RTS distance
 	float n1 = vnoise(p * 0.9);
-	vec2 jitter = (vec2(n1, vnoise(p * 0.9 + 3.1)) - 0.5) * 0.9;
+	vec2 jitter = (vec2(n1, vnoise(p * 0.9 + 3.1)) - 0.5) * 0.9
+		+ (vec2(vnoise(p * 0.21 + 9.7), vnoise(p * 0.21 + 4.3)) - 0.5) * 1.6;   // M2.9: larger-scale wobble on blend edges
 	vec2 suv = (p + jitter) / map_size;
 	vec4 a = texture(splat_a, suv);
 	vec4 b = texture(splat_b, (p + jitter * 0.25) / map_size);
@@ -60,7 +68,11 @@ void fragment() {
 		if (w[i] > 0.01) {
 			vec2 uv = p * sc[i];
 			if (i == 4) uv += vec2(0.0, wpos.y * 0.25);
-			vec3 c = texture(t_albedo, vec3(uv, float(i)), bias).rgb * mix(vec3(1.0), tint[i], desert_tint);
+			float tm = tile_mix(p, float(i));
+			vec2 uv2 = uv_alt(uv, float(i));
+			vec3 c = texture(t_albedo, vec3(uv, float(i)), bias).rgb;
+			if (tm > 0.02) c = mix(c, texture(t_albedo, vec3(uv2, float(i)), bias).rgb, tm);
+			c *= mix(vec3(1.0), tint[i], desert_tint);
 			if (i == 3 && asphalt_dark > 0.0) { // M2.9: dark city asphalt, keeps the texture's grain
 				float la = dot(c, vec3(0.3, 0.59, 0.11));
 				c = mix(c, vec3(0.035, 0.037, 0.04) + vec3(la * 0.1), asphalt_dark);
@@ -71,11 +83,17 @@ void fragment() {
 				c = mix(mix(c, dry, dry_scrub), c * mix(vec3(1.0), vec3(0.95, 1.08, 0.78), desert_tint), a.a / max(1e-4, a.b + a.a));
 			}
 			col += w[i] * c;
-			if (hi) nr += w[i] * texture(t_nrao, vec3(uv, float(i)));
+			if (hi) {
+				vec4 n0 = texture(t_nrao, vec3(uv, float(i)), bias);
+				if (tm > 0.02) n0 = mix(n0, texture(t_nrao, vec3(uv2, float(i)), bias), tm);
+				nr += w[i] * n0;
+			}
 		}
 	}
 	// macro variation (baked, ~64 m period) against visible tiling
-	vec3 mac = texture(t_macro, p / 64.0, bias).rgb;
+	// M2.9: seamless macro map at two unrelated scales / rotations (no 64 m repeat lines)
+	vec3 mac = mix(texture(t_macro, p / 64.0, bias).rgb, texture(t_macro, ROT2 * p / 173.0 + 0.31, bias).rgb, 0.5);
+	mac = (mac - 0.5) * 1.35 + 0.5;
 	col *= mix(0.84, 1.1, mac.r);
 	col *= mix(mix(vec3(1.0), vec3(1.04, 0.99, 0.92), desert_tint), mix(vec3(1.0), vec3(0.95, 0.99, 1.04), desert_tint), mac.g * 0.6);
 	col = mix(col, col * mix(vec3(1.0), vec3(1.08, 1.0, 0.86), desert_tint), (mac.b - 0.5) * 0.35 * (a.r + a.g));
@@ -83,7 +101,7 @@ void fragment() {
 	float rough = 0.92 - b.r * 0.12;
 	float ao = 1.0;
 	if (hi) {
-		n_t = vec3(nr.rg * 2.0 - 1.0, 0.0);
+		n_t = vec3((nr.rg * 2.0 - 1.0) * 0.8, 0.0);
 		rough = mix(rough, nr.b, 0.85);
 		ao = mix(1.0, nr.a, 0.7);
 		// detail layer: fades in near the camera
@@ -91,8 +109,8 @@ void fragment() {
 		float df = smoothstep(42.0, 16.0, dist);
 		if (df > 0.01) {
 			vec3 d = texture(t_detail, p * 1.1).rgb;
-			col *= mix(1.0, 0.75 + d.r * 0.5, df * 0.55);
-			n_t.xy += (d.gb * 2.0 - 1.0) * 0.45 * df;
+			col *= mix(1.0, 0.88 + d.r * 0.24, df * 0.45);   // M2.9: softer micro detail (less grain)
+			n_t.xy += (d.gb * 2.0 - 1.0) * 0.25 * df;
 		}
 		n_t.z = sqrt(max(0.0, 1.0 - dot(n_t.xy, n_t.xy)));
 		// tangent frame from world axes (terrain UVs are planar world XZ)

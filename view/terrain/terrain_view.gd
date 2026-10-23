@@ -137,18 +137,26 @@ func _build_splats() -> void:
 	var soft := ia.duplicate() as Image   # wide, organic falloff (≈3 tiles)
 	soft.resize(maxi(4, m.w / 4), maxi(4, m.h / 4), Image.INTERPOLATE_BILINEAR)
 	soft.resize(m.w, m.h, Image.INTERPOLATE_CUBIC)
+	# M2.9: two 3x3 passes (smoother blends between ground types, no blocky tile edges)
+	var src := ia
+	for pass_i in 2:
+		var dst := src.duplicate() as Image
+		for y in m.h:
+			for x in m.w:
+				var acc := Color(0, 0, 0, 0)
+				var n := 0.0
+				for dy in range(-1, 2):
+					for dx in range(-1, 2):
+						var xx := clampi(x + dx, 0, m.w - 1)
+						var yy := clampi(y + dy, 0, m.h - 1)
+						var wgt := 2.0 if dx == 0 and dy == 0 else 1.0
+						acc += src.get_pixel(xx, yy) * wgt
+						n += wgt
+				dst.set_pixel(x, y, acc / n)
+		src = dst
 	for y in m.h:
 		for x in m.w:
-			var acc := Color(0, 0, 0, 0)
-			var n := 0.0
-			for dy in range(-1, 2):
-				for dx in range(-1, 2):
-					var xx := clampi(x + dx, 0, m.w - 1)
-					var yy := clampi(y + dy, 0, m.h - 1)
-					var wgt := 2.0 if dx == 0 and dy == 0 else 1.0
-					acc += ia.get_pixel(xx, yy) * wgt
-					n += wgt
-			sa.set_pixel(x, y, (acc / n).lerp(soft.get_pixel(x, y), 0.45))
+			sa.set_pixel(x, y, src.get_pixel(x, y).lerp(soft.get_pixel(x, y), 0.35))
 	material.set_shader_parameter("splat_a", ImageTexture.create_from_image(sa))
 	material.set_shader_parameter("splat_b", ImageTexture.create_from_image(ib))
 
