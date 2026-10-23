@@ -29,6 +29,8 @@ var prop_tint := Color(1, 1, 1)
 var heights: PackedFloat32Array
 var ground_decal_count := 0
 
+var _tree_kind := "scrub_tree"   ## M2.8: forest prop for maps without a decor layer (map builder)
+
 func build(map: SimMap, tiles_path: String = "", env: Dictionary = {}) -> void:
 	m = map
 	if env.is_empty():
@@ -36,6 +38,7 @@ func build(map: SimMap, tiles_path: String = "", env: Dictionary = {}) -> void:
 	fog_image = Image.create_empty(m.w, m.h, false, Image.FORMAT_L8)
 	fog_image.fill(Color(0, 0, 0))
 	fog_texture = ImageTexture.create_from_image(fog_image)
+	_tree_kind = "pine_snow" if String(env.get("albedo", "")).contains("winter") else ("oak" if String(env.get("albedo", "")).contains("temperate") else "scrub_tree")
 	_load_biome(tiles_path)
 	material = ShaderMaterial.new()
 	material.shader = load("res://view/terrain/terrain.gdshader")
@@ -320,12 +323,12 @@ func _build_props(tiles_path: String) -> void:
 			by_kind[parts[0]].append([float(parts[1]), float(parts[2]), int(parts[3])])
 	else:
 		# fallback: trees on forest tiles, rocks on cliffs
-		by_kind = {"scrub_tree": [], "rock": []}
+		by_kind = {_tree_kind: [], "rock": []}
 		for y in m.h:
 			for x in m.w:
 				var tt := m.ttype(Vector2i(x, y))
 				if tt == SimMap.T.FOREST and _h(x, y) < 0.6:
-					by_kind["scrub_tree"].append([x + 0.5, y + 0.5, 0])
+					by_kind[_tree_kind].append([x + 0.5, y + 0.5, 0])
 				elif tt == SimMap.T.CLIFF and _h(x, y) < 0.2:
 					by_kind["rock"].append([x + 0.5, y + 0.5, 0])
 	for kind in by_kind:

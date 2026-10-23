@@ -55,7 +55,7 @@ func build() -> void:
 	var ids := SkirmishConfig.map_ids()
 	for mid in ids:
 		var mdef: MapDef = Content.maps[mid]
-		maps.add_item("%s  (%d)" % [tr(mdef.name_key), mdef.spawns.size()])
+		maps.add_item(("%s  (%d)" % [tr(mdef.name_key), mdef.spawns.size()]) + (tr("LOBBY_CUSTOM_TAG") if mdef.custom else ""))
 	maps.selected = maxi(0, ids.find(StringName(cfg.get("map", "varno_crossing"))))
 	maps.item_selected.connect(func(i):
 		cfg["map"] = String(ids[i])
@@ -221,10 +221,15 @@ const ENV_PREVIEW := {&"winter": {"s": Color("#e9eef3"), "d": Color("#8c8378"), 
 
 ## Map preview from the map's biome layer (what the terrain actually looks like).
 func _biome_preview(md: MapDef) -> ImageTexture:
-	var bp := md.tiles_path.replace(".txt", ".biome.txt")
-	if not FileAccess.file_exists(bp):
-		return null
-	var lines := FileAccess.get_file_as_string(bp).split("\n", false)
+	var lines: PackedStringArray
+	if md.custom:
+		# M2.8: map-builder maps have no biome layer; colour from the tile grid
+		lines = MapBuilderCanvas.biome_rows(md.tiles_text)
+	else:
+		var bp := md.tiles_path.replace(".txt", ".biome.txt")
+		if not FileAccess.file_exists(bp):
+			return null
+		lines = FileAccess.get_file_as_string(bp).split("\n", false)
 	if lines.is_empty():
 		return null
 	var w := lines[0].length()

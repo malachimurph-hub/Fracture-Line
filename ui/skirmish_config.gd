@@ -19,10 +19,18 @@ static func default_setup() -> Dictionary:
 	}
 
 ## M2.5: skirmish maps in lobby order (Varno Crossing first, then by id).
+## M2.8: map-builder maps follow the built-in ones (hidden save-embedded copies are left out).
 static func map_ids() -> Array:
-	var ids: Array = Content.maps.keys()
+	var ids: Array = []
+	var custom: Array = []
+	for k in Content.maps:
+		var md: MapDef = Content.maps[k]
+		if md.transient:
+			continue
+		(custom if md.custom else ids).append(k)
 	ids.sort_custom(func(a, b): return a == &"varno_crossing" or (b != &"varno_crossing" and String(a) < String(b)))
-	return ids
+	custom.sort_custom(func(a, b): return MapStore.tr_name(Content.maps[a]).naturalnocasecmp_to(MapStore.tr_name(Content.maps[b])) < 0)
+	return ids + custom
 
 static func active(cfg: Dictionary) -> Array:
 	var out: Array = []
