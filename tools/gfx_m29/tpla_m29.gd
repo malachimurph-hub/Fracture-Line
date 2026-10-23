@@ -38,7 +38,7 @@ static func jobs() -> Dictionary:
 		"f16": func() -> void: _f16(),
 		"mirage": func() -> void: _mirage(),
 		"mig29": func() -> void: _mig29(),
-		"tunnel": func() -> void: _make_b("tunnel", Vector2(2, 2), 0.9, _tunnel, _tunnel_turret, Vector3(0.0, 0.5, 0.35)),
+		"tunnel": func() -> void: _make_b("tunnel", Vector2(2, 2), 0.9, _tunnel, _tunnel_turret, Vector3(0.0, 0.6, 0.0)),
 		"wasp_nest": func() -> void: _make_b("wasp_nest", Vector2(2, 2), 1.0, _wasp, _wasp_turret, Vector3(0, 0.36, 0)),
 		"demo_trap": func() -> void: _make_b("demo_trap", Vector2(1, 1), 0.35, _demo_trap),
 		"camo_net": func() -> void: _make_b("camo_net", Vector2(1, 1), 0.9, _camo_net),
@@ -828,6 +828,7 @@ static func _tunnel(g) -> void:
 	g.box(Vector3(0, Y0 + 0.36, 0.635), Vector3(0.6, 0.04, 0.006))
 
 static func _tunnel_turret(t) -> void:
+	t.xf = Transform3D(Basis.IDENTITY.scaled(Vector3.ONE * 1.5), Vector3.ZERO)
 	t.color("#2b2b2a", Geo.STEEL)
 	t.tube(Vector3(0, -0.1, 0), Vector3(0, 0.12, 0), 0.025, 6)
 	for a in [0.0, TAU / 3.0, TAU * 2.0 / 3.0]:   # tripod
@@ -855,17 +856,17 @@ static func _wasp(g) -> void:
 			continue
 		g.rbox(Vector3(cos(a) * 0.82, Y0 + 0.1, sin(a) * 0.82), Vector3(0.36, 0.2, 0.1), Vector3(0, -rad_to_deg(a) + 90.0, 0))
 	_sandbag_ring(g, Vector3(0, Y0, 0), 0.68, 3, 14, TAU * 2.0 / 8.0 + 0.2, 0.3)
-	# camo-net canopy on four poles (sagging two-piece)
+	# camo-net lean-to over the ammo store at the back (keeps the launcher in view)
 	g.color("#6b5236", Geo.WOOD)
-	for p in [Vector2(-0.8, -0.8), Vector2(0.8, -0.8), Vector2(0.8, 0.8), Vector2(-0.8, 0.8)]:
-		g.tube(Vector3(p.x, Y0, p.y), Vector3(p.x, Y0 + 0.95, p.y), 0.018, 5)
+	for x in [-0.8, 0.0, 0.8]:
+		g.tube(Vector3(x, Y0, -0.85), Vector3(x, Y0 + 0.62, -0.85), 0.018, 5)
 	g.color("#5d6644", Geo.CANVAS)
-	for s in [-1.0, 1.0]:
-		g.rbox(Vector3(s * 0.55, Y0 + 0.9, 0), Vector3(0.6, 0.012, 1.7), Vector3(0, 0, s * 8.0))
+	g.rbox(Vector3(0, Y0 + 0.5, -0.72), Vector3(1.75, 0.012, 0.4), Vector3(-28, 0, 0))
 	g.color("#7a7a4a", Geo.CANVAS)
-	for k in 7:   # leaf patches
-		var a2 := float(k) * 1.7
-		g.rbox(Vector3(cos(a2) * 0.6, Y0 + 0.92, sin(a2) * 0.6), Vector3(0.2, 0.01, 0.16), Vector3(0, rad_to_deg(a2), 0))
+	for k in 5:
+		g.rbox(Vector3(-0.65 + k * 0.32, Y0 + 0.52, -0.74), Vector3(0.18, 0.012, 0.14), Vector3(-28, k * 37.0, 0))
+	for c in [Vector3(-0.5, Y0 + 0.07, -0.8), Vector3(-0.2, Y0 + 0.07, -0.8), Vector3(0.3, Y0 + 0.07, -0.78)]:
+		_crate(g, c, Vector3(0.24, 0.14, 0.12), 5.0)
 	for c in [Vector3(-0.62, Y0 + 0.07, 0.58), Vector3(-0.48, Y0 + 0.07, 0.68), Vector3(-0.55, Y0 + 0.21, 0.63)]:
 		_crate(g, c, Vector3(0.24, 0.14, 0.12), 30.0)
 	g.color("#4d5236", Geo.PAINT)
