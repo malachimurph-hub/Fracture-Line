@@ -100,6 +100,78 @@
 "lid": null
 },
 {
+"file": "audio/voice_ai/announcer_tpla/base_under_attack_1.ogg",
+"text": "They're hitting our camp!",
+"event": "base_under_attack",
+"unit": "announcer",
+"faction": "tpla",
+"qa": 1.0,
+"take": 1,
+"heard": "They're hitting our camp.",
+"lufs_target": -12.0,
+"ref": "tpla_announcer_0.wav",
+"engine": "chatterbox-multilingual (MIT) intensity m27, ref kokoro-82m m26 cast voice",
+"exag": 1.15,
+"cfg": 0.3,
+"lang": "ar",
+"tempo": 1.0,
+"dur": 1.24,
+"wps": 3.7,
+"lid": {
+"en": 0.625,
+"ar_fa": 0.217,
+"ru": 0.0
+}
+},
+{
+"file": "audio/voice_ai/announcer_tpla/base_under_attack_2.ogg",
+"text": "Our base is under attack!",
+"event": "base_under_attack",
+"unit": "announcer",
+"faction": "tpla",
+"qa": 1.0,
+"take": 0,
+"heard": "Our base is under attack.",
+"lufs_target": -12.0,
+"ref": "tpla_announcer_0.wav",
+"engine": "chatterbox-multilingual (MIT) intensity m27, ref kokoro-82m m26 cast voice",
+"exag": 1.15,
+"cfg": 0.3,
+"lang": "ar",
+"tempo": 1.028,
+"dur": 1.81,
+"wps": 3.0,
+"lid": {
+"en": 0.376,
+"ar_fa": 0.403,
+"ru": 0.0
+}
+},
+{
+"file": "audio/voice_ai/announcer_tpla/units_under_attack_1.ogg",
+"text": "Our fighters are under attack.",
+"event": "units_under_attack",
+"unit": "announcer",
+"faction": "tpla",
+"qa": 1.0,
+"take": 0,
+"heard": "Our fighters are under attack.",
+"lufs_target": -12.0,
+"ref": "tpla_announcer_0.wav",
+"engine": "chatterbox-multilingual (MIT) intensity m27, ref kokoro-82m m26 cast voice",
+"exag": 1.15,
+"cfg": 0.3,
+"lang": "ar",
+"tempo": 1.165,
+"dur": 1.81,
+"wps": 3.0,
+"lid": {
+"en": 0.972,
+"ar_fa": 0.005,
+"ru": 0.0
+}
+},
+{
 "file": "audio/voice_ai/announcer_us/base_under_attack_1.ogg",
 "text": "Our base is under attack.",
 "event": "base_under_attack",
@@ -1093,6 +1165,54 @@
 "en": 0.809,
 "ar_fa": 0.003,
 "ru": 0.003
+}
+},
+{
+"file": "audio/voice_ai/tpla/blight/under_fire_1.ogg",
+"text": "Launcher under fire!",
+"event": "under_fire",
+"unit": "tpla_blight",
+"faction": "tpla",
+"qa": 0.67,
+"take": 0,
+"heard": "Launcher on the fire.",
+"lufs_target": -15.0,
+"ref": "tpla_blight_0.wav",
+"engine": "chatterbox-multilingual (MIT) intensity m27, ref kokoro-82m m26 cast voice",
+"exag": 1.05,
+"cfg": 0.3,
+"lang": "ar",
+"tempo": 1.18,
+"dur": 1.14,
+"wps": 2.93,
+"lid": {
+"en": 0.18,
+"ar_fa": 0.044,
+"ru": 0.023
+}
+},
+{
+"file": "audio/voice_ai/tpla/blight/under_fire_2.ogg",
+"text": "Protect the canisters!",
+"event": "under_fire",
+"unit": "tpla_blight",
+"faction": "tpla",
+"qa": 1.0,
+"take": 0,
+"heard": "Protect the canisters.",
+"lufs_target": -15.0,
+"ref": "tpla_blight_0.wav",
+"engine": "chatterbox-multilingual (MIT) intensity m27, ref kokoro-82m m26 cast voice",
+"exag": 1.05,
+"cfg": 0.3,
+"lang": "ar",
+"tempo": 1.18,
+"dur": 1.16,
+"wps": 2.88,
+"lid": {
+"en": 0.843,
+"ar_fa": 0.004,
+"ru": 0.002
 }
 },
 {
