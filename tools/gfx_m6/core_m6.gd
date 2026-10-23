@@ -164,7 +164,7 @@ static func _flakwerk(mat: Material) -> void:
 	# gun pods on both sides
 	for s in [-1.0, 1.0]:
 		t.color(EU_D, Geo.PAINT)
-		t.bbox(Vector3(s * 0.36, 0.2, 0.0), Vector3(0.1, 0.16, 0.42), 0.012)
+		t.xloft([[0.22, K8.sect(-0.06, -0.04, 0.06, 0.04, 0.05, 0.04, 0.02)], [0.1, K8.sect(-0.08, -0.05, 0.08, 0.05, 0.055, 0.05, 0.025)], [-0.21, K8.sect(-0.08, -0.05, 0.08, 0.05, 0.055, 0.05, 0.025)]], Transform3D(Basis.IDENTITY, Vector3(s * 0.36, 0.2, 0.0)))   # M2.7b chamfered gun pods
 		t.color("#ffffff", Geo.TEAM)
 		t.box(Vector3(s * 0.413, 0.22, -0.05), Vector3(0.006, 0.04, 0.3))
 	# search radar (back) and tracking radar (front)

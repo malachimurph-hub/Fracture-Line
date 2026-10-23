@@ -526,9 +526,12 @@ static func _earwig(mat: Material) -> void:
 	h.color(TP_S, Geo.STEEL)
 	h.box(Vector3(0, 0.2, 0), Vector3(0.44, 0.07, 1.2))
 	h.color("#c9c0a8", Geo.PAINT)
-	h.prism_x([Vector2(-0.62, 0.24), Vector2(0.62, 0.24), Vector2(0.66, 0.4), Vector2(0.48, 0.7), Vector2(-0.62, 0.72)], -0.3, 0.3)
+	h.xloft([[0.67, K8.sect(0.24, 0.34, 0.42, 0.28, 0.3, 0.29, 0.03)], [0.48, K8.sect(0.24, 0.36, 0.72, 0.29, 0.3, 0.28, 0.07)],
+		[-0.6, K8.sect(0.24, 0.36, 0.72, 0.29, 0.3, 0.28, 0.07)], [-0.63, K8.sect(0.24, 0.36, 0.7, 0.28, 0.29, 0.27, 0.06)]])   # M2.7b rounded van body
 	h.color("#26323b", Geo.GLASS)
-	h.prism_x([Vector2(0.65, 0.42), Vector2(0.49, 0.68), Vector2(0.5, 0.685), Vector2(0.665, 0.425)], -0.26, 0.26)
+	h.pane([Vector3(-0.24, 0.44, 0.6589), Vector3(0.24, 0.44, 0.6589), Vector3(0.22, 0.63, 0.5354), Vector3(-0.22, 0.63, 0.5354)], Vector3(0, 0.7, 0.7), 0.006)
+	for s in [-1.0, 1.0]:
+		h.box(Vector3(s * 0.302, 0.56, 0.32), Vector3(0.008, 0.12, 0.2))
 	h.color("#6f6a52", Geo.SCRAP)
 	h.box(Vector3(0.302, 0.45, -0.2), Vector3(0.012, 0.22, 0.5))
 	h.color("#ffffff", Geo.TEAM)
@@ -593,12 +596,19 @@ static func _bus(mat: Material) -> void:
 	h.color(TP_S, Geo.STEEL)
 	h.box(Vector3(0, 0.24, -0.05), Vector3(0.6, 0.08, 1.9))
 	h.color("#c9a23a", Geo.PAINT)    # faded yellow body
-	h.prism_x([Vector2(-1.0, 0.28), Vector2(0.95, 0.28), Vector2(1.0, 0.45), Vector2(0.92, 0.95), Vector2(-1.0, 0.98)], -0.4, 0.4)
+	# M2.7b: rounded roof edges, raked windscreen, belt-line rub strip
+	h.xloft([[1.0, K8.sect(0.28, 0.45, 0.62, 0.38, 0.4, 0.4, 0.03)], [0.92, K8.sect(0.28, 0.45, 0.98, 0.39, 0.4, 0.4, 0.1)],
+		[-0.97, K8.sect(0.28, 0.45, 0.98, 0.39, 0.4, 0.4, 0.1)], [-1.0, K8.sect(0.28, 0.45, 0.95, 0.38, 0.39, 0.39, 0.08)]])
 	h.color("#26323b", Geo.GLASS)
 	for i in 6:
 		for s in [-0.402, 0.402]:
-			h.box(Vector3(s, 0.78, -0.8 + i * 0.28), Vector3(0.01, 0.14, 0.2))
-	h.prism_x([Vector2(0.99, 0.5), Vector2(0.93, 0.9), Vector2(0.94, 0.905), Vector2(1.0, 0.505)], -0.36, 0.36)
+			h.box(Vector3(s, 0.76, -0.8 + i * 0.28), Vector3(0.01, 0.16, 0.22))
+	h.pane([Vector3(-0.31, 0.64, 0.9956), Vector3(0.31, 0.64, 0.9956), Vector3(0.31, 0.9, 0.9378), Vector3(-0.31, 0.9, 0.9378)], Vector3(0, 0, 1), 0.006)
+	h.color("#8f7a3a", Geo.PAINT)
+	for s in [-1.0, 1.0]:
+		h.box(Vector3(s * 0.405, 0.55, 0.0), Vector3(0.012, 0.03, 1.95))
+	h.color(TP_S, Geo.STEEL)
+	h.rail([Vector3(-0.3, 0.98, -0.9), Vector3(-0.3, 0.98, 0.8), Vector3(0.3, 0.98, 0.8), Vector3(0.3, 0.98, -0.9)], 0.05, 0.3, 0.005)
 	# welded armour plates over the windows, roof sandbags and a team banner
 	for i in 4:
 		h.color(["#5d6f7a", "#8a4a34", "#6f6a52", "#4a4640"][i], Geo.SCRAP)
