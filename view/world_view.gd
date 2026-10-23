@@ -502,11 +502,16 @@ func frame(a: float, delta: float) -> void:
 						acc2 = 0.0   # a site that took real fire: a thin smoke wisp, never flames
 						vfx.smoke_puff(v.position + Vector3(randf_range(-0.4, 0.4), v.bar_height * 0.4, randf_range(-0.4, 0.4)), 0.15, false)
 					fx_acc[id] = acc2
-				if v.turret != null and e.target != 0:
-					var t2 := sim.get_ent(e.target)
-					if t2 != null:
+				if v.turret != null:
+					# M2.8: defence turrets traverse smoothly onto (and follow) their target, and
+					# swing back to rest after a few seconds without one, instead of snapping / freezing
+					var t2 := sim.get_ent(e.target) if e.target != 0 else null
+					if t2 != null and t2.alive:
 						var tp2 := FX.to_world(t2.pos)
-						v.turret.rotation.y = atan2(tp2.x - v.position.x, tp2.z - v.position.z) - v.rotation.y
+						var ta := atan2(tp2.x - v.position.x, tp2.z - v.position.z) - v.rotation.y
+						v.turret.rotation.y = lerp_angle(v.turret.rotation.y, ta, minf(1.0, delta * 9.0))
+					elif sim.tick - e.firing_tick > 80:
+						v.turret.rotation.y = lerp_angle(v.turret.rotation.y, 0.0, minf(1.0, delta * 2.0))
 			if v.get_meta("fogged", false) != show_mem:
 				v.set_meta("fogged", show_mem)
 				v.set_overlay(fog_overlay if show_mem else null)
