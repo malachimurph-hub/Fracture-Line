@@ -2183,7 +2183,7 @@
 "faction": "tpla",
 "qa": 1.0,
 "take": 1,
-"heard": "Scrap back taking heavy hits",
+"heard": "Scrap back, taking heavy hits.",
 "lufs_target": -12.0,
 "ref": "tpla_scrapback_0.wav",
 "engine": "chatterbox-multilingual (MIT) intensity m27, ref kokoro-82m m26 cast voice",
