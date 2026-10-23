@@ -230,9 +230,9 @@ US_UNITS = {
                 "harvest": ["Heading to the supply dump.", "Picking up the next load.", "Back on the supply run."],
                 "under_fire": ["Supply truck under fire!", "They're hitting the convoy!"],
                 "created": ["Supply truck ready to roll.", "Logistics reporting in."]}},
-    "us_grunt": {"folder": "grunt", "name": "Marine Grunt (rifleman)", "persona": "Young, confident Marine rifleman. Short, punchy, keen.",
+    "us_grunt": {"folder": "grunt", "name": "Marine Rifleman", "persona": "Tough Marine rifleman. Barked, short, punchy; a squad of different men.",
         "events": UNIT_EVENTS + ["garrison"],
-        "say": {"select": ["Marine here.", "Ready to go.", "Yes, sir!", "Standing by."],
+        "say": {"select": ["Marine Rifleman, ready.", "Ready to go.", "Yes, sir!", "Standing by."],
                 "move": ["Moving!", "Oorah, on the move!", "Copy that.", "On my way."],
                 "attack": ["Engaging!", "Weapons free!", "Contact front!", "Light 'em up!"],
                 "under_fire": ["Taking fire! Taking fire!", "Contact! I'm pinned down!"],
@@ -460,6 +460,19 @@ def build_manifest():
         "max_variants": 9,
     }
 
+def _ai_now(f, uid):
+    """M2.6: the shipped AI voices come from tools/voice_cast_m26.py (gen_voices_m26.py); VOICE_CAST
+    above is the older M2/M2.5 cast kept for gen_ai_voices.py. TPLA Militia keeps its M2.5 voice."""
+    try:
+        import voice_cast_m26 as vc
+    except ImportError:
+        return None
+    fc = vc.CAST.get(f, {})
+    actors = fc.get("announcer") if uid == "announcer" else fc.get("units", {}).get(uid)
+    if not actors or uid == "tpla_militia":
+        return None
+    return "; ".join(f"{a.get('who', '')} (Kokoro {a['v']}, {a['acc']} accent, {a['st']:+g} st, {a['fx']} FX)" for a in actors)
+
 def _vname(c):
     return c["v"] if "shift" not in c else f"chatterbox/{c['v']}{c['shift']:+g}st" + ("/ar-v2" if c.get("kind") else "")
 
@@ -506,7 +519,7 @@ def write_docs():
             md.append(f"### {u['name']} — `{uid}`\n")
             md.append(f"*Persona:* {u['persona']}  ")
             md.append(f"*Folder:* `res://audio/voice/{f}/{u['folder']}/`  ")
-            md.append("*AI voice now:* " + ", ".join(_vname(c) for c in cast["units"][uid]) + "\n")
+            md.append("*AI voice now:* " + (_ai_now(f, uid) or ", ".join(_vname(c) for c in cast["units"][uid])) + "\n")
             md.append("| File | Event | Suggested wordings (pick one per take, or improvise) |\n|---|---|---|")
             for ev in u["events"]:
                 for n in range(1, EVENTS[ev]["variants"] + 1):
@@ -519,7 +532,7 @@ def write_docs():
         persona = ("calm, authoritative command voice; clear diction, slightly clipped." if f == "eu" else
                    "the TPLA's underground radio voice: warm, confident, a little defiant; Middle Eastern (Arabic / Persian) accented English.")
         md.append(f"## {fd['label']} — announcer\n")
-        md.append(f"*Persona:* {persona} The radio filter is NOT applied (only a light colour on the TPLA one).  \n*Folder:* `res://audio/voice/{af}/`  \n*AI voice now:* {_vname(cast['announcer'][0])}\n")
+        md.append(f"*Persona:* {persona} The radio filter is NOT applied (only a light colour on the TPLA one).  \n*Folder:* `res://audio/voice/{af}/`  \n*AI voice now:* {_ai_now(f, 'announcer') or _vname(cast['announcer'][0])}\n")
         md.append("| File | Event | Length | Suggested wordings |\n|---|---|---|---|")
         for ev, v in fd["announcer"].items():
             for n in range(1, ann_rule(f, ev)["variants"] + 1):
