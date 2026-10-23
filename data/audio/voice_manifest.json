@@ -236,17 +236,6 @@
    "radio": true,
    "radio_style": "tpla",
    "units": {
-    "tpla_laborer": {
-     "folder": "laborer",
-     "events": [
-      "select",
-      "move",
-      "build",
-      "harvest",
-      "under_fire",
-      "created"
-     ]
-    },
     "tpla_militia": {
      "folder": "militia",
      "events": [
@@ -315,17 +304,6 @@
       "veteran"
      ]
     },
-    "tpla_mule": {
-     "folder": "mule",
-     "events": [
-      "select",
-      "move",
-      "attack",
-      "under_fire",
-      "created",
-      "veteran"
-     ]
-    },
     "tpla_blight": {
      "folder": "blight",
      "events": [
@@ -336,54 +314,6 @@
       "created",
       "veteran"
      ]
-    },
-    "tpla_junkhammer": {
-     "folder": "scrapback",
-     "events": [
-      "select",
-      "move",
-      "attack",
-      "under_fire",
-      "created",
-      "veteran"
-     ],
-     "alias_of": "tpla_scrapback"
-    },
-    "tpla_sprayer": {
-     "folder": "blight",
-     "events": [
-      "select",
-      "move",
-      "attack",
-      "under_fire",
-      "created",
-      "veteran"
-     ],
-     "alias_of": "tpla_blight"
-    },
-    "tpla_earwig": {
-     "folder": "rattler",
-     "events": [
-      "select",
-      "move",
-      "attack",
-      "under_fire",
-      "created",
-      "veteran"
-     ],
-     "alias_of": "tpla_rattler"
-    },
-    "tpla_jackal": {
-     "folder": "shrike",
-     "events": [
-      "select",
-      "move",
-      "attack",
-      "under_fire",
-      "created",
-      "veteran"
-     ],
-     "alias_of": "tpla_shrike"
     },
     "tpla_bus": {
      "folder": "rattler",
@@ -396,6 +326,85 @@
       "veteran"
      ],
      "alias_of": "tpla_rattler"
+    },
+    "tpla_backhoe": {
+     "folder": "laborer",
+     "events": [
+      "select",
+      "move",
+      "build",
+      "harvest",
+      "under_fire",
+      "created"
+     ]
+    },
+    "tpla_pickup": {
+     "folder": "laborer",
+     "events": [
+      "select",
+      "move",
+      "build",
+      "harvest",
+      "under_fire",
+      "created"
+     ]
+    },
+    "tpla_marksman": {
+     "folder": "militia",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran",
+      "garrison"
+     ]
+    },
+    "tpla_insurgent": {
+     "folder": "militia",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran",
+      "garrison"
+     ]
+    },
+    "tpla_f16": {
+     "folder": "shrike",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ]
+    },
+    "tpla_mirage": {
+     "folder": "shrike",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ]
+    },
+    "tpla_mig29": {
+     "folder": "shrike",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ]
     }
    }
   },

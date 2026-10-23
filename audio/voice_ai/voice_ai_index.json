@@ -2412,14 +2412,6 @@
 "engine": "chatterbox-multilingual (MIT), lang=ar"
 },
 {
-"file": "audio/voice_ai/tpla/laborer/select_3.ogg",
-"text": "Laborer here.",
-"voice": "chatterbox/ganji-1.5st/ar-v2",
-"exag": 0.5,
-"tempo": 1.01,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
 "file": "audio/voice_ai/tpla/laborer/select_4.ogg",
 "text": "Need a hand?",
 "voice": "chatterbox/ganji-0.5st/ar-v2",
@@ -2521,22 +2513,6 @@
 "voice": "chatterbox/ganji-1.5st/ar-v2",
 "exag": 0.5,
 "tempo": 0.99,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/laborer/created_2.ogg",
-"text": "Laborer ready to work.",
-"voice": "chatterbox/ganji-0.5st/ar-v2",
-"exag": 0.55,
-"tempo": 0.99,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/militia/select_1.ogg",
-"text": "Militia.",
-"voice": "chatterbox/amir+0.5st",
-"exag": 0.6,
-"tempo": 0.98,
 "engine": "chatterbox-multilingual (MIT), lang=ar"
 },
 {
@@ -2644,14 +2620,6 @@
 "engine": "chatterbox-multilingual (MIT), lang=ar"
 },
 {
-"file": "audio/voice_ai/tpla/militia/created_1.ogg",
-"text": "Militia, armed and angry.",
-"voice": "chatterbox/amir+0.5st",
-"exag": 0.6,
-"tempo": 1.0,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
 "file": "audio/voice_ai/tpla/militia/created_2.ogg",
 "text": "Fighters reporting.",
 "voice": "chatterbox/ganji+1.5st",
@@ -2681,14 +2649,6 @@
 "voice": "chatterbox/ganji+1.5st",
 "exag": 0.6,
 "tempo": 1.049,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rocket_cell/select_1.ogg",
-"text": "Rocket cell.",
-"voice": "chatterbox/ganji+1st/ar-v2",
-"exag": 0.6,
-"tempo": 1.01,
 "engine": "chatterbox-multilingual (MIT), lang=ar"
 },
 {
@@ -2796,14 +2756,6 @@
 "engine": "chatterbox-multilingual (MIT), lang=ar"
 },
 {
-"file": "audio/voice_ai/tpla/rocket_cell/created_1.ogg",
-"text": "Rocket cell ready to hunt.",
-"voice": "chatterbox/ganji+1st/ar-v2",
-"exag": 0.6,
-"tempo": 1.02,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
 "file": "audio/voice_ai/tpla/rocket_cell/created_2.ogg",
 "text": "Anti-armour team here.",
 "voice": "chatterbox/reza+0.5st/ar-v2",
@@ -2833,14 +2785,6 @@
 "voice": "chatterbox/reza+0.5st/ar-v2",
 "exag": 0.6,
 "tempo": 1.081,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rattler/select_1.ogg",
-"text": "Rattler here!",
-"voice": "chatterbox/reza+1.5st/ar-v2",
-"exag": 0.75,
-"tempo": 0.99,
 "engine": "chatterbox-multilingual (MIT), lang=ar"
 },
 {
@@ -2948,14 +2892,6 @@
 "engine": "chatterbox-multilingual (MIT), lang=ar"
 },
 {
-"file": "audio/voice_ai/tpla/rattler/created_1.ogg",
-"text": "Rattler rolling, held together with wire.",
-"voice": "chatterbox/reza+1.5st/ar-v2",
-"exag": 0.75,
-"tempo": 1.0,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
 "file": "audio/voice_ai/tpla/rattler/created_2.ogg",
 "text": "Fresh truck, fresh gun.",
 "voice": "chatterbox/reza+1.5st/ar-v2",
@@ -2969,14 +2905,6 @@
 "voice": "chatterbox/reza+1.5st/ar-v2",
 "exag": 0.75,
 "tempo": 0.99,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/hailstorm/select_1.ogg",
-"text": "Hailstorm.",
-"voice": "chatterbox/amir-1.5st/ar-v2",
-"exag": 0.55,
-"tempo": 1.01,
 "engine": "chatterbox-multilingual (MIT), lang=ar"
 },
 {
@@ -3001,14 +2929,6 @@
 "voice": "chatterbox/amir-1.5st/ar-v2",
 "exag": 0.55,
 "tempo": 0.98,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/hailstorm/move_1.ogg",
-"text": "Moving the quad.",
-"voice": "chatterbox/amir-1.5st/ar-v2",
-"exag": 0.55,
-"tempo": 1.081,
 "engine": "chatterbox-multilingual (MIT), lang=ar"
 },
 {
@@ -3068,14 +2988,6 @@
 "engine": "chatterbox-multilingual (MIT), lang=ar"
 },
 {
-"file": "audio/voice_ai/tpla/hailstorm/under_fire_1.ogg",
-"text": "Quad gun under fire!",
-"voice": "chatterbox/amir-1.5st/ar-v2",
-"exag": 0.75,
-"tempo": 1.192,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
 "file": "audio/voice_ai/tpla/hailstorm/under_fire_2.ogg",
 "text": "They're on us!",
 "voice": "chatterbox/amir-1.5st/ar-v2",
@@ -3084,33 +2996,9 @@
 "engine": "chatterbox-multilingual (MIT), lang=ar"
 },
 {
-"file": "audio/voice_ai/tpla/hailstorm/created_1.ogg",
-"text": "Hailstorm ready. Let them fly.",
-"voice": "chatterbox/amir-1.5st/ar-v2",
-"exag": 0.55,
-"tempo": 1.02,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/hailstorm/created_2.ogg",
-"text": "Quad gun on the line.",
-"voice": "chatterbox/amir-1.5st/ar-v2",
-"exag": 0.55,
-"tempo": 1.0,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
 "file": "audio/voice_ai/tpla/hailstorm/veteran_1.ogg",
 "text": "Tighter bursts now.",
 "voice": "chatterbox/amir-1.5st/ar-v2",
-"exag": 0.55,
-"tempo": 1.0,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/scrapback/select_1.ogg",
-"text": "Scrapback.",
-"voice": "chatterbox/ganji-2st/ar-v2",
 "exag": 0.55,
 "tempo": 1.0,
 "engine": "chatterbox-multilingual (MIT), lang=ar"
@@ -3212,22 +3100,6 @@
 "engine": "chatterbox-multilingual (MIT), lang=ar"
 },
 {
-"file": "audio/voice_ai/tpla/scrapback/under_fire_2.ogg",
-"text": "Scrapback taking heavy hits!",
-"voice": "chatterbox/ganji-2st/ar-v2",
-"exag": 0.75,
-"tempo": 1.168,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/scrapback/created_1.ogg",
-"text": "Scrapback, built from the bones of their tanks.",
-"voice": "chatterbox/ganji-2st/ar-v2",
-"exag": 0.55,
-"tempo": 0.98,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
 "file": "audio/voice_ai/tpla/scrapback/created_2.ogg",
 "text": "Tank ready.",
 "voice": "chatterbox/ganji-2st/ar-v2",
@@ -3241,14 +3113,6 @@
 "voice": "chatterbox/ganji-2st/ar-v2",
 "exag": 0.55,
 "tempo": 1.0,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/shrike/select_1.ogg",
-"text": "Shrike.",
-"voice": "chatterbox/ganji+2st/ar-v2",
-"exag": 0.7,
-"tempo": 0.98,
 "engine": "chatterbox-multilingual (MIT), lang=ar"
 },
 {
@@ -3340,14 +3204,6 @@
 "engine": "chatterbox-multilingual (MIT), lang=ar"
 },
 {
-"file": "audio/voice_ai/tpla/shrike/under_fire_1.ogg",
-"text": "Shrike's hit!",
-"voice": "chatterbox/ganji+2st/ar-v2",
-"exag": 0.8999999999999999,
-"tempo": 1.18,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
 "file": "audio/voice_ai/tpla/shrike/under_fire_2.ogg",
 "text": "Too hot, pulling out!",
 "voice": "chatterbox/ganji+2st/ar-v2",
@@ -3356,171 +3212,11 @@
 "engine": "chatterbox-multilingual (MIT), lang=ar"
 },
 {
-"file": "audio/voice_ai/tpla/shrike/created_1.ogg",
-"text": "Shrike ready. Blink and you'll miss us.",
-"voice": "chatterbox/ganji+2st/ar-v2",
-"exag": 0.7,
-"tempo": 0.99,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/shrike/created_2.ogg",
-"text": "Rocket buggy online.",
-"voice": "chatterbox/ganji+2st/ar-v2",
-"exag": 0.7,
-"tempo": 0.98,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
 "file": "audio/voice_ai/tpla/shrike/veteran_1.ogg",
 "text": "Faster than ever.",
 "voice": "chatterbox/ganji+2st/ar-v2",
 "exag": 0.7,
 "tempo": 0.96,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/mule/select_1.ogg",
-"text": "Mule.",
-"voice": "chatterbox/reza-1st/ar-v2",
-"exag": 0.4,
-"tempo": 1.02,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/mule/select_2.ogg",
-"text": "Careful with the cargo.",
-"voice": "chatterbox/reza-1st/ar-v2",
-"exag": 0.4,
-"tempo": 1.01,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/mule/select_3.ogg",
-"text": "Don't bump me.",
-"voice": "chatterbox/reza-1st/ar-v2",
-"exag": 0.4,
-"tempo": 1.0,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/mule/select_4.ogg",
-"text": "The load is armed.",
-"voice": "chatterbox/reza-1st/ar-v2",
-"exag": 0.4,
-"tempo": 1.0,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/mule/move_1.ogg",
-"text": "Easy on the bumps.",
-"voice": "chatterbox/reza-1st/ar-v2",
-"exag": 0.4,
-"tempo": 1.049,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/mule/move_2.ogg",
-"text": "Rolling gently.",
-"voice": "chatterbox/reza-1st/ar-v2",
-"exag": 0.4,
-"tempo": 1.071,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/mule/move_3.ogg",
-"text": "Going.",
-"voice": "chatterbox/reza-1st/ar-v2",
-"exag": 0.4,
-"tempo": 1.081,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/mule/move_4.ogg",
-"text": "Slow and steady.",
-"voice": "chatterbox/reza-1st/ar-v2",
-"exag": 0.4,
-"tempo": 1.071,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/mule/attack_1.ogg",
-"text": "Special delivery!",
-"voice": "chatterbox/reza-1st/ar-v2",
-"exag": 0.6000000000000001,
-"tempo": 1.111,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/mule/attack_2.ogg",
-"text": "Clear out!",
-"voice": "chatterbox/reza-1st/ar-v2",
-"exag": 0.6000000000000001,
-"tempo": 1.078,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/mule/attack_3.ogg",
-"text": "Here's your package!",
-"voice": "chatterbox/reza-1st/ar-v2",
-"exag": 0.6000000000000001,
-"tempo": 1.089,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/mule/attack_4.ogg",
-"text": "Delivery coming!",
-"voice": "chatterbox/reza-1st/ar-v2",
-"exag": 0.6000000000000001,
-"tempo": 1.111,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/mule/under_fire_1.ogg",
-"text": "Don't shoot the cargo!",
-"voice": "chatterbox/reza-1st/ar-v2",
-"exag": 0.6000000000000001,
-"tempo": 1.192,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/mule/under_fire_2.ogg",
-"text": "They're shooting at the bomb!",
-"voice": "chatterbox/reza-1st/ar-v2",
-"exag": 0.6000000000000001,
-"tempo": 1.168,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/mule/created_1.ogg",
-"text": "Mule loaded. Handle with care.",
-"voice": "chatterbox/reza-1st/ar-v2",
-"exag": 0.4,
-"tempo": 1.02,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/mule/created_2.ogg",
-"text": "Demolition truck ready.",
-"voice": "chatterbox/reza-1st/ar-v2",
-"exag": 0.4,
-"tempo": 0.98,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/mule/veteran_1.ogg",
-"text": "Still in one piece. Somehow.",
-"voice": "chatterbox/reza-1st/ar-v2",
-"exag": 0.4,
-"tempo": 0.96,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/blight/select_1.ogg",
-"text": "Blight launcher.",
-"voice": "chatterbox/amir+1.5st/ar-v2",
-"exag": 0.4,
-"tempo": 1.01,
 "engine": "chatterbox-multilingual (MIT), lang=ar"
 },
 {
@@ -3604,14 +3300,6 @@
 "engine": "chatterbox-multilingual (MIT), lang=ar"
 },
 {
-"file": "audio/voice_ai/tpla/blight/attack_4.ogg",
-"text": "Firing blight!",
-"voice": "chatterbox/amir+1.5st/ar-v2",
-"exag": 0.6000000000000001,
-"tempo": 1.089,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
 "file": "audio/voice_ai/tpla/blight/under_fire_1.ogg",
 "text": "Launcher under fire!",
 "voice": "chatterbox/amir+1.5st/ar-v2",
@@ -3625,14 +3313,6 @@
 "voice": "chatterbox/amir+1.5st/ar-v2",
 "exag": 0.6000000000000001,
 "tempo": 1.168,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/blight/created_1.ogg",
-"text": "Blight launcher ready.",
-"voice": "chatterbox/amir+1.5st/ar-v2",
-"exag": 0.4,
-"tempo": 0.98,
 "engine": "chatterbox-multilingual (MIT), lang=ar"
 },
 {
@@ -3834,6 +3514,16 @@
 "exag": 0.5,
 "tempo": 1.0,
 "engine": "chatterbox-multilingual (MIT), lang=ar"
+},
+{
+"file": "audio/voice_ai/tpla/hailstorm/created_1.ogg",
+"text": "Watching the clouds.",
+"note": "M2.9: reused line (old unit name removed)"
+},
+{
+"file": "audio/voice_ai/tpla/shrike/created_1.ogg",
+"text": "Racks loaded.",
+"note": "M2.9: reused line (old unit name removed)"
 }
 ]
 }
