@@ -2,7 +2,7 @@ extends RefCounted
 ## M2.7 detail pass, EU Alliance + TPLA (tool-time only). Replaces the last flat-box views of
 ## key EU / TPLA structures with kit7 models (same node layout as the US pass, AO baked after).
 ## Original shapes; real-world equipment roles as loose inspiration only.
-const K := preload("res://tools/gfx_m7/kit7.gd")
+const K := preload("res://tools/gfx_m7/kit8.gd")
 const Geo := preload("res://tools/gfx_m3/geo.gd")
 const U := preload("res://tools/gfx_m7/us_m7.gd")
 const Y0 := 0.08

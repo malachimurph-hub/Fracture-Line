@@ -4,6 +4,7 @@ extends RefCounted
 ## weathering). Roles follow ROSTER_ZH_1TO1.md; shapes are our own designs.
 const Geo := preload("res://tools/gfx_m3/geo.gd")
 const VK := preload("res://tools/gfx_m3/vehicle_kit.gd")
+const K8 := preload("res://tools/gfx_m7/kit8.gd")   # M2.7b: lofts, track runs, tyres
 
 # EU palette (matches the M2.2 Leopold) and TPLA palette (matches the Rattler)
 const EU := "#7d8669"
@@ -32,6 +33,9 @@ static func build_all() -> void:
 # ------------------------------------------------------------------ shared parts
 ## Tracked running gear on both sides: half width sx, length l (z from -l/2..l/2).
 static func _tracks(h, sx: float, l: float, n: int, rw: float, col_d: String, steel: String, tw := 0.22) -> void:
+	if h.has_method("track_run"):   # M2.7b: road wheels with rims, toothed sprocket, idler, return rollers
+		h.track_run(sx, l, n, rw, tw, steel)
+		return
 	var hl := l * 0.5
 	for s in [-sx, sx]:
 		VK._track(h, s - tw * 0.5, s + tw * 0.5, Vector2(-hl + rw * 1.2, rw * 1.6), rw * 1.45, Vector2(hl - rw * 1.1, rw * 1.8), rw * 1.3, rw * 3.1)
@@ -44,7 +48,10 @@ static func _tracks(h, sx: float, l: float, n: int, rw: float, col_d: String, st
 static func _wheelset(h, sx: float, zs: Array, r: float, w: float, steer_n: int, hub: String) -> void:
 	for i in zs.size():
 		for s in [-sx, sx]:
-			h.wheel(Vector3(s, r, zs[i]), r, w, i < steer_n, hub, 12, 12)
+			if h.has_method("tyre"):   # M2.7b: shouldered treaded tyre
+				h.tyre(Vector3(s, r, zs[i]), r, w, i < steer_n, hub, 12)
+			else:
+				h.wheel(Vector3(s, r, zs[i]), r, w, i < steer_n, hub, 12, 12)
 
 ## Sloped armoured hull: side profile in (z, y) extruded over +-hw, with fenders and team band.
 static func _armour_hull(h, hw: float, l: float, y0: float, y1: float, col: String, col_d: String, nose := 0.18, tail := 0.08) -> void:
@@ -52,6 +59,24 @@ static func _armour_hull(h, hw: float, l: float, y0: float, y1: float, col: Stri
 	h.color(col_d, Geo.PAINT)
 	h.prism_x([Vector2(-hl, y0), Vector2(hl - nose, y0), Vector2(hl, y0 + (y1 - y0) * 0.55), Vector2(hl - nose * 0.6, y1), Vector2(-hl + tail, y1), Vector2(-hl, y1 - tail)], -hw * 0.62, hw * 0.62)
 	h.color(col, Geo.PAINT)
+	if h.has_method("xloft"):
+		# M2.7b: chamfered upper deck (raked glacis, bevelled edges) + sponson plates angled
+		# down over the tracks, so the hull reads as armour rather than a flat slab
+		var w := hw * 0.84
+		var zf := hl - nose * 0.3
+		var zg := hl - nose * 0.75
+		h.xloft([[zf, K8.sect(y1 - 0.02, y1 - 0.01, y1 + 0.015, w * 0.92, w * 0.94, w * 0.9, 0.008)],
+			[zg, K8.sect(y1 - 0.02, y1 + 0.0, y1 + 0.075, w, w, w * 0.95, 0.03)],
+			[-hl + 0.06, K8.sect(y1 - 0.02, y1 + 0.0, y1 + 0.075, w, w, w * 0.95, 0.03)],
+			[-hl - 0.02, K8.sect(y1 - 0.02, y1 + 0.0, y1 + 0.05, w * 0.97, w * 0.97, w * 0.92, 0.02)]])
+		for s in [-1.0, 1.0]:
+			var sw := hw - w + 0.02
+			h.plate(Vector3(s * (w + sw * 0.5 - 0.01), y1 + 0.03, (zg - hl + 0.02) * 0.5), Vector3(sw, 0.03, zg + hl - 0.06), Vector3(0, 0, -s * 24.0))
+			h.plate(Vector3(s * (w + sw * 0.5 - 0.01), y1 + 0.005, (zf + zg) * 0.5 + 0.01), Vector3(sw, 0.03, zf - zg + 0.04), Vector3(-18, 0, -s * 24.0))
+		h.color("#ffffff", Geo.TEAM)
+		for s in [-1.0, 1.0]:
+			h.plate(Vector3(s * (hw - 0.012), y1 + 0.012, 0), Vector3(0.02, 0.03, l * 0.75), Vector3(0, 0, -s * 24.0))
+		return
 	h.prism_x([Vector2(-hl - 0.02, y1 - 0.02), Vector2(hl - nose * 0.3, y1 - 0.02), Vector2(hl - nose * 0.6, y1 + 0.06), Vector2(-hl + 0.05, y1 + 0.06)], -hw, hw)
 	h.color("#ffffff", Geo.TEAM)
 	for s in [-hw - 0.004, hw + 0.004]:
@@ -77,7 +102,7 @@ static func _finish(root: Node3D, model: Node3D, h, mat: Material, name: String,
 ## Barrel node + mesh: tube(s) along +z from the pivot's mantlet.
 static func _barrel(piv: Node3D, root: Node3D, mat: Material, at: Vector3, parts: Callable) -> void:
 	var bn := VK._n3(piv, root, "Barrel", at)
-	var b = Geo.new()
+	var b = K8.new()
 	parts.call(b)
 	VK._mi(bn, root, "BarrelMesh", b.commit(mat))
 
@@ -85,7 +110,7 @@ static func _barrel(piv: Node3D, root: Node3D, mat: Material, at: Vector3, parts
 static func _brennus(mat: Material) -> void:
 	var root := VK._root({"selection_radius": 1.0, "bar_height": 1.7, "recoil": 0.18, "wreck_s": 9.0})
 	var model := VK._n3(root, root, "Model")
-	var h = Geo.new()
+	var h = K8.new()
 	_tracks(h, 0.56, 1.9, 7, 0.1, EU_D, EU_S, 0.26)
 	_armour_hull(h, 0.72, 1.9, 0.12, 0.42, EU, EU_D, 0.24)
 	# heavy side skirts with hex shield emitters (EU identity)
@@ -102,7 +127,7 @@ static func _brennus(mat: Material) -> void:
 	h.box(Vector3(0, 0.49, -0.66), Vector3(0.8, 0.012, 0.42))
 	_lamps(h, 0.5, 0.42, 0.97)
 	var piv := VK._n3(model, root, "TurretPivot", Vector3(0, 0.5, -0.1))
-	var t = Geo.new()
+	var t = K8.new()
 	t.color(EU_S, Geo.STEEL)
 	t.cyl(0.4, 0.4, 0.04, 16, Transform3D(Basis.IDENTITY, Vector3(0, -0.01, 0)))
 	t.color(EU, Geo.PAINT)
@@ -131,7 +156,7 @@ static func _brennus(mat: Material) -> void:
 static func _salamander(mat: Material) -> void:
 	var root := VK._root({"selection_radius": 0.8, "bar_height": 1.3, "recoil": 0.02, "wreck_s": 8.0})
 	var model := VK._n3(root, root, "Model")
-	var h = Geo.new()
+	var h = K8.new()
 	_tracks(h, 0.44, 1.5, 5, 0.09, EU_D, EU_S)
 	_armour_hull(h, 0.56, 1.5, 0.11, 0.38, "#7a7f62", EU_D, 0.3)
 	# twin fuel tanks on the rear deck (hazard striped)
@@ -144,7 +169,7 @@ static func _salamander(mat: Material) -> void:
 		h.tube(Vector3(x, 0.55, -0.05), Vector3(x * 0.4, 0.5, 0.15), 0.025, 6)
 	_lamps(h, 0.4, 0.38, 0.76)
 	var piv := VK._n3(model, root, "TurretPivot", Vector3(0, 0.42, 0.3))
-	var t = Geo.new()
+	var t = K8.new()
 	t.color(EU_D, Geo.PAINT)
 	t.cyl(0.2, 0.17, 0.16, 12, Transform3D(Basis.IDENTITY, Vector3(0, 0, 0)))
 	t.color("#ffffff", Geo.TEAM)
@@ -165,7 +190,7 @@ static func _salamander(mat: Material) -> void:
 static func _thunderhead(mat: Material) -> void:
 	var root := VK._root({"selection_radius": 0.95, "bar_height": 1.5, "recoil": 0.3, "wreck_s": 8.0})
 	var model := VK._n3(root, root, "Model")
-	var h = Geo.new()
+	var h = K8.new()
 	_tracks(h, 0.48, 1.8, 6, 0.09, EU_D, EU_S)
 	_armour_hull(h, 0.6, 1.8, 0.11, 0.36, EU, EU_D, 0.2, 0.02)
 	# rear recoil spades
@@ -178,7 +203,7 @@ static func _thunderhead(mat: Material) -> void:
 	h.box(Vector3(0, 0.54, 0.795), Vector3(0.44, 0.06, 0.01))
 	_lamps(h, 0.44, 0.36, 0.91)
 	var piv := VK._n3(model, root, "TurretPivot", Vector3(0, 0.44, -0.25))
-	var t = Geo.new()
+	var t = K8.new()
 	t.color(EU, Geo.PAINT)
 	t.plan_loft([Vector2(-0.3, -0.4), Vector2(0.3, -0.4), Vector2(0.32, 0.25), Vector2(-0.32, 0.25)], 0.0, 0.34, Vector2(0.9, 0.9))
 	t.color("#ffffff", Geo.TEAM)
@@ -189,7 +214,7 @@ static func _thunderhead(mat: Material) -> void:
 	VK._mi(piv, root, "Turret", t.commit(mat))
 	var bn := VK._n3(piv, root, "Barrel", Vector3(0, 0.26, 0.3))
 	bn.rotation.x = -0.45   # elevated barrel
-	var b = Geo.new()
+	var b = K8.new()
 	b.color(EU_D, Geo.PAINT)
 	b.tube(Vector3(0, 0, -0.1), Vector3(0, 0, 0.2), 0.08, 10)
 	b.color(EU, Geo.PAINT)
@@ -205,7 +230,7 @@ static func _thunderhead(mat: Material) -> void:
 static func _hearth(mat: Material) -> void:
 	var root := VK._root({"selection_radius": 0.8, "bar_height": 1.25, "recoil": 0.1, "wreck_s": 8.0})
 	var model := VK._n3(root, root, "Model")
-	var h = Geo.new()
+	var h = K8.new()
 	_tracks(h, 0.42, 1.5, 5, 0.085, EU_D, EU_S)
 	_armour_hull(h, 0.54, 1.5, 0.1, 0.4, EU, EU_D, 0.26)
 	# open-topped rear compartment walls
@@ -218,7 +243,7 @@ static func _hearth(mat: Material) -> void:
 		h.bbox(Vector3(-0.32, 0.5, -0.5 + i * 0.13), Vector3(0.16, 0.1, 0.11), 0.01)   # ammo crates
 	_lamps(h, 0.4, 0.4, 0.76)
 	var piv := VK._n3(model, root, "TurretPivot", Vector3(0.08, 0.46, -0.2))
-	var t = Geo.new()
+	var t = K8.new()
 	t.color(EU_S, Geo.STEEL)
 	t.cyl(0.18, 0.18, 0.05, 12, Transform3D.IDENTITY)
 	t.box(Vector3(0, 0.12, 0), Vector3(0.12, 0.18, 0.12))
@@ -227,7 +252,7 @@ static func _hearth(mat: Material) -> void:
 	VK._mi(piv, root, "Turret", t.commit(mat))
 	var bn := VK._n3(piv, root, "Barrel", Vector3(0, 0.2, 0.0))
 	bn.rotation.x = -1.0
-	var b = Geo.new()
+	var b = K8.new()
 	b.color(EU_D, Geo.PAINT)
 	b.tube(Vector3(0, 0, -0.1), Vector3(0, 0, 0.6), 0.075, 10, 0.07)
 	b.color(EU_S, Geo.STEEL)
@@ -239,7 +264,7 @@ static func _hearth(mat: Material) -> void:
 static func _spectre(mat: Material) -> void:
 	var root := VK._root({"selection_radius": 0.85, "bar_height": 1.6, "recoil": 0.0, "steer_max": 0.45, "wreck_s": 7.0})
 	var model := VK._n3(root, root, "Model")
-	var h = Geo.new()
+	var h = K8.new()
 	_wheelset(h, 0.38, [0.5, -0.15, -0.5], 0.13, 0.12, 1, EU_D)
 	h.color(EU_S, Geo.STEEL)
 	h.box(Vector3(0, 0.22, 0), Vector3(0.5, 0.08, 1.45))
@@ -257,7 +282,7 @@ static func _spectre(mat: Material) -> void:
 		h.box(Vector3(0.335, 0.45, -0.55 + i * 0.2), Vector3(0.012, 0.18, 0.12))   # cooling louvres
 	_lamps(h, 0.25, 0.36, 0.765)
 	var piv := VK._n3(model, root, "TurretPivot", Vector3(0, 0.76, -0.25))
-	var t = Geo.new()
+	var t = K8.new()
 	t.color(EU_S, Geo.STEEL)
 	t.tube(Vector3(0, 0, 0), Vector3(0, 0.55, 0), 0.03, 6)
 	t.color(EU, Geo.PAINT)
@@ -275,7 +300,7 @@ static func _spectre(mat: Material) -> void:
 static func _sentinel(mat: Material) -> void:
 	var root := VK._root({"selection_radius": 0.8, "bar_height": 1.7, "recoil": 0.0, "wreck_s": 7.0})
 	var model := VK._n3(root, root, "Model")
-	var h = Geo.new()
+	var h = K8.new()
 	_tracks(h, 0.42, 1.4, 5, 0.08, EU_D, EU_S, 0.2)
 	h.color(EU, Geo.PAINT)
 	h.plan_loft([Vector2(-0.48, -0.7), Vector2(0.48, -0.7), Vector2(0.48, 0.55), Vector2(0.3, 0.72), Vector2(-0.3, 0.72), Vector2(-0.48, 0.55)], 0.24, 0.66, Vector2(0.92, 0.92))
@@ -292,7 +317,7 @@ static func _sentinel(mat: Material) -> void:
 	h.tube(Vector3(0, 0.66, -0.2), Vector3(0, 1.2, -0.2), 0.035, 6)
 	_lamps(h, 0.3, 0.42, 0.73)
 	var piv := VK._n3(model, root, "TurretPivot", Vector3(0, 1.2, -0.2))
-	var t = Geo.new()
+	var t = K8.new()
 	t.color(EU_D, Geo.PAINT)
 	t.bbox(Vector3(0, 0.05, 0), Vector3(0.5, 0.1, 0.12), 0.015)
 	t.color("#2a3a46", Geo.GLASS)
@@ -306,7 +331,7 @@ static func _sentinel(mat: Material) -> void:
 static func _kestrel(mat: Material) -> void:
 	var root := VK._root({"selection_radius": 1.0, "bar_height": 1.5, "recoil": 0.0, "wreck_s": 7.0})
 	var model := VK._n3(root, root, "Model")
-	var h = Geo.new()
+	var h = K8.new()
 	h.color(EU_S, Geo.STEEL)
 	for x in [-0.32, 0.32]:   # skids
 		h.tube(Vector3(x, 0.04, -0.5), Vector3(x, 0.04, 0.55), 0.02, 5)
@@ -335,7 +360,7 @@ static func _kestrel(mat: Material) -> void:
 static func _corvid(mat: Material) -> void:
 	var root := VK._root({"selection_radius": 1.0, "bar_height": 1.2, "recoil": 0.0, "wreck_s": 7.0})
 	var model := VK._n3(root, root, "Model")
-	var h = Geo.new()
+	var h = K8.new()
 	h.color(EU_S, Geo.STEEL)
 	for p in [Vector3(0, 0.08, 0.7), Vector3(-0.3, 0.08, -0.2), Vector3(0.3, 0.08, -0.2)]:   # gear
 		h.tube(p, p + Vector3(0, 0.2, 0), 0.015, 4)
@@ -361,7 +386,7 @@ static func _corvid(mat: Material) -> void:
 static func _junkhammer(mat: Material) -> void:
 	var root := VK._root({"selection_radius": 0.9, "bar_height": 1.45, "recoil": 0.16, "wreck_s": 8.0})
 	var model := VK._n3(root, root, "Model")
-	var h = Geo.new()
+	var h = K8.new()
 	_tracks(h, 0.48, 1.7, 6, 0.095, "#5d5a52", TP_S, 0.24)
 	_armour_hull(h, 0.62, 1.7, 0.12, 0.4, TP, TP_D, 0.22)
 	for b in [[0.63, 0.32, -0.3, "#5d6f7a"], [-0.63, 0.3, 0.2, "#8a4a34"], [0.63, 0.34, 0.45, "#6f6a52"]]:   # welded plates
@@ -374,7 +399,7 @@ static func _junkhammer(mat: Material) -> void:
 	h.color("#1e1d1c", Geo.RUBBER)
 	h.cyl(0.13, 0.13, 0.08, 10, Transform3D(Basis(Vector3.RIGHT, PI * 0.5), Vector3(0.3, 0.6, -0.86)))   # spare tyre
 	var piv := VK._n3(model, root, "TurretPivot", Vector3(0, 0.48, -0.05))
-	var t = Geo.new()
+	var t = K8.new()
 	t.color(TP_D, Geo.PAINT)
 	t.plan_loft([Vector2(-0.36, -0.4), Vector2(0.36, -0.4), Vector2(0.4, 0.2), Vector2(0.18, 0.42), Vector2(-0.18, 0.42), Vector2(-0.4, 0.2)], 0.0, 0.24, Vector2(0.86, 0.86))
 	t.color("#6f6a52", Geo.SCRAP)
@@ -398,7 +423,7 @@ static func _junkhammer(mat: Material) -> void:
 static func _sprayer(mat: Material) -> void:
 	var root := VK._root({"selection_radius": 0.8, "bar_height": 1.3, "recoil": 0.0, "steer_max": 0.5, "wreck_s": 7.0})
 	var model := VK._n3(root, root, "Model")
-	var h = Geo.new()
+	var h = K8.new()
 	for s in [-0.33, 0.33]:
 		h.wheel(Vector3(s, 0.24, -0.3), 0.24, 0.16, false, "#8a4a34", 14, 14)   # big rear tractor wheels
 		h.wheel(Vector3(s * 0.85, 0.13, 0.45), 0.13, 0.1, true, "#8a4a34", 12, 10)
@@ -421,7 +446,7 @@ static func _sprayer(mat: Material) -> void:
 	h.color("#c8d84a", Geo.LAMP)
 	h.box(Vector3(0, 0.76, -0.75), Vector3(0.08, 0.02, 0.08))
 	var piv := VK._n3(model, root, "TurretPivot", Vector3(0, 0.45, 0.62))
-	var t = Geo.new()
+	var t = K8.new()
 	t.color(TP_S, Geo.STEEL)
 	t.box(Vector3(0, 0, 0), Vector3(0.1, 0.08, 0.08))
 	t.tube(Vector3(-0.45, 0.02, 0.06), Vector3(0.45, 0.02, 0.06), 0.015, 5)      # spray boom
@@ -435,7 +460,7 @@ static func _sprayer(mat: Material) -> void:
 static func _earwig(mat: Material) -> void:
 	var root := VK._root({"selection_radius": 0.75, "bar_height": 1.45, "recoil": 0.0, "steer_max": 0.5, "wreck_s": 7.0})
 	var model := VK._n3(root, root, "Model")
-	var h = Geo.new()
+	var h = K8.new()
 	_wheelset(h, 0.3, [0.42, -0.4], 0.12, 0.1, 1, "#5d5a52")
 	h.color(TP_S, Geo.STEEL)
 	h.box(Vector3(0, 0.2, 0), Vector3(0.44, 0.07, 1.2))
@@ -454,7 +479,7 @@ static func _earwig(mat: Material) -> void:
 	for s in [-0.2, 0.2]:
 		h.box(Vector3(s, 0.36, 0.665), Vector3(0.08, 0.05, 0.01))
 	var piv := VK._n3(model, root, "TurretPivot", Vector3(0, 0.95, -0.25))
-	var t = Geo.new()
+	var t = K8.new()
 	t.color("#d8d2c0", Geo.PAINT)
 	t.cyl(0.26, 0.04, 0.1, 14, Transform3D(Basis(Vector3.RIGHT, -1.1), Vector3(0, 0.12, 0)))
 	t.color(TP_S, Geo.STEEL)
@@ -466,7 +491,7 @@ static func _earwig(mat: Material) -> void:
 static func _jackal(mat: Material) -> void:
 	var root := VK._root({"selection_radius": 0.55, "bar_height": 1.05, "recoil": 0.02, "steer_max": 0.6, "wreck_s": 5.0})
 	var model := VK._n3(root, root, "Model")
-	var h = Geo.new()
+	var h = K8.new()
 	h.wheel(Vector3(0.0, 0.15, 0.42), 0.15, 0.08, true, TP_S, 12, 12)
 	h.wheel(Vector3(0.0, 0.15, -0.38), 0.15, 0.1, false, TP_S, 12, 12)
 	h.color(TP_S, Geo.STEEL)
@@ -489,7 +514,7 @@ static func _jackal(mat: Material) -> void:
 		h.color("#ffffff", Geo.TEAM)
 		h.box(Vector3(0, 0.89, rp[1]), Vector3(0.11, 0.04, 0.11))   # team scarf / cap
 	var piv := VK._n3(model, root, "TurretPivot", Vector3(0, 0.66, -0.26))
-	var t = Geo.new()
+	var t = K8.new()
 	t.color(TP_S, Geo.STEEL)
 	t.box(Vector3(0.1, 0.0, 0.05), Vector3(0.04, 0.04, 0.1))
 	VK._mi(piv, root, "Turret", t.commit(mat))
@@ -502,7 +527,7 @@ static func _jackal(mat: Material) -> void:
 static func _bus(mat: Material) -> void:
 	var root := VK._root({"selection_radius": 1.0, "bar_height": 1.55, "recoil": 0.0, "steer_max": 0.4, "wreck_s": 8.0})
 	var model := VK._n3(root, root, "Model")
-	var h = Geo.new()
+	var h = K8.new()
 	_wheelset(h, 0.36, [0.6, -0.45, -0.75], 0.15, 0.12, 1, "#5d5a52")
 	h.color(TP_S, Geo.STEEL)
 	h.box(Vector3(0, 0.24, -0.05), Vector3(0.6, 0.08, 1.9))
