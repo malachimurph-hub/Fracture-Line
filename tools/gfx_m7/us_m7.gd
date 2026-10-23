@@ -585,7 +585,7 @@ static func _airfield(g) -> void:
 ## roofs meet; pillars only along the back wall and the outer ends so a two-bay bomber never
 ## clips; painted bay outlines, lead-in lines and stop bars; a runway strip along the front with
 ## edge lights; control tower on the back corner of the hangar roof.
-const BAY_Z := -1.0          # parking point (model z); AirSys.PARK_DZ mirrors this
+const BAY_Z := 0.0           # parking point (model z); AirSys.PARK_DZ mirrors this
 static func _airbase8(g, fac: String) -> void:
 	var main := US if fac == "us" else "#8a9378"
 	var dark := US_D if fac == "us" else "#6c7460"
@@ -616,13 +616,13 @@ static func _airbase8(g, fac: String) -> void:
 		g.box(Vector3(cx, Y0 + 0.024, 2.08), Vector3(bw - 0.2, 0.004, 0.05))
 		g.color("#d8a531", Geo.PAINT)
 		g.box(Vector3(cx, Y0 + 0.026, 0.8), Vector3(0.04, 0.004, 2.5))           # lead-in
-		g.box(Vector3(cx, Y0 + 0.026, BAY_Z + 1.25), Vector3(0.9, 0.004, 0.07))  # stop bar
+		g.box(Vector3(cx, Y0 + 0.026, 2.15), Vector3(0.9, 0.004, 0.07))          # stop bar
 		g.color("#ffffff", Geo.TEAM)
 		for k in b + 1:
-			g.box(Vector3(cx - 0.18 * b * 0.5 + k * 0.18, Y0 + 0.026, 1.7), Vector3(0.08, 0.004, 0.36))   # bay number ticks
+			g.box(Vector3(cx - 0.18 * b * 0.5 + k * 0.18 + 0.85, Y0 + 0.026, 1.75), Vector3(0.08, 0.004, 0.36))   # bay number ticks
 	# hangar: back wall, outer end walls, back pillars, arched roof per bay
 	var hz0 := -3.92
-	var hz1 := 0.35
+	var hz1 := -1.75     # shelters cover the back of each bay; aircraft park on the open pad in front
 	var spring := 1.6
 	var peak := 2.05
 	g.color(CON_L if fac == "us" else "#bcb7a9", Geo.CONCRETE)

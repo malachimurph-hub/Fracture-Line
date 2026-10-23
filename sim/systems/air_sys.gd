@@ -69,7 +69,7 @@ static func _find_home(w: SimWorld, u: SimEntity, d: UnitDef) -> SimEntity:
 ## A fighter (2 slots) takes one bay, a bomber (4 slots) two adjacent bays; bombers are given the
 ## first bays so a fighter never splits the row. Positions match the hangars in the 8 x 8 model
 ## (tools/gfx_m7/us_m7.gd _airbase8), mirrored for airfields facing north (rot 2).
-const PARK_DZ := -1           ## parking line, tiles from the footprint centre (model BAY_Z)
+const PARK_DZ := 0            ## parking line, tiles from the footprint centre (model BAY_Z)
 static func bay_of(w: SimWorld, home: SimEntity, u: SimEntity) -> Array:
 	var nb := maxi(1, w.bdef(home).air_slots / 2)
 	var used: Array = []

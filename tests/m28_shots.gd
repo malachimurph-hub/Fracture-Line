@@ -63,8 +63,14 @@ func _start(mid: String, facs: Array, fog: bool) -> void:
 	m.runner.ais.clear()
 
 func _look(t: Vector2, lvl: int) -> void:
-	m.cam.jump_to(Vector3(t.x, 0, t.y), false)
+	m.cam.jump_to(FX.to_world(Vector2i(int(t.x * FX.ONE), int(t.y * FX.ONE))), false)
 	m.cam.set_level(lvl)
+
+func _ensure(e: SimEntity) -> void:
+	m.world._ensure_view(e)
+	if e.kind == SimEntity.Kind.UNIT:
+		m.world.cur[e.id] = m.world._world_pos(e)
+		m.world.prev[e.id] = m.world.cur[e.id]
 
 func _find(ch: Array, from: Vector2i) -> Vector2i:
 	## nearest tile of a type to `from`
@@ -113,10 +119,14 @@ func run_airfield() -> void:
 	var bd: BuildingDef = Content.building(&"us_airfield")
 	var t := _open_spot(bd.footprint, Vector2i(52, 40))
 	var af := sim._place_building(bd, 0, t, 0, true)
+	_ensure(af)
+	var jets: Array = []
 	for def in [&"us_thunderlance", &"us_wraith"]:
 		var u := sim.spawn_unit(def, 0, null, af.pos)
 		AirSys.park_new(sim, af, u)
-	var af2 := sim._place_building(Content.building(&"eu_airstrip"), 1, _open_spot(bd.footprint, t + Vector2i(12, 0)), 0, true)
+		jets.append(u)
+	for u in jets:
+		_ensure(u)
 	await frames(5)
 	_look(Vector2(t.x + 4, t.y + 5), 0)
 	m.cam.dist = 20.0
@@ -137,6 +147,7 @@ func run_infantry() -> void:
 			u.face = FX.ANG / 2
 			u.dir = FX.dir_of(u.face)
 			u.home = u.pos
+			_ensure(u)
 			x += 1
 		z += 1
 	await frames(5)
@@ -154,10 +165,16 @@ func run_crash() -> void:
 		var u := sim.spawn_unit([&"us_thunderlance", &"us_harrier"][k], 0, null, FX.tile_center(p + Vector2i(k * 6, 0)))
 		u.air_state = AirSys.FLYING
 		us.append(u)
+		_ensure(u)
 		m.runner.issue({"p": 0, "t": "move", "ids": [u.id], "pos": FX.tile_center(p + Vector2i(k * 6 - 30, 2))})
-	_look(Vector2(p.x - 6, p.y + 6), 1)
-	await frames(120)
+	await frames(90)
+	var fp: Vector2 = (Vector2(us[0].pos) + Vector2(us[1].pos)) * 0.5 / FX.ONE
+	_look(fp + Vector2(0, -3), 1)
+	await frames(10)
 	for u: SimEntity in us:
-		sim._kill(u, null)
-	await frames(18)
+		sim.damage(u, 1000000, null)
+	for ev in sim.events.duplicate():
+		if ev["t"] == "death":
+			m.world._on_death(ev)   # killed outside a sim step: hand the event to the view directly
+	await frames(10)
 	await shot("aircraft_crash")
