@@ -1,7 +1,8 @@
 extends SceneTree
-## Rasterises the Last Command icon SVGs (written by tools/gen_icon_lc.py) with Godot's SVG
-## renderer into the PNGs that export_presets.cfg uses for the Android launcher icons.
-## Optional user arg: a folder for extra 512/192/48 previews.
+## Rasterises the RULES OF ENGAGEMENT icon SVGs (written by tools/gen_icon_lc.py) with Godot's
+## SVG renderer into the PNGs that export_presets.cfg uses for the Android launcher icons.
+## The monochrome layer is drawn white-on-black and converted to white + alpha here.
+## Optional user arg: a folder for extra 512/192/96/48 previews.
 func _init() -> void:
 	var jobs := [["res://icon.svg", "res://assets/icons/lc_launcher_192.png", 192],
 		["res://assets/icons/lc_adaptive_fg.svg", "res://assets/icons/lc_adaptive_fg_432.png", 432],
@@ -17,6 +18,12 @@ func _init() -> void:
 		if err != OK:
 			push_error("svg %s: %d" % [j[0], err])
 			continue
+		if String(j[0]).contains("mono"):
+			img.convert(Image.FORMAT_RGBA8)
+			for y in img.get_height():
+				for x in img.get_width():
+					var c := img.get_pixel(x, y)
+					img.set_pixel(x, y, Color(1, 1, 1, c.a * c.get_luminance()))
 		var out: String = j[1]
 		img.save_png(ProjectSettings.globalize_path(out) if out.begins_with("res://") else out)
 		print("ICON ", out, " ", img.get_size())

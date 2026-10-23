@@ -308,11 +308,22 @@ func test_menu_layout(mm: Node) -> void:
 				n += 1
 				if not screen.encloses((b as Control).get_global_rect()):
 					bad.append([(b as Button).text, (b as Control).get_global_rect()])
-		var tr_ok := screen.encloses(mm._title.get_global_rect())
+		var tr_ok: bool = not mm._title.visible or screen.encloses(mm._title.get_global_rect())
+		if mm._logo != null:
+			tr_ok = tr_ok and screen.encloses(mm._logo.get_global_rect()) and mm._logo.size.y >= 120.0
 		check("menu buttons inside the screen with title '%s'" % t, n >= 3 and bad.is_empty() and tr_ok,
 			"buttons %d outside %s title %s font %d screen %s" % [n, bad, mm._title.get_global_rect(), mm._title.get_theme_font_size("font_size"), screen])
 	mm._title.text = orig
 	mm._fit_title()
+	if mm._logo != null:
+		await frames(3)
+		var lr: Rect2 = mm._logo.get_global_rect()
+		var right_x := INF
+		for b in mm.find_children("*", "Button", true, false):
+			if (b as Control).is_visible_in_tree():
+				right_x = minf(right_x, (b as Control).get_global_rect().position.x)
+		check("menu logo shown, fits the left column, clear of the buttons", lr.size.y >= 120.0 and lr.end.x <= right_x and get_viewport().get_visible_rect().grow(0.5).encloses(lr),
+			"logo %s buttons_x %.0f" % [lr, right_x])
 
 func test_menu_battle() -> void:
 	if m != null:
