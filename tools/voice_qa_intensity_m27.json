@@ -148,6 +148,54 @@
 }
 },
 {
+"file": "audio/voice_ai/announcer_tpla/enemy_power_detected_1.ogg",
+"text": "Enemy strike incoming!",
+"event": "enemy_power_detected",
+"unit": "announcer",
+"faction": "tpla",
+"qa": 1.0,
+"take": 1,
+"heard": "Enemy strike incoming.",
+"lufs_target": -12.0,
+"ref": "tpla_announcer_0.wav",
+"engine": "chatterbox-multilingual (MIT) intensity m27, ref kokoro-82m m26 cast voice",
+"exag": 1.15,
+"cfg": 0.3,
+"lang": "ar",
+"tempo": 1.18,
+"dur": 1.86,
+"wps": 1.75,
+"lid": {
+"en": 0.702,
+"ar_fa": 0.004,
+"ru": 0.002
+}
+},
+{
+"file": "audio/voice_ai/announcer_tpla/tunnel_lost_1.ogg",
+"text": "A tunnel has collapsed.",
+"event": "tunnel_lost",
+"unit": "announcer",
+"faction": "tpla",
+"qa": 1.0,
+"take": 2,
+"heard": "A tunnel has collapsed.",
+"lufs_target": -12.0,
+"ref": "tpla_announcer_0.wav",
+"engine": "chatterbox-multilingual (MIT) intensity m27, ref kokoro-82m m26 cast voice",
+"exag": 0.95,
+"cfg": 0.4,
+"lang": "ar",
+"tempo": 1.0,
+"dur": 1.48,
+"wps": 3.02,
+"lid": {
+"en": 0.81,
+"ar_fa": 0.1,
+"ru": 0.001
+}
+},
+{
 "file": "audio/voice_ai/announcer_tpla/units_under_attack_1.ogg",
 "text": "Our fighters are under attack.",
 "event": "units_under_attack",
@@ -169,6 +217,30 @@
 "en": 0.972,
 "ar_fa": 0.005,
 "ru": 0.0
+}
+},
+{
+"file": "audio/voice_ai/announcer_tpla/units_under_attack_2.ogg",
+"text": "Our people are taking fire.",
+"event": "units_under_attack",
+"unit": "announcer",
+"faction": "tpla",
+"qa": 1.0,
+"take": 1,
+"heard": "Our people are taking fire.",
+"lufs_target": -12.0,
+"ref": "tpla_announcer_0.wav",
+"engine": "chatterbox-multilingual (MIT) intensity m27, ref kokoro-82m m26 cast voice",
+"exag": 1.15,
+"cfg": 0.3,
+"lang": "ar",
+"tempo": 1.037,
+"dur": 1.82,
+"wps": 3.0,
+"lid": {
+"en": 0.806,
+"ar_fa": 0.001,
+"ru": 0.001
 }
 },
 {
@@ -598,17 +670,17 @@
 "unit": "eu_grenadier",
 "faction": "eu",
 "qa": 1.0,
-"take": 3,
-"heard": "Target in sight. In so...",
+"take": 2,
+"heard": "Target in sight. Target in sight.",
 "lufs_target": -13.0,
 "ref": "eu_grenadier_0.wav",
 "engine": "chatterbox-multilingual (MIT) intensity m27, ref kokoro-82m m26 cast voice",
-"exag": 0.6,
-"cfg": 0.5,
+"exag": 0.8,
+"cfg": 0.4,
 "lang": "en",
 "tempo": 1.18,
-"dur": 1.53,
-"wps": 2.1,
+"dur": 1.81,
+"wps": 1.78,
 "lid": null
 },
 {
@@ -1234,9 +1306,9 @@
 "dur": 4.49,
 "wps": 0.69,
 "lid": {
-"en": 0.033,
-"ar_fa": 0.929,
-"ru": 0.001
+"en": 0.04,
+"ar_fa": 0.924,
+"ru": 0.002
 }
 },
 {
