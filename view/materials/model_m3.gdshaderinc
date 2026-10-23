@@ -8,6 +8,8 @@
 // 18 spinner (M2.7: fans / radar dishes turn about a vertical axis at UV = pivot xz, UV2.x = rad/s;
 //    UV2.y > 0.5: the part is painted (class 0 look) else bare steel)
 // 19 pulse lamp (M2.7: emissive that breathes, e.g. the fusion core; UV2.x = phase)
+// 20 camo paint (M2.7b: painted metal with a faction camo pattern from the base colour;
+//    UV2.x = pattern 0 US three-tone soft blotches, 1 EU splinter, 2 TPLA hand-sprayed bands)
 // (* spins: UV = axle (y, z), UV2 = (axle x, radius [+10 = steers]))
 // Weathering (object-space triplanar, so it sticks to moving parts) as the M2 shader: panel
 // lines, chipped paint, rust, grime, ground dirt, stencils, plus damage soot / scorch.
@@ -106,6 +108,25 @@ void fragment() {
 	} else if (cls == 19) {
 		float pulse = 0.5 + 0.5 * sin(TIME * 2.1 + UV2.x);
 		emit = base * mix(1.6, 4.2, pulse * pulse); panel = 0.0; weather = 0.0; rough = 0.25;
+	} else if (cls == 20) {
+		int pat = int(UV2.x + 0.5);
+		vec3 dk = base * vec3(0.66, 0.64, 0.56);
+		vec3 lt = base * vec3(1.16, 1.1, 0.92) + vec3(0.012, 0.01, 0.0);
+		if (pat == 1) {
+			// splinter: hard-edged shards from quantised noise
+			vec3 q = floor(opos * vec3(5.0, 3.0, 5.0) + vec3(0.3, 0.1, 0.7)) / vec3(5.0, 3.0, 5.0);
+			float n = fract(sin(dot(q, vec3(12.99, 78.23, 37.71))) * 43758.55);
+			vec4 sp = tri(weather_tex, opos + q * 0.35, onrm, 0.7, bias);
+			float k = sp.r * 0.6 + n * 0.4;
+			base = k > 0.62 ? dk : (k < 0.3 ? lt : base);
+		} else {
+			vec4 cm = tri(weather_tex, opos * (pat == 2 ? vec3(1.6, 0.6, 1.6) : vec3(1.0)) + vec3(3.1, 0.0, 1.7), onrm, 0.85, bias);
+			float a1 = smoothstep(0.56, 0.6, cm.r);
+			float a2 = smoothstep(0.62, 0.66, cm.g);
+			vec3 c2 = pat == 2 ? base * vec3(0.72, 0.6, 0.48) : dk;
+			base = mix(mix(base, c2, a1), pat == 2 ? lt : base * vec3(0.5, 0.48, 0.44), a2 * (1.0 - a1));
+		}
+		stencil = stencil_amount * 0.5;
 	} else if (cls == 18) {
 		if (UV2.y > 0.5) { metal = 0.3; rough = 0.6; } else { metal = 0.75; rough = 0.42; }
 		panel = 0.15; weather = 0.5;
@@ -182,6 +203,18 @@ void fragment() {
 	}
 	// contact shadow / cavity near the ground plane (reads like baked AO)
 	col *= mix(0.62, 1.0, smoothstep(0.0, 0.14, opos.y));
+	// ---- M2.7b form readability (Zero Hour-like hard modelling at RTS range) ----
+	if (cls != 5 && cls != 15 && cls != 19) {
+		col *= mix(0.55, 1.0, smoothstep(-0.7, 0.15, onrm.y));      // dark undersides
+		col *= mix(0.8, 1.14, smoothstep(0.25, 0.9, onrm.y));      // sun-catching tops vs walls
+		float rim = 1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0);
+		col *= 1.0 + 0.22 * rim * rim * rim;                        // silhouette lift
+		if (hi && cls != 2) {
+			// crisp edge highlight where faces meet (normal derivative), strongest on upper edges
+			float ce = clamp(length(fwidth(onrm)) * 2.2, 0.0, 1.0);
+			col = mix(col, col * 1.5 + vec3(0.025), ce * 0.6 * smoothstep(-0.3, 0.45, onrm.y));
+		}
+	}
 	if (hi && panel > 0.0) {
 		// bump from panel seams + rivet grid (derivative normal perturbation, no extra texture)
 		float seam = 1.0 - wt.g;
