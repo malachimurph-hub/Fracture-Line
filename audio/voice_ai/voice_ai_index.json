@@ -3518,12 +3518,20 @@
 {
 "file": "audio/voice_ai/tpla/hailstorm/created_1.ogg",
 "text": "Watching the clouds.",
-"note": "M2.9: reused line (old unit name removed)"
+"voice": "chatterbox/amir-1.5st/ar-v2",
+"exag": 0.55,
+"tempo": 0.98,
+"engine": "chatterbox-multilingual (MIT), lang=ar",
+"note": "M2.9: copy of select_2 (old unit name removed)"
 },
 {
 "file": "audio/voice_ai/tpla/shrike/created_1.ogg",
 "text": "Racks loaded.",
-"note": "M2.9: reused line (old unit name removed)"
+"voice": "chatterbox/ganji+2st/ar-v2",
+"exag": 0.7,
+"tempo": 1.02,
+"engine": "chatterbox-multilingual (MIT), lang=ar",
+"note": "M2.9: copy of select_2 (old unit name removed)"
 }
 ]
 }

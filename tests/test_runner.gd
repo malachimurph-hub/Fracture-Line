@@ -583,8 +583,12 @@ func test_audio() -> void:
 			if ad.stream(d[k]) == null:
 				bad.append(d[k])
 	_check(bad.is_empty(), "all SFX/UI/music/ambient streams load %s" % [bad])
-	var m1: AudioStream = ad.stream(ad.MUSIC["battle"])
-	_check(m1 is AudioStreamOggVorbis and (m1 as AudioStreamOggVorbis).loop, "battle music loops")
+	var m1: AudioStream = ad.stream(ad.MUSIC["menu"])
+	_check(m1 is AudioStreamOggVorbis and (m1 as AudioStreamOggVorbis).loop, "menu music loops")
+	var pl_ok: bool = ad.BATTLE_PLAYLIST.size() >= 4
+	for t in ad.BATTLE_PLAYLIST:
+		pl_ok = pl_ok and ad.stream(t) is AudioStreamOggVorbis
+	_check(pl_ok, "M2.9 battle shuffle playlist (%d tracks) loads" % ad.BATTLE_PLAYLIST.size())
 	var missing: Array = []
 	var units := 0
 	for fac in ad.manifest["factions"]:
