@@ -262,13 +262,20 @@ func place_at(t: Vector2i, what: Dictionary = {}) -> int:
 	queue_redraw()
 	return selected
 
+## Topmost item under t, else the nearest one within `slack` tiles (finger-sized targets).
 func hit(t: Vector2i, slack: int = 0) -> int:
+	var best := -1
+	var best_d := slack + 1
 	for i in range(items.size() - 1, -1, -1):
 		var it: Dictionary = items[i]
-		var r := Rect2i(it["tile"], item_fp(it)).grow(slack)
-		if r.has_point(t):
-			return i
-	return -1
+		var r := Rect2i(it["tile"], item_fp(it))
+		var dx := maxi(0, maxi(r.position.x - t.x, t.x - (r.end.x - 1)))
+		var dy := maxi(0, maxi(r.position.y - t.y, t.y - (r.end.y - 1)))
+		var d := maxi(dx, dy)
+		if d < best_d:
+			best_d = d
+			best = i
+	return best
 
 func select_at(t: Vector2i) -> int:
 	selected = hit(t, maxi(1, ceili(18.0 / zoom)))

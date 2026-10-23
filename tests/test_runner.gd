@@ -88,6 +88,8 @@ func _ready() -> void:
 			test_m25()
 		"viewcost":
 			view_cost()
+		"map_builder":
+			await load("res://tests/map_builder_test.gd").run(self)   # M2.8
 		"stall":
 			var r2 := MatchRunner.new()
 			r2.record_replay = false
