@@ -14,6 +14,12 @@ extends Node3D
 ## slow shots (wide establishing orbit, side-on tracking along the front, and a push-in over
 ## each base toward the fight), and explosions / smoke are toned down (Vfx.fx_mul) so the
 ## units and buildings stay readable.
+## M2.7b reframe (Malachi: "the menu battle is still small in the wide shots"): no empty wide
+## shots any more. The camera is an engagement director that frames the actual fighting, read
+## from the sim's own "fire" events: 0 tracks a vehicle column pushing toward the enemy and
+## firing, 1 a close slow orbit over the hottest clash, 2 a low angle past a base building with
+## the fight behind it, 3 a close 3/4 shot on the unit that fired last. The bases sit closer to
+## the front and waves attack-move into the enemy base, so fights spill around the buildings.
 
 const DT := 0.05
 const WAVE := 9              ## units per side per wave
@@ -21,7 +27,8 @@ const REFILL_BELOW := 4      ## new wave when a side drops under this many units
 const MAP_SECONDS := 150.0   ## then a fresh battle on another map
 const SHOT_SECONDS := 11.0   ## each cinematic shot
 const FX_MUL := 0.45         ## explosion / smoke particle scale in the menu
-const BASE_BACK := 13.0      ## tiles from a side's front back to its base
+const BASE_BACK := 8.0       ## tiles from a side's front back to its base (M2.7b: closer)
+const HOT_SECONDS := 3.0     ## fire events this recent count toward the clash point
 
 var runner: MatchRunner
 var world: WorldView
@@ -41,6 +48,13 @@ var _dir3 := Vector3.RIGHT                        ## from side 0 toward side 1
 var _shot := 0
 var _shot_t := 0.0
 var _look := Vector3.ZERO                         ## smoothed battle centre
+var _clash := Vector3.ZERO                        ## smoothed centre of recent firing
+var _hot: Array = []                              ## recent fire events [time, shooter id, impact]
+var _subject := 0                                 ## unit the close shots follow
+var _eye := Vector3.ZERO                          ## smoothed camera position
+var _at := Vector3.ZERO                           ## smoothed look-at point
+var _cut := true                                  ## next placement snaps (new shot)
+var _last_shot := -1
 
 ## Slow cinematic camera: a free Camera3D placed by the menu each frame. `focus` is the point
 ## it looks at (kept for the UI tests, same name as CameraRig's).
@@ -49,7 +63,7 @@ class MenuCam extends Node3D:
 	var focus := Vector3.ZERO
 	func _ready() -> void:
 		cam = Camera3D.new()
-		cam.fov = 38.0
+		cam.fov = 40.0
 		cam.near = 0.5
 		cam.far = 260.0
 		add_child(cam)
@@ -60,8 +74,8 @@ class MenuCam extends Node3D:
 		cam.look_at(at, Vector3.UP)
 		# compose: subject a little left of centre and below it (the menu buttons sit on the
 		# right, the title in the middle-left)
-		cam.rotate_object_local(Vector3.UP, -0.1)
-		cam.rotate_object_local(Vector3.RIGHT, 0.07)
+		cam.rotate_object_local(Vector3.UP, -0.06)
+		cam.rotate_object_local(Vector3.RIGHT, 0.06)
 
 func _ready() -> void:
 	_rng.randomize()
@@ -144,10 +158,14 @@ func _new_battle() -> void:
 		_pools[pid] = []
 		_wave(pid)
 	_look = Vector3(c.x, 0, c.y)
+	_clash = _look
+	_hot.clear()
+	_subject = 0
 	_drift = Vector3(dir.y, 0, -dir.x)
 	_shot = _rng.randi() % 4
 	_shot_t = 0.0
-	_place_cam(0.0)
+	_cut = true
+	_place_cam(0.0, 1.0)
 	_map_t = 0.0
 
 ## A small, recognisable base for a side: its unarmed structures (HQ, power, production, tech)
@@ -203,25 +221,119 @@ func _free(t: Vector2i, fp: Vector2i) -> bool:
 				return false
 	return true
 
-## Four slow shots, cycling: 0 wide establishing orbit over the battle, 1 side-on tracking
-## along the front, 2 / 3 low push-in over a side's base toward the fighting.
-func _place_cam(s: float) -> void:
+## Engagement shots, cycling every SHOT_SECONDS (s = 0..1 through the shot):
+## 0 track a vehicle column toward the enemy, 1 close orbit over the clash, 2 low angle past a
+## base building with the fight behind it, 3 close 3/4 shot on the last unit to fire.
+func _place_cam(s: float, delta: float) -> void:
 	var e := s * s * (3.0 - 2.0 * s) * 0.6 + s * 0.4     # gentle ease
 	var side := _drift.normalized()
+	var eye := Vector3.ZERO
+	var at := Vector3.ZERO
 	match _shot:
-		0:
-			var a := lerpf(-0.45, 0.45, e)
-			var back := (-_dir3).rotated(Vector3.UP, 1.1 + a)
-			cam.place(_look + back * 15.0 + Vector3(0, 10.5, 0), _look + Vector3(0, 0.6, 0))
+		0, 3:
+			var u := _subject_pos()
+			if u == Vector3.INF:
+				eye = _clash - _dir3 * 7.0 + side * 3.0 + Vector3(0, 4.0, 0)
+				at = _clash + Vector3(0, 0.5, 0)
+			else:
+				var fwd := _clash - u
+				fwd.y = 0.0
+				fwd = fwd.normalized() if fwd.length() > 0.5 else _subject_dir()
+				var lat := Vector3(-fwd.z, 0, fwd.x)
+				if _shot == 0:   # trailing 3/4 view, looking past the column at the enemy
+					eye = u - fwd * lerpf(6.5, 5.0, e) + lat * lerpf(3.2, 2.2, e) + Vector3(0, lerpf(3.4, 2.7, e), 0)
+					at = u + fwd * 4.0 + Vector3(0, 0.4, 0)
+				else:            # low 3/4 front: the shooter large, its target zone behind it
+					eye = u + fwd * 3.2 + lat * lerpf(-3.4, -2.4, e) + Vector3(0, lerpf(1.9, 1.5, e), 0)
+					at = u + fwd * 0.8 + Vector3(0, 0.45, 0)
 		1:
-			var along := _dir3 * lerpf(-8.0, 8.0, e)
-			cam.place(_look + along + side * 13.0 + Vector3(0, 6.0, 0), _look + along + Vector3(0, 0.6, 0))
+			var a := lerpf(-0.6, 0.6, e)
+			var back := (-_dir3).rotated(Vector3.UP, 1.2 + a)
+			eye = _clash + back * 8.5 + Vector3(0, 5.2, 0)
+			at = _clash + Vector3(0, 0.4, 0)
 		_:
-			var pid := _shot - 2
-			var b: Vector3 = _bases[pid]
-			var toward := (_look - b).normalized()
-			var eye := b - toward * lerpf(15.0, 12.0, e) + side * lerpf(-4.0, 4.0, e) + Vector3(0, lerpf(9.5, 8.0, e), 0)
-			cam.place(eye, b + toward * 6.0 + Vector3(0, 0.5, 0))
+			var b := _building_near(_clash)
+			var toward := _clash - b
+			toward.y = 0.0
+			var d := maxf(toward.length(), 1.0)
+			toward /= d
+			var lat2 := Vector3(-toward.z, 0, toward.x)
+			# low, just beside the building's front corner, the fight filling the frame behind it
+			eye = b + toward * lerpf(0.4, 1.6, e) + lat2 * 2.6 + Vector3(0, 1.6, 0)
+			at = b + toward * minf(d, 9.0) + Vector3(0, 0.6, 0)
+	if _cut:
+		_eye = eye
+		_at = at
+		_cut = false
+	else:
+		var k := minf(1.0, delta * 2.2)
+		_eye = _eye.lerp(eye, k)
+		_at = _at.lerp(at, k)
+	cam.place(_eye, _at)
+
+## Pick the close-shot subject: a recent shooter (vehicles preferred) of either side, else the
+## unit nearest the clash.
+func _pick_subject() -> void:
+	_subject = 0
+	var best := -1.0
+	var now := _t
+	for h in _hot:
+		var e := runner.sim.get_ent(h[1])
+		if e == null or not e.alive or e.kind != SimEntity.Kind.UNIT:
+			continue
+		var veh := Content.unit(e.def_id).move_layer != &"foot"
+		var sc: float = (2.0 if veh else 1.0) + (h[0] - now) * 0.2 + _rng.randf() * 0.3
+		if _shot == 0:
+			sc -= FX.to_world(e.pos).distance_to(_clash) * 0.05
+		if sc > best:
+			best = sc
+			_subject = h[1]
+	if _subject != 0:
+		return
+	var dmin := INF
+	for pid in 2:
+		for id in _pools[pid]:
+			var e := runner.sim.get_ent(id)
+			if e != null and e.alive:
+				var dd := FX.to_world(e.pos).distance_to(_clash)
+				if dd < dmin:
+					dmin = dd
+					_subject = id
+
+func _subject_pos() -> Vector3:
+	var e := runner.sim.get_ent(_subject) if _subject != 0 else null
+	if e == null or not e.alive:
+		_pick_subject()
+		e = runner.sim.get_ent(_subject) if _subject != 0 else null
+		if e == null:
+			return Vector3.INF
+	var p := FX.to_world(e.pos)
+	if world.views.has(_subject):
+		p = (world.views[_subject] as Node3D).global_position   # smooth interpolated view position
+	p.y = 0.0
+	return p
+
+func _subject_dir() -> Vector3:
+	if world.views.has(_subject):
+		var v: Node3D = world.views[_subject]
+		var f := -v.global_transform.basis.z
+		f.y = 0.0
+		if f.length() > 0.1:
+			return f.normalized()
+	return _dir3
+
+## World position of the base building nearest p (either side), or the nearer base centre.
+func _building_near(p: Vector3) -> Vector3:
+	var best := Vector3.INF
+	for id in runner.sim.ids:
+		var e: SimEntity = runner.sim.ents[id]
+		if e.kind == SimEntity.Kind.BUILDING and e.owner >= 0 and e.owner < 2 and e.alive:
+			var w := FX.to_world(e.pos)
+			if best == Vector3.INF or w.distance_to(p) < best.distance_to(p):
+				best = w
+	if best == Vector3.INF:
+		best = _bases[0] if (_bases[0] as Vector3).distance_to(p) < (_bases[1] as Vector3).distance_to(p) else _bases[1]
+	return Vector3(best.x, 0, best.z)
 
 func _build_view() -> void:
 	var menv := MapEnv.for_map(runner.sim.map_id)
@@ -275,8 +387,20 @@ func _wave(pid: int) -> void:
 		if u != null:
 			ids.append(u.id)
 			_pools[pid].append(u.id)
+			# spawned between sim steps: step() clears events before the view sees this
+			# spawn, so make the view here (M2.7b - wave units were never drawn before)
+			world._ensure_view(u)
+			world.cur[u.id] = world._world_pos(u)
+			world.prev[u.id] = world.cur[u.id]
 	if not ids.is_empty():
-		runner.issue({"p": pid, "t": "amove", "ids": ids, "pos": FX.tile_center(Vector2i(to.round()))})
+		runner.issue({"p": pid, "t": "amove", "ids": ids, "pos": _push_target(pid)})
+
+## Where a side's units attack-move: through the enemy front into its base (M2.7b), so the
+## fighting reaches the buildings the low-angle shot frames.
+func _push_target(pid: int) -> Vector2i:
+	var b: Vector3 = _bases[1 - pid]
+	var t := Vector2i(roundi(b.x), roundi(b.z))
+	return FX.tile_center(t.clamp(Vector2i(2, 2), Vector2i(runner.sim.map.w - 3, runner.sim.map.h - 3)))
 
 func _alive(pid: int) -> Array:
 	var out: Array = []
@@ -297,6 +421,7 @@ func _process(delta: float) -> void:
 		for ev in runner.sim.events:
 			if ev["t"] == "fire":
 				shots_seen += 1
+				_hot.append([_t, int(ev["id"]), ev["to"]])
 		world.on_tick(runner.sim.events.duplicate())
 		_acc -= DT
 		steps += 1
@@ -316,27 +441,44 @@ func _process(delta: float) -> void:
 					if u.orders.is_empty() and u.target == 0:
 						idle.append(id)
 				if not idle.is_empty():
-					runner.issue({"p": pid, "t": "amove", "ids": idle, "pos": FX.tile_center(Vector2i((_front[1 - pid] as Vector2).round()))})
+					runner.issue({"p": pid, "t": "amove", "ids": idle, "pos": _push_target(pid)})
 		if runner.sim.game_over or _map_t > MAP_SECONDS:
 			_new_battle()
 			return
-	# camera: the shots look at the fighting (smoothed centroid of both armies, kept between
-	# the two bases) and cycle every SHOT_SECONDS
+	# camera: the clash point is the smoothed centre of recent firing (both shooters and
+	# impacts), falling back to the armies' centroid; shots cycle every SHOT_SECONDS
+	while not _hot.is_empty() and _t - float(_hot[0][0]) > HOT_SECONDS:
+		_hot.pop_front()
 	var sum := Vector3.ZERO
 	var n := 0
-	for pid in 2:
-		for id in _pools[pid]:
-			var e := runner.sim.get_ent(id)
-			if e != null and e.alive:
-				sum += FX.to_world(e.pos)
-				n += 1
+	for h in _hot:
+		var se := runner.sim.get_ent(h[1])
+		if se != null and se.alive:
+			sum += FX.to_world(se.pos)
+			n += 1
+		if h[2] is Vector2i:
+			sum += FX.to_world(h[2])
+			n += 1
+	if n == 0:
+		for pid in 2:
+			for id in _pools[pid]:
+				var e := runner.sim.get_ent(id)
+				if e != null and e.alive:
+					sum += FX.to_world(e.pos)
+					n += 1
 	var mid: Vector3 = (_bases[0] + _bases[1]) * 0.5
 	var goal := mid
 	if n > 0:
-		goal = (sum / n).lerp(mid, 0.3)
+		goal = sum / n
+	goal.y = 0.0
+	_clash = _clash.lerp(goal, minf(1.0, delta * 0.6))
 	_look = _look.lerp(Vector3(goal.x, 0, goal.z), minf(1.0, delta * 0.25))
 	_shot_t += delta
 	if _shot_t > SHOT_SECONDS:
 		_shot_t = 0.0
 		_shot = (_shot + 1) % 4
-	_place_cam(_shot_t / SHOT_SECONDS)
+	if _shot != _last_shot:   # a new shot cuts (also when a test or debug jumps shots)
+		_last_shot = _shot
+		_cut = true
+		_pick_subject()
+	_place_cam(_shot_t / SHOT_SECONDS, delta)

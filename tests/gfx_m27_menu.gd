@@ -43,5 +43,11 @@ func _ready() -> void:
 				bl += 1
 				if s == 0:
 					print("  BLD ", bg.runner.sim.ents[id].def_id, " ", bg.runner.sim.ents[id].tile, " owner ", bg.runner.sim.ents[id].owner)
+		var kinds: Array = []
+		for pid in 2:
+			for id in bg._alive(pid):
+				var vv = bg.world.views.get(id)
+				kinds.append("%s:%s" % [bg.runner.sim.get_ent(id).def_id, (vv.scene_file_path.get_file() if vv != null else "none")])
+		print("UNITS ", kinds, " subject ", bg._subject, " nviews ", bg.world.views.size(), " keys ", bg.world.views.keys().slice(0, 6), " alive ", bg._alive(0).slice(0, 4))
 		print("SHOT ", p, " map ", bg.runner.sim.map_id, " look ", bg._look, " eye ", bg.cam.cam.global_position, " bases ", bg._bases, " units ", us.size(), " ", us.slice(0, 4), " owned bld ", bl)
 	get_tree().quit(0)
