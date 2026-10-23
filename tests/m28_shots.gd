@@ -92,11 +92,72 @@ func run_map() -> void:
 	await frames(30)
 	await shot("map_varno_256_overview")
 
+func _open_spot(fp: Vector2i, near: Vector2i) -> Vector2i:
+	for r in 60:
+		for dy in range(-r, r + 1):
+			for dx in range(-r, r + 1):
+				if maxi(absi(dx), absi(dy)) != r:
+					continue
+				var t := near + Vector2i(dx, dy)
+				var ok := true
+				for yy in fp.y + 2:
+					for xx in fp.x + 2:
+						var c := t + Vector2i(xx - 1, yy - 1)
+						ok = ok and sim.map.in_bounds(c) and sim.map.passable(c, true) and sim.map.occ[c.y * sim.map.w + c.x] == 0
+				if ok:
+					return t
+	return near
+
 func run_airfield() -> void:
-	pass
+	await _start("varno_crossing", ["us", "eu"], false)
+	var bd: BuildingDef = Content.building(&"us_airfield")
+	var t := _open_spot(bd.footprint, Vector2i(52, 40))
+	var af := sim._place_building(bd, 0, t, 0, true)
+	for def in [&"us_thunderlance", &"us_wraith"]:
+		var u := sim.spawn_unit(def, 0, null, af.pos)
+		AirSys.park_new(sim, af, u)
+	var af2 := sim._place_building(Content.building(&"eu_airstrip"), 1, _open_spot(bd.footprint, t + Vector2i(12, 0)), 0, true)
+	await frames(5)
+	_look(Vector2(t.x + 4, t.y + 5), 0)
+	m.cam.dist = 20.0
+	m.cam.target_dist = 20.0
+	await frames(40)
+	await shot("airfield_us_parked_bomber_fighter")
 
 func run_infantry() -> void:
-	pass
+	await _start("harrow_junction", ["us", "eu", "tpla"], false)
+	var c := _open_spot(Vector2i(12, 6), Vector2i(60, 40))
+	var row := [[0, [&"us_grunt", &"us_javelin", &"us_jtac", &"us_sniper"]], [1, [&"eu_grenadier", &"eu_lancer"]], [2, [&"tpla_militia", &"tpla_rocket_cell", &"tpla_laborer"]]]
+	var z := 0
+	for r in row:
+		var x := 0
+		for def in r[1]:
+			var u := sim.spawn_unit(def, r[0], null, FX.tile_center(c + Vector2i(2 + x * 2, 1 + z * 2)))
+			u.pos = FX.tile_center(c + Vector2i(2 + x * 2, 1 + z * 2))
+			u.face = FX.ANG / 2
+			u.dir = FX.dir_of(u.face)
+			u.home = u.pos
+			x += 1
+		z += 1
+	await frames(5)
+	_look(Vector2(c.x + 5, c.y + 3.5), 0)
+	m.cam.dist = 9.0
+	m.cam.target_dist = 9.0
+	await frames(40)
+	await shot("infantry_weapons_us_eu_tpla")
 
 func run_crash() -> void:
-	pass
+	await _start("varno_crossing", ["us", "eu"], false)
+	var p := Vector2i(128, 100)
+	var us: Array = []
+	for k in 2:
+		var u := sim.spawn_unit([&"us_thunderlance", &"us_harrier"][k], 0, null, FX.tile_center(p + Vector2i(k * 6, 0)))
+		u.air_state = AirSys.FLYING
+		us.append(u)
+		m.runner.issue({"p": 0, "t": "move", "ids": [u.id], "pos": FX.tile_center(p + Vector2i(k * 6 - 30, 2))})
+	_look(Vector2(p.x - 6, p.y + 6), 1)
+	await frames(120)
+	for u: SimEntity in us:
+		sim._kill(u, null)
+	await frames(18)
+	await shot("aircraft_crash")

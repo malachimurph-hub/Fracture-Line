@@ -65,22 +65,63 @@ static func _find_home(w: SimWorld, u: SimEntity, d: UnitDef) -> SimEntity:
 			best = b
 	return best
 
-## Parking spot: the airfield pad has 6 slots (3 x 2); a jet parks at the centre of its slots.
+## M2.8 parking: the airfield's slots form bays of 2 across the hangar row (US: 6 slots = 3 bays).
+## A fighter (2 slots) takes one bay, a bomber (4 slots) two adjacent bays; bombers are given the
+## first bays so a fighter never splits the row. Positions match the hangars in the 8 x 8 model
+## (tools/gfx_m7/us_m7.gd _airbase8), mirrored for airfields facing north (rot 2).
+const PARK_DZ := -1           ## parking line, tiles from the footprint centre (model BAY_Z)
+static func bay_of(w: SimWorld, home: SimEntity, u: SimEntity) -> Array:
+	var nb := maxi(1, w.bdef(home).air_slots / 2)
+	var used: Array = []
+	used.resize(nb)
+	used.fill(false)
+	var mine := [0, 1]
+	for pass_i in 2:   # pass 0: bombers (multi-bay), pass 1: everything else, each in id order
+		for id in w.ids:
+			var o: SimEntity = w.ents[id]
+			if not o.alive or o.kind != SimEntity.Kind.UNIT or o.air_home != home.id:
+				continue
+			var need := maxi(1, w.udef(o).air_slots / 2)
+			if (need > 1) != (pass_i == 0):
+				continue
+			var at := 0
+			for b in range(0, nb - need + 1):
+				var ok := true
+				for k in need:
+					ok = ok and not used[b + k]
+				if ok:
+					at = b
+					break
+			for k in need:
+				if at + k < nb:
+					used[at + k] = true
+			if o.id == u.id:
+				mine = [at, need]
+	return mine
+
 static func parking_pos(w: SimWorld, home: SimEntity, u: SimEntity) -> Vector2i:
-	var start := 0
-	for id in w.ids:
-		var o: SimEntity = w.ents[id]
-		if not o.alive or o.kind != SimEntity.Kind.UNIT or o.air_home != home.id:
-			continue
-		if o.id == u.id:
-			break
-		start += w.udef(o).air_slots
-	var n := maxi(1, w.udef(u).air_slots)
-	var acc := Vector2i.ZERO
-	for k in range(start, start + n):
-		var kk := k % 6
-		acc += Vector2i(FX.ONE * 2 / 3 + (kk % 3) * FX.ONE * 4 / 3, FX.ONE + (kk / 3) * FX.ONE * 2)
-	return Vector2i(home.tile.x * FX.ONE, home.tile.y * FX.ONE) + acc / n
+	var nb := maxi(1, w.bdef(home).air_slots / 2)
+	var bay := bay_of(w, home, u)
+	var fpx := home.fp.x * FX.ONE
+	var fpy := home.fp.y * FX.ONE
+	var lx := fpx * (2 * int(bay[0]) + int(bay[1])) / (2 * nb)
+	var lz := fpy / 2 + PARK_DZ * FX.ONE
+	# model space -> footprint for the building's rotation (view: rotation.y = rot * 90 deg)
+	var cx := lx - fpx / 2
+	var cz := lz - fpy / 2
+	match home.rot:
+		1:
+			var t := cx
+			cx = cz
+			cz = -t
+		2:
+			cx = -cx
+			cz = -cz
+		3:
+			var t2 := cx
+			cx = -cz
+			cz = t2
+	return Vector2i(home.tile.x * FX.ONE + fpx / 2 + cx, home.tile.y * FX.ONE + fpy / 2 + cz)
 
 ## A freshly built jet appears parked on its airfield, armed.
 static func park_new(w: SimWorld, b: SimEntity, u: SimEntity) -> void:
@@ -89,10 +130,16 @@ static func park_new(w: SimWorld, b: SimEntity, u: SimEntity) -> void:
 	u.air_t = 0
 	u.pos = parking_pos(w, b, u)
 	u.home = u.pos
-	u.face = FX.ANG / 2 if b.rot == 2 else 0
+	u.face = b.rot * FX.ANG / 4
 	u.tface = u.face
 	u.orders = []
 	CombatSys._ensure(u, w.udef(u))
+	# a bomber can shift parked fighters to the free bay: tow them over
+	for id in w.ids:
+		var o: SimEntity = w.ents[id]
+		if o != u and o.alive and o.kind == SimEntity.Kind.UNIT and o.air_home == b.id and o.air_state == PARKED:
+			o.pos = parking_pos(w, b, o)
+			o.home = o.pos
 
 static func has_ammo(u: SimEntity, d: UnitDef) -> bool:
 	CombatSys._ensure(u, d)
@@ -162,7 +209,7 @@ static func _jet(w: SimWorld, u: SimEntity, d: UnitDef) -> void:
 				u.goal = NONE
 				u.done_goal = NONE
 				u.spd = 0
-				u.face = FX.ANG / 2 if home.rot == 2 else 0
+				u.face = home.rot * FX.ANG / 4
 				u.air_t = _rearm_ticks(u, d)
 				if u.air_t == 0:
 					_rearm(u, d)

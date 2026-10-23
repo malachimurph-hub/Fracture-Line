@@ -23,9 +23,10 @@ metadata/camo = true
 [node name="View" type="Node3D" unique_id=487160780]
 script = ExtResource("1_2mu5k")
 recoil = 0.0
-selection_radius = 1.2
+selection_radius = 1.9
 
 [node name="Model" type="Node3D" parent="." unique_id=1933713247]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 0, 0)
 
 [node name="Hull" type="MeshInstance3D" parent="Model" unique_id=1618576758]
 mesh = SubResource("ArrayMesh_2mu5k")
