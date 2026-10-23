@@ -16,8 +16,8 @@ O, N = 128, 256
 MAPS = ["varno_crossing", "kessel_pass", "harrow_junction", "ochre_wells"]
 NATURAL = {"bush", "oak", "palm", "pine", "pine_snow", "rock", "rock_small", "scrub_tree", "hay_bale"}
 # home stash amount per map (tuned in M2.8 #2 so the AI opening drains them in ~17 min); None = keep
-HOME_SEAM = 30000
-HOME_CACHE = 6000
+HOME_SEAM = 85000
+HOME_CACHE = 20000
 
 def git(path):
     return subprocess.check_output(["git", "-C", ROOT, "show", "%s:%s" % (SRC, path)], text=True)
