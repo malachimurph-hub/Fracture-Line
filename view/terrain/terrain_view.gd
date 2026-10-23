@@ -54,6 +54,7 @@ func build(map: SimMap, tiles_path: String = "", env: Dictionary = {}) -> void:
 	water_material.set_shader_parameter("map_size", Vector2(m.w, m.h))
 	water_material.set_shader_parameter("deep_col", env["water_deep"])
 	water_material.set_shader_parameter("shallow_col", env["water_shallow"])
+	water_material.set_shader_parameter("sky_col", (env["fog_col"] as Color).lerp(env["ambient"], 0.5))
 	prop_tint = env["prop_tint"]
 	prop_material = _prop_mat(0.0, 0.0, null)
 	prop_sway_material = _prop_mat(1.0, 0.0, null)
@@ -188,7 +189,24 @@ func _corner_heights() -> PackedFloat32Array:
 			elif n_wet > 0:
 				v = lo * 0.35                                          # sloping bank
 			hts[y * (m.w + 1) + x] = v
-	return hts
+	# M2.8: relax bank corners (wet/dry mix) toward their neighbours so shores slope instead of stepping
+	var sm := hts.duplicate()
+	for y in range(1, m.h):
+		for x in range(1, m.w):
+			var k := y * (m.w + 1) + x
+			var v0 := hts[k]
+			if v0 >= 0.0 or v0 <= -0.5:
+				continue
+			var acc := 0.0
+			var n := 0
+			for dy in range(-1, 2):
+				for dx in range(-1, 2):
+					var hv := hts[k + dy * (m.w + 1) + dx]
+					if hv < 0.85:
+						acc += hv
+						n += 1
+			sm[k] = acc / maxf(1.0, n)
+	return sm
 
 func _build_chunk(cx: int, cy: int) -> void:
 	var st := SurfaceTool.new()
@@ -216,32 +234,91 @@ func _build_chunk(cx: int, cy: int) -> void:
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON   # outcrops shade the ground
 	add_child(mi)
 
+## M2.8 water: one flat surface per 32-tile chunk that has water, shaped by a smooth shoreline
+## field (wet mask at 4 px per tile, blurred) instead of per-tile quads, so banks curve instead of
+## stepping. R = wet (water / ford / bridge), G = deep water; the shader cuts the surface at the
+## R = 0.5 contour and uses the field for depth colour and shore foam.
+const SHORE_PX := 4
+var shore_texture: ImageTexture
+
+func _build_shore_field() -> void:
+	var W := m.w * SHORE_PX
+	var H := m.h * SHORE_PX
+	var a := PackedFloat32Array()
+	var b := PackedFloat32Array()
+	a.resize(W * H)
+	b.resize(W * H)
+	for y in m.h:
+		for x in m.w:
+			var tt := m.ttype(Vector2i(x, y))
+			var wet := 1.0 if (tt == SimMap.T.WATER or tt == SimMap.T.BRIDGE or tt == SimMap.T.FORD) else 0.0
+			var deep := 1.0 if (tt == SimMap.T.WATER or tt == SimMap.T.BRIDGE) else 0.0
+			for py in SHORE_PX:
+				for px in SHORE_PX:
+					var k := (y * SHORE_PX + py) * W + x * SHORE_PX + px
+					a[k] = wet
+					b[k] = deep
+	# separable box blur, 3 passes of radius 3 px (~ a gaussian ~1.3 tiles wide)
+	for pass_i in 3:
+		a = _blur(a, W, H, 3)
+		b = _blur(b, W, H, 3)
+	var img := Image.create_empty(W, H, false, Image.FORMAT_RG8)
+	for y in H:
+		for x in W:
+			img.set_pixel(x, y, Color(a[y * W + x], b[y * W + x], 0))
+	shore_texture = ImageTexture.create_from_image(img)
+
+static func _blur(src: PackedFloat32Array, W: int, H: int, r: int) -> PackedFloat32Array:
+	var tmp := PackedFloat32Array()
+	tmp.resize(W * H)
+	var inv := 1.0 / float(2 * r + 1)
+	for y in H:
+		var acc := 0.0
+		var row := y * W
+		for x in range(-r, r + 1):
+			acc += src[row + clampi(x, 0, W - 1)]
+		for x in W:
+			tmp[row + x] = acc * inv
+			acc += src[row + mini(x + r + 1, W - 1)] - src[row + maxi(x - r, 0)]
+	var out := PackedFloat32Array()
+	out.resize(W * H)
+	for x in W:
+		var acc2 := 0.0
+		for y in range(-r, r + 1):
+			acc2 += tmp[clampi(y, 0, H - 1) * W + x]
+		for y in H:
+			out[y * W + x] = acc2 * inv
+			acc2 += tmp[mini(y + r + 1, H - 1) * W + x] - tmp[maxi(y - r, 0) * W + x]
+	return out
+
 func _build_water() -> void:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var any := false
-	for y in m.h:
-		for x in m.w:
-			var tt := m.ttype(Vector2i(x, y))
-			if tt != SimMap.T.WATER and tt != SimMap.T.BRIDGE and tt != SimMap.T.FORD:
+	for cy in range(0, m.h, CHUNK):
+		for cx in range(0, m.w, CHUNK):
+			var x0 := m.w
+			var y0 := m.h
+			var x1 := -1
+			var y1 := -1
+			for y in range(cy, mini(cy + CHUNK, m.h)):
+				for x in range(cx, mini(cx + CHUNK, m.w)):
+					var tt := m.ttype(Vector2i(x, y))
+					if tt == SimMap.T.WATER or tt == SimMap.T.BRIDGE or tt == SimMap.T.FORD:
+						x0 = mini(x0, x); y0 = mini(y0, y); x1 = maxi(x1, x); y1 = maxi(y1, y)
+			if x1 < 0:
 				continue
 			any = true
-			var corners := [Vector2(x, y), Vector2(x + 1, y), Vector2(x + 1, y + 1), Vector2(x, y + 1)]
-			var edge := []
-			for c: Vector2 in corners:
-				var dry := 0
-				for d: Vector2i in [Vector2i(-1, -1), Vector2i(0, -1), Vector2i(-1, 0), Vector2i(0, 0)]:
-					var t := Vector2i(int(c.x), int(c.y)) + d
-					var t2 := m.ttype(t)
-					if t2 != SimMap.T.WATER and t2 != SimMap.T.BRIDGE and t2 != SimMap.T.FORD:
-						dry += 1
-				edge.append(1.0 if dry > 0 else (0.45 if tt == SimMap.T.FORD else 0.0))
-			for i in [0, 1, 2, 0, 2, 3]:
-				st.set_color(Color(edge[i], 0, 0))
+			var r := Rect2(x0 - 2, y0 - 2, x1 - x0 + 5, y1 - y0 + 5)
+			var cs := [r.position, Vector2(r.end.x, r.position.y), r.end, Vector2(r.position.x, r.end.y)]
+			for k in [0, 1, 2, 0, 2, 3]:
 				st.set_normal(Vector3.UP)
-				st.add_vertex(Vector3(corners[i].x, -0.14, corners[i].y))
+				st.add_vertex(Vector3(cs[k].x, -0.14, cs[k].y))
 	if not any:
 		return
+	_build_shore_field()
+	water_material.set_shader_parameter("shore_tex", shore_texture)
+	material.set_shader_parameter("shore_tex", shore_texture)
 	var mi := MeshInstance3D.new()
 	mi.mesh = st.commit()
 	mi.material_override = water_material

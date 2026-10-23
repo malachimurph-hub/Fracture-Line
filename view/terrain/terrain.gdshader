@@ -15,6 +15,7 @@ uniform sampler2DArray t_nrao : hint_default_white, filter_linear_mipmap_anisotr
 uniform sampler2D t_detail : hint_default_white, filter_linear_mipmap, repeat_enable;
 uniform sampler2D t_macro : hint_default_white, filter_linear_mipmap, repeat_enable;
 uniform vec2 map_size = vec2(128.0, 128.0);
+uniform sampler2D shore_tex : hint_default_black, filter_linear, repeat_disable; // M2.8 wet field (R)
 uniform float dry_scrub = 1.0;    // M2.5 env: desert sun-dried scrub on the grass layer (0 = lush / snow)
 uniform float desert_tint = 1.0;  // M2.5 env: warm desert per-layer tints (0 = neutral)
 varying vec3 wpos;
@@ -96,6 +97,11 @@ void fragment() {
 		vec3 nw = normalize(T * n_t.x - B * n_t.y + N * n_t.z);
 		NORMAL = normalize((VIEW_MATRIX * vec4(nw, 0.0)).xyz);
 	}
+	// M2.8: damp, darker ground in a soft band along the waterline
+	float wet = texture(shore_tex, p / map_size).r;
+	float damp = smoothstep(0.12, 0.48, wet);
+	col *= mix(1.0, 0.62, damp);
+	rough = mix(rough, 0.35, damp);
 	// fog of war
 	float f = texture(fog_tex, p / map_size).r;
 	float vis = smoothstep(0.55, 0.95, f);

@@ -77,6 +77,14 @@ func setup(map_def: MapDef, slots: Array, opts: Dictionary, p_seed: int) -> void
 		for su in fac["start_units"]:
 			var c := spawn_unit(su, i, hq)
 			c.home = c.pos
+		# M2.8: the stashes by this spawn are sized for the faction's harvesting rate
+		var pct: int = int(fac.get("home_stash_pct", 100))
+		if pct != 100:
+			for id in ids:
+				var r: SimEntity = ents[id]
+				if r.kind == SimEntity.Kind.RESOURCE and absi(r.tile.x - t.x) <= 20 and absi(r.tile.y - t.y) <= 20:
+					r.amount = r.amount * pct / 100
+					r.max_amount = r.amount
 	power_dirty = true
 	PowerSys.run(self)
 	FogSys.run(self, true)

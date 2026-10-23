@@ -88,6 +88,10 @@ func _ready() -> void:
 			test_m25()
 		"viewcost":
 			view_cost()
+		"turret":
+			test_turret()
+		"stash":
+			test_stash(args[1] if args.size() > 1 else "")
 		"stall":
 			var r2 := MatchRunner.new()
 			r2.record_replay = false
@@ -2042,3 +2046,168 @@ func _m25_sniper_jtac() -> void:
 	w.players[0].powers["us_paradrop"] = {"ready": w.tick}
 	PowersSys.fire(w, 0, &"us_paradrop", FX.tile_center(c + Vector2i(-8, -6)))
 	_check(w.count_owned(0, &"us_grunt") == n0 + 5, "Paradrop lands five Marine Riflemen")
+
+
+# ================================================================== M2.8
+## M2.8 #9: every armed ground unit and every armed structure turns toward and hits a target
+## placed behind it (stationary, then circling), from an attack order and from idle auto-acquire.
+func test_turret() -> void:
+	var stuck: Array = []
+	var n := 0
+	for id in Content.units:
+		var d: UnitDef = Content.units[id]
+		if d.weapons.is_empty() or d.move_layer == &"air" or d.tags.has("stub") or d.tags.has("suicide"):
+			continue
+		var ground := false
+		for wid in d.weapons:
+			ground = ground or Content.weapon(wid).targets_ground
+		if not ground:
+			continue
+		for mode in ["attack", "idle", "moving", "far"]:
+			n += 1
+			var res := _turret_case(String(id), mode)
+			if not res[0]:
+				stuck.append("%s/%s(%s)" % [id, mode, res[1]])
+	for id in Content.buildings:
+		var bd: BuildingDef = Content.buildings[id]
+		if bd.weapons.is_empty():
+			continue
+		var ground2 := false
+		for wid in bd.weapons:
+			ground2 = ground2 or Content.weapon(wid).targets_ground
+		if not ground2:
+			continue
+		for mode in ["idle", "moving"]:
+			n += 1
+			var res2 := _turret_case(String(id), mode, true)
+			if not res2[0]:
+				stuck.append("%s/%s(%s)" % [id, mode, res2[1]])
+	_check(stuck.is_empty(), "turrets track and fire on targets behind / circling them (%d cases), stuck: %s" % [n, stuck])
+
+func _turret_case(def: String, mode: String, building := false) -> Array:
+	var r := _zh_runner(41)
+	var w := r.sim
+	var c := _zh_open(w, 7)
+	var u: SimEntity
+	if building:
+		var bd: BuildingDef = Content.building(StringName(def))
+		u = w._place_building(bd, 0, c - bd.footprint / 2, 0, true)
+		u.powered = true
+		w.players[0].low_power = false
+	else:
+		u = w.spawn_unit(StringName(def), 0, null, FX.tile_center(c))
+		u.pos = FX.tile_center(c)
+		u.face = 0
+		u.tface = 0
+		u.dir = FX.dir_of(0)
+		u.home = u.pos
+		w.rebuild_spatial()
+	var wl: PackedStringArray = Content.building(StringName(def)).weapons if building else Content.unit(StringName(def)).weapons
+	var rng := 1 << 30
+	var rmax := 0
+	var rmin := 0
+	var slow := 0
+	var sight := 99 if building else Content.unit(StringName(def)).sight
+	for wid in wl:
+		var wd: WeaponDef = Content.weapon(wid)
+		rmax = maxi(rmax, wd.range_mt)
+		if wd.targets_ground:
+			rng = mini(rng, wd.range_mt)
+			rmin = maxi(rmin, wd.min_range_mt)
+			slow = maxi(slow, wd.cooldown_ms + wd.pre_attack_ms)
+	var off := clampi(rng / 1000 - 2, rmin / 1000 + 2, sight - 2) + (1 if building else 0)
+	if mode == "far":
+		# beyond the ground weapons' reach but inside an anti-air weapon's: must close in (M2.8 stuck case)
+		off = clampi(rmax / 1000 - 1, off, sight - 1)
+		mode = "attack"
+	var need := clampi(16000 / maxi(1, slow) / 2, 1, 3)
+	var t := w.spawn_unit(&"eu_crawler", 1, null, FX.tile_center(c + Vector2i(0, -off)))
+	t.pos = FX.tile_center(c + Vector2i(0, -off))
+	t.max_hp = 1000000
+	t.hp = 1000000
+	for p in [0, 1]:
+		var ex: PackedByteArray = w.fog.explored[p]
+		ex.fill(1)
+		w.fog.explored[p] = ex
+	if mode == "attack":
+		r.issue({"p": 0, "t": "attack", "ids": [u.id], "target": t.id})
+	var hits := 0
+	var last := t.hp
+	var ang := 0
+	for i in 20 * 16:
+		if mode == "moving" and i % 20 == 0:
+			# the target strafes around the shooter at a fixed range
+			ang = (ang + 128) % FX.ANG
+			var dv := FX.dir_of(ang)
+			var dest := FX.to_tile(u.pos + Vector2i(dv.x * off, dv.y * off))
+			r.issue({"p": 1, "t": "move", "ids": [t.id], "pos": FX.tile_center(dest)})
+		r.advance()
+		if t.hp < last:
+			hits += 1
+			last = t.hp
+	return [hits >= need, "hits=%d/%d tface=%d off=%d" % [hits, need, u.tface, off]]
+
+## M2.8 #2: the supply stashes by each spawn (home seam + home cache) should last ~17 minutes
+## against a normal opening economy: real AI vs AI (medium) 1v1 matches, one per faction,
+## recording when each player's home stashes run dry. Arg: comma list of maps (default varno).
+func test_stash(maps_arg: String) -> void:
+	var maps: Array = maps_arg.split(",", false) if maps_arg != "" else ["varno_crossing"]
+	var times: Array = []
+	for mid in maps:
+		for pair in [["us", "eu"], ["eu", "tpla"], ["tpla", "us"]]:
+			var r := MatchRunner.new()
+			r.record_replay = false
+			var cfg := make_cfg("1v1", 23, ["medium", "medium"], pair)
+			cfg["map"] = mid
+			r.start(cfg)
+			var w := r.sim
+			var home := {}     # resource id -> owner pid
+			for p in w.players:
+				var hq: SimEntity = null
+				for id in w.ids:
+					var e: SimEntity = w.ents[id]
+					if e.owner == p.id and e.kind == SimEntity.Kind.BUILDING:
+						hq = e
+				for id in w.ids:
+					var e2: SimEntity = w.ents[id]
+					if e2.kind == SimEntity.Kind.RESOURCE and FX.dist(e2.pos, hq.pos) < FX.ONE * 20:
+						home[e2.id] = p.id
+			var left := {0: 0, 1: 0}
+			for rid in home:
+				left[home[rid]] += 1
+			var done := {}
+			var harv := {0: 0, 1: 0}
+			var cap := 20 * 60 * 26
+			for i in cap:
+				r.advance()
+				if i % 100 != 0:
+					continue
+				if i == 20 * 60 * 6:
+					for id in w.ids:
+						var u: SimEntity = w.ents[id]
+						if u.alive and u.owner >= 0 and u.kind == SimEntity.Kind.UNIT and w.udef(u).harvest_capacity > 0:
+							harv[u.owner] += 1
+				for rid in home:
+					var re := w.get_ent(rid)
+					var key := "%d" % rid
+					if not done.has(key) and (re == null or re.amount <= 0):
+						done[key] = w.tick
+						left[home[rid]] -= 1
+						if left[home[rid]] == 0:
+							var t := float(w.tick) / 20.0 / 60.0
+							times.append(t)
+							print("STASH %s P%d %s: home stashes empty at %.1f min (harvesters at 6:00: %d)" % [mid, home[rid], pair[home[rid]], t, harv[home[rid]]])
+				if (left[0] == 0 and left[1] == 0) or w.game_over:
+					break
+			for pid in [0, 1]:
+				if left[pid] > 0:
+					var rem := 0
+					for rid in home:
+						if home[rid] == pid and w.get_ent(rid) != null:
+							rem += w.get_ent(rid).amount
+					print("STASH %s P%d %s: %d left after %.1f min" % [mid, pid, pair[pid], rem, float(w.tick) / 1200.0])
+					times.append(float(w.tick) / 1200.0 + 1.0)
+	times.sort()
+	var med: float = times[times.size() / 2] if not times.is_empty() else 0.0
+	print("STASH median %.1f min over %d players: %s" % [med, times.size(), times])
+	_check(med >= 15.0 and med <= 19.0, "home supply stashes last ~17 min with the AI opening economy (median %.1f min)" % med)

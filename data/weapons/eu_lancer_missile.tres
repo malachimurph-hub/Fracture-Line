@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_s")
 id = &"eu_lancer_missile"
-damage = 72
+damage = 60
 range_mt = 6000
 min_range_mt = 0
 cooldown_ms = 2500

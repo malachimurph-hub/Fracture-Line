@@ -551,8 +551,8 @@
     }
    }
   },
-  "wa": {
-   "label": "Western Alliance",
+  "ecc": {
+   "label": "Eastern Communist Coalition (ECC)",
    "radio": true,
    "units": {},
    "later": true

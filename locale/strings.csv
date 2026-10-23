@@ -206,8 +206,8 @@ REASON_STUB,[STUB] Not available yet
 REASON_TERRAIN,Can't build on that ground
 UNIT_EU_CRAWLER,Crawler
 UNIT_EU_HARVESTER,Supply Hauler
-UNIT_EU_GRENADIER,Grenadier Squad
-UNIT_EU_LANCER,Lancer Squad
+UNIT_EU_GRENADIER,Grenadier
+UNIT_EU_LANCER,Lancer
 UNIT_EU_WOLFHOUND,Wolfhound Scout Car
 UNIT_EU_LEOPOLD,Leopold Tank
 UNIT_EU_AEGIS,Aegis Shield Carrier
@@ -303,7 +303,7 @@ HUD_STEALTHED,Hidden
 HUD_CRATE,Salvage crate
 HUD_CRATE_VALUE,Worth $%d or one salvage tier
 FACTION_US,United States
-FACTION_WA,Western Alliance
+FACTION_ECC,Eastern Communist Coalition (ECC)
 HUD_IDLE_BUILDER,Idle %s
 HUD_MENU,Menu
 HUD_EVACUATE_TIP,Everyone in the tunnel network climbs out here

@@ -4,7 +4,7 @@
 - **Only part of the roster is upgraded.**
   - Converted: Grenadier, Militia, Leopold, Rattler and the EU Barracks.
   - Still M2 art: every other unit and structure, including the other infantry squads (Lancer, Rocket Cell, Laborer, …).
-- **[STUB] Western Alliance placeholder.** The rifleman is baked only. There is no WA faction, so it is never shown in game.
+- **[STUB] Eastern Communist Coalition (ECC) placeholder.** The rifleman is baked only. There is no ECC faction, so it is never shown in game.
 - **Performance was not measured on a device.** The figures come from Godot's render counters on a software renderer (llvmpipe/Xvfb) at 2340x1080:
   - These are within budget: draw calls, primitives, objects, texture/video memory, and the CPU time of the view code.
   - Not measurable here: GPU time, real frame time, thermals and battery on the S24 Ultra. llvmpipe frame times of hundreds of ms say nothing about the phone.

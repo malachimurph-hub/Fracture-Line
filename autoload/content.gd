@@ -24,7 +24,9 @@ const FACTIONS := {
 	&"eu": {"name_key": "FACTION_EU", "hq": &"eu_hq", "builder": &"eu_crawler", "start_units": [&"eu_crawler"],
 		"units": UNIT_ORDER, "buildings": BUILDING_ORDER, "power": true, "personality": &"eu_ironclad",
 		"powers": [&"eu_recon_sweep", &"eu_emergency_logistics", &"eu_shield_overcharge", &"eu_blackout"]},
-	&"tpla": {"name_key": "FACTION_TPLA", "hq": &"tpla_den", "builder": &"tpla_laborer", "start_units": [&"tpla_laborer", &"tpla_laborer"],
+	# M2.8: "home_stash_pct" scales the supply stashes by this faction's spawn so they last ~17 min
+	# against its AI opening economy (TPLA's 8 Laborers drain faster than 2 trucks / harvesters)
+	&"tpla": {"name_key": "FACTION_TPLA", "home_stash_pct": 120, "hq": &"tpla_den", "builder": &"tpla_laborer", "start_units": [&"tpla_laborer", &"tpla_laborer"],
 		"units": TPLA_UNIT_ORDER, "buildings": TPLA_BUILDING_ORDER, "power": false, "personality": &"tpla_scrapjack",
 		"powers": [&"tpla_ambush", &"tpla_scrap_rain", &"tpla_blight_shells", &"tpla_uprising"]},
 	# M2.5: United States (Malachi's roster; unspecified slots are ZH USA equivalents, placeholders)

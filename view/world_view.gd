@@ -363,6 +363,15 @@ func _on_death(ev: Dictionary) -> void:
 	deferred_deaths.erase(id)
 	var pos := FX.to_world(ev["pos"])
 	var seen := _visible_pos(ev["pos"]) or int(ev.get("owner", -1)) >= 0 and sim.player_team(int(ev["owner"])) == local_team
+	# M2.8: destroyed aircraft fall out of the sky trailing smoke and fire, crash, explode and
+	# leave a burning wreck (view only: the sim entity is already gone)
+	var ud0: UnitDef = Content.unit(ev.get("def", &"")) if ev["kind"] == SimEntity.Kind.UNIT else null
+	if seen and not ev.get("silent", false) and v != null and ud0 != null and ud0.move_layer == &"air" and v.position.y > 0.6:
+		_start_crash(v, ud0)
+		AudioDirector.sfx("expl_large", pos, -6.0)
+		vfx.explosion(v.position, 0.5)
+		_forget_view(id)
+		return
 	if seen and not ev.get("silent", false):
 		if ev["kind"] == SimEntity.Kind.UNIT:
 			var inf := v != null and v.scale.x > 1.2
@@ -376,6 +385,23 @@ func _on_death(ev: Dictionary) -> void:
 			vfx.building_destroyed(pos, v.footprint if v != null else Vector2(3, 3))
 			AudioDirector.sfx("collapse", pos)
 			AudioDirector.sfx("expl_large", pos, 0.0, 0.1)
+	_forget_view(id)
+	if v == null:
+		return
+	if not seen and (ev["kind"] == SimEntity.Kind.BUILDING) and local_team >= 0 and sim.fog.memory.get(local_team, {}).has(id):
+		ghosts[id] = v      # player still remembers it until they look again
+		v.set_overlay(fog_overlay)
+	else:
+		# M2.2 views can play a death (squad falls, vehicle wreck, building rubble) and free
+		# themselves after it; everything else disappears at once as before
+		if seen and not ev.get("silent", false) and v.has_method("play_death"):
+			var linger: float = v.play_death()
+			if linger > 0.0:
+				get_tree().create_timer(linger, false).timeout.connect(v.queue_free)
+				return
+		v.queue_free()
+
+func _forget_view(id: int) -> void:
 	if shield_domes.has(id):
 		shield_domes[id].queue_free()
 		shield_domes.erase(id)
@@ -393,24 +419,73 @@ func _on_death(ev: Dictionary) -> void:
 	fx_acc.erase(id)
 	prev.erase(id)
 	cur.erase(id)
-	if v == null:
+
+## ---------------------------------------------------------------- M2.8 aircraft crashes
+var crashes: Array = []     ## [{v, vel, spin, heli, acc, t, down}]
+static var _burnt: StandardMaterial3D
+
+func _start_crash(v: Node3D, ud: UnitDef) -> void:
+	var heli := ud.tags.has("helicopter")
+	var yaw := v.rotation.y
+	var fwd := Vector3(sin(yaw), 0, cos(yaw))
+	var spd := 1.2 if heli else 7.0
+	crashes.append({"v": v, "vel": fwd * spd + Vector3(0, -0.5, 0), "spin": (6.0 if heli else 1.6) * (1.0 if v.get_instance_id() % 2 == 0 else -1.0),
+		"heli": heli, "acc": 0.0, "t": 0.0, "down": false})
+
+func _update_crashes(delta: float) -> void:
+	if crashes.is_empty():
 		return
-	if not seen and (ev["kind"] == SimEntity.Kind.BUILDING) and local_team >= 0 and sim.fog.memory.get(local_team, {}).has(id):
-		ghosts[id] = v      # player still remembers it until they look again
-		v.set_overlay(fog_overlay)
-	else:
-		# M2.2 views can play a death (squad falls, vehicle wreck, building rubble) and free
-		# themselves after it; everything else disappears at once as before
-		if seen and not ev.get("silent", false) and v.has_method("play_death"):
-			var linger: float = v.play_death()
-			if linger > 0.0:
-				get_tree().create_timer(linger, false).timeout.connect(v.queue_free)
-				return
-		v.queue_free()
+	var keep: Array = []
+	for c: Dictionary in crashes:
+		var v: Node3D = c["v"]
+		if not is_instance_valid(v):
+			continue
+		c["t"] += delta
+		if not c["down"]:
+			var vel: Vector3 = c["vel"]
+			vel.y -= (6.0 if c["heli"] else 4.0) * delta
+			vel.x *= 1.0 - 0.25 * delta
+			vel.z *= 1.0 - 0.25 * delta
+			c["vel"] = vel
+			v.position += vel * delta
+			if c["heli"]:
+				v.rotation.y += c["spin"] * delta                     # tail-rotor-loss spin
+				v.rotation.z = lerpf(v.rotation.z, 0.35, delta * 2.0)
+			else:
+				v.rotation.z += c["spin"] * delta                     # roll
+				v.rotation.x = lerpf(v.rotation.x, 0.6, delta * 1.5)  # nose drops
+			c["acc"] += delta
+			if c["acc"] > 0.05:
+				c["acc"] = 0.0
+				vfx.smoke_puff(v.position, 0.55, true)
+			var ground := 0.05
+			if v.position.y <= ground:
+				c["down"] = true
+				v.position.y = ground
+				v.rotation.x = 0.12
+				v.rotation.z = 0.25
+				vfx.explosion(v.position, 1.4)
+				vfx.dust(v.position, 2.0, 0.9)
+				vfx.sources.append([v.position, 8.0, 0.5, 0.0])   # burning wreck
+				AudioDirector.sfx("expl_large", v.position, 0.0)
+				if _burnt == null:
+					_burnt = StandardMaterial3D.new()
+					_burnt.albedo_color = Color(0.09, 0.08, 0.075)
+					_burnt.roughness = 1.0
+				if v.has_method("set_overlay"):
+					v.set_overlay(_burnt)
+				v.scale *= Vector3(1.0, 0.7, 1.0)                     # crumpled
+				c["t"] = 0.0
+		elif c["t"] > 9.0:
+			v.queue_free()
+			continue
+		keep.append(c)
+	crashes = keep
 
 ## Called every rendered frame.
 func frame(a: float, delta: float) -> void:
 	alpha = a
+	_update_crashes(delta)
 	var mem: Dictionary = sim.fog.memory.get(local_team, {}) if local_team >= 0 else {}
 	for id in views:
 		var e: SimEntity = sim.ents.get(id)
@@ -502,11 +577,16 @@ func frame(a: float, delta: float) -> void:
 						acc2 = 0.0   # a site that took real fire: a thin smoke wisp, never flames
 						vfx.smoke_puff(v.position + Vector3(randf_range(-0.4, 0.4), v.bar_height * 0.4, randf_range(-0.4, 0.4)), 0.15, false)
 					fx_acc[id] = acc2
-				if v.turret != null and e.target != 0:
-					var t2 := sim.get_ent(e.target)
-					if t2 != null:
+				if v.turret != null:
+					# M2.8: defence turrets traverse smoothly onto (and follow) their target, and
+					# swing back to rest after a few seconds without one, instead of snapping / freezing
+					var t2 := sim.get_ent(e.target) if e.target != 0 else null
+					if t2 != null and t2.alive:
 						var tp2 := FX.to_world(t2.pos)
-						v.turret.rotation.y = atan2(tp2.x - v.position.x, tp2.z - v.position.z) - v.rotation.y
+						var ta := atan2(tp2.x - v.position.x, tp2.z - v.position.z) - v.rotation.y
+						v.turret.rotation.y = lerp_angle(v.turret.rotation.y, ta, minf(1.0, delta * 9.0))
+					elif sim.tick - e.firing_tick > 80:
+						v.turret.rotation.y = lerp_angle(v.turret.rotation.y, 0.0, minf(1.0, delta * 2.0))
 			if v.get_meta("fogged", false) != show_mem:
 				v.set_meta("fogged", show_mem)
 				v.set_overlay(fog_overlay if show_mem else null)

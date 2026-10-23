@@ -22,36 +22,36 @@ const ANIMS := [["idle", "Idle", true], ["run", "Run_Gun", true], ["fire", "Idle
 ## colours are linear-ish sRGB hex; "team" = flagged for the per-player colour
 const WEAPON_COLORS := {"Grey": "#3d4043", "Grey2": "#2b2d2f", "DarkGrey": "#1d1e20", "LightGrey": "#6a6e72", "Red": "#5a2a22"}
 const SPECS := {
-	"eu_rifleman": {"file": "Character_Soldier.gltf", "weapon": "SMG", "keep": ["Body", "Head", "ShoulderPad.L", "ShoulderPad.R"],
+	"eu_rifleman": {"gun": "eu_rifle_gl", "gear": [["plate_carrier", "#4f5742", "#3d4433"], ["canteen", "#3d4433", ""]], "head": ["helmet_cover", "#56603f", ""], "head_node": "Head", "file": "Character_Soldier.gltf", "weapon": "SMG", "keep": ["Body", "Head", "ShoulderPad.L", "ShoulderPad.R"],
 		"node_colors": {"Head": {"Black": "team"}},
 		"colors": {"Character_Main": "#5d6849", "Pants": "#4f5742", "Grey": "team", "DarkGrey": "#30353a", "Black": "#1c1e20", "Skin": "#c79a76", "Grey2": "#5c6166", "Wood": "#6b5236", "LightGrey": "#9aa0a5"}},
-	"tpla_rifleman": {"file": "Character_Enemy.gltf", "weapon": "AK", "keep": ["Character_Enemy", "Character_Enemy_Head"],
+	"tpla_rifleman": {"gun": "ak", "gear": [["chest_rig", "#6b5d3e", "#5a4b30"]], "head": ["wrap", "#c9bfa5", "#8f3a2e"], "head_node": "Character_Enemy_Head", "file": "Character_Enemy.gltf", "weapon": "AK", "keep": ["Character_Enemy", "Character_Enemy_Head"],
 		"node_colors": {"Character_Enemy_Head": {"Enemy_Red": "#8f7d56", "Black": "team"}},
 		"colors": {"Enemy_Red": "#a48c5f", "Grey": "#6b6a45", "DarkGrey": "#5e4d36", "Black": "#5a4c38", "Skin": "#b98a64", "Grey2": "#5a5b4a", "Wood": "#7a5530", "LightGrey": "#a89a80"}},
 	# M2.5 United States (Marines in coyote-brown; team colour on the shoulder pads / helmet band)
-	"us_rifleman": {"file": "Character_Soldier.gltf", "weapon": "AK", "keep": ["Body", "Head", "ShoulderPad.L", "ShoulderPad.R"],
+	"us_rifleman": {"gun": "m16", "gear": [["plate_carrier", "#7a6c50", "#6a5e45"], ["pack", "#6e6250", "#5a5040"]], "head": ["helmet_cover", "#7d6e52", ""], "head_node": "Head", "file": "Character_Soldier.gltf", "weapon": "AK", "keep": ["Body", "Head", "ShoulderPad.L", "ShoulderPad.R"],
 		"node_colors": {"Head": {"Black": "team"}},
 		"colors": {"Character_Main": "#7d6e52", "Pants": "#6e6250", "Grey": "team", "DarkGrey": "#3b3a33", "Black": "#24231f", "Skin": "#c79a76", "Grey2": "#5a564b", "Wood": "#6b5236", "LightGrey": "#a59d8a"}},
-	"us_javelin": {"file": "Character_Soldier.gltf", "weapon": "RocketLauncher", "keep": ["Body", "Head", "ShoulderPad.L", "ShoulderPad.R"],
+	"us_javelin": {"gun": "javelin", "gear": [["plate_carrier", "#7a6c50", "#6a5e45"], ["pack", "#6e6250", "#5a5040"]], "head": ["helmet_cover", "#7d6e52", ""], "head_node": "Head", "file": "Character_Soldier.gltf", "weapon": "RocketLauncher", "keep": ["Body", "Head", "ShoulderPad.L", "ShoulderPad.R"],
 		"node_colors": {"Head": {"Black": "team"}},
 		"colors": {"Character_Main": "#7d6e52", "Pants": "#6e6250", "Grey": "team", "DarkGrey": "#3b3a33", "Black": "#24231f", "Skin": "#a8774f", "Grey2": "#5a564b", "Wood": "#6b5236", "LightGrey": "#a59d8a"}},
-	"us_jtac": {"file": "Character_Soldier.gltf", "weapon": "SMG", "keep": ["Body", "Head", "ShoulderPad.L", "ShoulderPad.R"],
+	"us_jtac": {"gun": "m4", "gear": [["plate_carrier", "#6a5f4a", "#5d5446"], ["radio", "#4a4a3e", "#cccccc"]], "head": ["headset", "", ""], "head_node": "Head", "file": "Character_Soldier.gltf", "weapon": "SMG", "keep": ["Body", "Head", "ShoulderPad.L", "ShoulderPad.R"],
 		"node_colors": {"Head": {"Black": "team"}},
 		"colors": {"Character_Main": "#6a5f4a", "Pants": "#5d5446", "Grey": "team", "DarkGrey": "#2f2e2a", "Black": "#1c1b18", "Skin": "#d2a681", "Grey2": "#4c4a42", "Wood": "#6b5236", "LightGrey": "#c9b46a"}},
-	"us_sniper": {"file": "Character_Soldier.gltf", "weapon": "Sniper", "keep": ["Body", "Head"],
+	"us_sniper": {"gun": "sniper", "gear": [["ghillie", "", ""]], "head_node": "Head", "file": "Character_Soldier.gltf", "weapon": "Sniper", "keep": ["Body", "Head"],
 		"node_colors": {"Head": {"Black": "team"}},
 		"colors": {"Character_Main": "#5e6243", "Pants": "#585a40", "Grey": "#4d513a", "DarkGrey": "#3a3d2e", "Black": "#2a2c22", "Skin": "#b98a64", "Grey2": "#4c4f3c", "Wood": "#5a4a30", "LightGrey": "#7d7f62"}},
 	# M2.6: the last old procedural squads move to baked soldiers
-	"eu_lancer": {"file": "Character_Soldier.gltf", "weapon": "RocketLauncher", "keep": ["Body", "Head", "ShoulderPad.L", "ShoulderPad.R"],
+	"eu_lancer": {"gun": "eu_launcher", "gear": [["plate_carrier", "#4a523c", "#3d4433"], ["spare_tube", "#555b47", ""]], "head": ["helmet_cover", "#56603f", ""], "head_node": "Head", "file": "Character_Soldier.gltf", "weapon": "RocketLauncher", "keep": ["Body", "Head", "ShoulderPad.L", "ShoulderPad.R"],
 		"node_colors": {"Head": {"Black": "team"}},
 		"colors": {"Character_Main": "#56603f", "Pants": "#4a523c", "Grey": "team", "DarkGrey": "#30353a", "Black": "#1c1e20", "Skin": "#d2a681", "Grey2": "#5c6166", "Wood": "#6b5236", "LightGrey": "#9aa0a5"}},
-	"tpla_rocket": {"file": "Character_Enemy.gltf", "weapon": "RocketLauncher", "keep": ["Character_Enemy", "Character_Enemy_Head"],
+	"tpla_rocket": {"gun": "rpg", "gear": [["rocket_pack", "#5a4b30", ""]], "head": ["wrap", "#7d7356", "#4a3f30"], "head_node": "Character_Enemy_Head", "file": "Character_Enemy.gltf", "weapon": "RocketLauncher", "keep": ["Character_Enemy", "Character_Enemy_Head"],
 		"node_colors": {"Character_Enemy_Head": {"Enemy_Red": "#5e5a4a", "Black": "team"}},
 		"colors": {"Enemy_Red": "#7d7356", "Grey": "#5d5c40", "DarkGrey": "#4b3f2e", "Black": "#4a3f30", "Skin": "#a87c58", "Grey2": "#5a5b4a", "Wood": "#7a5530", "LightGrey": "#a89a80"}},
-	"tpla_laborer": {"file": "Character_Enemy.gltf", "weapon": "Shovel", "keep": ["Character_Enemy", "Character_Enemy_Head"],
+	"tpla_laborer": {"gear": [["pack", "#8a7a62", "#6e6250"]], "head_node": "Character_Enemy_Head", "file": "Character_Enemy.gltf", "weapon": "Shovel", "keep": ["Character_Enemy", "Character_Enemy_Head"],
 		"node_colors": {"Character_Enemy_Head": {"Enemy_Red": "team", "Black": "#3a3128"}},
 		"colors": {"Enemy_Red": "#8a7a62", "Grey": "#6e6250", "DarkGrey": "#5e4d36", "Black": "#4a3f30", "Skin": "#b98a64", "Grey2": "#5a5b4a", "Wood": "#7a5530", "LightGrey": "#a89a80"}},
-	"wa_rifleman_placeholder": {"file": "Character_Hazmat.gltf", "weapon": "Shotgun", "keep": ["Character_Hazmat", "Character_Hazmat_Head"],
+	"ecc_rifleman_placeholder": {"file": "Character_Hazmat.gltf", "weapon": "Shotgun", "keep": ["Character_Hazmat", "Character_Hazmat_Head"],
 		"colors": {"Hazmat_Main": "#5d6748", "DarkGrey": "#3a3f33", "Black": "#1e201c", "Grey": "team", "Grey2": "#55594c", "Wood": "#6b5236", "LightGrey": "#9aa08c"}},
 }
 
@@ -76,7 +76,8 @@ func _bake(key: String, spec: Dictionary) -> Dictionary:
 	await process_frame
 	var skel: Skeleton3D = scene.find_children("*", "Skeleton3D", true, false)[0]
 	var player: AnimationPlayer = scene.find_children("*", "AnimationPlayer", true, false)[0]
-	var keep: Array = spec["keep"] + [spec["weapon"]]
+	# M2.8: a procedural weapon ("gun") replaces the kit weapon; the kit weapon still gives the grip
+	var keep: Array = spec["keep"] + ([] if spec.has("gun") else [spec["weapon"]])
 	# ---- gather vertices: [mesh instance, local pos, normal, bones, weights, color, team]
 	var srcs: Array = []   # per mesh instance: {mi, skinned, binds, rel (attachments), arrays...}
 	var P := PackedVector3Array()
@@ -154,6 +155,10 @@ func _bake(key: String, spec: Dictionary) -> Dictionary:
 			var ind: PackedInt32Array = arr[Mesh.ARRAY_INDEX] if arr[Mesh.ARRAY_INDEX] != null else PackedInt32Array(range(pv.size()))
 			for i in ind:
 				IDX.append(base + i)
+	# ---- M2.8 detail: specific weapon + faction gear, rigid on hand / torso / head bones
+	var EXTRA := PackedInt32Array()
+	if spec.has("gun") or spec.has("gear") or spec.has("head"):
+		EXTRA = _add_detail(scene, skel, player, spec, srcs, P, N, COL, owner_of, vb, vw)
 	# ---- reference pose: first Idle frame (model space), for decimation and normalisation
 	var ref := _pose(player, skel, "Idle", 0.0, srcs, P, N, owner_of, vb, vw)
 	var aabb := AABB(ref[0][0], Vector3.ZERO)
@@ -179,6 +184,7 @@ func _bake(key: String, spec: Dictionary) -> Dictionary:
 	var remap := {}
 	var keep_v := PackedInt32Array()
 	var idx2 := PackedInt32Array()
+	best = best + EXTRA      # detail parts are already low-poly: never decimated
 	for i in best:
 		if not remap.has(i):
 			remap[i] = keep_v.size()
@@ -266,7 +272,7 @@ func _bake(key: String, spec: Dictionary) -> Dictionary:
 	var fire := _pose(player, skel, "Idle_Shoot", 0.1, srcs, P, N, owner_of, vb, vw)
 	var cnt := 0
 	for i in P.size():
-		if srcs[owner_of[i]]["mi"].name == spec["weapon"]:
+		if String(srcs[owner_of[i]]["mi"].name) == spec["weapon"]:
 			fz += (fire[0][i] - foot).z
 			cnt += 1
 	scene.queue_free()
@@ -325,3 +331,125 @@ func _pose(player: AnimationPlayer, skel: Skeleton3D, anim: String, t: float, sr
 			outp[i] = tr2 * P[i]
 			outn[i] = tr2.basis * N[i]
 	return [outp, outn]
+
+
+## Bone global transforms (skeleton space, with the M2.6 proportions) at time t of `anim`.
+func _bone_globals(player: AnimationPlayer, skel: Skeleton3D, anim: String, t: float) -> Array:
+	player.play(anim)
+	player.seek(t, true)
+	player.pause()
+	var g := []
+	g.resize(skel.get_bone_count())
+	for i in skel.get_bone_count():
+		var par := skel.get_bone_parent(i)
+		var lp := skel.get_bone_pose(i)
+		var pr: Vector3 = PROPORTIONS.get(skel.get_bone_name(i), Vector3.ONE)
+		if pr != Vector3.ONE:
+			lp = lp * Transform3D(Basis.from_scale(pr), Vector3.ZERO)
+		g[i] = lp if par < 0 else (g[par] as Transform3D) * lp
+	return g
+
+func _push(kit, name: String, bone: int, rel: Transform3D, srcs: Array, P: PackedVector3Array, N: PackedVector3Array, COL: PackedColorArray, owner_of: PackedInt32Array, vb: Array, vw: Array, out: PackedInt32Array) -> void:
+	var holder := Node3D.new()
+	holder.name = name
+	var si := srcs.size()
+	srcs.append({"mi": holder, "skinned": false, "bone": bone, "rel": rel})
+	var base := P.size()
+	for i in kit.P.size():
+		P.append(kit.P[i])
+		N.append(kit.N[i])
+		var c: Color = kit.C[i]
+		if c.a > 0.5:
+			c = Color(0.8, 0.8, 0.8, 1.0)
+		COL.append(c)
+		owner_of.append(si)
+		vb.append(PackedInt32Array())
+		vw.append(PackedFloat32Array())
+	for i in kit.I:
+		out.append(base + i)
+
+func _add_detail(scene: Node3D, skel: Skeleton3D, player: AnimationPlayer, spec: Dictionary, srcs: Array, P: PackedVector3Array, N: PackedVector3Array, COL: PackedColorArray, owner_of: PackedInt32Array, vb: Array, vw: Array) -> PackedInt32Array:
+	var Kit := load("res://tools/gfx_m28/inf_kit.gd")
+	var out := PackedInt32Array()
+	var r0 := _pose(player, skel, "Idle", 0.0, srcs, P, N, owner_of, vb, vw)
+	var body := AABB(r0[0][0], Vector3.ZERO)
+	var head := AABB()
+	var hfirst := true
+	for i in r0[0].size():
+		body = body.expand(r0[0][i])
+		if String(srcs[owner_of[i]]["mi"].name) == spec.get("head_node", "Head"):
+			head = AABB(r0[0][i], Vector3.ZERO) if hfirst else head.expand(r0[0][i])
+			hfirst = false
+	var sk := skel.global_transform
+	var g0 := _bone_globals(player, skel, "Idle", 0.0)
+	var tb := skel.find_bone("Torso")
+	if tb < 0:
+		tb = 0
+	var hb := skel.find_bone("Head")
+	if hb < 0:
+		hb = tb
+	var tris := 0
+	if spec.has("gear"):
+		var k = Kit.new()
+		for gspec in spec["gear"]:
+			k.gear(gspec[0], body, gspec[1], gspec[2])
+		_push(k, "gear", tb, (sk * (g0[tb] as Transform3D)).affine_inverse(), srcs, P, N, COL, owner_of, vb, vw, out)
+		tris += k.tris()
+	if spec.has("head") and not hfirst:
+		var k2 = Kit.new()
+		k2.headgear(spec["head"][0], head, spec["head"][1], spec["head"][2])
+		_push(k2, "headgear", hb, (sk * (g0[hb] as Transform3D)).affine_inverse(), srcs, P, N, COL, owner_of, vb, vw, out)
+		tris += k2.tris()
+	if spec.has("gun"):
+		var mi: MeshInstance3D = null
+		for m in scene.find_children("*", "MeshInstance3D", true, false):
+			if String(m.name) == spec["weapon"]:
+				mi = m
+		var ba: Node = mi.get_parent()
+		while ba != null and not (ba is BoneAttachment3D) and ba != scene:
+			ba = ba.get_parent()
+		var bone := -1
+		var rel_o: Transform3D
+		if ba is BoneAttachment3D:
+			bone = skel.find_bone((ba as BoneAttachment3D).bone_name)
+			rel_o = (ba as BoneAttachment3D).global_transform.affine_inverse() * mi.global_transform
+		else:
+			rel_o = skel.global_transform.affine_inverse() * mi.global_transform
+		var la := mi.mesh.get_aabb()
+		var gf := _bone_globals(player, skel, "Idle_Shoot", 0.1)
+		var W: Transform3D = sk * ((gf[bone] as Transform3D) if bone >= 0 else Transform3D.IDENTITY) * rel_o
+		var axes := [Vector3.RIGHT, Vector3.UP, Vector3.BACK]
+		var a := 0
+		for q in 3:
+			if la.size[q] > la.size[a]:
+				a = q
+		var ctr := la.get_center()
+		var ea: Vector3 = axes[a]
+		var sgn := 1.0 if (W * (ctr + ea * la.size[a] * 0.5)).z > (W * (ctr - ea * la.size[a] * 0.5)).z else -1.0
+		var u := -1
+		var best_y := -1.0
+		for q in 3:
+			if q == a:
+				continue
+			var yy := absf((W.basis * (axes[q] as Vector3)).normalized().y)
+			if yy > best_y:
+				best_y = yy
+				u = q
+		var su := 1.0 if (W.basis * (axes[u] as Vector3)).y > 0.0 else -1.0
+		var Z: Vector3 = ea * sgn
+		var Y: Vector3 = (axes[u] as Vector3) * su
+		var X := Y.cross(Z)
+		var kchain := (W.basis * ea).length()
+		var per_m := body.size.y / 1.8 * 1.15 / kchain
+		var k3 = Kit.new()
+		k3.call(spec["gun"])
+		var ga := AABB(k3.P[0], Vector3.ZERO)
+		for p in k3.P:
+			ga = ga.expand(p)
+		var B := Basis(X, Y, Z).scaled_local(Vector3.ONE * per_m)
+		var T := Transform3D(B, ctr - B * ga.get_center())
+		_push(k3, spec["weapon"], bone, rel_o * T, srcs, P, N, COL, owner_of, vb, vw, out)
+		tris += k3.tris()
+		print("  %s: %s replaces %s (axis %d sign %d up %d), %.2f m model scale" % [spec["file"], spec["gun"], spec["weapon"], a, sgn, u, per_m])
+	print("  detail parts: %d tris" % tris)
+	return out

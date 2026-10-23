@@ -260,7 +260,7 @@ The game picks variants at random without repeating the last one; higher-priorit
 
 ## Other factions — later (M2)
 
-United States, Western Alliance and TPLA (working name) get their own unit lists, personas and radio filters when they are built (M2+). Nothing to record for them yet; the manifest already has empty slots (`us`, `wa`, `tpla`).
+United States, Eastern Communist Coalition (ECC) and TPLA (working name) get their own unit lists, personas and radio filters when they are built (M2+). Nothing to record for them yet; the manifest already has empty slots (`us`, `ecc`, `tpla`).
 
 ## Totals
 

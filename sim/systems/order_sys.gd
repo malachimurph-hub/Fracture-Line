@@ -13,11 +13,15 @@ static func run(w: SimWorld) -> void:
 			continue   # parked / returning aircraft: AirSys owns them
 		_think(w, u)
 
-static func max_range(w: SimWorld, u: SimEntity) -> int:
+## Longest weapon reach. With a target, only weapons that can hit its layer count: a unit with
+## a long-range anti-air missile and a short ground gun (US Picket) used to park at missile range
+## from a ground target and never fire (M2.8 "turret stuck" fix).
+static func max_range(w: SimWorld, u: SimEntity, t: SimEntity = null) -> int:
 	var r := 0
+	var air := t != null and w.flying(t)
 	for wid in w.udef(u).weapons:
 		var wd: WeaponDef = Content.weapon(wid)
-		if wd.min_tier <= u.tier:
+		if wd.min_tier <= u.tier and (t == null or (wd.targets_air if air else wd.targets_ground)):
 			r = maxi(r, FX.mt_to_fx(wd.range_mt))
 	return r
 
@@ -84,7 +88,7 @@ static func _pop(u: SimEntity) -> void:
 ## Engage a target: move into range, CombatSys fires when in range.
 static func _engage(w: SimWorld, u: SimEntity, t: SimEntity) -> void:
 	u.target = t.id
-	var rng := max_range(w, u)
+	var rng := max_range(w, u, t)
 	if w.edge_dist(u, t) <= rng:
 		u.goal = NONE
 		u.path = []

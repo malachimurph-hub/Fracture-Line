@@ -6,7 +6,7 @@
 [node name="View" type="Node3D" unique_id=1962000406]
 script = ExtResource("1_tubpy")
 vat = ExtResource("2_mcy3o")
-formation = PackedVector3Array(-0.2, 0, -0.16, 0.2, 0, -0.13, -0.15, 0, 0.21, 0.21, 0, 0.19)
+formation = PackedVector3Array(0, 0, 0)
 selection_radius = 0.42
 bar_height = 0.78
 

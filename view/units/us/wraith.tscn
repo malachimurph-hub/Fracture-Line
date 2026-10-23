@@ -28,6 +28,7 @@ selection_radius = 0.85
 bar_height = 1.0
 
 [node name="Model" type="Node3D" parent="." unique_id=1148616760]
+transform = Transform3D(1.1, 0, 0, 0, 1.1, 0, 0, 0, 1.1, 0, 0, 0)
 
 [node name="Hull" type="MeshInstance3D" parent="Model" unique_id=670092219]
 mesh = SubResource("ArrayMesh_c1dca")

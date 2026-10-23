@@ -16,7 +16,7 @@ and how they gate each other. The checks were made against EA's GPL-3.0 source r
 | **TPLA** | GLA | Insurgents, tunnels, salvage upgrades, toxins, cheap swarms, no power, holes that rebuild (GDD §3, §21) | Yes |
 | **EU Alliance** | China | Heavy armour in mass, attrition, slow late-game front, power grid, EMP and jamming. The GDD gives no explicit ZH mapping; the EU is the closest match to China's tank-and-mass doctrine | Yes |
 | United States | USA | Air power, drones and precision strikes (GDD §3). Malachi is designing the roster (see the US section) | No. Planned in this document |
-| Western Alliance | Spread across ZH USA and China roles: special forces, stealth infantry, artillery, fortification. There is no clean 1:1 | | No (M5) |
+| Eastern Communist Coalition (ECC) | Spread across ZH USA and China roles: special forces, stealth infantry, artillery, fortification. There is no clean 1:1 | | No (M5) |
 
 **Status key**
 - **exists:** already in the game before M2.4.
