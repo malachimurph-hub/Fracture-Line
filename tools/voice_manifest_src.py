@@ -443,7 +443,7 @@ def build_manifest():
         for uid, sib in VOICE_ALIASES.get(f, {}).items():
             u = fd["units"][sib]
             fac[f]["units"][uid] = {"folder": u["folder"], "events": u["events"], "alias_of": sib}
-    for later, label in [("wa", "Western Alliance")]:
+    for later, label in [("ecc", "Eastern Communist Coalition (ECC)")]:
         fac[later] = {"label": label, "radio": True, "units": {}, "later": True}
     ann_events = {}
     for f in FACTIONS:
@@ -541,7 +541,7 @@ def write_docs():
                 rows.append([f, "announcer", af, ev, n, fn + ".ogg", f"audio/voice/{af}/{ev}_{n}.ogg", " | ".join(v["say"]), "0.6-2 s", persona, "ai", "", ""])
         md.append("")
     md.append("## Other factions — later\n")
-    md.append("United States and Western Alliance get their own unit lists, personas, announcers and radio filters when they are built. Nothing to record for them yet; the manifest has empty slots (`us`, `wa`).\n")
+    md.append("United States and the Eastern Communist Coalition (ECC) get their own unit lists, personas, announcers and radio filters when they are built. Nothing to record for them yet; the manifest has empty slots (`us`, `ecc`).\n")
     md.append("## Totals\n")
     for f in FACTIONS:
         nu = sum(1 for r in rows if r[0] == f and r[1] != "announcer")

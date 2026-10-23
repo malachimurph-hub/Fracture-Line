@@ -8,7 +8,7 @@ const KIND_ITEMS := ["ai", "closed"]          ## slots 2-4 (slot 1 is always You
 const DIFFS := ["easy", "medium", "hard"]
 ## column widths (M2.1: 10% smaller UI, difficulty split out of the player column)
 const COLS := {"player": 84, "diff": 92, "faction": 112, "color": 92, "team": 48, "start": 90}
-const FACTIONS := [["eu", "FACTION_EU", true], ["tpla", "FACTION_TPLA", true], ["us", "FACTION_US", true], ["wa", "FACTION_WA", false]]
+const FACTIONS := [["eu", "FACTION_EU", true], ["tpla", "FACTION_TPLA", true], ["us", "FACTION_US", true], ["ecc", "FACTION_ECC", false]]
 
 var cfg: Dictionary
 var err_lbl: Label

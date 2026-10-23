@@ -303,7 +303,7 @@ HUD_STEALTHED,Hidden
 HUD_CRATE,Salvage crate
 HUD_CRATE_VALUE,Worth $%d or one salvage tier
 FACTION_US,United States
-FACTION_WA,Western Alliance
+FACTION_ECC,Eastern Communist Coalition (ECC)
 HUD_IDLE_BUILDER,Idle %s
 HUD_MENU,Menu
 HUD_EVACUATE_TIP,Everyone in the tunnel network climbs out here

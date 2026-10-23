@@ -11,7 +11,7 @@ This is the first step of GRAPHICS_PLAN.md. The new art is wired into the real g
 - Faction looks:
   - EU: olive fatigues, SMG and a team-coloured helmet band.
   - TPLA: desert wraps, AK and a team-coloured face wrap.
-- [STUB] A US/Western Alliance placeholder rifleman (`assets/models/infantry/wa_rifleman_placeholder.res`) is baked but not used, because the game has no WA faction yet.
+- [STUB] An Eastern Communist Coalition (ECC, formerly Western Alliance) placeholder rifleman (`assets/models/infantry/ecc_rifleman_placeholder.res`) is baked but not used, because the game has no ECC faction yet.
 - A 150-soldier crowd test (38 squads, 152 soldiers) is in `tests/gfx_showcase.gd`.
 
 ## Vehicles (new original procedural models, `tools/gfx_m3/vehicle_kit.gd`)
