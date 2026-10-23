@@ -661,6 +661,39 @@ func test_audio() -> void:
 	ad._unit_voice.stop()
 	ad._unit_prio = 0
 	_check(ad.unit_voice("us", "us_jtac", "select"), "US unit voice plays")
+	# Malachi's own US Scout Sniper recordings (audio/voice/us/sniper): his lines win for every
+	# event he recorded (all variants, more than the AI set's 4), the AI lines stay for the rest.
+	ad._unit_voice.stop()
+	ad._unit_prio = 0
+	var sn: Dictionary = ad.manifest["factions"]["us"]["units"]["us_sniper"]
+	var own := 0
+	for ev in sn["events"]:
+		var files: Array = []
+		for n in range(1, int(ad.manifest.get("max_variants", 9)) + 1):
+			if FileAccess.file_exists("res://audio/voice/us/sniper/%s_%d.ogg" % [ev, n]) or ResourceLoader.exists("res://audio/voice/us/sniper/%s_%d.ogg" % [ev, n]):
+				files.append("res://audio/voice/us/sniper/%s_%d.ogg" % [ev, n])
+		var sv: Array = ad.variants("us", "sniper", ev)
+		if files.is_empty():
+			_check(int(sv[1]) == 1 and not sv[0].is_empty(), "sniper %s keeps the AI lines (not recorded)" % ev)
+		else:
+			own += 1
+			_check(int(sv[1]) == 0 and sv[0] == files, "sniper %s uses all %d of Malachi's lines" % [ev, files.size()])
+			var seen := {}
+			var prev := ""
+			var back := 0
+			for i in files.size() * 12:
+				var pk: String = ad._pick("sniper_test/" + ev, sv[0])
+				seen[pk] = true
+				if pk == prev:
+					back += 1
+				prev = pk
+			_check(seen.size() == files.size() and back == 0, "sniper %s rotates through every variant, no back-to-back repeat" % ev)
+			_check(ad.stream(files[-1]) != null, "sniper %s_%d loads" % [ev, files.size()])
+	_check(own >= 4, "Malachi recorded %d sniper events" % own)
+	_check(tr("CREDITS_BODY").contains("US Scout Sniper voiced by Malachi Murphy"), "credits name Malachi as the US Scout Sniper voice")
+	_check(ad.unit_voice("us", "us_sniper", "select") and String(ad._unit_voice.stream.resource_path).begins_with("res://audio/voice/us/sniper/"), "sniper select plays Malachi's voice")
+	ad._unit_voice.stop()
+	ad._unit_prio = 0
 	_check(ad.weapon_sfx("tpla", "rocket", false) == "tpla_rpg" and ad.stream(ad.SFX["tpla_rpg"]) != null, "TPLA weapon SFX mapped and loadable")
 
 func _check(ok: bool, what: String) -> void:
