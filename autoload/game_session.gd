@@ -107,7 +107,7 @@ func error_log_text() -> String:
 
 func fail(message: String) -> void:
 	last_error_text = message
-	push_error("FRACTURE LINE: " + message)
+	push_error("RULES OF ENGAGEMENT: " + message)
 	var f := FileAccess.open(ERROR_LOG_PATH, FileAccess.WRITE)
 	if f != null:
 		f.store_string(error_log_text())
