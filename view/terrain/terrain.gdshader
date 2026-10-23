@@ -63,7 +63,7 @@ void fragment() {
 			vec3 c = texture(t_albedo, vec3(uv, float(i)), bias).rgb * mix(vec3(1.0), tint[i], desert_tint);
 			if (i == 3 && asphalt_dark > 0.0) { // M2.9: dark city asphalt, keeps the texture's grain
 				float la = dot(c, vec3(0.3, 0.59, 0.11));
-				c = mix(c, vec3(0.1, 0.104, 0.11) + vec3(la * 0.22), asphalt_dark);
+				c = mix(c, vec3(0.035, 0.037, 0.04) + vec3(la * 0.1), asphalt_dark);
 			}
 			if (i == 2) { // grass: green layer vs sun-dried scrub
 				float l = dot(c, vec3(0.3, 0.59, 0.11));
