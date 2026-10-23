@@ -587,8 +587,8 @@ static func _airfield(g) -> void:
 ## edge lights; control tower on the back corner of the hangar roof.
 const BAY_Z := 0.0           # parking point (model z); AirSys.PARK_DZ mirrors this
 static func _airbase8(g, fac: String) -> void:
-	var main := US if fac == "us" else "#8a9378"
-	var dark := US_D if fac == "us" else "#6c7460"
+	var main := US if fac == "us" else ("#a8915f" if fac == "tpla" else "#8a9378")   # M2.9: TPLA airfield
+	var dark := US_D if fac == "us" else ("#8a774d" if fac == "tpla" else "#6c7460")
 	var steel := US_S if fac == "us" else "#4a4e50"
 	var bw := 8.0 / 3.0
 	# apron

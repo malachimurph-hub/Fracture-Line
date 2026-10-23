@@ -51,6 +51,13 @@ const SPECS := {
 	"tpla_laborer": {"gear": [["pack", "#8a7a62", "#6e6250"]], "head_node": "Character_Enemy_Head", "file": "Character_Enemy.gltf", "weapon": "Shovel", "keep": ["Character_Enemy", "Character_Enemy_Head"],
 		"node_colors": {"Character_Enemy_Head": {"Enemy_Red": "team", "Black": "#3a3128"}},
 		"colors": {"Enemy_Red": "#8a7a62", "Grey": "#6e6250", "DarkGrey": "#5e4d36", "Black": "#4a3f30", "Skin": "#b98a64", "Grey2": "#5a5b4a", "Wood": "#7a5530", "LightGrey": "#a89a80"}},
+	# M2.9 TPLA roster additions: SVD Marksman and the civilian-looking Insurgent scout
+	"tpla_marksman": {"gun": "svd", "gear": [["chest_rig", "#5e5440", "#4a4030"]], "head": ["wrap", "#6e6650", "#3e3a2e"], "head_node": "Character_Enemy_Head", "file": "Character_Enemy.gltf", "weapon": "Sniper", "keep": ["Character_Enemy", "Character_Enemy_Head"],
+		"node_colors": {"Character_Enemy_Head": {"Enemy_Red": "#5e5a4a", "Black": "team"}},
+		"colors": {"Enemy_Red": "#6e6650", "Grey": "#4e4c3a", "DarkGrey": "#3e3528", "Black": "#3a3128", "Skin": "#a87c58", "Grey2": "#4a4b3e", "Wood": "#7a5530", "LightGrey": "#8a8070"}},
+	"tpla_insurgent": {"head": ["wrap", "#e2dccb", "#b8ae96"], "head_node": "Character_Enemy_Head", "file": "Character_Enemy.gltf", "weapon": "Knife_1", "keep": ["Character_Enemy", "Character_Enemy_Head"],
+		"node_colors": {"Character_Enemy_Head": {"Enemy_Red": "#d6cfbc", "Black": "team"}},
+		"colors": {"Enemy_Red": "#d9d3c2", "Grey": "#5d5f66", "DarkGrey": "#4a3e30", "Black": "#3a3128", "Skin": "#b98a64", "Grey2": "#6a6a66", "Wood": "#7a5530", "LightGrey": "#b0a890"}},
 	"ecc_rifleman_placeholder": {"file": "Character_Hazmat.gltf", "weapon": "Shotgun", "keep": ["Character_Hazmat", "Character_Hazmat_Head"],
 		"colors": {"Hazmat_Main": "#5d6748", "DarkGrey": "#3a3f33", "Black": "#1e201c", "Grey": "team", "Grey2": "#55594c", "Wood": "#6b5236", "LightGrey": "#9aa08c"}},
 }
