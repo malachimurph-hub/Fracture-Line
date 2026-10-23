@@ -42,7 +42,7 @@ ACC_LANG = {"de": "de", "fr": "fr", "it": "it", "pl": "pl", "nl": "nl", "sv": "s
 CALM_PEOPLE = {"us_sniper", "us_jtac", "eu_aegis", "tpla_mule", "tpla_blight", "us_thunderlance", "eu_lancer"}
 # (exaggeration, cfg_weight, target words/s, loudness offset LU, extra gravel)
 INTENSITY = {"attack": (1.0, 0.3, 3.0, 3.0, 0.04), "under_fire": (1.2, 0.25, 3.4, 4.0, 0.06),
-             "ann": (1.0, 0.3, 2.9, 3.0, 0.0)}
+             "ann": (1.15, 0.3, 3.0, 4.5, 0.0)}   # v2: alarms were only ~+0.4 LU over calm
 COMBAT_FX = "acompressor=threshold=-26dB:ratio=4:attack=2:release=70:makeup=4,asoftclip=type=tanh:threshold=0.7"
 RADIO_CLIP = "volume=3dB,asoftclip=type=atan:threshold=0.75"
 _m = None
