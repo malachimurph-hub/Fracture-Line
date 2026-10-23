@@ -1225,6 +1225,32 @@
 "voice": "chatterbox/ganji+2.0st/ar-v2"
 },
 {
+"file": "audio/voice_ai/tpla/fajr/created_1.ogg",
+"text": "Fajr ready. Tubes are full.",
+"event": "select",
+"unit": "tpla_shrike",
+"faction": "tpla",
+"qa": 0.8,
+"take": 0,
+"heard": "Fire ready. Tubes are full.",
+"lufs_target": -16.0,
+"ref": "ganji_+2.0.wav",
+"engine": "chatterbox-multilingual (MIT) intensity m27, ref M2.5 militia prompt",
+"exag": 0.6,
+"cfg": 0.5,
+"lang": "ar",
+"tempo": 1.062,
+"dur": 2.1,
+"wps": 2.6,
+"lid": {
+"en": 0.213,
+"ar_fa": 0.477,
+"ru": 0.011
+},
+"voice": "chatterbox/ganji+2.0st/ar-v2",
+"note": "copy of select_2 (generation stopped)"
+},
+{
 "file": "audio/voice_ai/tpla/fajr/move_1.ogg",
 "text": "Fajr moving!",
 "event": "move",

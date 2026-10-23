@@ -2396,126 +2396,6 @@
 "speed": 0.96
 },
 {
-"file": "audio/voice_ai/tpla/laborer/select_1.ogg",
-"text": "Yeah, boss?",
-"voice": "chatterbox/ganji-1.5st/ar-v2",
-"exag": 0.5,
-"tempo": 1.0,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/laborer/select_2.ogg",
-"text": "Got my shovel.",
-"voice": "chatterbox/ganji-0.5st/ar-v2",
-"exag": 0.55,
-"tempo": 1.02,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/laborer/select_4.ogg",
-"text": "Need a hand?",
-"voice": "chatterbox/ganji-0.5st/ar-v2",
-"exag": 0.55,
-"tempo": 1.01,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/laborer/move_1.ogg",
-"text": "Walking over.",
-"voice": "chatterbox/ganji-1.5st/ar-v2",
-"exag": 0.5,
-"tempo": 1.06,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/laborer/move_2.ogg",
-"text": "On my way.",
-"voice": "chatterbox/ganji-0.5st/ar-v2",
-"exag": 0.55,
-"tempo": 1.06,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/laborer/move_3.ogg",
-"text": "Khalas! Okay, I'm going.",
-"voice": "chatterbox/ganji-1.5st/ar-v2",
-"exag": 0.5,
-"tempo": 1.049,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/laborer/move_4.ogg",
-"text": "Heading over.",
-"voice": "chatterbox/ganji-0.5st/ar-v2",
-"exag": 0.55,
-"tempo": 1.06,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/laborer/build_1.ogg",
-"text": "We'll knock it together.",
-"voice": "chatterbox/ganji-1.5st/ar-v2",
-"exag": 0.5,
-"tempo": 1.01,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/laborer/build_2.ogg",
-"text": "Scrap and sweat, coming up.",
-"voice": "chatterbox/ganji-0.5st/ar-v2",
-"exag": 0.55,
-"tempo": 1.02,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/laborer/build_3.ogg",
-"text": "I'll build it.",
-"voice": "chatterbox/ganji-1.5st/ar-v2",
-"exag": 0.5,
-"tempo": 0.99,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/laborer/harvest_1.ogg",
-"text": "Hauling crates.",
-"voice": "chatterbox/ganji-1.5st/ar-v2",
-"exag": 0.5,
-"tempo": 0.99,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/laborer/harvest_2.ogg",
-"text": "Back to the pile.",
-"voice": "chatterbox/ganji-0.5st/ar-v2",
-"exag": 0.55,
-"tempo": 0.98,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/laborer/under_fire_1.ogg",
-"text": "They're shooting at the workers!",
-"voice": "chatterbox/ganji-1.5st/ar-v2",
-"exag": 0.7,
-"tempo": 1.18,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/laborer/under_fire_2.ogg",
-"text": "Cover! We're just diggers!",
-"voice": "chatterbox/ganji-0.5st/ar-v2",
-"exag": 0.75,
-"tempo": 1.192,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/laborer/created_1.ogg",
-"text": "Another pair of hands.",
-"voice": "chatterbox/ganji-1.5st/ar-v2",
-"exag": 0.5,
-"tempo": 0.99,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
 "file": "audio/voice_ai/tpla/militia/select_2.ogg",
 "text": "We're here.",
 "voice": "chatterbox/ganji+1.5st",
@@ -2649,686 +2529,6 @@
 "voice": "chatterbox/ganji+1.5st",
 "exag": 0.6,
 "tempo": 1.049,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rocket_cell/select_2.ogg",
-"text": "Tubes ready.",
-"voice": "chatterbox/reza+0.5st/ar-v2",
-"exag": 0.6,
-"tempo": 0.98,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rocket_cell/select_3.ogg",
-"text": "Point us at steel.",
-"voice": "chatterbox/ganji+1st/ar-v2",
-"exag": 0.6,
-"tempo": 1.0,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rocket_cell/select_4.ogg",
-"text": "Loaded.",
-"voice": "chatterbox/reza+0.5st/ar-v2",
-"exag": 0.6,
-"tempo": 0.98,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rocket_cell/move_1.ogg",
-"text": "Shifting position.",
-"voice": "chatterbox/ganji+1st/ar-v2",
-"exag": 0.6,
-"tempo": 1.071,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rocket_cell/move_2.ogg",
-"text": "Keep low, move!",
-"voice": "chatterbox/reza+0.5st/ar-v2",
-"exag": 0.6,
-"tempo": 1.071,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rocket_cell/move_3.ogg",
-"text": "Relocating.",
-"voice": "chatterbox/ganji+1st/ar-v2",
-"exag": 0.6,
-"tempo": 1.039,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rocket_cell/move_4.ogg",
-"text": "Going.",
-"voice": "chatterbox/reza+0.5st/ar-v2",
-"exag": 0.6,
-"tempo": 1.081,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rocket_cell/attack_1.ogg",
-"text": "Rocket out!",
-"voice": "chatterbox/ganji+1st/ar-v2",
-"exag": 0.8,
-"tempo": 1.078,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rocket_cell/attack_2.ogg",
-"text": "Hit the armour!",
-"voice": "chatterbox/reza+0.5st/ar-v2",
-"exag": 0.8,
-"tempo": 1.122,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rocket_cell/attack_3.ogg",
-"text": "Yalla, fire the tube!",
-"voice": "chatterbox/ganji+1st/ar-v2",
-"exag": 0.8,
-"tempo": 1.122,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rocket_cell/attack_4.ogg",
-"text": "Burn that tank!",
-"voice": "chatterbox/reza+0.5st/ar-v2",
-"exag": 0.8,
-"tempo": 1.089,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rocket_cell/under_fire_1.ogg",
-"text": "We're spotted!",
-"voice": "chatterbox/ganji+1st/ar-v2",
-"exag": 0.8,
-"tempo": 1.18,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rocket_cell/under_fire_2.ogg",
-"text": "Rocket team pinned down!",
-"voice": "chatterbox/reza+0.5st/ar-v2",
-"exag": 0.8,
-"tempo": 1.156,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rocket_cell/created_2.ogg",
-"text": "Anti-armour team here.",
-"voice": "chatterbox/reza+0.5st/ar-v2",
-"exag": 0.6,
-"tempo": 1.02,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rocket_cell/veteran_1.ogg",
-"text": "Our aim just got better.",
-"voice": "chatterbox/ganji+1st/ar-v2",
-"exag": 0.6,
-"tempo": 1.0,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rocket_cell/garrison_1.ogg",
-"text": "Down the hole!",
-"voice": "chatterbox/ganji+1st/ar-v2",
-"exag": 0.6,
-"tempo": 1.071,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rocket_cell/garrison_2.ogg",
-"text": "Rocket nest in the tunnel.",
-"voice": "chatterbox/reza+0.5st/ar-v2",
-"exag": 0.6,
-"tempo": 1.081,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rattler/select_2.ogg",
-"text": "Engine's coughing, but ready.",
-"voice": "chatterbox/reza+1.5st/ar-v2",
-"exag": 0.75,
-"tempo": 1.0,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rattler/select_3.ogg",
-"text": "Gun's on the back.",
-"voice": "chatterbox/reza+1.5st/ar-v2",
-"exag": 0.75,
-"tempo": 1.01,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rattler/select_4.ogg",
-"text": "Where are we driving?",
-"voice": "chatterbox/reza+1.5st/ar-v2",
-"exag": 0.75,
-"tempo": 1.0,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rattler/move_1.ogg",
-"text": "Hang on!",
-"voice": "chatterbox/reza+1.5st/ar-v2",
-"exag": 0.75,
-"tempo": 1.049,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rattler/move_2.ogg",
-"text": "Full throttle!",
-"voice": "chatterbox/reza+1.5st/ar-v2",
-"exag": 0.75,
-"tempo": 1.071,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rattler/move_3.ogg",
-"text": "Yalla, yalla, driving!",
-"voice": "chatterbox/reza+1.5st/ar-v2",
-"exag": 0.75,
-"tempo": 1.06,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rattler/move_4.ogg",
-"text": "Kick up the dust!",
-"voice": "chatterbox/reza+1.5st/ar-v2",
-"exag": 0.75,
-"tempo": 1.049,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rattler/attack_1.ogg",
-"text": "Spray them!",
-"voice": "chatterbox/reza+1.5st/ar-v2",
-"exag": 0.9,
-"tempo": 1.089,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rattler/attack_2.ogg",
-"text": "Gunner, open up!",
-"voice": "chatterbox/reza+1.5st/ar-v2",
-"exag": 0.9,
-"tempo": 1.089,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rattler/attack_3.ogg",
-"text": "Shoot as we pass!",
-"voice": "chatterbox/reza+1.5st/ar-v2",
-"exag": 0.9,
-"tempo": 1.111,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rattler/attack_4.ogg",
-"text": "Rattle them!",
-"voice": "chatterbox/reza+1.5st/ar-v2",
-"exag": 0.9,
-"tempo": 1.089,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rattler/under_fire_1.ogg",
-"text": "Truck's taking hits!",
-"voice": "chatterbox/reza+1.5st/ar-v2",
-"exag": 0.9,
-"tempo": 1.156,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rattler/under_fire_2.ogg",
-"text": "Get us out of here!",
-"voice": "chatterbox/reza+1.5st/ar-v2",
-"exag": 0.9,
-"tempo": 1.18,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rattler/created_2.ogg",
-"text": "Fresh truck, fresh gun.",
-"voice": "chatterbox/reza+1.5st/ar-v2",
-"exag": 0.75,
-"tempo": 1.01,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/rattler/veteran_1.ogg",
-"text": "Nobody drives like us now.",
-"voice": "chatterbox/reza+1.5st/ar-v2",
-"exag": 0.75,
-"tempo": 0.99,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/hailstorm/select_2.ogg",
-"text": "Watching the clouds.",
-"voice": "chatterbox/amir-1.5st/ar-v2",
-"exag": 0.55,
-"tempo": 0.98,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/hailstorm/select_3.ogg",
-"text": "Four barrels, ready.",
-"voice": "chatterbox/amir-1.5st/ar-v2",
-"exag": 0.55,
-"tempo": 0.98,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/hailstorm/select_4.ogg",
-"text": "Sky's clear.",
-"voice": "chatterbox/amir-1.5st/ar-v2",
-"exag": 0.55,
-"tempo": 0.98,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/hailstorm/move_2.ogg",
-"text": "Rolling.",
-"voice": "chatterbox/amir-1.5st/ar-v2",
-"exag": 0.55,
-"tempo": 1.039,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/hailstorm/move_3.ogg",
-"text": "On it.",
-"voice": "chatterbox/amir-1.5st/ar-v2",
-"exag": 0.55,
-"tempo": 1.081,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/hailstorm/move_4.ogg",
-"text": "Repositioning.",
-"voice": "chatterbox/amir-1.5st/ar-v2",
-"exag": 0.55,
-"tempo": 1.06,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/hailstorm/attack_1.ogg",
-"text": "Hail on them!",
-"voice": "chatterbox/amir-1.5st/ar-v2",
-"exag": 0.75,
-"tempo": 1.1,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/hailstorm/attack_2.ogg",
-"text": "Four barrels firing!",
-"voice": "chatterbox/amir-1.5st/ar-v2",
-"exag": 0.75,
-"tempo": 1.089,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/hailstorm/attack_3.ogg",
-"text": "Shred that plane!",
-"voice": "chatterbox/amir-1.5st/ar-v2",
-"exag": 0.75,
-"tempo": 1.111,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/hailstorm/attack_4.ogg",
-"text": "Fill the air!",
-"voice": "chatterbox/amir-1.5st/ar-v2",
-"exag": 0.75,
-"tempo": 1.122,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/hailstorm/under_fire_2.ogg",
-"text": "They're on us!",
-"voice": "chatterbox/amir-1.5st/ar-v2",
-"exag": 0.75,
-"tempo": 1.192,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/hailstorm/veteran_1.ogg",
-"text": "Tighter bursts now.",
-"voice": "chatterbox/amir-1.5st/ar-v2",
-"exag": 0.55,
-"tempo": 1.0,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/scrapback/select_2.ogg",
-"text": "Patched and ready.",
-"voice": "chatterbox/ganji-2st/ar-v2",
-"exag": 0.55,
-"tempo": 0.98,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/scrapback/select_3.ogg",
-"text": "Armour, such as it is.",
-"voice": "chatterbox/ganji-2st/ar-v2",
-"exag": 0.55,
-"tempo": 1.01,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/scrapback/select_4.ogg",
-"text": "Commander here.",
-"voice": "chatterbox/ganji-2st/ar-v2",
-"exag": 0.55,
-"tempo": 1.01,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/scrapback/move_1.ogg",
-"text": "Grinding forward.",
-"voice": "chatterbox/ganji-2st/ar-v2",
-"exag": 0.55,
-"tempo": 1.071,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/scrapback/move_2.ogg",
-"text": "Treads turning.",
-"voice": "chatterbox/ganji-2st/ar-v2",
-"exag": 0.55,
-"tempo": 1.081,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/scrapback/move_3.ogg",
-"text": "Boro! Rolling out.",
-"voice": "chatterbox/ganji-2st/ar-v2",
-"exag": 0.55,
-"tempo": 1.039,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/scrapback/move_4.ogg",
-"text": "Moving.",
-"voice": "chatterbox/ganji-2st/ar-v2",
-"exag": 0.55,
-"tempo": 1.071,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/scrapback/attack_1.ogg",
-"text": "Fire the cannon!",
-"voice": "chatterbox/ganji-2st/ar-v2",
-"exag": 0.75,
-"tempo": 1.1,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/scrapback/attack_2.ogg",
-"text": "Break them!",
-"voice": "chatterbox/ganji-2st/ar-v2",
-"exag": 0.75,
-"tempo": 1.078,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/scrapback/attack_3.ogg",
-"text": "Target their tanks!",
-"voice": "chatterbox/ganji-2st/ar-v2",
-"exag": 0.75,
-"tempo": 1.1,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/scrapback/attack_4.ogg",
-"text": "Pound it!",
-"voice": "chatterbox/ganji-2st/ar-v2",
-"exag": 0.75,
-"tempo": 1.122,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/scrapback/under_fire_1.ogg",
-"text": "The plates are buckling!",
-"voice": "chatterbox/ganji-2st/ar-v2",
-"exag": 0.75,
-"tempo": 1.18,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/scrapback/created_2.ogg",
-"text": "Tank ready.",
-"voice": "chatterbox/ganji-2st/ar-v2",
-"exag": 0.55,
-"tempo": 0.99,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/scrapback/veteran_1.ogg",
-"text": "This old wreck is a veteran now.",
-"voice": "chatterbox/ganji-2st/ar-v2",
-"exag": 0.55,
-"tempo": 1.0,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/shrike/select_2.ogg",
-"text": "Racks loaded.",
-"voice": "chatterbox/ganji+2st/ar-v2",
-"exag": 0.7,
-"tempo": 1.02,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/shrike/select_3.ogg",
-"text": "Fast and light.",
-"voice": "chatterbox/ganji+2st/ar-v2",
-"exag": 0.7,
-"tempo": 1.01,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/shrike/select_4.ogg",
-"text": "Ready to sting.",
-"voice": "chatterbox/ganji+2st/ar-v2",
-"exag": 0.7,
-"tempo": 1.0,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/shrike/move_1.ogg",
-"text": "Wheels up!",
-"voice": "chatterbox/ganji+2st/ar-v2",
-"exag": 0.7,
-"tempo": 1.081,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/shrike/move_2.ogg",
-"text": "Fast as she goes!",
-"voice": "chatterbox/ganji+2st/ar-v2",
-"exag": 0.7,
-"tempo": 1.06,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/shrike/move_3.ogg",
-"text": "Going!",
-"voice": "chatterbox/ganji+2st/ar-v2",
-"exag": 0.7,
-"tempo": 1.081,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/shrike/move_4.ogg",
-"text": "Hold on to something!",
-"voice": "chatterbox/ganji+2st/ar-v2",
-"exag": 0.7,
-"tempo": 1.081,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/shrike/attack_1.ogg",
-"text": "Rockets away!",
-"voice": "chatterbox/ganji+2st/ar-v2",
-"exag": 0.8999999999999999,
-"tempo": 1.089,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/shrike/attack_2.ogg",
-"text": "Rockets, rockets!",
-"voice": "chatterbox/ganji+2st/ar-v2",
-"exag": 0.8999999999999999,
-"tempo": 1.078,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/shrike/attack_3.ogg",
-"text": "Sting them!",
-"voice": "chatterbox/ganji+2st/ar-v2",
-"exag": 0.8999999999999999,
-"tempo": 1.1,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/shrike/attack_4.ogg",
-"text": "Hit and run!",
-"voice": "chatterbox/ganji+2st/ar-v2",
-"exag": 0.8999999999999999,
-"tempo": 1.078,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/shrike/under_fire_2.ogg",
-"text": "Too hot, pulling out!",
-"voice": "chatterbox/ganji+2st/ar-v2",
-"exag": 0.8999999999999999,
-"tempo": 1.156,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/shrike/veteran_1.ogg",
-"text": "Faster than ever.",
-"voice": "chatterbox/ganji+2st/ar-v2",
-"exag": 0.7,
-"tempo": 0.96,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/blight/select_2.ogg",
-"text": "Canisters ready.",
-"voice": "chatterbox/amir+1.5st/ar-v2",
-"exag": 0.4,
-"tempo": 1.02,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/blight/select_3.ogg",
-"text": "Rust and ruin.",
-"voice": "chatterbox/amir+1.5st/ar-v2",
-"exag": 0.4,
-"tempo": 0.98,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/blight/select_4.ogg",
-"text": "Waiting.",
-"voice": "chatterbox/amir+1.5st/ar-v2",
-"exag": 0.4,
-"tempo": 0.99,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/blight/move_1.ogg",
-"text": "Moving the launcher.",
-"voice": "chatterbox/amir+1.5st/ar-v2",
-"exag": 0.4,
-"tempo": 1.071,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/blight/move_2.ogg",
-"text": "Relocating.",
-"voice": "chatterbox/amir+1.5st/ar-v2",
-"exag": 0.4,
-"tempo": 1.039,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/blight/move_3.ogg",
-"text": "Careful with the tanks.",
-"voice": "chatterbox/amir+1.5st/ar-v2",
-"exag": 0.4,
-"tempo": 1.039,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/blight/move_4.ogg",
-"text": "On my way.",
-"voice": "chatterbox/amir+1.5st/ar-v2",
-"exag": 0.4,
-"tempo": 1.06,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/blight/attack_1.ogg",
-"text": "Rust them.",
-"voice": "chatterbox/amir+1.5st/ar-v2",
-"exag": 0.6000000000000001,
-"tempo": 1.111,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/blight/attack_2.ogg",
-"text": "Canister away!",
-"voice": "chatterbox/amir+1.5st/ar-v2",
-"exag": 0.6000000000000001,
-"tempo": 1.089,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/blight/attack_3.ogg",
-"text": "Let it eat their steel.",
-"voice": "chatterbox/amir+1.5st/ar-v2",
-"exag": 0.6000000000000001,
-"tempo": 1.111,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/blight/under_fire_1.ogg",
-"text": "Launcher under fire!",
-"voice": "chatterbox/amir+1.5st/ar-v2",
-"exag": 0.6000000000000001,
-"tempo": 1.168,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/blight/under_fire_2.ogg",
-"text": "Protect the canisters!",
-"voice": "chatterbox/amir+1.5st/ar-v2",
-"exag": 0.6000000000000001,
-"tempo": 1.168,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/blight/created_2.ogg",
-"text": "Rust artillery online.",
-"voice": "chatterbox/amir+1.5st/ar-v2",
-"exag": 0.4,
-"tempo": 1.01,
-"engine": "chatterbox-multilingual (MIT), lang=ar"
-},
-{
-"file": "audio/voice_ai/tpla/blight/veteran_1.ogg",
-"text": "Thicker rust now.",
-"voice": "chatterbox/amir+1.5st/ar-v2",
-"exag": 0.4,
-"tempo": 1.0,
 "engine": "chatterbox-multilingual (MIT), lang=ar"
 },
 {
@@ -3516,22 +2716,1166 @@
 "engine": "chatterbox-multilingual (MIT), lang=ar"
 },
 {
-"file": "audio/voice_ai/tpla/hailstorm/created_1.ogg",
-"text": "Watching the clouds.",
-"voice": "chatterbox/amir-1.5st/ar-v2",
-"exag": 0.55,
-"tempo": 0.98,
-"engine": "chatterbox-multilingual (MIT), lang=ar",
-"note": "M2.9: copy of select_2 (old unit name removed)"
+"file": "audio/voice_ai/tpla/backhoe/build_1.ogg",
+"text": "I will build it.",
+"voice": "chatterbox/ganji-1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.75
 },
 {
-"file": "audio/voice_ai/tpla/shrike/created_1.ogg",
-"text": "Racks loaded.",
-"voice": "chatterbox/ganji+2st/ar-v2",
-"exag": 0.7,
-"tempo": 1.02,
-"engine": "chatterbox-multilingual (MIT), lang=ar",
-"note": "M2.9: copy of select_2 (old unit name removed)"
+"file": "audio/voice_ai/tpla/backhoe/build_2.ogg",
+"text": "Digging now. It will be strong.",
+"voice": "chatterbox/ganji-1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/backhoe/created_1.ogg",
+"text": "Backhoe ready to work.",
+"voice": "chatterbox/ganji-1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/backhoe/move_1.ogg",
+"text": "Backhoe moving.",
+"voice": "chatterbox/ganji-1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/backhoe/move_2.ogg",
+"text": "Going there.",
+"voice": "chatterbox/ganji-1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/backhoe/select_1.ogg",
+"text": "Backhoe.",
+"voice": "chatterbox/ganji-1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/backhoe/select_2.ogg",
+"text": "Ready to dig.",
+"voice": "chatterbox/ganji-1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/backhoe/select_3.ogg",
+"text": "What do we build?",
+"voice": "chatterbox/ganji-1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/backhoe/under_fire_1.ogg",
+"text": "They shoot at the backhoe! Help!",
+"voice": "chatterbox/ganji-1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/backhoe/under_fire_2.ogg",
+"text": "Taking fire! I am only a digger!",
+"voice": "chatterbox/ganji-1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/bhx35/attack_1.ogg",
+"text": "Aircraft! Fire, fire!",
+"voice": "chatterbox/amir-1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/bhx35/attack_2.ogg",
+"text": "Thirty five, shred them in the sky!",
+"voice": "chatterbox/amir-1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.71
+},
+{
+"file": "audio/voice_ai/tpla/bhx35/attack_3.ogg",
+"text": "Shoot them down! Now!",
+"voice": "chatterbox/amir-1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/bhx35/created_1.ogg",
+"text": "BHX thirty five online.",
+"voice": "chatterbox/amir-1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.25
+},
+{
+"file": "audio/voice_ai/tpla/bhx35/move_1.ogg",
+"text": "BHX moving!",
+"voice": "chatterbox/amir-1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.5
+},
+{
+"file": "audio/voice_ai/tpla/bhx35/move_2.ogg",
+"text": "Relocating the guns, now!",
+"voice": "chatterbox/amir-1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/bhx35/select_1.ogg",
+"text": "BHX thirty five.",
+"voice": "chatterbox/amir-1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.0
+},
+{
+"file": "audio/voice_ai/tpla/bhx35/select_2.ogg",
+"text": "Air defense ready. Radar is up.",
+"voice": "chatterbox/amir-1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/bhx35/select_3.ogg",
+"text": "BHX. Sky is ours.",
+"voice": "chatterbox/amir-1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.75
+},
+{
+"file": "audio/voice_ai/tpla/bhx35/under_fire_1.ogg",
+"text": "We are hit! Keep the radar up!",
+"voice": "chatterbox/amir-1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/bhx35/under_fire_2.ogg",
+"text": "They found us! Return fire!",
+"voice": "chatterbox/amir-1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/bhx35/veteran_1.ogg",
+"text": "No aircraft escapes the BHX!",
+"voice": "chatterbox/amir-1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.8
+},
+{
+"file": "audio/voice_ai/tpla/bmp2/attack_1.ogg",
+"text": "Cannon, fire! Fire!",
+"voice": "chatterbox/reza+0.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/bmp2/attack_2.ogg",
+"text": "Thirty mil, hit them!",
+"voice": "chatterbox/reza+0.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.5
+},
+{
+"file": "audio/voice_ai/tpla/bmp2/attack_3.ogg",
+"text": "Shoot! Keep shooting!",
+"voice": "chatterbox/reza+0.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/bmp2/created_1.ogg",
+"text": "BMP two ready to roll.",
+"voice": "chatterbox/reza+0.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.8
+},
+{
+"file": "audio/voice_ai/tpla/bmp2/move_1.ogg",
+"text": "BMP moving!",
+"voice": "chatterbox/reza+0.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/bmp2/move_2.ogg",
+"text": "Rolling out, hold on!",
+"voice": "chatterbox/reza+0.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/bmp2/select_1.ogg",
+"text": "BMP two.",
+"voice": "chatterbox/reza+0.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/bmp2/select_2.ogg",
+"text": "BMP ready. Men inside.",
+"voice": "chatterbox/reza+0.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/bmp2/select_3.ogg",
+"text": "Transport ready.",
+"voice": "chatterbox/reza+0.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/bmp2/under_fire_1.ogg",
+"text": "We are hit! Armor holding!",
+"voice": "chatterbox/reza+0.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/bmp2/under_fire_2.ogg",
+"text": "Taking fire! Protect the men!",
+"voice": "chatterbox/reza+0.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/bmp2/veteran_1.ogg",
+"text": "This BMP fears nothing!",
+"voice": "chatterbox/reza+0.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/f16/attack_1.ogg",
+"text": "Bombs away! Bombs away!",
+"voice": "chatterbox/reza-0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/f16/attack_2.ogg",
+"text": "Falcon, attack! Destroy it!",
+"voice": "chatterbox/reza-0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/f16/attack_3.ogg",
+"text": "Drop everything! Now!",
+"voice": "chatterbox/reza-0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.67
+},
+{
+"file": "audio/voice_ai/tpla/f16/created_1.ogg",
+"text": "Falcon bomber ready.",
+"voice": "chatterbox/reza-0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/f16/move_1.ogg",
+"text": "Falcon moving!",
+"voice": "chatterbox/reza-0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/f16/move_2.ogg",
+"text": "On my way!",
+"voice": "chatterbox/reza-0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/f16/select_1.ogg",
+"text": "Falcon here.",
+"voice": "chatterbox/reza-0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/f16/select_2.ogg",
+"text": "Falcon ready. Bombs loaded.",
+"voice": "chatterbox/reza-0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/f16/select_3.ogg",
+"text": "Falcon. Show me the target.",
+"voice": "chatterbox/reza-0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/f16/under_fire_1.ogg",
+"text": "Flak! I am hit!",
+"voice": "chatterbox/reza-0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.25
+},
+{
+"file": "audio/voice_ai/tpla/f16/under_fire_2.ogg",
+"text": "They are shooting at me! Pull up!",
+"voice": "chatterbox/reza-0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/f16/veteran_1.ogg",
+"text": "The Falcon brings the fire!",
+"voice": "chatterbox/reza-0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/fajr/attack_1.ogg",
+"text": "Fajr, launch! Launch all!",
+"voice": "chatterbox/ganji+2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.5
+},
+{
+"file": "audio/voice_ai/tpla/fajr/attack_2.ogg",
+"text": "Rockets away! Burn it!",
+"voice": "chatterbox/ganji+2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/fajr/attack_3.ogg",
+"text": "Fire the salvo! Now!",
+"voice": "chatterbox/ganji+2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/fajr/created_1.ogg",
+"text": "Fajr ready. Tubes are full.",
+"voice": "chatterbox/ganji+2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.8
+},
+{
+"file": "audio/voice_ai/tpla/fajr/move_1.ogg",
+"text": "Fajr moving!",
+"voice": "chatterbox/ganji+2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.5
+},
+{
+"file": "audio/voice_ai/tpla/fajr/move_2.ogg",
+"text": "Moving the launcher, go!",
+"voice": "chatterbox/ganji+2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/fajr/select_1.ogg",
+"text": "Fajr launcher.",
+"voice": "chatterbox/ganji+2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.5
+},
+{
+"file": "audio/voice_ai/tpla/fajr/select_2.ogg",
+"text": "Fajr ready. Tubes are full.",
+"voice": "chatterbox/ganji+2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.8
+},
+{
+"file": "audio/voice_ai/tpla/fajr/select_3.ogg",
+"text": "Rockets loaded. Where?",
+"voice": "chatterbox/ganji+2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/fajr/under_fire_1.ogg",
+"text": "They are hitting the launcher! Move!",
+"voice": "chatterbox/ganji+2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/fajr/under_fire_2.ogg",
+"text": "We are hit! Save the rockets!",
+"voice": "chatterbox/ganji+2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/fajr/veteran_1.ogg",
+"text": "The Fajr rains fire!",
+"voice": "chatterbox/ganji+2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.75
+},
+{
+"file": "audio/voice_ai/tpla/insurgent/attack_1.ogg",
+"text": "Now! Strike!",
+"voice": "chatterbox/reza+2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/insurgent/attack_2.ogg",
+"text": "Go, go, attack!",
+"voice": "chatterbox/reza+2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/insurgent/attack_3.ogg",
+"text": "For the cause!",
+"voice": "chatterbox/reza+2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/insurgent/created_1.ogg",
+"text": "Insurgent ready. Like a shadow.",
+"voice": "chatterbox/reza+2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/insurgent/garrison_1.ogg",
+"text": "Inside. I hide with the people.",
+"voice": "chatterbox/reza+2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.67
+},
+{
+"file": "audio/voice_ai/tpla/insurgent/move_1.ogg",
+"text": "I go.",
+"voice": "chatterbox/reza+2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.0
+},
+{
+"file": "audio/voice_ai/tpla/insurgent/move_2.ogg",
+"text": "Moving through the streets.",
+"voice": "chatterbox/reza+2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/insurgent/select_1.ogg",
+"text": "Yes?",
+"voice": "chatterbox/reza+2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/insurgent/select_2.ogg",
+"text": "I am here. No one sees me.",
+"voice": "chatterbox/reza+2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/insurgent/select_3.ogg",
+"text": "Insurgent. Ready.",
+"voice": "chatterbox/reza+2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/insurgent/under_fire_1.ogg",
+"text": "They see me! Run!",
+"voice": "chatterbox/reza+2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/insurgent/under_fire_2.ogg",
+"text": "I am spotted! Scatter!",
+"voice": "chatterbox/reza+2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/insurgent/veteran_1.ogg",
+"text": "They never see me coming!",
+"voice": "chatterbox/reza+2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/koksan/attack_1.ogg",
+"text": "Koksan, fire! Fire the big gun!",
+"voice": "chatterbox/amir+1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.83
+},
+{
+"file": "audio/voice_ai/tpla/koksan/attack_2.ogg",
+"text": "Shell away! Hit them hard!",
+"voice": "chatterbox/amir+1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.8
+},
+{
+"file": "audio/voice_ai/tpla/koksan/attack_3.ogg",
+"text": "Bring the thunder! Fire!",
+"voice": "chatterbox/amir+1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/koksan/created_1.ogg",
+"text": "Koksan heavy gun ready.",
+"voice": "chatterbox/amir+1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.75
+},
+{
+"file": "audio/voice_ai/tpla/koksan/move_1.ogg",
+"text": "Koksan moving.",
+"voice": "chatterbox/amir+1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.5
+},
+{
+"file": "audio/voice_ai/tpla/koksan/move_2.ogg",
+"text": "Pack the gun, we move!",
+"voice": "chatterbox/amir+1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/koksan/select_1.ogg",
+"text": "Koksan gun.",
+"voice": "chatterbox/amir+1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.5
+},
+{
+"file": "audio/voice_ai/tpla/koksan/select_2.ogg",
+"text": "Koksan ready. Give coordinates.",
+"voice": "chatterbox/amir+1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.75
+},
+{
+"file": "audio/voice_ai/tpla/koksan/select_3.ogg",
+"text": "Heavy gun here.",
+"voice": "chatterbox/amir+1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/koksan/under_fire_1.ogg",
+"text": "They found the gun! Protect it!",
+"voice": "chatterbox/amir+1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/koksan/under_fire_2.ogg",
+"text": "Taking fire! Move the Koksan!",
+"voice": "chatterbox/amir+1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.8
+},
+{
+"file": "audio/voice_ai/tpla/koksan/veteran_1.ogg",
+"text": "The Koksan shakes the earth!",
+"voice": "chatterbox/amir+1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.8
+},
+{
+"file": "audio/voice_ai/tpla/marksman/attack_1.ogg",
+"text": "Target down! Next!",
+"voice": "chatterbox/amir+0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/marksman/attack_2.ogg",
+"text": "One shot, one kill!",
+"voice": "chatterbox/amir+0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/marksman/attack_3.ogg",
+"text": "Fire! Drop him!",
+"voice": "chatterbox/amir+0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/marksman/created_1.ogg",
+"text": "Marksman ready. Rifle zeroed.",
+"voice": "chatterbox/amir+0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/marksman/garrison_1.ogg",
+"text": "Window taken. I watch the street.",
+"voice": "chatterbox/amir+0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/marksman/move_1.ogg",
+"text": "Moving quiet.",
+"voice": "chatterbox/amir+0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/marksman/move_2.ogg",
+"text": "Changing position.",
+"voice": "chatterbox/amir+0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/marksman/select_1.ogg",
+"text": "Marksman.",
+"voice": "chatterbox/amir+0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/marksman/select_2.ogg",
+"text": "Eyes on.",
+"voice": "chatterbox/amir+0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/marksman/select_3.ogg",
+"text": "I see everything.",
+"voice": "chatterbox/amir+0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.67
+},
+{
+"file": "audio/voice_ai/tpla/marksman/under_fire_1.ogg",
+"text": "They spotted me! Move!",
+"voice": "chatterbox/amir+0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/marksman/under_fire_2.ogg",
+"text": "I am hit! Find cover!",
+"voice": "chatterbox/amir+0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.8
+},
+{
+"file": "audio/voice_ai/tpla/marksman/veteran_1.ogg",
+"text": "My rifle never misses!",
+"voice": "chatterbox/amir+0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/mig29/attack_1.ogg",
+"text": "Missile away! Kill him!",
+"voice": "chatterbox/ganji+0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.75
+},
+{
+"file": "audio/voice_ai/tpla/mig29/attack_2.ogg",
+"text": "Fulcrum, engage! Shoot him down!",
+"voice": "chatterbox/ganji+0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.8
+},
+{
+"file": "audio/voice_ai/tpla/mig29/attack_3.ogg",
+"text": "Fox two! Fire!",
+"voice": "chatterbox/ganji+0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/mig29/created_1.ogg",
+"text": "Fulcrum interceptor ready.",
+"voice": "chatterbox/ganji+0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/mig29/move_1.ogg",
+"text": "Fulcrum moving!",
+"voice": "chatterbox/ganji+0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/mig29/select_1.ogg",
+"text": "Fulcrum here.",
+"voice": "chatterbox/ganji+0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/mig29/select_2.ogg",
+"text": "MiG ready. Weapons hot.",
+"voice": "chatterbox/ganji+0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.75
+},
+{
+"file": "audio/voice_ai/tpla/mig29/select_3.ogg",
+"text": "Fulcrum. Where is the enemy?",
+"voice": "chatterbox/ganji+0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/mig29/under_fire_1.ogg",
+"text": "They are on my tail! Help!",
+"voice": "chatterbox/ganji+0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.83
+},
+{
+"file": "audio/voice_ai/tpla/mig29/under_fire_2.ogg",
+"text": "I am hit! Fulcrum hit!",
+"voice": "chatterbox/ganji+0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.6
+},
+{
+"file": "audio/voice_ai/tpla/mig29/veteran_1.ogg",
+"text": "The Fulcrum hunts them all!",
+"voice": "chatterbox/ganji+0.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/mirage/attack_1.ogg",
+"text": "Missiles away! Fire!",
+"voice": "chatterbox/amir+1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/mirage/attack_2.ogg",
+"text": "Mirage, attack! Hit them!",
+"voice": "chatterbox/amir+1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/mirage/attack_3.ogg",
+"text": "Rockets! Burn them!",
+"voice": "chatterbox/amir+1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/mirage/created_1.ogg",
+"text": "Mirage fighter ready.",
+"voice": "chatterbox/amir+1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/mirage/move_1.ogg",
+"text": "Mirage moving!",
+"voice": "chatterbox/amir+1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/mirage/move_2.ogg",
+"text": "Turning now!",
+"voice": "chatterbox/amir+1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/mirage/select_1.ogg",
+"text": "Mirage pilot.",
+"voice": "chatterbox/amir+1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/mirage/select_2.ogg",
+"text": "Mirage ready. Engines hot.",
+"voice": "chatterbox/amir+1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/mirage/select_3.ogg",
+"text": "Mirage. Give me a target.",
+"voice": "chatterbox/amir+1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/mirage/under_fire_1.ogg",
+"text": "I am hit! Mirage is hit!",
+"voice": "chatterbox/amir+1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/mirage/under_fire_2.ogg",
+"text": "Missile lock! Break, break!",
+"voice": "chatterbox/amir+1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/mirage/veteran_1.ogg",
+"text": "The Mirage owns the sky!",
+"voice": "chatterbox/amir+1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/pickup/created_1.ogg",
+"text": "Supply pickup ready.",
+"voice": "chatterbox/reza-1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/pickup/harvest_1.ogg",
+"text": "Loading supplies.",
+"voice": "chatterbox/reza-1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/pickup/harvest_2.ogg",
+"text": "Taking the cargo home.",
+"voice": "chatterbox/reza-1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/pickup/move_1.ogg",
+"text": "Pickup moving.",
+"voice": "chatterbox/reza-1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/pickup/move_2.ogg",
+"text": "Driving now.",
+"voice": "chatterbox/reza-1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/pickup/select_1.ogg",
+"text": "Supply pickup.",
+"voice": "chatterbox/reza-1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/pickup/select_2.ogg",
+"text": "Pickup ready.",
+"voice": "chatterbox/reza-1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/pickup/select_3.ogg",
+"text": "Load the cargo?",
+"voice": "chatterbox/reza-1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/pickup/under_fire_1.ogg",
+"text": "They hit the pickup! Drive!",
+"voice": "chatterbox/reza-1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/pickup/under_fire_2.ogg",
+"text": "Taking fire! Save the supplies!",
+"voice": "chatterbox/reza-1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/rocket_man/attack_1.ogg",
+"text": "RPG! Fire!",
+"voice": "chatterbox/ganji+1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/rocket_man/attack_2.ogg",
+"text": "Rocket away! Kill the tank!",
+"voice": "chatterbox/ganji+1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/rocket_man/attack_3.ogg",
+"text": "Hit it! Hit it again!",
+"voice": "chatterbox/ganji+1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/rocket_man/created_1.ogg",
+"text": "Rocket Man ready.",
+"voice": "chatterbox/ganji+1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/rocket_man/garrison_1.ogg",
+"text": "Inside. Rockets ready at the window.",
+"voice": "chatterbox/ganji+1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/rocket_man/move_1.ogg",
+"text": "Moving!",
+"voice": "chatterbox/ganji+1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/rocket_man/move_2.ogg",
+"text": "Going, keep low!",
+"voice": "chatterbox/ganji+1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/rocket_man/select_1.ogg",
+"text": "Rocket Man.",
+"voice": "chatterbox/ganji+1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/rocket_man/select_2.ogg",
+"text": "Rocket ready.",
+"voice": "chatterbox/ganji+1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/rocket_man/select_3.ogg",
+"text": "RPG loaded. Show me the tank.",
+"voice": "chatterbox/ganji+1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/rocket_man/under_fire_1.ogg",
+"text": "They are shooting at me! Cover!",
+"voice": "chatterbox/ganji+1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.83
+},
+{
+"file": "audio/voice_ai/tpla/rocket_man/under_fire_2.ogg",
+"text": "Taking fire! Reload, reload!",
+"voice": "chatterbox/ganji+1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/rocket_man/veteran_1.ogg",
+"text": "Every rocket finds a tank!",
+"voice": "chatterbox/ganji+1.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/striker/attack_1.ogg",
+"text": "Striker, fire! Fire!",
+"voice": "chatterbox/ganji-2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/striker/attack_2.ogg",
+"text": "Main gun, kill that tank!",
+"voice": "chatterbox/ganji-2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.6
+},
+{
+"file": "audio/voice_ai/tpla/striker/attack_3.ogg",
+"text": "Hit them! Burn them down!",
+"voice": "chatterbox/ganji-2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/striker/created_1.ogg",
+"text": "The Striker is ready for war.",
+"voice": "chatterbox/ganji-2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/striker/move_1.ogg",
+"text": "Striker moving!",
+"voice": "chatterbox/ganji-2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/striker/move_2.ogg",
+"text": "Tracks rolling, going now!",
+"voice": "chatterbox/ganji-2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/striker/select_1.ogg",
+"text": "Striker ready.",
+"voice": "chatterbox/ganji-2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/striker/select_2.ogg",
+"text": "Striker. Armor is up.",
+"voice": "chatterbox/ganji-2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/striker/select_3.ogg",
+"text": "This is Striker. Give me a target.",
+"voice": "chatterbox/ganji-2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/striker/under_fire_1.ogg",
+"text": "We are hit! Armor holding!",
+"voice": "chatterbox/ganji-2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/striker/under_fire_2.ogg",
+"text": "They are on us! Turn the turret!",
+"voice": "chatterbox/ganji-2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.86
+},
+{
+"file": "audio/voice_ai/tpla/striker/veteran_1.ogg",
+"text": "Striker crew has blood on the tracks!",
+"voice": "chatterbox/ganji-2.0st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/technical/attack_1.ogg",
+"text": "Open fire! Fifty cal, shoot!",
+"voice": "chatterbox/reza+1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/technical/attack_2.ogg",
+"text": "Light them up! Shoot!",
+"voice": "chatterbox/reza+1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/technical/attack_3.ogg",
+"text": "Kill them all, keep firing!",
+"voice": "chatterbox/reza+1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/technical/created_1.ogg",
+"text": "Technical ready. Let us ride.",
+"voice": "chatterbox/reza+1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/technical/move_1.ogg",
+"text": "Technical moving! Drive!",
+"voice": "chatterbox/reza+1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/technical/move_2.ogg",
+"text": "Go, go, hit the gas!",
+"voice": "chatterbox/reza+1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 0.8
+},
+{
+"file": "audio/voice_ai/tpla/technical/select_1.ogg",
+"text": "Technical here.",
+"voice": "chatterbox/reza+1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/technical/select_2.ogg",
+"text": "Technical. Gun is loaded.",
+"voice": "chatterbox/reza+1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/technical/select_3.ogg",
+"text": "Yes? The fifty is ready.",
+"voice": "chatterbox/reza+1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/technical/under_fire_1.ogg",
+"text": "They hit the truck! Drive, drive!",
+"voice": "chatterbox/reza+1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/technical/under_fire_2.ogg",
+"text": "Taking fire! Get us out!",
+"voice": "chatterbox/reza+1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
+},
+{
+"file": "audio/voice_ai/tpla/technical/veteran_1.ogg",
+"text": "This Technical never stops!",
+"voice": "chatterbox/reza+1.5st/ar-v2",
+"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
+"qa": 1.0
 }
 ]
 }

@@ -249,7 +249,7 @@
      ]
     },
     "tpla_rocket_cell": {
-     "folder": "rocket_cell",
+     "folder": "rocket_man",
      "events": [
       "select",
       "move",
@@ -261,7 +261,7 @@
      ]
     },
     "tpla_rattler": {
-     "folder": "rattler",
+     "folder": "technical",
      "events": [
       "select",
       "move",
@@ -272,7 +272,7 @@
      ]
     },
     "tpla_hailstorm": {
-     "folder": "hailstorm",
+     "folder": "bhx35",
      "events": [
       "select",
       "move",
@@ -283,7 +283,7 @@
      ]
     },
     "tpla_scrapback": {
-     "folder": "scrapback",
+     "folder": "striker",
      "events": [
       "select",
       "move",
@@ -294,7 +294,7 @@
      ]
     },
     "tpla_shrike": {
-     "folder": "shrike",
+     "folder": "fajr",
      "events": [
       "select",
       "move",
@@ -305,7 +305,7 @@
      ]
     },
     "tpla_blight": {
-     "folder": "blight",
+     "folder": "koksan",
      "events": [
       "select",
       "move",
@@ -316,7 +316,7 @@
      ]
     },
     "tpla_bus": {
-     "folder": "rattler",
+     "folder": "bmp2",
      "events": [
       "select",
       "move",
@@ -328,29 +328,27 @@
      "alias_of": "tpla_rattler"
     },
     "tpla_backhoe": {
-     "folder": "laborer",
+     "folder": "backhoe",
      "events": [
       "select",
       "move",
       "build",
-      "harvest",
       "under_fire",
       "created"
      ]
     },
     "tpla_pickup": {
-     "folder": "laborer",
+     "folder": "pickup",
      "events": [
       "select",
       "move",
-      "build",
       "harvest",
       "under_fire",
       "created"
      ]
     },
     "tpla_marksman": {
-     "folder": "militia",
+     "folder": "marksman",
      "events": [
       "select",
       "move",
@@ -362,7 +360,7 @@
      ]
     },
     "tpla_insurgent": {
-     "folder": "militia",
+     "folder": "insurgent",
      "events": [
       "select",
       "move",
@@ -374,7 +372,7 @@
      ]
     },
     "tpla_f16": {
-     "folder": "shrike",
+     "folder": "f16",
      "events": [
       "select",
       "move",
@@ -385,7 +383,7 @@
      ]
     },
     "tpla_mirage": {
-     "folder": "shrike",
+     "folder": "mirage",
      "events": [
       "select",
       "move",
@@ -396,7 +394,7 @@
      ]
     },
     "tpla_mig29": {
-     "folder": "shrike",
+     "folder": "mig29",
      "events": [
       "select",
       "move",

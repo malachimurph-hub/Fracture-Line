@@ -6,8 +6,11 @@
 - **BHX-35 vs the real DAMITA.** The real DAMITA is wheeled (8x8). The BHX-35 is tracked on purpose, as requested.
 - **The TPLA AI only uses the Airfield on medium and hard,** and builds just one. Easy never builds one.
 - **The Rifleman (Militia) voice set is unchanged.** It is your M2.5 reference voice.
-- **AI voice QA is not perfect.** A few new lines may score under 0.8 on Whisper word match after retakes; see
-  `tools/voice_qa_m29.json`.
+- **AI voice QA is not perfect.** 24 of the 166 new lines score under 0.8 on Whisper word match after retakes;
+  see `tools/voice_qa_m29.json`. Most of these are acronyms Whisper writes differently ("BX-35", "30 mil").
+  The Fajr "created" line reuses its select line, because generation was stopped before that line was made.
+- **Removed voice folders.** The old voice folders were removed. Only the Rifleman (militia) folder and the
+  announcer folders remain from earlier versions.
 - **Tower see-through only follows units near the screen centre** (the nearest 24). Buildings away from the
   centre stay solid.
 - **Map Builder props are decoration only,** except the five building types, which block their footprint.
