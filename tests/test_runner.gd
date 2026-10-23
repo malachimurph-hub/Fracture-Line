@@ -1792,27 +1792,31 @@ func test_m24() -> void:
 		if not (wv.views[e.id] is BuildingView) and wv.rigs.has(e.id):
 			leg = e
 			break
-	var lr: ConstructionRig = wv.rigs[leg.id]
-	_check(lr.stats["swapped"] > 0, "legacy structure %s clips its meshes while building (%d surfaces)" % [leg.def_id, lr.stats["swapped"]])
-	leg.progress = leg.build_ticks
-	leg.built = true
-	wv.frame(0.0, 0.016)
-	var still_clipped := 0
-	var stack: Array = [wv.views[leg.id]]
-	while not stack.is_empty():
-		var n: Node = stack.pop_back()
-		if n is ConstructionRig or n.is_queued_for_deletion():
-			continue
-		if n is MeshInstance3D:
-			var mi := n as MeshInstance3D
-			var mats: Array = [mi.material_override]
-			for si in mi.get_surface_override_material_count():
-				mats.append(mi.get_surface_override_material(si))
-			for mt in mats:
-				if mt is ShaderMaterial and (mt as ShaderMaterial).shader != null and (mt as ShaderMaterial).shader.resource_path.contains("reveal"):
-					still_clipped += 1
-		stack.append_array(n.get_children())
-	_check(still_clipped == 0, "completed legacy structure is back on its normal materials (%d clipped left)" % still_clipped)
+	if leg == null:
+		# M2.9: the Grid Pylon (the last non-staged structure view) was removed
+		print("  no legacy (non-staged) structure views left - clip test skipped")
+	else:
+		var lr: ConstructionRig = wv.rigs[leg.id]
+		_check(lr.stats["swapped"] > 0, "legacy structure %s clips its meshes while building (%d surfaces)" % [leg.def_id, lr.stats["swapped"]])
+		leg.progress = leg.build_ticks
+		leg.built = true
+		wv.frame(0.0, 0.016)
+		var still_clipped := 0
+		var stack: Array = [wv.views[leg.id]]
+		while not stack.is_empty():
+			var n: Node = stack.pop_back()
+			if n is ConstructionRig or n.is_queued_for_deletion():
+				continue
+			if n is MeshInstance3D:
+				var mi := n as MeshInstance3D
+				var mats: Array = [mi.material_override]
+				for si in mi.get_surface_override_material_count():
+					mats.append(mi.get_surface_override_material(si))
+				for mt in mats:
+					if mt is ShaderMaterial and (mt as ShaderMaterial).shader != null and (mt as ShaderMaterial).shader.resource_path.contains("reveal"):
+						still_clipped += 1
+			stack.append_array(n.get_children())
+		_check(still_clipped == 0, "completed legacy structure is back on its normal materials (%d clipped left)" % still_clipped)
 	# ---- weapon effects
 	var unmapped: Array = []
 	for wid in Content.weapons:
