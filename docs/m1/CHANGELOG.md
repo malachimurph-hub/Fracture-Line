@@ -1,4 +1,4 @@
-# FRACTURE LINE: Changelog
+# Rules of Engagement (formerly FRACTURE LINE): Changelog
 
 ## 0.1.2-m1.2 (2026-10-21): visual pass, Zero Hour build rules, audio v1, voice pipeline
 APK: `FractureLine-M1.2.apk`. It is 19,841,810 bytes (about 18.9 MiB, under the 24 MB limit), versionCode 3, and installs over 0.1.1-m1. It is arm64-v8a only, debug-signed, and apksigner verifies it (v2 and v3 signatures). Textures ship as ETC2 for this phone.

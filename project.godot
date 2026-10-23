@@ -5,14 +5,17 @@ config_version=5
 
 config/quit_on_go_back=false
 
-config/name="Fracture Line"
-config/description="FRACTURE LINE - original mobile RTS (M1 vertical slice)"
+config/name="Rules of Engagement"
+config/description="RULES OF ENGAGEMENT (formerly FRACTURE LINE) - original mobile RTS"
 config/version="0.2.6"
 run/main_scene="res://ui/main_menu.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 boot_splash/bg_color=Color(0.07, 0.08, 0.1, 1)
-boot_splash/show_image=false
+boot_splash/show_image=true
+boot_splash/image="res://ui/logo/roe_splash.png"
 config/icon="res://icon.svg"
+config/use_custom_user_dir=true
+config/custom_user_dir_name="godot/app_userdata/Fracture Line"
 
 [autoload]
 

@@ -49,6 +49,8 @@ const TITLE_MIN := 22
 var _title: Label
 var _subs: Array = []
 var _right: Control
+const LOGO := "res://ui/logo/roe_badge.png"
+var _logo: TextureRect
 
 func _title_block() -> Control:
 	var grad := Gradient.new()
@@ -82,11 +84,25 @@ func _title_block() -> Control:
 		_title.add_theme_font_override("font", f)
 	_title.add_theme_constant_override("shadow_offset_x", 3)
 	_title.add_theme_constant_override("shadow_offset_y", 4)
+	# M2.7: Malachi's RULES OF ENGAGEMENT badge replaces the text title (the label stays as
+	# the fallback if the texture is missing, and keeps the fit/test logic working).
+	var tex := load(LOGO) as Texture2D
+	if tex != null:
+		_logo = TextureRect.new()
+		_logo.name = "Logo"
+		_logo.texture = tex
+		_logo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		_logo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		_logo.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		_logo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		col.add_child(_logo)
+		_title.visible = false
 	col.add_child(_title)
 	var rule := ColorRect.new()
 	rule.color = Color(UiTheme.GOLD, 0.85)
 	rule.custom_minimum_size = Vector2(0, 3)
 	rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	rule.visible = _logo == null
 	col.add_child(rule)
 	_subs = [_shadowed(UiTheme.label(tr("MENU_SUBTITLE"), 15, UiTheme.CYAN), 5),
 		_shadowed(UiTheme.label(tr("MENU_BUILD") % ProjectSettings.get_setting("application/config/version", "M1"), 11, Color(0.78, 0.78, 0.78)), 4)]
@@ -130,6 +146,16 @@ func _fit_title(_panel: Control = null) -> void:
 	if _title.get_theme_font_size("font_size") != sz:
 		_title.add_theme_font_size_override("font_size", sz)
 	_fit_line(_title, avail, f, sz)
+	if _logo != null:
+		# as large as the column allows, leaving room for the subtitle lines and band margins
+		var sr := UiScale.safe_rect
+		var screen_h := sr.size.y if sr.size.y > 0.0 else UiScale.logical_size().y
+		var ts := _logo.texture.get_size()
+		var h := minf(screen_h - 16.0 - 28.0 - 60.0, (avail + 64.0) * ts.y / ts.x)
+		h = maxf(h, 60.0)
+		var want := Vector2(roundf(h * ts.x / ts.y), roundf(h))
+		if not _logo.custom_minimum_size.is_equal_approx(want):
+			_logo.custom_minimum_size = want
 	for l in _subs:
 		_fit_line(l, avail, l.get_theme_font("font"), l.get_theme_font_size("font_size"))
 

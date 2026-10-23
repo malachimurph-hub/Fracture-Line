@@ -1,5 +1,5 @@
 keys,en
-APP_TITLE,FRACTURE LINE
+APP_TITLE,RULES OF ENGAGEMENT
 MENU_SUBTITLE,Skirmish command — EU Alliance
 MENU_BUILD,"Milestone %s · original game, not affiliated with any other RTS"
 MENU_SKIRMISH,Skirmish
@@ -250,7 +250,7 @@ POWER_OVERCHARGE,Shield Overcharge
 POWER_OVERCHARGE_DESC,Your units in the area gain a strong temporary shield.
 POWER_BLACKOUT,Grid Blackout
 POWER_BLACKOUT_DESC,[STUB] Not implemented yet.
-CREDITS_BODY,"FRACTURE LINE — Milestone 2.6 (skirmish: EU Alliance, TPLA and United States).
+CREDITS_BODY,"RULES OF ENGAGEMENT (formerly FRACTURE LINE) — Milestone 2.6 (skirmish: EU Alliance, TPLA and United States).
 Design, code, procedural 3D models (M2.6 model upgrade with automatic LODs), weathering and surface-detail shaders, decals, effects, maps, faction HUD themes, UI and text: original work made for Malachi Murphy with Grok Bot. US unit names are original and only inspired by real equipment roles.
 Textures: ambientCG (ambientcg.com), CC0 1.0 public domain — Ground097, Ground109, Grass004, Rock063, Asphalt033, Gravel035, Concrete034, CorrugatedSteel005, Rust004; winter: Snow006, Ground054, Snow004, Rock035, Ice002, Snow010A; temperate: Grass001, Ground037, Rock023, PavingStones130; arid: Ground090, Ground102, Rock061, Ground079S.
 Soldier models and animations: Quaternius, ""Toon Shooter Game Kit"" (quaternius.com), CC0 1.0 public domain — recoloured and re-equipped per faction, re-proportioned, decimated and baked to vertex animation.

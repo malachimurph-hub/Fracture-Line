@@ -1,4 +1,4 @@
-# FRACTURE LINE 0.2.5 (M2.5) — changelog
+# Rules of Engagement (formerly FRACTURE LINE) 0.2.5 (M2.5) — changelog
 
 APK: FractureLine-M2.5.apk, versionName 0.2.5, versionCode 9 (Android, arm64).
 

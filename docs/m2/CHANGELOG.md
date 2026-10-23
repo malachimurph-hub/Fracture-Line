@@ -1,4 +1,4 @@
-# FRACTURE LINE: Changelog
+# Rules of Engagement (formerly FRACTURE LINE): Changelog
 
 ## 0.2.1 (M2.1, versionCode 5), 2026-10-22
 

@@ -22,7 +22,7 @@ func _ready() -> void:
 	# virtual gesture clock (as in the touch test): slow software-rendered frames must not turn a
 	# tap into a long-press
 	WorldInput.test_clock_ms = 1000
-	var parts := "pause,place,bar,themes,menu"
+	var parts := "pause,place,bar,themes,menu,credits"
 	if args.size() > 1 and not args[1].begins_with("--"):
 		parts = args[1]
 	if "pause" in parts: await test_pause()
@@ -30,6 +30,7 @@ func _ready() -> void:
 	if "bar" in parts: await test_bar_and_top()
 	if "themes" in parts: await test_themes()
 	if "menu" in parts: await test_menu_battle()
+	if "credits" in parts: await test_credits()
 	var failed := false
 	for c in checks:
 		print(("PASS " if c[1] else "FAIL ") + c[0] + ("" if c.size() < 3 else "  (" + str(c[2]) + ")"))
@@ -307,11 +308,22 @@ func test_menu_layout(mm: Node) -> void:
 				n += 1
 				if not screen.encloses((b as Control).get_global_rect()):
 					bad.append([(b as Button).text, (b as Control).get_global_rect()])
-		var tr_ok := screen.encloses(mm._title.get_global_rect())
+		var tr_ok: bool = not mm._title.visible or screen.encloses(mm._title.get_global_rect())
+		if mm._logo != null:
+			tr_ok = tr_ok and screen.encloses(mm._logo.get_global_rect()) and mm._logo.size.y >= 120.0
 		check("menu buttons inside the screen with title '%s'" % t, n >= 3 and bad.is_empty() and tr_ok,
 			"buttons %d outside %s title %s font %d screen %s" % [n, bad, mm._title.get_global_rect(), mm._title.get_theme_font_size("font_size"), screen])
 	mm._title.text = orig
 	mm._fit_title()
+	if mm._logo != null:
+		await frames(3)
+		var lr: Rect2 = mm._logo.get_global_rect()
+		var right_x := INF
+		for b in mm.find_children("*", "Button", true, false):
+			if (b as Control).is_visible_in_tree():
+				right_x = minf(right_x, (b as Control).get_global_rect().position.x)
+		check("menu logo shown, fits the left column, clear of the buttons", lr.size.y >= 120.0 and lr.end.x <= right_x and get_viewport().get_visible_rect().grow(0.5).encloses(lr),
+			"logo %s buttons_x %.0f" % [lr, right_x])
 
 func test_menu_battle() -> void:
 	if m != null:
@@ -345,3 +357,31 @@ func test_menu_battle() -> void:
 	await secs(4.0)
 	await shot("m26_main_menu_battle_2")
 	mm.queue_free()
+
+## M2.7: credits wrap inside the panel and scroll only vertically (nothing cut off or sideways).
+func test_credits() -> void:
+	if m != null:
+		m.queue_free()
+		m = null
+	var cr: Node = (load("res://ui/credits.tscn") as PackedScene).instantiate()
+	add_child(cr)
+	await frames(3)
+	await secs(0.5)
+	var sc: ScrollContainer = cr.find_child("CreditsScroll", true, false)
+	var t: Label = cr.find_child("CreditsText", true, false)
+	check("credits text-fit: scroll + label exist", sc != null and t != null)
+	if sc == null or t == null:
+		cr.queue_free()
+		return
+	var screen := Rect2(Vector2.ZERO, UiScale.logical_size()).grow(0.5)
+	check("credits text-fit: no sideways scroll", sc.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED and sc.get_h_scroll_bar().max_value <= sc.size.x + 0.5,
+		"h max %.1f view %.1f" % [sc.get_h_scroll_bar().max_value, sc.size.x])
+	check("credits text-fit: text wraps within the panel", t.size.x <= sc.size.x + 0.5 and screen.encloses(sc.get_global_rect()), "label %.1f panel %.1f" % [t.size.x, sc.size.x])
+	check("credits text-fit: body scrolls vertically", t.size.y > sc.size.y and sc.get_v_scroll_bar().max_value > sc.size.y, "text h %.0f view h %.0f" % [t.size.y, sc.size.y])
+	check("credits text-fit: starts with the new name", t.text.begins_with("RULES OF ENGAGEMENT"))
+	await shot("m27_credits_top")
+	sc.scroll_vertical = int(sc.get_v_scroll_bar().max_value)
+	await frames(3)
+	await shot("m27_credits_end")
+	cr.queue_free()
+	await frames(2)

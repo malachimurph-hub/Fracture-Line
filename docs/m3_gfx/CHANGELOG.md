@@ -1,4 +1,4 @@
-# FRACTURE LINE 0.2.2 (M2.2 graphics test batch), versionCode 6
+# Rules of Engagement (formerly FRACTURE LINE) 0.2.2 (M2.2 graphics test batch), versionCode 6
 
 This is the first step of GRAPHICS_PLAN.md. The new art is wired into the real game: the same view scene paths that the unit and structure data use.
 
