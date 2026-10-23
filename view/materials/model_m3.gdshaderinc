@@ -110,21 +110,21 @@ void fragment() {
 		emit = base * mix(1.6, 4.2, pulse * pulse); panel = 0.0; weather = 0.0; rough = 0.25;
 	} else if (cls == 20) {
 		int pat = int(UV2.x + 0.5);
-		vec3 dk = base * vec3(0.66, 0.64, 0.56);
-		vec3 lt = base * vec3(1.16, 1.1, 0.92) + vec3(0.012, 0.01, 0.0);
+		vec3 dk = base * vec3(0.7, 0.68, 0.6);
+		vec3 lt = base * vec3(1.18, 1.12, 0.95) + vec3(0.01, 0.008, 0.0);
 		if (pat == 1) {
 			// splinter: hard-edged shards from quantised noise
-			vec3 q = floor(opos * vec3(5.0, 3.0, 5.0) + vec3(0.3, 0.1, 0.7)) / vec3(5.0, 3.0, 5.0);
+			vec3 q = floor(opos * vec3(3.0, 2.0, 3.0) + vec3(0.3, 0.1, 0.7));
 			float n = fract(sin(dot(q, vec3(12.99, 78.23, 37.71))) * 43758.55);
-			vec4 sp = tri(weather_tex, opos + q * 0.35, onrm, 0.7, bias);
-			float k = sp.r * 0.6 + n * 0.4;
-			base = k > 0.62 ? dk : (k < 0.3 ? lt : base);
+			vec4 sp = tri(weather_tex, opos * 0.5 + q * 0.13, onrm, 0.6, bias);
+			float k = sp.r * 0.5 + n * 0.5;
+			base = k > 0.66 ? dk : (k < 0.3 ? lt : base);
 		} else {
-			vec4 cm = tri(weather_tex, opos * (pat == 2 ? vec3(1.6, 0.6, 1.6) : vec3(1.0)) + vec3(3.1, 0.0, 1.7), onrm, 0.85, bias);
-			float a1 = smoothstep(0.56, 0.6, cm.r);
-			float a2 = smoothstep(0.62, 0.66, cm.g);
-			vec3 c2 = pat == 2 ? base * vec3(0.72, 0.6, 0.48) : dk;
-			base = mix(mix(base, c2, a1), pat == 2 ? lt : base * vec3(0.5, 0.48, 0.44), a2 * (1.0 - a1));
+			vec4 cm = tri(weather_tex, opos + vec3(3.1, 0.0, 1.7), onrm, pat == 2 ? 0.55 : 0.42, bias);
+			float a1 = smoothstep(0.55, 0.6, cm.r);
+			float a2 = smoothstep(0.6, 0.65, cm.g) * (1.0 - a1);
+			vec3 c2 = pat == 2 ? base * vec3(0.8, 0.68, 0.55) : base * vec3(0.86, 0.78, 0.6);
+			base = mix(mix(base, c2, a1), pat == 2 ? lt : dk, a2);
 		}
 		stencil = stencil_amount * 0.5;
 	} else if (cls == 18) {
@@ -206,7 +206,7 @@ void fragment() {
 	// ---- M2.7b form readability (Zero Hour-like hard modelling at RTS range) ----
 	if (cls != 5 && cls != 15 && cls != 19) {
 		col *= mix(0.55, 1.0, smoothstep(-0.7, 0.15, onrm.y));      // dark undersides
-		col *= mix(0.8, 1.14, smoothstep(0.25, 0.9, onrm.y));      // sun-catching tops vs walls
+		col *= mix(0.86, 1.14, smoothstep(0.25, 0.9, onrm.y));     // sun-catching tops vs walls
 		float rim = 1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0);
 		col *= 1.0 + 0.22 * rim * rim * rim;                        // silhouette lift
 		if (hi && cls != 2) {

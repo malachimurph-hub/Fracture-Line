@@ -46,6 +46,7 @@ static func build(only: Array) -> void:
 	var et = load("res://tools/gfx_m7/eu_tp_m7.gd")
 	jobs.merge(et.jobs())
 	jobs.merge(et.vjobs())
+	jobs.merge(load("res://tools/gfx_m7/us_v8.gd").jobs(), true)   # M2.7b vehicle remodel supersedes M2.7
 	for k in jobs:
 		if all or k in only:
 			jobs[k].call()

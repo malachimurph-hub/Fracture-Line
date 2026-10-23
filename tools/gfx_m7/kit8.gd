@@ -5,6 +5,26 @@ extends "res://tools/gfx_m7/kit7.gd"
 const VK7 := preload("res://tools/gfx_m3/vehicle_kit.gd")
 const CAMO := 20
 
+var plain := false   ## paint emitted while set is exempt from the faction camo pass (UV2.y = 1)
+
+func color(c: Variant, cls: int) -> void:
+	super.color(c, cls)
+	if cls == PAINT:
+		uv2 = Vector2(0.0, 1.0 if plain else 0.0)
+
+## Thin pane (glass, panel, plate) laid on a quad q (4 coplanar points, any winding), lifted off
+## the surface along its normal on the side of out_hint.
+func pane(q: Array, out_hint: Vector3, th := 0.006, lift := 0.002) -> void:
+	var n: Vector3 = ((q[1] - q[0]) as Vector3).cross(q[3] - q[0]).normalized()
+	if n.dot(out_hint) < 0.0:
+		n = -n
+	var a: Array = []
+	var b: Array = []
+	for p: Vector3 in q:
+		a.append(p + n * lift)
+		b.append(p + n * (lift + th))
+	loft(a, b)
+
 ## Camo-painted surface: pattern 0 US, 1 EU, 2 TPLA (see model_m3.gdshaderinc).
 func camo(c: Variant, pattern: int) -> void:
 	color(c, CAMO)
@@ -48,21 +68,21 @@ func tyre(c: Vector3, r: float, w: float, steers := false, hub: Variant = "#3a3d
 	color("#1d1c1b", WHEEL_RUBBER)
 	# rounded shoulders: three coaxial bands
 	tube(c - Vector3(w * 0.5, 0, 0), c - Vector3(w * 0.3, 0, 0), r * 0.93, seg)
-	tube(c - Vector3(w * 0.32, 0, 0), c + Vector3(w * 0.32, 0, 0), r, seg)
+	tube(c - Vector3(w * 0.32, 0, 0), c + Vector3(w * 0.32, 0, 0), r, seg, -1.0, false)
 	tube(c + Vector3(w * 0.3, 0, 0), c + Vector3(w * 0.5, 0, 0), r * 0.93, seg)
 	color("#252423", WHEEL_RUBBER)
-	for i in seg:   # chevron tread lugs
+	for i in seg:   # staggered tread lugs (alternate shoulders)
 		var a := TAU * (float(i) + 0.5) / float(seg)
-		var p := c + Vector3(0, sin(a), cos(a)) * (r + 0.005)
-		for k in [-1.0, 1.0]:
-			box(Vector3.ZERO, Vector3(w * 0.3, 0.014, r * 0.2), Transform3D(Basis(Vector3.RIGHT, a) * Basis(Vector3.UP, k * 0.35), p + Vector3(k * w * 0.17, 0, 0)))
+		var p := c + Vector3(0, sin(a), cos(a)) * (r + 0.004)
+		var k := 1.0 if i % 2 == 0 else -1.0
+		box(Vector3.ZERO, Vector3(w * 0.62, 0.016, r * 0.22), Transform3D(Basis(Vector3.RIGHT, a) * Basis(Vector3.UP, k * 0.3), p + Vector3(k * w * 0.16, 0, 0)))
 	color(hub, WHEEL_STEEL)
 	var o := c + Vector3(side * w * 0.5, 0, 0)
 	tube(o - Vector3(side * 0.01, 0, 0), o + Vector3(side * 0.006, 0, 0), r * 0.6, seg)
-	tube(o, o + Vector3(side * 0.028, 0, 0), r * 0.24, 8)
-	for i in 6:
-		var a2 := TAU * float(i) / 6.0
-		box(o + Vector3(side * 0.012, sin(a2) * r * 0.42, cos(a2) * r * 0.42), Vector3(0.012, r * 0.1, r * 0.1))
+	tube(o, o + Vector3(side * 0.028, 0, 0), r * 0.24, 6)
+	for i in 3:   # spokes make the spin visible
+		var a2 := TAU * float(i) / 3.0
+		box(o + Vector3(side * 0.012, sin(a2) * r * 0.4, cos(a2) * r * 0.4), Vector3(0.012, r * 0.12, r * 0.12))
 	uv = Vector2.ZERO
 	uv2 = Vector2.ZERO
 	_col = keep
@@ -95,11 +115,11 @@ func track_run(sx: float, l: float, n: int, rw: float, tw: float, steel: String,
 			uv = Vector2(c.y, c.z)
 			uv2 = Vector2(c.x, rw)
 			color(rubber, WHEEL_RUBBER)
-			tube(c - Vector3(tw * 0.46, 0, 0), c + Vector3(tw * 0.46, 0, 0), rw, 12)
+			tube(c - Vector3(tw * 0.46, 0, 0), c + Vector3(tw * 0.46, 0, 0), rw, 10)
 			color(steel, WHEEL_STEEL)
 			var o := c + Vector3(signf(s) * tw * 0.46, 0, 0)
-			tube(o - Vector3(signf(s) * 0.004, 0, 0), o + Vector3(signf(s) * 0.008, 0, 0), rw * 0.62, 10)
-			tube(o, o + Vector3(signf(s) * 0.016, 0, 0), rw * 0.22, 6)
+			tube(o - Vector3(signf(s) * 0.004, 0, 0), o + Vector3(signf(s) * 0.01, 0, 0), rw * 0.66, 8)
+			box(Vector3.ZERO, Vector3(0.012, rw * 0.3, rw * 0.3), Transform3D(Basis(Vector3.RIGHT, 0.4 * float(i)), o + Vector3(signf(s) * 0.012, 0, 0)))
 		sprocket(Vector3(s, rw * 1.55, -hl + rw * 1.15), rw * 1.15, tw * 0.8, 10, steel)
 		sprocket(Vector3(s, rw * 1.75, hl - rw * 1.05), rw * 0.95, tw * 0.75, 0, steel)
 		color(steel, STEEL)
