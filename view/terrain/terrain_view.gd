@@ -442,9 +442,18 @@ func _build_props(tiles_path: String) -> void:
 			mat = prop_sway_material
 		elif kind in ["gas_station", "shack", "power_pole", "streetlight", "streetlight_double"] or PropMeshes.FOOTPRINT.has(kind):
 			mat = prop_detail_material
-		_multimesh(by_kind[kind], mesh, mat, kind)
+		# M2.9: one MultiMesh per kind per 32x32-tile chunk so off-screen props are frustum-culled
+		# (dense urban maps carry thousands of cars / lights / towers)
+		var chunks := {}
+		for it in by_kind[kind]:
+			var ck := Vector2i(int(it[0]) >> 5, int(it[1]) >> 5)
+			if not chunks.has(ck):
+				chunks[ck] = []
+			chunks[ck].append(it)
+		for ck in chunks:
+			_multimesh(chunks[ck], mesh, mat, kind, "_%d_%d" % [ck.x, ck.y])
 
-func _multimesh(items: Array, mesh: Mesh, mat: Material, kind: String) -> void:
+func _multimesh(items: Array, mesh: Mesh, mat: Material, kind: String, suffix: String = "") -> void:
 	var mm := MultiMesh.new()
 	mm.transform_format = MultiMesh.TRANSFORM_3D
 	mm.use_colors = true
@@ -463,10 +472,10 @@ func _multimesh(items: Array, mesh: Mesh, mat: Material, kind: String) -> void:
 		mm.set_instance_transform(i, Transform3D(b, Vector3(x, y, z)))
 		mm.set_instance_color(i, (prop_tint.darkened(n * 0.15) if jitter else prop_tint))
 	var mmi := MultiMeshInstance3D.new()
-	mmi.name = "Props_" + kind
+	mmi.name = "Props_" + kind + suffix
 	mmi.multimesh = mm
 	mmi.material_override = mat
-	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if kind.begins_with("car_") else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	add_child(mmi)
 
 ## Rebuild the fog texture for the local team (called at 5 Hz when fog changes).

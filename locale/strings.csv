@@ -464,3 +464,7 @@ UNIT_TPLA_MIG29,Fulcrum Interceptor
 UNIT_TPLA_MIG29_DESC,"MiG-29-based interceptor: the best TPLA air-to-air fighter, no ground attack. Uses 2 airfield slots."
 BLD_TPLA_AIRFIELD,Airfield
 BLD_TPLA_AIRFIELD_DESC,Builds TPLA jets. 6 parking slots; every TPLA jet uses 2. Jets land here to rearm.
+MAP_CRESCENT,Crescent City
+MAP_CRESCENT_DESC,"Desert metropolis. A dense downtown of glass and office towers fills the ground between the four bases: a street grid choked with parked cars, a wide central boulevard, plazas with supplies and garrisonable blocks."
+MAP_RIVERSIDE,Riverside Metro
+MAP_RIVERSIDE_DESC,"Temperate city split by a river. Four avenue bridges and two edge fords link north and south; apartment towers, shop rows and parked cars line every street."

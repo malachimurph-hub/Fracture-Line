@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="MapDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/map_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"crescent_city"
+name_key = "MAP_CRESCENT"
+description_key = "MAP_CRESCENT_DESC"
+size = Vector2i(256, 256)
+tiles_path = "res://data/maps/crescent_city.txt"
+spawns = Array[Vector2i]([Vector2i(30, 30), Vector2i(222, 222), Vector2i(222, 30), Vector2i(30, 222)])
+resources = Array[Dictionary]([{"kind": "seam", "tile": Vector2i(13, 53), "amount": 85000}, {"kind": "seam", "tile": Vector2i(242, 53), "amount": 85000}, {"kind": "seam", "tile": Vector2i(13, 202), "amount": 85000}, {"kind": "seam", "tile": Vector2i(242, 202), "amount": 85000}, {"kind": "cache", "tile": Vector2i(53, 14), "amount": 20000}, {"kind": "cache", "tile": Vector2i(202, 14), "amount": 20000}, {"kind": "cache", "tile": Vector2i(53, 241), "amount": 20000}, {"kind": "cache", "tile": Vector2i(202, 241), "amount": 20000}, {"kind": "seam", "tile": Vector2i(81, 94), "amount": 40000}, {"kind": "seam", "tile": Vector2i(174, 94), "amount": 40000}, {"kind": "seam", "tile": Vector2i(81, 161), "amount": 40000}, {"kind": "seam", "tile": Vector2i(174, 161), "amount": 40000}, {"kind": "cache", "tile": Vector2i(96, 65), "amount": 8000}, {"kind": "cache", "tile": Vector2i(159, 65), "amount": 8000}, {"kind": "cache", "tile": Vector2i(96, 190), "amount": 8000}, {"kind": "cache", "tile": Vector2i(159, 190), "amount": 8000}, {"kind": "cache", "tile": Vector2i(65, 111), "amount": 8000}, {"kind": "cache", "tile": Vector2i(190, 111), "amount": 8000}, {"kind": "cache", "tile": Vector2i(65, 144), "amount": 8000}, {"kind": "cache", "tile": Vector2i(190, 144), "amount": 8000}])
+neutrals = Array[Dictionary]([{"kind": "neutral_pump", "tile": Vector2i(10, 70)}, {"kind": "neutral_pump", "tile": Vector2i(244, 70)}, {"kind": "neutral_pump", "tile": Vector2i(10, 184)}, {"kind": "neutral_pump", "tile": Vector2i(244, 184)}, {"kind": "neutral_pump", "tile": Vector2i(70, 10)}, {"kind": "neutral_pump", "tile": Vector2i(184, 10)}, {"kind": "neutral_pump", "tile": Vector2i(70, 244)}, {"kind": "neutral_pump", "tile": Vector2i(184, 244)}, {"kind": "neutral_civ_block", "tile": Vector2i(78, 78)}, {"kind": "neutral_civ_block", "tile": Vector2i(175, 78)}, {"kind": "neutral_civ_block", "tile": Vector2i(78, 175)}, {"kind": "neutral_civ_block", "tile": Vector2i(175, 175)}, {"kind": "neutral_civ_block", "tile": Vector2i(108, 78)}, {"kind": "neutral_civ_block", "tile": Vector2i(145, 78)}, {"kind": "neutral_civ_block", "tile": Vector2i(108, 175)}, {"kind": "neutral_civ_block", "tile": Vector2i(145, 175)}, {"kind": "neutral_civ_block", "tile": Vector2i(78, 108)}, {"kind": "neutral_civ_block", "tile": Vector2i(175, 108)}, {"kind": "neutral_civ_block", "tile": Vector2i(78, 145)}, {"kind": "neutral_civ_block", "tile": Vector2i(175, 145)}])
+env = &"desert"

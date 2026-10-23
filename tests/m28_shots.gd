@@ -138,7 +138,7 @@ func run_airfield() -> void:
 func run_infantry() -> void:
 	await _start("harrow_junction", ["us", "eu", "tpla"], false)
 	var c := _open_spot(Vector2i(12, 6), Vector2i(60, 40))
-	var row := [[0, [&"us_grunt", &"us_javelin", &"us_jtac", &"us_sniper"]], [1, [&"eu_grenadier", &"eu_lancer"]], [2, [&"tpla_militia", &"tpla_rocket_cell", &"tpla_laborer"]]]
+	var row := [[0, [&"us_grunt", &"us_javelin", &"us_jtac", &"us_sniper"]], [1, [&"eu_grenadier", &"eu_lancer"]], [2, [&"tpla_militia", &"tpla_rocket_cell", &"tpla_marksman"]]]
 	var z := 0
 	for r in row:
 		var x := 0
