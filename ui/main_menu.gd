@@ -14,9 +14,11 @@ func build() -> void:
 	h.add_child(left)
 	left.add_child(_title_block())
 	var right := VBoxContainer.new()
+	_right = right
 	right.alignment = BoxContainer.ALIGNMENT_CENTER
 	right.add_theme_constant_override("separation", 10)
 	h.add_child(right)
+	_fit_title.call_deferred()
 	var b := UiTheme.button(tr("MENU_SKIRMISH"), Vector2(260, 56))
 	b.add_theme_font_size_override("font_size", 18)
 	b.pressed.connect(func(): GameSession.goto("res://ui/skirmish_setup.tscn"))
@@ -45,6 +47,8 @@ const TITLE_SIZE := 46
 const TITLE_MIN := 22
 
 var _title: Label
+var _subs: Array = []
+var _right: Control
 
 func _title_block() -> Control:
 	var grad := Gradient.new()
@@ -84,35 +88,50 @@ func _title_block() -> Control:
 	rule.custom_minimum_size = Vector2(0, 3)
 	rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	col.add_child(rule)
-	col.add_child(_shadowed(UiTheme.label(tr("MENU_SUBTITLE"), 15, UiTheme.CYAN), 5))
-	col.add_child(_shadowed(UiTheme.label(tr("MENU_BUILD") % ProjectSettings.get_setting("application/config/version", "M1"), 11, Color(0.78, 0.78, 0.78)), 4))
+	_subs = [_shadowed(UiTheme.label(tr("MENU_SUBTITLE"), 15, UiTheme.CYAN), 5),
+		_shadowed(UiTheme.label(tr("MENU_BUILD") % ProjectSettings.get_setting("application/config/version", "M1"), 11, Color(0.78, 0.78, 0.78)), 4)]
+	for l in _subs:
+		col.add_child(l)
 	panel.resized.connect(_fit_title.bind(panel))
+	UiScale.changed.connect(func(): _fit_title(panel))
 	return panel
 
 ## Shrink the title until it fits the left column (long or localised titles); past the
 ## minimum size it wraps onto more lines instead of pushing the buttons off screen.
-func _fit_title(panel: Control) -> void:
-	var host := panel.get_parent() as Control
-	var row := host.get_parent() as Control if host != null else null
-	if _title == null or row == null or row.size.x <= 0.0:
+## The column width comes from the safe rect minus the button column, never from the row
+## (the row has already been stretched by an over-wide title).
+func title_column_width() -> float:
+	var sr := UiScale.safe_rect
+	var w := sr.size.x if sr.size.x > 0.0 else UiScale.logical_size().x
+	w -= 24.0   # body margins (ScreenBase._fit)
+	var row := _right.get_parent() as Control if _right != null else null
+	if _right != null:
+		w -= _right.get_combined_minimum_size().x
+	if row != null:
+		w -= float(row.get_theme_constant("separation"))
+	return maxf(w, 120.0)
+
+func _fit_line(l: Label, avail: float, f: Font, sz: int) -> void:
+	var wrap := f.get_string_size(l.text, HORIZONTAL_ALIGNMENT_LEFT, -1, sz).x + 4.0 > avail
+	var mode := TextServer.AUTOWRAP_WORD_SMART if wrap else TextServer.AUTOWRAP_OFF
+	var min_w := maxf(avail, 60.0) if wrap else 0.0
+	if l.autowrap_mode != mode or not is_equal_approx(l.custom_minimum_size.x, min_w):
+		l.autowrap_mode = mode
+		l.custom_minimum_size.x = min_w
+
+func _fit_title(_panel: Control = null) -> void:
+	if _title == null:
 		return
-	var col_w := row.size.x
-	for c in row.get_children():
-		if c != host and c is Control:
-			col_w -= (c as Control).size.x + float(row.get_theme_constant("separation"))
-	var avail := col_w - 22.0 - 64.0 - 8.0
+	var avail := title_column_width() - 22.0 - 64.0 - 8.0
 	var f := _title.get_theme_font("font")
 	var sz := TITLE_SIZE
 	while sz > TITLE_MIN and f.get_string_size(_title.text, HORIZONTAL_ALIGNMENT_LEFT, -1, sz).x + 20.0 > avail:
 		sz -= 2
-	var wrap := f.get_string_size(_title.text, HORIZONTAL_ALIGNMENT_LEFT, -1, sz).x + 20.0 > avail
-	var mode := TextServer.AUTOWRAP_WORD_SMART if wrap else TextServer.AUTOWRAP_OFF
-	var min_w := maxf(avail, 80.0) if wrap else 0.0
 	if _title.get_theme_font_size("font_size") != sz:
 		_title.add_theme_font_size_override("font_size", sz)
-	if _title.autowrap_mode != mode or not is_equal_approx(_title.custom_minimum_size.x, min_w):
-		_title.autowrap_mode = mode
-		_title.custom_minimum_size.x = min_w
+	_fit_line(_title, avail, f, sz)
+	for l in _subs:
+		_fit_line(l, avail, l.get_theme_font("font"), l.get_theme_font_size("font_size"))
 
 ## M2.7b: title text stays readable over bright (snow) battle maps: dark outline + soft drop
 ## shadow on the label itself (the backdrop also gets a gradient behind the title column).
