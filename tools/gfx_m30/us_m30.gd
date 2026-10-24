@@ -38,7 +38,7 @@ static func jobs() -> Dictionary:
 		"us_barracks": func() -> void: u._make("barracks", Vector2(3, 3), 1.3, _barracks),
 		"us_garage": func() -> void: u._make("garage", Vector2(4, 4), 1.55, _motor_pool),
 		"us_reactor": func() -> void: u._make("reactor", Vector2(3, 3), 2.1, _reactor_white),
-		"us_strategy": func() -> void: u._make("strategy", Vector2(3, 3), 1.0, _pentagon),   # M3.0.1: Pentagon-style (was the office block, _office)
+		"us_strategy": func() -> void: u._make("strategy", Vector2(4, 4), 1.3, _pentagon),   # M3.1: bigger (4 x 4)   # M3.0.1: Pentagon-style (was the office block, _office)
 		"us_airfield": func() -> void: u._make("airfield", Vector2(8, 8), 2.2, _airfield_lit),
 		"us_drop_zone": func() -> void: u._make("drop_zone", Vector2(3, 3), 1.0, _data_center),
 		"us_firebase": func() -> void: u._make("firebase", Vector2(2, 2), 0.9, _m777_pad, _m777, Vector3(0, Y0 + 0.02, 0)),
@@ -157,12 +157,13 @@ static func _hq(g) -> void:
 	# roof: lattice comms mast, whip antennas, satcom dish, AC unit, hatch
 	g.color(US_S, Geo.STEEL)
 	g.lattice(Vector3(-1.3, by0 + bh + 0.05, -1.25), 0.95, 0.07, 5)
-	for p in [Vector3(-0.2, by0 + bh + 0.05, -1.35), Vector3(0.4, by0 + bh + 0.05, -1.3), Vector3(1.3, by0 + bh + 0.05, -0.2)]:
+	for p in [Vector3(-0.2, by0 + bh + 0.05, -1.35), Vector3(-0.75, by0 + bh + 0.05, -1.3), Vector3(1.35, by0 + bh + 0.05, 0.2)]:
 		V4._antenna(g, p, 0.45)
-	g.dish(Vector3(0.9, by0 + bh + 0.06, -1.05), 0.14, 35.0, 0.25)
-	U()._ac_unit(g, Vector3(-0.5, by0 + bh + 0.05, -0.5))
+	g.dish(Vector3(1.3, by0 + bh + 0.06, -1.3), 0.12, 35.0, 0.25)
+	U()._ac_unit(g, Vector3(-0.55, by0 + bh + 0.05, -0.45))
 	g.color(US_S, Geo.STEEL)
-	g.hatch(Vector3(0.3, by0 + bh + 0.06, -0.4), 0.14)
+	g.hatch(Vector3(-1.1, by0 + bh + 0.06, -0.3), 0.14)
+	_helipad(g, Vector3(0.55, by0 + bh + 0.045, -0.6), 0.62)
 	# flag on a plinth by the entrance, blast walls (T-walls) along the front left
 	g.color(TAN_L, Geo.CONCRETE)
 	g.cbox(Vector3(-0.55, Y0 + 0.04, 1.15), Vector3(0.18, 0.06, 0.18), 0.01)
@@ -175,12 +176,53 @@ static func _hq(g) -> void:
 	g.sandbag(Vector3(1.55, Y0 + 0.03, 1.35), 0.5, 90.0, "#b8a47a")
 	_roof_lights(g, _corners(-0.075, -0.565, 1.55, 0.9, by0 + bh + 0.1) + [Vector3(bx - 0.55, by0 + 0.85, 1.02), Vector3(bx + 0.55, by0 + 0.85, 1.02)], Vector3(-1.3, by0 + bh + 1.05, -1.25))
 
+## M3.1: rooftop helipad (decor, not functional): raised steel deck on legs, touchdown ring,
+## white H, perimeter lights (green edge, amber corners) and a safety-net rim; access stair.
+static func _helipad(g, c: Vector3, r: float) -> void:
+	var dy := 0.07
+	g.color(US_S, Geo.STEEL)
+	for i in 6:
+		var a := TAU * i / 6.0
+		g.tube(c + Vector3(cos(a) * r * 0.7, 0, sin(a) * r * 0.7), c + Vector3(cos(a) * r * 0.7, dy, sin(a) * r * 0.7), 0.018, 6)
+	g.cyl(r * 1.04, r * 1.04, 0.012, 32, Transform3D(Basis.IDENTITY, c + Vector3(0, dy - 0.006, 0)))   # net rim
+	g.color("#41463f", Geo.CONCRETE)
+	g.cyl(r, r, 0.03, 32, Transform3D(Basis.IDENTITY, c + Vector3(0, dy, 0)))
+	var top := c.y + dy + 0.032
+	g.color("#e9e7df", Geo.PAINT)
+	var n := 40
+	for i in n:   # touchdown / positioning circle
+		var a := TAU * (i + 0.5) / n
+		var rr := r * 0.72
+		g.box(Vector3(0, 0, 0), Vector3(rr * TAU / n * 1.05, 0.004, 0.035), Transform3D(Basis(Vector3.UP, -a + PI * 0.5), Vector3(c.x + cos(a) * rr, top, c.z + sin(a) * rr)))
+	for i in n:   # edge stripe
+		var a := TAU * (i + 0.5) / n
+		var rr := r * 0.95
+		g.box(Vector3(0, 0, 0), Vector3(rr * TAU / n * 1.05, 0.004, 0.025), Transform3D(Basis(Vector3.UP, -a + PI * 0.5), Vector3(c.x + cos(a) * rr, top, c.z + sin(a) * rr)))
+	# H
+	var hs := r * 0.42
+	for sx in [-1.0, 1.0]:
+		g.box(Vector3(c.x + sx * hs * 0.5, top + 0.001, c.z), Vector3(hs * 0.2, 0.004, hs * 1.3))
+	g.box(Vector3(c.x, top + 0.001, c.z), Vector3(hs * 0.9, 0.004, hs * 0.2))
+	# perimeter lights
+	for i in 12:
+		var a := TAU * i / 12.0
+		g.color("#ffb347" if i % 3 == 0 else "#5cff7a", Geo.LAMP)
+		g.cbox(Vector3(c.x + cos(a) * r * 0.99, top + 0.01, c.z + sin(a) * r * 0.99), Vector3(0.03, 0.02, 0.03), 0.006)
+	# wind sock on a short pole + access stair to the roof
+	g.color(US_S, Geo.STEEL)
+	g.tube(c + Vector3(r * 0.95, dy, -r * 0.35), c + Vector3(r * 0.95, dy + 0.28, -r * 0.35), 0.008, 4)
+	g.color("#e86a2a", Geo.CANVAS)
+	g.tube(c + Vector3(r * 0.95, dy + 0.27, -r * 0.35), c + Vector3(r * 0.95 + 0.14, dy + 0.25, -r * 0.35 + 0.04), 0.025, 6, 0.012)
+	g.color(US_S, Geo.STEEL)
+	for k in 4:
+		g.box(Vector3(c.x - r * 0.2 + k * 0.0, c.y + k * 0.017, c.z + r + 0.06 + k * 0.03), Vector3(0.16, 0.01, 0.04))
+
 # ================================================================== Strategic Center (Pentagon-style)
 ## Five-sided ring of stepped office wings round a courtyard: limestone facade with window bands,
 ## inner ring a storey higher, courtyard with a small pavilion, flag and a comms mast.
 ## M3.0.1: moved here from the HQ (Malachi: dozers driving out of it looked odd), scaled to the
 ## Strategic Center's 3 x 3 pad (S = 0.74 of the old 4 x 4 layout).
-const PS := 0.74
+const PS := 0.99   # M3.1: 4 x 4 pad (was 0.74 on 3 x 3)
 static func _pentagon(g) -> void:
 	var c := Vector3(0, Y0, 0)
 	var rings := [[1.82 * PS, 1.32 * PS, 0.0, 0.42, LIME], [1.3 * PS, 0.86 * PS, 0.0, 0.56, "#d3ccba"]]

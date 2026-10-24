@@ -23,7 +23,7 @@ static func jobs() -> Dictionary:
 		"us_halberd": func() -> void: _halberd(),
 		"us_lynx": func() -> void: _lynx(),
 		"us_picket": func() -> void: _picket(),
-		"us_longreach": func() -> void: _longreach(),
+		"us_longreach": func() -> void: _m109a7(),   # M3.1: M109A7 self-propelled howitzer
 		"us_dozer": func() -> void: _dozer(),
 		"us_supply_truck": func() -> void: _supply_truck(),
 		"us_harrier": func() -> void: _harrier(),
@@ -195,6 +195,148 @@ static func _halberd() -> void:
 		b.tube(Vector3(0, 0, 1.1), Vector3(0, 0, 1.15), 0.04, 10)
 		b.cbox(Vector3(0, 0.048, 1.09), Vector3(0.03, 0.025, 0.04), 0.005))
 	U()._vfinish(root, model, h, mat, "halberd", [t, b], 1.35)
+
+# ------------------------------------------------------------------ M3.1 M109A7 self-propelled howitzer
+## Tracked SPH: low hull with the engine and driver up front, a big flat-sided turret set back
+## with a long bustle, side crew doors and stowage, commander's cupola with an HMG, and a long
+## 155 mm barrel (fume extractor, double-baffle muzzle brake) resting in a travel lock on the
+## glacis. Barrel elevates when firing (VehicleView.elevate). Olive green (camo pattern 0).
+static func _m109a7() -> void:
+	var mat: Material = load(VK.MAT_PATH)
+	var root := VK._root({"selection_radius": 1.0, "bar_height": 1.3, "recoil": 0.22, "wreck_s": 8.0, "elevate": 0.62})
+	var model := VK._n3(root, root, "Model")
+	var h = K.new()
+	h.track_run(0.5, 1.94, 7, 0.085, 0.25, US_S)
+	# lower hull tub
+	h.color(US_D, Geo.PAINT)
+	h.xloft([[0.98, K.sect(0.2, 0.28, 0.33, 0.3, 0.37, 0.38, 0.0)], [0.78, K.sect(0.13, 0.22, 0.34, 0.34, 0.39, 0.39, 0.0)],
+		[-0.9, K.sect(0.13, 0.22, 0.35, 0.34, 0.39, 0.39, 0.0)], [-0.98, K.sect(0.17, 0.25, 0.36, 0.32, 0.38, 0.38, 0.0)]])
+	# upper hull: raked glacis over the front engine, flat deck, vertical sides over the tracks
+	h.color(US, Geo.PAINT)
+	h.xloft([[1.0, K.sect(0.33, 0.34, 0.36, 0.6, 0.61, 0.58, 0.012)], [0.6, K.sect(0.33, 0.37, 0.47, 0.63, 0.64, 0.62, 0.02)],
+		[-0.92, K.sect(0.33, 0.37, 0.48, 0.63, 0.64, 0.62, 0.02)], [-0.99, K.sect(0.33, 0.36, 0.45, 0.61, 0.62, 0.6, 0.015)]])
+	# track guards / fenders with stowage bins
+	for s in [-1.0, 1.0]:
+		h.color(US_D, Geo.PAINT)
+		h.cbox(Vector3(s * 0.63, 0.345, 0.0), Vector3(0.05, 0.03, 1.94), 0.008)
+		for i in 4:
+			h.color(US if i % 2 == 0 else US_D, Geo.PAINT)
+			h.plate(Vector3(s * 0.655, 0.29, -0.7 + i * 0.47), Vector3(0.025, 0.1, 0.45), Vector3(0, 0, -s * 4.0))
+			h.color(US_S, Geo.STEEL)
+			h.rivets(Vector3(s * 0.672, 0.33, -0.86 + i * 0.47), Vector3(s * 0.672, 0.33, -0.54 + i * 0.47), 3, Vector3(s, 0, 0), 0.006)
+	# engine: front-right grilles; driver: front-left hatch + periscopes
+	h.color("#2b2d2c", Geo.DARK)
+	h.grille(Vector3(0.24, 0.465, 0.42), 0.34, 0.34, 8)
+	h.grille(Vector3(0.24, 0.47, 0.0), 0.3, 0.22, 6)
+	h.color(US_D, Geo.PAINT)
+	h.hatch(Vector3(-0.3, 0.475, 0.5), 0.16)
+	h.color(GLASS_C, Geo.GLASS)
+	for x in [-0.38, -0.3, -0.22]:
+		h.box(Vector3(x, 0.49, 0.6), Vector3(0.05, 0.02, 0.025))
+	V4._lamps(h, 0.5, 0.36, 0.99)
+	h.color(US_S, Geo.STEEL)
+	for x in [-0.36, 0.36]:
+		h.tube(Vector3(x, 0.2, 0.96), Vector3(x, 0.2, 1.04), 0.022, 6)   # tow eyes
+	h.color("#2b2d2c", Geo.DARK)
+	h.vent(Vector3(0.48, 0.44, 0.58), 0.12, 0.05, 3)                       # exhaust
+	# travel lock (barrel crutch) on the glacis
+	h.color(US_S, Geo.STEEL)
+	for x in [-0.07, 0.07]:
+		h.tube(Vector3(x, 0.4, 0.84), Vector3(x * 0.7, 0.62, 0.8), 0.016, 6)
+	h.cbox(Vector3(0, 0.63, 0.8), Vector3(0.2, 0.04, 0.06), 0.008)
+	# rear: big crew/ammo door, steps, tail lamps
+	h.color(US_D, Geo.PAINT)
+	h.cbox(Vector3(0, 0.36, -0.995), Vector3(0.42, 0.22, 0.02), 0.006)
+	h.color(US_S, Geo.STEEL)
+	h.box(Vector3(0.14, 0.38, -1.01), Vector3(0.04, 0.02, 0.02))
+	h.cbox(Vector3(0, 0.15, -1.02), Vector3(0.5, 0.025, 0.08), 0.006)
+	h.color("#b33a2a", Geo.LAMP)
+	for x in [-0.55, 0.55]:
+		h.box(Vector3(x, 0.42, -0.99), Vector3(0.05, 0.03, 0.01))
+	h.color("#ffffff", Geo.TEAM)
+	for s in [-1.0, 1.0]:
+		h.plate(Vector3(s * 0.67, 0.29, 0.0), Vector3(0.006, 0.03, 1.5), Vector3(0, 0, -s * 4.0))
+	# turret: set back on the hull, flat slab sides, chamfered roof, long overhanging bustle
+	var piv := VK._n3(model, root, "TurretPivot", Vector3(0, 0.48, -0.28))
+	var t = K.new()
+	t.color(US_S, Geo.STEEL)
+	t.cyl(0.42, 0.42, 0.03, 18, Transform3D(Basis.IDENTITY, Vector3(0, -0.005, 0)))
+	var plan := [Vector2(-0.52, -0.78), Vector2(0.52, -0.78), Vector2(0.54, 0.3), Vector2(0.42, 0.56), Vector2(-0.42, 0.56), Vector2(-0.54, 0.3)]
+	t.color(US, Geo.PAINT)
+	t.plan_loft(plan, 0.02, 0.33, Vector2(0.97, 0.98))
+	var top: Array = []
+	for q: Vector2 in plan:
+		top.append(Vector2(q.x * 0.97, q.y * 0.98))
+	t.plan_loft(top, 0.33, 0.37, Vector2(0.94, 0.95))
+	# panel seams / welds on the slab sides
+	t.color(US_D, Geo.PAINT)
+	for s in [-1.0, 1.0]:
+		for z in [-0.42, -0.02, 0.28]:
+			t.box(Vector3(s * 0.535, 0.18, z), Vector3(0.006, 0.28, 0.012))
+		t.box(Vector3(s * 0.535, 0.31, -0.24), Vector3(0.006, 0.012, 1.04))
+		# side crew door with handle + hinges
+		t.cbox(Vector3(s * 0.54, 0.16, 0.06), Vector3(0.016, 0.22, 0.22), 0.004)
+		t.color(US_S, Geo.STEEL)
+		t.box(Vector3(s * 0.552, 0.18, 0.14), Vector3(0.01, 0.02, 0.04))
+		t.rivets(Vector3(s * 0.55, 0.08, -0.04), Vector3(s * 0.55, 0.24, -0.04), 3, Vector3(s, 0, 0), 0.007)
+		# stowage racks + bags along the sides
+		t.rail([Vector3(s * 0.55, 0.3, -0.3), Vector3(s * 0.6, 0.3, -0.3), Vector3(s * 0.6, 0.3, -0.72), Vector3(s * 0.55, 0.3, -0.72)], 0.07, 0.12, 0.005)
+		t.color("#6b5a3a" if s < 0 else "#56604a", Geo.CANVAS)
+		t.cbox(Vector3(s * 0.585, 0.25, -0.5), Vector3(0.07, 0.09, 0.36), 0.025)
+		t.color(US, Geo.PAINT)
+	# bustle rack at the rear
+	t.color(US_S, Geo.STEEL)
+	t.rail([Vector3(-0.5, 0.37, -0.78), Vector3(-0.5, 0.37, -0.92), Vector3(0.5, 0.37, -0.92), Vector3(0.5, 0.37, -0.78)], 0.1, 0.16, 0.006)
+	t.color("#5d5236", Geo.CANVAS)
+	t.cbox(Vector3(-0.2, 0.42, -0.86), Vector3(0.4, 0.08, 0.1), 0.025)
+	t.color("#4d5741", Geo.PAINT)
+	t.jerrycan(Vector3(0.3, 0.4, -0.86), 90.0)
+	# roof: commander's cupola + M2-type HMG, loader hatch, vents, sights, antennas
+	t.color(US_D, Geo.PAINT)
+	t.ccyl(0.11, 0.07, 0.015, 12, Transform3D(Basis.IDENTITY, Vector3(0.26, 0.37, -0.2)))
+	t.color(GLASS_C, Geo.GLASS)
+	for i in 6:
+		var a := TAU * i / 6.0
+		t.box(Vector3(0.26 + cos(a) * 0.1, 0.41, -0.2 + sin(a) * 0.1), Vector3(0.025, 0.015, 0.025))
+	U()._mg(t, Vector3(0.26, 0.5, -0.14), 0.0, 0.3)
+	t.color(US_D, Geo.PAINT)
+	t.hatch(Vector3(-0.24, 0.372, -0.3), 0.16)
+	t.color("#2b2d2c", Geo.DARK)
+	t.vent(Vector3(0.0, 0.375, -0.6), 0.3, 0.06, 4)
+	t.color(US_S, Geo.STEEL)
+	t.cbox(Vector3(-0.34, 0.41, 0.26), Vector3(0.1, 0.07, 0.1), 0.01)   # panoramic sight
+	t.color(GLASS_C, Geo.GLASS)
+	t.box(Vector3(-0.34, 0.415, 0.312), Vector3(0.07, 0.035, 0.006))
+	V4._antenna(t, Vector3(-0.46, 0.37, -0.7), 0.6)
+	V4._antenna(t, Vector3(0.46, 0.37, -0.72), 0.5)
+	U()._smoke(t, Vector3(0.5, 0.28, 0.42), 35.0)
+	U()._smoke(t, Vector3(-0.5, 0.28, 0.42), -35.0)
+	t.color("#ffffff", Geo.TEAM)
+	t.box(Vector3(0, 0.2, -0.785), Vector3(0.7, 0.05, 0.01))
+	# mantlet: tall gun shield on the turret face
+	t.color(US_D, Geo.PAINT)
+	t.xloft([[0.62, K.sect(0.08, 0.12, 0.27, 0.15, 0.17, 0.15, 0.03)], [0.54, K.sect(0.06, 0.1, 0.29, 0.18, 0.2, 0.18, 0.03)]])
+	VK._mi(piv, root, "Turret", t.commit(mat))
+	var b = _barrel(piv, root, mat, Vector3(0, 0.19, 0.6), func(b) -> void:
+		b.color("#5d6650", Geo.CANVAS)   # mantlet boot
+		b.tube(Vector3(0, 0, -0.02), Vector3(0, 0, 0.12), 0.075, 12, 0.055)
+		b.color(US, Geo.PAINT)
+		b.gun(0.1, 1.72, 0.05, 0.04, -1.0, false, 12)
+		b.color(US_D, Geo.PAINT)
+		b.tube(Vector3(0, 0, 0.72), Vector3(0, 0, 0.92), 0.058, 12)   # fume extractor
+		for z in [0.71, 0.93]:
+			b.tube(Vector3(0, 0, z - 0.01), Vector3(0, 0, z + 0.01), 0.061, 12)
+		b.color(US_S, Geo.STEEL)
+		for z in [1.71, 1.82]:   # double-baffle muzzle brake
+			b.cbox(Vector3(0, 0, z + 0.03), Vector3(0.15, 0.1, 0.06), 0.014)
+		b.tube(Vector3(0, 0, 1.7), Vector3(0, 0, 1.88), 0.034, 10)
+		b.color("#1d1f1e", Geo.DARK)
+		for x in [-0.076, 0.076]:
+			b.box(Vector3(x, 0, 1.785), Vector3(0.006, 0.06, 0.1))
+		b.color(US_S, Geo.STEEL)
+		for x in [-0.075, 0.075]:
+			b.tube(Vector3(x, 0.055, 0.0), Vector3(x, 0.055, 0.4), 0.022, 8))   # recoil cylinders
+	U()._vfinish(root, model, h, mat, "longreach", [t, b], 1.3)
 
 # ------------------------------------------------------------------ Lynx JLTV (JLTV-inspired)
 static func _lynx() -> void:

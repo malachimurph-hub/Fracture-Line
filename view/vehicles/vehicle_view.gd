@@ -8,6 +8,11 @@ extends EntityView
 @export var recoil: float = 0.12        ## barrel travel (world units) per shot
 @export var steer_max: float = 0.0      ## radians; 0 = no steering wheels
 @export var wreck_s: float = 7.0        ## how long the burnt wreck stays
+@export var elevate: float = 0.0        ## M3.1: radians the barrel lifts while firing (M109A7); 0 = fixed
+
+var _barrel_rx := 0.0
+var _elev := 0.0
+var _elev_hold := 0.0
 
 var barrel: Node3D
 var _barrel_z := 0.0
@@ -27,6 +32,7 @@ func _ready() -> void:
 	barrel = find_child("Barrel", true, false)
 	if barrel != null:
 		_barrel_z = barrel.position.z
+		_barrel_rx = barrel.rotation.x
 	_gather(self)
 
 func _gather(n: Node) -> void:
@@ -51,6 +57,9 @@ func set_team_material(mat: Material) -> void:
 
 func on_fire() -> void:
 	_recoil = 1.0
+	_elev_hold = 4.0
+	if elevate > 0.0 and _elev < 0.5:
+		_elev = 0.5   # snap most of the way up so the shot leaves an elevated tube
 
 ## k = hp / max_hp: soot builds up below ~80 % health.
 func set_health(k: float) -> void:
@@ -95,6 +104,10 @@ func _process(delta: float) -> void:
 	else:
 		_last_yaw = global_rotation.y
 	_last_pos = p
+	if barrel != null and elevate > 0.0 and (_elev > 0.0 or _elev_hold > 0.0):
+		_elev_hold = maxf(0.0, _elev_hold - delta)
+		_elev = move_toward(_elev, 1.0 if _elev_hold > 0.0 else 0.0, delta * (2.5 if _elev_hold > 0.0 else 0.6))
+		barrel.rotation.x = _barrel_rx - elevate * (_elev * _elev * (3.0 - 2.0 * _elev))
 	if barrel != null and (_recoil > 0.0 or barrel.position.z != _barrel_z):
 		_recoil = maxf(0.0, _recoil - delta * 3.5)
 		# fast kick back, slower return

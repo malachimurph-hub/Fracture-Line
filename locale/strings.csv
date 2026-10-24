@@ -212,8 +212,8 @@ REASON_RANK,Needs a higher General rank
 REASON_RESOURCE,Too close to a supply seam
 REASON_STUB,[STUB] Not available yet
 REASON_TERRAIN,Can't build on that ground
-UNIT_EU_CRAWLER,Engineer Vehicle
-UNIT_EU_CRAWLER_DESC,Tracked armoured engineer vehicle. Builds and repairs German structures.
+UNIT_EU_CRAWLER,Engineer Crane
+UNIT_EU_CRAWLER_DESC,"Wheeled mobile site crane. Builds and repairs German structures."
 UNIT_EU_HARVESTER,Logistics Truck
 UNIT_EU_HARVESTER_DESC,Heavy 6x6 military logistics truck. Hauls supplies to a Supply Hub; a roof machine gun for self-defence.
 UNIT_EU_GRENADIER,Panzer-grenadier
@@ -412,8 +412,8 @@ UNIT_US_BRADLEY,M3 Bradley
 UNIT_US_BRADLEY_DESC,Woodland-camo infantry fighting vehicle with a 25mm chain gun. Carries six infantry who can fire from inside.
 UNIT_US_PICKET,MAAS
 UNIT_US_PICKET_DESC,Mobile Anti Air System: launcher pods for aircraft plus a machine gun for light ground targets.
-UNIT_US_LONGREACH,Longreach Howitzer
-UNIT_US_LONGREACH_DESC,"Long-range towed howitzer. Slow to set up, cannot hit close targets. Needs a Strategic Center."
+UNIT_US_LONGREACH,M109A7
+UNIT_US_LONGREACH_DESC,"M109A7 self-propelled 155 mm howitzer. Tracked, long range, cannot hit close targets. Needs a Strategic Center."
 UNIT_US_HARRIER,Harrier Gunship
 UNIT_US_HARRIER_DESC,"Attack helicopter: missiles against vehicles, chin cannon against infantry and light vehicles. Reloads in the air, needs no airfield slot."
 UNIT_US_WRAITH,Wraith Fighter

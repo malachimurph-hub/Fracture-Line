@@ -586,62 +586,100 @@ static func _eu_harvester() -> void:
 
 # ------------------------------------------------------------------ EU Crawler (tracked engineer)
 static func _eu_crawler() -> void:
+	# M3.1: European mobile site crane: 4-axle all-terrain carrier, low cab up front, slewing
+	# superstructure with operator cab + counterweight, telescopic boom laid forward over the
+	# carrier, hook block, outrigger beams and pads. Role and stats unchanged (builder).
 	var mat: Material = load(VK.MAT_PATH)
-	var root := VK._root({"selection_radius": 0.8, "bar_height": 1.17, "recoil": 0.0, "wreck_s": 7.0})
+	var root := VK._root({"selection_radius": 0.85, "bar_height": 1.2, "recoil": 0.0, "wreck_s": 7.0, "steer_max": 0.3})
 	var model := VK._n3(root, root, "Model")
 	var h = K.new()
-	V4._tracks(h, 0.42, 1.4, 5, 0.085, EU_D, EU_S, 0.22)
-	h.color(EU_D, Geo.PAINT)
-	h.prism_x([Vector2(-0.68, 0.14), Vector2(0.55, 0.14), Vector2(0.7, 0.26), Vector2(0.7, 0.36), Vector2(-0.7, 0.38), Vector2(-0.7, 0.18)], -0.3, 0.3)
+	var V8 = load("res://tools/gfx_m7/us_v8.gd")
+	const CY := "#e0b021"      # crane yellow
+	const CY_D := "#b88a1a"
+	const CAR := "#3d4245"     # carrier chassis
+	V8._tyres(h, 0.4, [0.62, 0.3, -0.2, -0.52], 0.135, 0.12, 2, EU_S)
+	# carrier: ladder chassis, fenders over each axle, deck
+	h.color(CAR, Geo.STEEL)
+	h.cbox(Vector3(0, 0.2, 0.0), Vector3(0.42, 0.1, 1.72), 0.012)
 	h.color(EU, Geo.PAINT)
-	h.cbox(Vector3(0, 0.4, -0.15), Vector3(0.98, 0.06, 1.2), 0.012)   # deck / fenders
-	# glazed cab offset left, engine housing right
+	h.xloft([[0.86, K.sect(0.24, 0.26, 0.36, 0.44, 0.47, 0.46, 0.015)], [-0.82, K.sect(0.24, 0.26, 0.36, 0.44, 0.47, 0.46, 0.015)], [-0.88, K.sect(0.24, 0.27, 0.34, 0.42, 0.45, 0.44, 0.012)]])
+	h.plain = true   # crane livery (yellow / white / red-white) is exempt from the faction camo
+	for s in [-1.0, 1.0]:
+		for z in [0.62, 0.3, -0.2, -0.52]:
+			h.color(EU_D, Geo.PAINT)
+			h.prism_x([Vector2(z - 0.17, 0.34), Vector2(z + 0.17, 0.34), Vector2(z + 0.13, 0.38), Vector2(z - 0.13, 0.38)], s * 0.3, s * 0.49)
+		h.color("#e4e0d6", Geo.PAINT)
+		for k in 6:   # red/white hazard chevrons on the deck edge
+			h.color("#c23a2a" if k % 2 == 0 else "#e4e0d6", Geo.PAINT)
+			h.box(Vector3(s * 0.475, 0.31, -0.8 + k * 0.06), Vector3(0.006, 0.05, 0.055))
+		# outrigger beams (stowed) + jack pads
+		h.color(CY_D, Geo.PAINT)
+		for z in [0.47, -0.7]:
+			h.cbox(Vector3(s * 0.43, 0.27, z), Vector3(0.12, 0.07, 0.09), 0.008)
+			h.color(EU_S, Geo.STEEL)
+			h.tube(Vector3(s * 0.5, 0.25, z), Vector3(s * 0.5, 0.12, z), 0.022, 6)
+			h.ccyl(0.05, 0.02, 0.005, 10, Transform3D(Basis.IDENTITY, Vector3(s * 0.5, 0.1, z)))
+			h.color(CY_D, Geo.PAINT)
+	# driver cab: low, offset left, sloped glazing, roof beacon
 	h.color(EU_W, Geo.PAINT)
-	h.cbox(Vector3(-0.2, 0.62, 0.18), Vector3(0.44, 0.38, 0.42), 0.035)
+	var c0 := K.sect(0.36, 0.4, 0.66, 0.15, 0.15, 0.13, 0.025)
+	h.xloft([[0.92, c0], [0.62, K.sect(0.36, 0.4, 0.68, 0.15, 0.15, 0.14, 0.025)]], Transform3D(Basis.IDENTITY, Vector3(-0.27, 0, 0)))
 	h.color(GLASS_C, Geo.GLASS)
-	h.box(Vector3(-0.2, 0.66, 0.395), Vector3(0.36, 0.2, 0.012))
-	h.box(Vector3(-0.425, 0.66, 0.18), Vector3(0.012, 0.2, 0.32))
-	h.box(Vector3(0.025, 0.66, 0.22), Vector3(0.012, 0.2, 0.26))
-	h.color(EU_S, Geo.STEEL)
-	h.rail([Vector3(-0.41, 0.81, 0.38), Vector3(-0.41, 0.81, -0.02), Vector3(0.01, 0.81, -0.02), Vector3(0.01, 0.81, 0.38), Vector3(-0.41, 0.81, 0.38)], 0.05, 0.14, 0.005)
+	h.rbox(Vector3(-0.27, 0.56, 0.925), Vector3(0.26, 0.15, 0.01), Vector3(-12, 0, 0))
+	h.box(Vector3(-0.425, 0.56, 0.78), Vector3(0.01, 0.14, 0.22))
 	h.color("#ffb347", Geo.LAMP)
-	for x in [-0.36, -0.04]:
-		h.cbox(Vector3(x, 0.84, 0.0), Vector3(0.045, 0.04, 0.045), 0.01)   # amber beacons
+	h.cbox(Vector3(-0.27, 0.7, 0.75), Vector3(0.05, 0.04, 0.05), 0.01)
+	V4._lamps(h, 0.3, 0.34, 0.9)
+	# engine box right of the cab, exhaust stack
 	h.color(EU, Geo.PAINT)
-	h.cbox(Vector3(0.26, 0.55, -0.3), Vector3(0.36, 0.24, 0.6), 0.03)
+	h.cbox(Vector3(0.2, 0.45, 0.72), Vector3(0.36, 0.18, 0.34), 0.02)
 	h.color("#2b2d2c", Geo.DARK)
-	h.grille(Vector3(0.26, 0.672, -0.35), 0.28, 0.4, 7)
+	h.grille(Vector3(0.2, 0.545, 0.72), 0.28, 0.24, 6)
 	h.color(EU_S, Geo.STEEL)
-	h.tube(Vector3(0.38, 0.62, -0.05), Vector3(0.38, 0.92, -0.05), 0.022, 6)
-	# dozer blade on push arms (yellow, ribbed, cutting edge)
-	h.color("#d8a531", Geo.PAINT)
-	h.prism_x([Vector2(0.78, 0.08), Vector2(0.84, 0.08), Vector2(0.86, 0.2), Vector2(0.82, 0.4), Vector2(0.76, 0.42), Vector2(0.78, 0.2)], -0.56, 0.56)
-	h.color("#b88a22", Geo.PAINT)
-	for x in [-0.4, -0.13, 0.13, 0.4]:
-		h.box(Vector3(x, 0.25, 0.76), Vector3(0.03, 0.3, 0.04))
+	h.tube(Vector3(0.38, 0.45, 0.58), Vector3(0.38, 0.7, 0.58), 0.02, 6)
+	# superstructure: slewing ring, yellow deck house, operator cab (left), counterweight slabs
 	h.color(EU_S, Geo.STEEL)
-	h.box(Vector3(0, 0.085, 0.845), Vector3(1.12, 0.03, 0.03))
-	for s in [-0.4, 0.4]:
-		h.tube(Vector3(s, 0.22, 0.45), Vector3(s, 0.24, 0.76), 0.03, 6)
-		h.tube(Vector3(s * 0.6, 0.42, 0.42), Vector3(s * 0.6, 0.32, 0.74), 0.02, 6)   # rams
-	# rear crane / tool rack + toolboxes + cable reel
-	h.color("#d8a531", Geo.PAINT)
-	h.cbox(Vector3(-0.2, 0.5, -0.5), Vector3(0.16, 0.14, 0.16), 0.012)
-	h.tube(Vector3(-0.2, 0.56, -0.5), Vector3(-0.2, 0.78, -0.1), 0.026, 6)
-	h.tube(Vector3(-0.2, 0.78, -0.1), Vector3(-0.2, 0.7, 0.05), 0.02, 6)
+	h.cyl(0.26, 0.26, 0.05, 18, Transform3D(Basis.IDENTITY, Vector3(0, 0.385, -0.42)))
+	h.color(CY, Geo.PAINT)
+	h.cbox(Vector3(0.06, 0.52, -0.46), Vector3(0.6, 0.22, 0.6), 0.03)
+	h.color("#2b2d2c", Geo.DARK)
+	h.vent(Vector3(0.364, 0.52, -0.5), 0.3, 0.12, 4, 90.0)
+	h.color(EU_W, Geo.PAINT)
+	h.cbox(Vector3(-0.32, 0.6, -0.26), Vector3(0.18, 0.28, 0.28), 0.02)
+	h.color(GLASS_C, Geo.GLASS)
+	h.rbox(Vector3(-0.32, 0.64, -0.115), Vector3(0.15, 0.2, 0.01), Vector3(-8, 0, 0))
+	h.box(Vector3(-0.415, 0.62, -0.26), Vector3(0.01, 0.2, 0.22))
+	h.color(CY_D, Geo.PAINT)
+	for k in 3:
+		h.cbox(Vector3(0.06, 0.45 + k * 0.075, -0.82), Vector3(0.56, 0.065, 0.14), 0.01)   # counterweight
+	h.color("#c23a2a", Geo.PAINT)
+	h.box(Vector3(0.06, 0.53, -0.895), Vector3(0.5, 0.04, 0.006))
+	# telescopic boom: 3 sections, laid forward over the cab on a boom rest; luffing ram
+	var bt := Transform3D(Basis(Vector3.RIGHT, deg_to_rad(-4.0)), Vector3(0.1, 0.7, -0.55))
+	h.color(CY, Geo.PAINT)
+	h.xloft([[0.0, K.sect(-0.07, -0.06, 0.07, 0.09, 0.1, 0.08, 0.02)], [0.7, K.sect(-0.065, -0.055, 0.065, 0.085, 0.09, 0.075, 0.02)]], bt)
+	h.color(CY_D, Geo.PAINT)
+	h.xloft([[0.7, K.sect(-0.055, -0.045, 0.055, 0.07, 0.075, 0.06, 0.016)], [1.18, K.sect(-0.05, -0.04, 0.05, 0.065, 0.07, 0.055, 0.016)]], bt)
+	h.color(CY, Geo.PAINT)
+	h.xloft([[1.18, K.sect(-0.045, -0.035, 0.045, 0.055, 0.06, 0.045, 0.012)], [1.5, K.sect(-0.04, -0.032, 0.04, 0.05, 0.055, 0.042, 0.012)]], bt)
 	h.color(EU_S, Geo.STEEL)
-	h.tube(Vector3(-0.2, 0.7, 0.05), Vector3(-0.2, 0.6, 0.05), 0.004, 3)
-	h.color("#4e6a8a", Geo.PAINT)
-	h.cbox(Vector3(-0.38, 0.49, -0.6), Vector3(0.18, 0.12, 0.24), 0.012)
-	h.cbox(Vector3(0.38, 0.49, -0.72), Vector3(0.18, 0.12, 0.14), 0.012)
-	h.color("#2e2f2c", Geo.STEEL)
-	h.tube(Vector3(-0.08, 0.5, -0.72), Vector3(0.08, 0.5, -0.72), 0.07, 10)
+	h.tube(bt * Vector3(0, 0.0, 1.5), bt * Vector3(0, -0.03, 1.56), 0.05, 10)   # boom head sheaves
+	h.tube(bt * Vector3(0, -0.05, 1.56), Vector3(0.1, 0.42, 1.0), 0.004, 3)    # hook rope
+	h.color(CY_D, Geo.PAINT)
+	h.cbox(Vector3(0.1, 0.4, 1.0), Vector3(0.07, 0.07, 0.04), 0.008)               # hook block (stowed at the bumper)
+	h.color(EU_S, Geo.STEEL)
+	h.tube(Vector3(0.1, 0.36, 1.0), Vector3(0.1, 0.33, 1.02), 0.012, 6)
+	h.tube(Vector3(0.1, 0.44, -0.3), bt * Vector3(0, -0.07, 0.35), 0.035, 8)       # luffing ram
+	h.cbox(Vector3(0.1, 0.62, 0.52), Vector3(0.12, 0.05, 0.06), 0.008)              # boom rest
+	h.tube(Vector3(0.1, 0.36, 0.52), Vector3(0.1, 0.6, 0.52), 0.016, 6)
 	h.color("#ffffff", Geo.TEAM)
-	for s in [-0.492, 0.492]:
-		h.box(Vector3(s, 0.4, -0.15), Vector3(0.006, 0.04, 0.9))
-	V4._lamps(h, 0.18, 0.66, 0.4)
-	V4._antenna(h, Vector3(0.0, 0.81, -0.0), 0.3)
-	U._vfinish(root, model, h, mat, "crawler", [], 1.17, "eu")
+	for s in [-1.0, 1.0]:
+		h.box(Vector3(s * 0.472, 0.33, 0.1), Vector3(0.006, 0.035, 0.8))
+		h.box(Vector3(0.06 + s * 0.302, 0.5, -0.46), Vector3(0.006, 0.05, 0.4))
+	h.color("#ffb347", Geo.LAMP)
+	h.cbox(Vector3(-0.32, 0.755, -0.26), Vector3(0.04, 0.03, 0.04), 0.008)
+	V4._antenna(h, Vector3(-0.38, 0.7, 0.66), 0.3)
+	U._vfinish(root, model, h, mat, "crawler", [], 1.2, "eu")
 
 # ------------------------------------------------------------------ EU Salamander (flame tank)
 static func _eu_salamander() -> void:

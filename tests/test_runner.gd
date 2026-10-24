@@ -2121,7 +2121,8 @@ func _m25_air() -> void:
 	var landed_rwy := false
 	var max_rwy := 0
 	var ground_tgt := true
-	r.issue({"p": 0, "t": "attack", "ids": [fighter.id], "target": flak.id})
+	var tank2 := w.spawn_unit(&"eu_leopold", 1, null, FX.tile_center(c + Vector2i(-20, -12)))   # M3.1: second sortie (runway queue)
+	r.issue({"p": 0, "t": "attack", "ids": [fighter.id], "target": tank2.id})
 	for i in 2400:
 		r.advance()
 		var on_rwy := 0
@@ -2159,8 +2160,14 @@ func _m25_air() -> void:
 	_check(w2.state_hash() == w.state_hash() and b2.air_state == AirSys.PARKED and b2.air_t == bomber.air_t and b2.air_home == af.id, "save/load keeps airfield, parking and rearm state")
 	# fighter shoots down an enemy helicopter
 	var heli := w.spawn_unit(&"us_harrier", 1, null, FX.tile_center(c + Vector2i(-20, 6)))
+	for i in 2400:   # M3.1: the fighter flew a sortie too; let it land and rearm first
+		if fighter.air_state == AirSys.PARKED and fighter.air_t == 0:
+			break
+		r.advance()
 	r.issue({"p": 0, "t": "attack", "ids": [fighter.id], "target": heli.id})
-	_ticks(r, 400)
+	_ticks(r, 700)
+	if heli.alive:
+		print("  fighter state %d alive %s ammo %s" % [fighter.air_state, fighter.alive, str(fighter.ammo)])
 	_check(not heli.alive, "fighter missiles shoot down a gunship")
 	# gunship hovers at its destination and never lands
 	var g2 := w.spawn_unit(&"us_harrier", 0, null, FX.tile_center(c + Vector2i(-6, -12)))
