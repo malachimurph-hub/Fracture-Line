@@ -5,8 +5,8 @@ Naming rule: real military designations are used in game text; company and brand
 ## A. United States
 - **M1A3** (was Halberd MBT): desert tan finish (new camo pattern 3, solid tan with soft tone variation).
 - **JLTV** (was Lynx JLTV): desert tan.
-- **MAAS - Mobile Anti Air System** (was Picket SHORAD): woodland camo (new pattern 4, M81-style).
-- **NEW: M3 Bradley**: woodland camo, 25mm chain gun (20 dmg, 6-round bursts, hits ground and air), carries
+- **MAAS - Mobile Anti Air System** (was Picket SHORAD): desert tan.
+- **NEW: M3 Bradley** (US only): desert tan, 25mm chain gun (20 dmg, 6-round bursts, hits ground and air), carries
   6 infantry who can fire from inside. 1000 cost, 820 HP. Built at the Motor Pool. Uses the JLTV voice set.
 - **M777A2** (was Fire Base): emplaced towed 155mm howitzer with splayed trails, spades, a double-baffle
   brake and recoil cylinders, behind a sandbag ring with ammo. Balance unchanged.
@@ -28,6 +28,9 @@ Naming rule: real military designations are used in game text; company and brand
   - Strategic Center: an office tower with a mix of lit and dark windows.
 - Voice lines that spoke an old unit name (Halberd, Lynx, Picket, Javelin) were dropped where the unit had
   another line for that event.
+
+- **All US vehicles are desert tan** (follow-up): M1A3, JLTV, MAAS, M3 Bradley, Longreach, Dozer,
+  M1083A1P2 and the attack helicopter. The two jets keep their dark grey (they had no green/camo finish).
 
 ## B. Environment
 - **Trees**: alpha-cut leaf cards on visible branches (oak, pine, snow pine, palm, scrub, bush). Each kind

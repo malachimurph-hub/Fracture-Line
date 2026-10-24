@@ -54,29 +54,29 @@ _surfaces = [{
 metadata/ao_baked = true
 metadata/camo = true
 
-[node name="View" type="Node3D" unique_id=1492052786]
+[node name="View" type="Node3D" unique_id=583282273]
 script = ExtResource("1_o6ddq")
 recoil = 0.03
 selection_radius = 0.7
 bar_height = 1.35
 
-[node name="Model" type="Node3D" parent="." unique_id=1376793813]
+[node name="Model" type="Node3D" parent="." unique_id=302840138]
 
-[node name="TurretPivot" type="Node3D" parent="Model" unique_id=145984023]
+[node name="TurretPivot" type="Node3D" parent="Model" unique_id=2046541083]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.97, -0.25)
 
-[node name="Turret" type="MeshInstance3D" parent="Model/TurretPivot" unique_id=439447519]
+[node name="Turret" type="MeshInstance3D" parent="Model/TurretPivot" unique_id=769557486]
 mesh = SubResource("ArrayMesh_o6ddq")
 
-[node name="Barrel" type="Node3D" parent="Model/TurretPivot" unique_id=2119628690]
+[node name="Barrel" type="Node3D" parent="Model/TurretPivot" unique_id=1585562987]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.13, 0.12)
 
-[node name="BarrelMesh" type="MeshInstance3D" parent="Model/TurretPivot/Barrel" unique_id=1230026843]
+[node name="BarrelMesh" type="MeshInstance3D" parent="Model/TurretPivot/Barrel" unique_id=947248206]
 mesh = SubResource("ArrayMesh_f06hd")
 
-[node name="Hull" type="MeshInstance3D" parent="Model" unique_id=2122236108]
+[node name="Hull" type="MeshInstance3D" parent="Model" unique_id=1567327631]
 mesh = SubResource("ArrayMesh_w2mbs")
 metadata/moves = true
 
-[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=251734463]
+[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=1745946993]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 0)

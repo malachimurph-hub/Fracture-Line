@@ -6,9 +6,9 @@ extends SceneTree
 ## (0 US soft three-tone, 1 EU splinter, 2 TPLA sprayed bands; see model_m3.gdshaderinc). Paint
 ## flagged plain by the generator (UV2.y = 1, e.g. safety-yellow dozer parts) is kept. Same
 ## vertex format, count and LOD chain; idempotent (mesh meta "camo").
-const PAT := {"us": 0, "eu": 1, "tpla": 2}
-## M3.0 per-vehicle overrides: 3 = US desert tan, 4 = US woodland
-const PAT_FILE := {"us/halberd": 3, "us/lynx": 3, "us/supply_truck": 3, "us/picket": 4, "us/bradley": 4}
+const PAT := {"us": 3, "eu": 1, "tpla": 2}   # M3.0: every US vehicle is desert tan
+## M3.0 per-vehicle overrides (3 = US desert tan, 4 = woodland, unused since M3.0 all-tan)
+const PAT_FILE := {"us/wraith": 0, "us/thunderlance": 0}   # grey jets keep their own paint (no camo)
 
 func _initialize() -> void:
 	var paths: Array = Array(OS.get_cmdline_user_args())

@@ -2,7 +2,7 @@ extends RefCounted
 ## M3.0 USA list (tool-time only): original procedural models that resemble the real equipment
 ## (no EA assets, no brand names in text). Buildings reuse the M2.7 assembly (us_m7._make:
 ## foundation, scaffold, damage states, rubble); vehicles reuse the M2.7b kit and node layout.
-## Camo: tools/gfx_m7/camo_pass.gd PAT_FILE (3 = desert tan, 4 = woodland).
+## Camo: tools/gfx_m7/camo_pass.gd - all US vehicles desert tan (pattern 3).
 ##   tools/gfx_m30/build_m30.sh [names...]
 const K := preload("res://tools/gfx_m7/kit8.gd")
 const Geo := preload("res://tools/gfx_m3/geo.gd")
@@ -481,7 +481,7 @@ static func _lpws_mount(g) -> void:
 # ================================================================== M3 Bradley (new unit)
 ## Boxy aluminium-armour IFV: tall slab sides with applique tiles, sloped bow, rear troop ramp,
 ## two-man turret offset right with the 25 mm chain gun, coaxial MG, TOW twin launcher box on the
-## left, commander's sight, smoke dischargers. Woodland camo (PAT_FILE 4).
+## left, commander's sight, smoke dischargers. Desert tan.
 static func _bradley() -> void:
 	var mat: Material = load(VK.MAT_PATH)
 	var root := VK._root({"selection_radius": 0.8, "bar_height": 1.2, "recoil": 0.03, "wreck_s": 7.5})

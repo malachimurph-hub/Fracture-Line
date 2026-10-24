@@ -20,17 +20,17 @@ _surfaces = [{
 metadata/ao_baked = true
 metadata/camo = true
 
-[node name="View" type="Node3D" unique_id=1385223307]
+[node name="View" type="Node3D" unique_id=1743909049]
 script = ExtResource("1_wd3jk")
 recoil = 0.0
 selection_radius = 0.8
 bar_height = 1.3
 
-[node name="Model" type="Node3D" parent="." unique_id=1019794432]
+[node name="Model" type="Node3D" parent="." unique_id=1763758140]
 
-[node name="Hull" type="MeshInstance3D" parent="Model" unique_id=2143259874]
+[node name="Hull" type="MeshInstance3D" parent="Model" unique_id=813159087]
 mesh = SubResource("ArrayMesh_wd3jk")
 metadata/moves = true
 
-[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=1891900743]
+[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=2019131471]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3, 0)
