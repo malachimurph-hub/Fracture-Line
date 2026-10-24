@@ -28,6 +28,7 @@ LOBBY_DIFF_MEDIUM,Medium
 LOBBY_DIFF_HARD,Hard
 LOBBY_COMING_LATER,coming later
 LOBBY_COMING_SOON,Coming soon
+LOADING_BATTLE,Loading battle…
 LOBBY_RANDOM,Random
 LOBBY_MONEY,Starting cash $%d
 LOBBY_FOG,Fog of war + shroud

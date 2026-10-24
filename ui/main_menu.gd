@@ -177,6 +177,13 @@ func _shadowed(l: Label, outline: int) -> Label:
 ## M2.7: 3D at 67% scale instead of a half-size viewport (sharper models), lighter veil.
 func _add_battle_backdrop() -> void:
 	if not Settings.g("menu_battle"):
+		GameSession.drop_menu_backdrop()
+		return
+	var reuse: Control = GameSession.take_menu_backdrop()   # M3.0.1: back from a menu screen
+	if reuse != null:
+		add_child(reuse)
+		move_child(reuse, 1)
+		_add_backdrop_overlays()
 		return
 	var svc := SubViewportContainer.new()
 	svc.name = "BattleBackdrop"
@@ -196,6 +203,9 @@ func _add_battle_backdrop() -> void:
 	var mb := MenuBattle.new()
 	mb.name = "MenuBattle"
 	vp.add_child(mb)
+	_add_backdrop_overlays()
+
+func _add_backdrop_overlays() -> void:
 	# readability: dark gradient on the menu side, light veil elsewhere
 	var veil := ColorRect.new()
 	veil.color = Color(0.03, 0.035, 0.045, 0.16)
@@ -236,9 +246,18 @@ func _add_battle_backdrop() -> void:
 	move_child(back, 4)
 	_old_fps = Engine.max_fps
 	Engine.max_fps = 30
+	_fps_set = true
+
+var _fps_set := false
+
+## M3.0.1: called by GameSession before the backdrop is parked (it leaves this scene).
+func release_backdrop() -> void:
+	if _fps_set:
+		Engine.max_fps = _old_fps
+		_fps_set = false
 
 func _exit_tree() -> void:
-	if _old_fps >= 0 and has_node("BattleBackdrop"):
+	if _fps_set:
 		Engine.max_fps = _old_fps
 
 func _continue() -> void:
@@ -248,7 +267,7 @@ func _continue() -> void:
 		get_tree().reload_current_scene()
 		return
 	GameSession.resume_save = d
-	GameSession.goto("res://match/match.tscn")
+	GameSession.goto_with_loading("res://match/match.tscn", tr("LOADING_BATTLE"))
 
 func go_back() -> void:
 	get_tree().quit()

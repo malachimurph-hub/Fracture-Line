@@ -265,12 +265,13 @@ func _draw_preview() -> void:
 		preview.draw_string(f, p + Vector2(-4, 5), str(i + 1), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color.BLACK)
 
 func _start() -> void:
-	if not _validate():
+	if GameSession.busy or not _validate():
 		return
+	start_btn.disabled = true   # M3.0.1: one tap starts one battle
 	GameSession.setup = cfg.duplicate(true)
 	GameSession.resume_save = {}
 	SaveSystem.clear_suspend()
-	GameSession.goto("res://match/match.tscn")
+	GameSession.goto_with_loading("res://match/match.tscn", tr("LOADING_BATTLE"))
 
 func go_back() -> void:
 	GameSession.setup = cfg.duplicate(true)

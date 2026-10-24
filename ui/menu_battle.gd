@@ -26,7 +26,7 @@ static var force_map: StringName = &""
 const DT := 0.05
 const WAVE := 9              ## units per side per wave
 const REFILL_BELOW := 4      ## new wave when a side drops under this many units
-const MAP_SECONDS := 150.0   ## then a fresh battle on another map
+const MAP_SECONDS := 150.0   ## then the camera cuts to a new shot (M3.0.1: same map)
 const SHOT_SECONDS := 11.0   ## each cinematic shot
 const FX_MUL := 0.45         ## explosion / smoke particle scale in the menu
 const BASE_BACK := 8.0       ## tiles from a side's front back to its base (M2.7b: closer)
@@ -81,7 +81,22 @@ class MenuCam extends Node3D:
 
 func _ready() -> void:
 	_rng.randomize()
+	# M3.0.1: build after the menu has drawn (two frames), so the screen and its buttons show at
+	# once; the backdrop fades in when ready. The build is the slow part (terrain + models).
+	await get_tree().process_frame
+	await get_tree().process_frame
+	if not is_inside_tree():
+		return
 	_new_battle()
+	_fade_in()
+
+## M3.0.1: the backdrop container fades from the flat menu background into the battle.
+func _fade_in() -> void:
+	var svc := get_parent().get_parent() as CanvasItem if get_parent() != null else null
+	if svc == null:
+		return
+	svc.modulate.a = 0.0
+	create_tween().tween_property(svc, "modulate:a", 1.0, 0.6)
 
 ## Units a faction can field here: everything it builds except builders, harvesters, stubs,
 ## suicide units and jets (jets need an airfield to return to).
@@ -173,6 +188,17 @@ func _new_battle() -> void:
 	_shot_t = 0.0
 	_cut = true
 	_place_cam(0.0, 1.0)
+	_map_t = 0.0
+
+## M3.0.1: the fight goes on on the map already built (the waves refill on their own); only
+## the camera cuts to a new shot. A new map is picked each time the backdrop is created, and
+## after a game over. Rebuilding the map here froze the menu for seconds every 150 s.
+func _restart_fight() -> void:
+	if runner.sim.game_over:
+		_new_battle()
+		return
+	_shot = (_shot + 1) % 4
+	_shot_t = 0.0
 	_map_t = 0.0
 
 ## A small, recognisable base for a side: its unarmed structures (HQ, power, production, tech)
@@ -450,7 +476,7 @@ func _process(delta: float) -> void:
 				if not idle.is_empty():
 					runner.issue({"p": pid, "t": "amove", "ids": idle, "pos": _push_target(pid)})
 		if runner.sim.game_over or _map_t > MAP_SECONDS:
-			_new_battle()
+			_restart_fight()   # M3.0.1: same map (a new map froze the menu for seconds)
 			return
 	# camera: the clash point is the smoothed centre of recent firing (both shooters and
 	# impacts), falling back to the armies' centroid; shots cycle every SHOT_SECONDS

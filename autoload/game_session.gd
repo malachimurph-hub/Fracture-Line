@@ -9,6 +9,80 @@ var resume_save: Dictionary = {} ## set when continuing a suspended match
 const MAIN_MENU := "res://ui/main_menu.tscn"
 const ERROR_LOG_PATH := "user://last_error.txt"
 
+## M3.0.1: the main-menu battle backdrop is parked here (paused, not drawn) while a menu screen
+## (Settings, Skirmish lobby, Credits, Map Builder) is open, so Back to the main menu reuses it
+## instead of rebuilding a whole map (seconds of frozen screen on the phone). It is freed when
+## a match starts.
+const MENU_SCREENS := ["res://ui/main_menu.tscn", "res://ui/settings_screen.tscn", "res://ui/skirmish_setup.tscn",
+	"res://ui/credits.tscn", "res://ui/map_builder.tscn"]
+var _parked_backdrop: Control = null
+
+func park_menu_backdrop(svc: Control) -> void:
+	drop_menu_backdrop()
+	svc.get_parent().remove_child(svc)
+	svc.visible = false
+	for vp in svc.get_children():
+		if vp is SubViewport:
+			(vp as SubViewport).render_target_update_mode = SubViewport.UPDATE_DISABLED
+			for n in vp.get_children():
+				n.process_mode = Node.PROCESS_MODE_DISABLED
+	add_child(svc)
+	_parked_backdrop = svc
+
+## The parked backdrop, live again and detached (the caller adds it), or null.
+func take_menu_backdrop() -> Control:
+	var svc := _parked_backdrop
+	_parked_backdrop = null
+	if svc == null or not is_instance_valid(svc):
+		return null
+	remove_child(svc)
+	svc.visible = true
+	for vp in svc.get_children():
+		if vp is SubViewport:
+			(vp as SubViewport).render_target_update_mode = SubViewport.UPDATE_WHEN_VISIBLE
+			for n in vp.get_children():
+				n.process_mode = Node.PROCESS_MODE_INHERIT
+	return svc
+
+## M3.0.1: heavy scene changes (a match) show a "Loading battle" screen first and wait a few
+## frames so it is on screen before the main thread is busy; repeated taps are ignored meanwhile.
+var _loading: CanvasLayer = null
+var busy := false
+
+func goto_with_loading(path: String, text: String) -> void:
+	if busy:
+		return
+	busy = true
+	_loading = CanvasLayer.new()
+	_loading.layer = 90
+	var bg := ColorRect.new()
+	bg.color = Color(0.03, 0.035, 0.045, 0.92)
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.mouse_filter = Control.MOUSE_FILTER_STOP
+	_loading.add_child(bg)
+	var l := UiTheme.label(text, 22, UiTheme.GOLD)
+	l.set_anchors_preset(Control.PRESET_FULL_RECT)
+	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	bg.add_child(l)
+	add_child(_loading)
+	drop_menu_backdrop()
+	for i in 3:   # a frame is drawn between process frames
+		await get_tree().process_frame
+	goto(path)
+	# keep it up until the new scene has drawn its first frames
+	await get_tree().process_frame
+	await get_tree().process_frame
+	if _loading != null:
+		_loading.queue_free()
+		_loading = null
+	busy = false
+
+func drop_menu_backdrop() -> void:
+	if _parked_backdrop != null and is_instance_valid(_parked_backdrop):
+		_parked_backdrop.queue_free()
+	_parked_backdrop = null
+
 var logger := FLLogger.new()
 var _overlay: CanvasLayer = null
 var last_error_text := ""
@@ -54,6 +128,15 @@ func goto(path: String) -> bool:
 	if not bad.is_empty():
 		fail("Scene %s has scripts that failed to compile:\n  %s" % [path, "\n  ".join(bad)])
 		return false
+	var cs := get_tree().current_scene
+	var bd: Node = cs.get_node_or_null("BattleBackdrop") if cs != null else null
+	if path in MENU_SCREENS:
+		if bd is Control and Settings.g("menu_battle"):
+			if cs.has_method("release_backdrop"):
+				cs.release_backdrop()
+			park_menu_backdrop(bd as Control)
+	else:
+		drop_menu_backdrop()   # a match (or anything heavy): free the menu battle first
 	var err := get_tree().change_scene_to_packed(res as PackedScene)
 	if err != OK:
 		fail("Could not open scene %s (error %d: %s)" % [path, err, error_string(err)])

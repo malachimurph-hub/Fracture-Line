@@ -303,32 +303,92 @@ func _build_chunk(cx: int, cy: int) -> void:
 const SHORE_PX := 4
 var shore_texture: ImageTexture
 
+## M3.0.1: the field is the same as before, but (1) only the box around the water (plus a margin
+## wider than the blur reach) is blurred - everything outside stays 0 - and (2) the result is
+## cached per map layout in memory and on disk (user://cache/shore_<hash>.png), so the menu
+## battle and the match on the same map do not rebuild it. It was ~1.6 s of the map load.
+static var _shore_mem := {}
+
 func _build_shore_field() -> void:
 	var W := m.w * SHORE_PX
 	var H := m.h * SHORE_PX
-	var a := PackedFloat32Array()
-	var b := PackedFloat32Array()
-	a.resize(W * H)
-	b.resize(W * H)
+	var key := _shore_key()
+	if _shore_mem.has(key):
+		shore_texture = _shore_mem[key]
+		return
+	var cache_path := "user://cache/shore_%s.png" % key
+	if FileAccess.file_exists(cache_path):
+		var cimg := Image.load_from_file(cache_path)
+		if cimg != null and cimg.get_width() == W and cimg.get_height() == H:
+			if cimg.get_format() != Image.FORMAT_RG8:
+				cimg.convert(Image.FORMAT_RG8)
+			shore_texture = ImageTexture.create_from_image(cimg)
+			_shore_mem[key] = shore_texture
+			return
+	# wet-tile box, grown by a margin past the blur reach (3 passes x 3 px)
+	var tx0 := m.w
+	var ty0 := m.h
+	var tx1 := -1
+	var ty1 := -1
 	for y in m.h:
 		for x in m.w:
 			var tt := m.ttype(Vector2i(x, y))
-			var wet := 1.0 if (tt == SimMap.T.WATER or tt == SimMap.T.BRIDGE or tt == SimMap.T.FORD) else 0.0
-			var deep := 1.0 if (tt == SimMap.T.WATER or tt == SimMap.T.BRIDGE) else 0.0
-			for py in SHORE_PX:
-				for px in SHORE_PX:
-					var k := (y * SHORE_PX + py) * W + x * SHORE_PX + px
-					a[k] = wet
-					b[k] = deep
-	# separable box blur, 3 passes of radius 3 px (~ a gaussian ~1.3 tiles wide)
-	for pass_i in 3:
-		a = _blur(a, W, H, 3)
-		b = _blur(b, W, H, 3)
-	var img := Image.create_empty(W, H, false, Image.FORMAT_RG8)
-	for y in H:
-		for x in W:
-			img.set_pixel(x, y, Color(a[y * W + x], b[y * W + x], 0))
+			if tt == SimMap.T.WATER or tt == SimMap.T.BRIDGE or tt == SimMap.T.FORD:
+				tx0 = mini(tx0, x); ty0 = mini(ty0, y); tx1 = maxi(tx1, x); ty1 = maxi(ty1, y)
+	var data := PackedByteArray()
+	data.resize(W * H * 2)
+	if tx1 >= 0:
+		const MARGIN := 4   # tiles (16 px > 9 px blur reach)
+		tx0 = maxi(0, tx0 - MARGIN); ty0 = maxi(0, ty0 - MARGIN)
+		tx1 = mini(m.w - 1, tx1 + MARGIN); ty1 = mini(m.h - 1, ty1 + MARGIN)
+		var ox := tx0 * SHORE_PX
+		var oy := ty0 * SHORE_PX
+		var sw := (tx1 - tx0 + 1) * SHORE_PX
+		var sh := (ty1 - ty0 + 1) * SHORE_PX
+		var a := PackedFloat32Array()
+		var b := PackedFloat32Array()
+		a.resize(sw * sh)
+		b.resize(sw * sh)
+		for y in range(ty0, ty1 + 1):
+			for x in range(tx0, tx1 + 1):
+				var tt := m.ttype(Vector2i(x, y))
+				var wet := 1.0 if (tt == SimMap.T.WATER or tt == SimMap.T.BRIDGE or tt == SimMap.T.FORD) else 0.0
+				var deep := 1.0 if (tt == SimMap.T.WATER or tt == SimMap.T.BRIDGE) else 0.0
+				if wet == 0.0:
+					continue
+				for py in SHORE_PX:
+					var k0 := ((y - ty0) * SHORE_PX + py) * sw + (x - tx0) * SHORE_PX
+					for px in SHORE_PX:
+						a[k0 + px] = wet
+						b[k0 + px] = deep
+		# separable box blur, 3 passes of radius 3 px (~ a gaussian ~1.3 tiles wide)
+		for pass_i in 3:
+			a = _blur(a, sw, sh, 3)
+			b = _blur(b, sw, sh, 3)
+		for y in sh:
+			var row := ((oy + y) * W + ox) * 2
+			var srow := y * sw
+			for x in sw:
+				data[row + x * 2] = int(clampf(a[srow + x] * 255.0, 0.0, 255.0))
+				data[row + x * 2 + 1] = int(clampf(b[srow + x] * 255.0, 0.0, 255.0))
+	var img := Image.create_from_data(W, H, false, Image.FORMAT_RG8, data)
 	shore_texture = ImageTexture.create_from_image(img)
+	_shore_mem[key] = shore_texture
+	DirAccess.make_dir_recursive_absolute("user://cache")
+	img.save_png(cache_path)
+
+## Hash of the water layout (wet / deep per tile) and size; any map edit gives a new key.
+func _shore_key() -> String:
+	var bytes := PackedByteArray()
+	bytes.resize(m.w * m.h)
+	for y in m.h:
+		for x in m.w:
+			var tt := m.ttype(Vector2i(x, y))
+			bytes[y * m.w + x] = 2 if (tt == SimMap.T.WATER or tt == SimMap.T.BRIDGE) else (1 if tt == SimMap.T.FORD else 0)
+	var hc := HashingContext.new()
+	hc.start(HashingContext.HASH_MD5)
+	hc.update(bytes)
+	return "%dx%d_%d_%s" % [m.w, m.h, SHORE_PX, hc.finish().hex_encode().substr(0, 16)]
 
 static func _blur(src: PackedFloat32Array, W: int, H: int, r: int) -> PackedFloat32Array:
 	var tmp := PackedFloat32Array()
