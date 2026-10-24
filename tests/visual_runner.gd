@@ -354,6 +354,54 @@ func run_touch() -> void:
 	touch(0, q, false)
 	await frames(3)
 	check("hold+drag box selects units", not m.ctl.own_units_selected().is_empty() and tgt.id in m.ctl.selection, m.ctl.selection.size())
+	# 5b. M3.1 two-finger twist rotates the camera (360 yaw); compass resets north
+	m.ctl.set_selection([])
+	var y0: float = m.cam.yaw
+	var ctr := win * 0.5
+	var ang := 0.0
+	var r0 := 120.0
+	var pa := ctr + Vector2(-r0, 0)
+	var pb := ctr + Vector2(r0, 0)
+	touch(0, pa, true)
+	touch(1, pb, true)
+	await frames(1)
+	for i in 12:
+		ang += 0.08
+		var na := ctr + Vector2(-r0, 0).rotated(ang)
+		var nb := ctr + Vector2(r0, 0).rotated(ang)
+		drag(0, na, na - pa)
+		drag(1, nb, nb - pb)
+		pa = na
+		pb = nb
+		await frames(1)
+	touch(1, pb, false)
+	touch(0, pa, false)
+	await frames(3)
+	check("two-finger twist rotates the camera", absf(angle_difference(y0, m.cam.yaw)) > 0.5, m.cam.yaw)
+	m.cam.reset_north()
+	await frames(60)
+	check("compass reset turns the camera back to north", absf(m.cam.yaw) < 0.05, m.cam.yaw)
+	m.cam.yaw = 0.0
+	m.cam.jump_to(FX.to_world(tgt.pos), false)
+	await frames(10)
+	# 5c. M3.1 two fingers held still -> selection box between them, sized live, lift selects
+	var c2 := to_screen(m, tgt)
+	var aq := c2 + Vector2(-60, -40)
+	var bq := c2 + Vector2(60, 40)
+	touch(0, aq, true)
+	touch(1, bq, true)
+	await wait_ms(450)
+	var sel_box_on: bool = m.input.state == WorldInput.G.MULTIBOX
+	for i in 6:
+		aq += Vector2(-25, -18)
+		bq += Vector2(25, 18)
+		drag(0, aq, Vector2(-25, -18))
+		drag(1, bq, Vector2(25, 18))
+		await frames(1)
+	touch(1, bq, false)
+	touch(0, aq, false)
+	await frames(3)
+	check("two-finger hold box selects units between the fingers", sel_box_on and tgt.id in m.ctl.selection, m.ctl.selection.size())
 	# 6. hold + release = attack-move order
 	var before: Array = sim.ents[tgt.id].orders.duplicate()
 	var hp := to_screen(m, tgt) + Vector2(200, 60) * UiScale.dp / 2.0

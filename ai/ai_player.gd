@@ -1092,7 +1092,7 @@ func _air() -> void:
 		var d: UnitDef = w.udef(u)
 		if not d.tags.has("jet") or not u.orders.is_empty() or u.target != 0:
 			continue
-		if u.air_state == AirSys.RETURNING or (u.air_state == AirSys.PARKED and u.air_t > 0) or not AirSys.has_ammo(u, d):
+		if u.air_state == AirSys.RETURNING or u.air_state == AirSys.LANDING or (u.air_state == AirSys.PARKED and u.air_t > 0) or not AirSys.has_ammo(u, d):
 			continue
 		if d.tags.has("fighter"):
 			var air := _enemy_air_near([base_pos(), wave_c], 28)

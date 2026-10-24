@@ -79,7 +79,7 @@ var pre_ok: Array = []                  ## per weapon: target id whose pre-attac
 var ammo: Array = []                    ## per weapon: rounds left in clip
 # M2.5 air layer / US mechanics
 var air_home: int = 0                   ## aircraft: airfield it parks at (0 = none)
-var air_state: int = 0                  ## aircraft: 0 flying, 1 parked/rearming, 2 returning; JTAC: unused
+var air_state: int = 0                  ## aircraft: 0 flying, 1 parked/rearming, 2 returning, 3 taxi/take-off roll, 4 landing (phase = step); JTAC: unused
 var air_t: int = 0                      ## aircraft: rearm ticks left; JTAC: next call-in tick
 var still: int = 0                      ## ticks without moving (stealth while stationary)
 

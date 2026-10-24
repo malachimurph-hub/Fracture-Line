@@ -81,12 +81,13 @@ var air_shadows := {}
 
 func _air_view(id: int, e: SimEntity, ud: UnitDef, v: Node3D, p: Vector3, delta: float) -> Vector3:
 	var jet := ud.tags.has("jet")
-	var want := 0.0 if e.air_state == AirSys.PARKED else (JET_ALT if jet else HELI_ALT)
-	if e.air_state == AirSys.RETURNING and jet:
+	var want := 0.0 if e.air_state == AirSys.PARKED or e.air_state == AirSys.TAXI_OUT else (JET_ALT if jet else HELI_ALT)
+	if e.air_state == AirSys.LANDING and jet:
+		want = 0.0
 		var home := sim.get_ent(e.air_home)
-		if home != null:
-			var d := FX.to_world(e.pos).distance_to(FX.to_world(home.pos))
-			want = clampf(d * 0.35, 0.3, JET_ALT)    # glide path down to the pad
+		if home != null and e.phase == 0:   # M3.1: glide slope down to the touchdown point
+			var td := FX.to_world(AirSys.local_pos(home, AirSys.RWY_X0, AirSys.RWY_Z))
+			want = clampf(FX.to_world(e.pos).distance_to(td) * 0.6, 0.0, JET_ALT)
 	var alt: float = air_alt.get(id, want)
 	alt = move_toward(alt, want, delta * (3.0 if jet else 2.0))
 	air_alt[id] = alt

@@ -207,7 +207,10 @@ func is_air(e: SimEntity) -> bool:
 	return e.kind == SimEntity.Kind.UNIT and Content.unit(e.def_id).move_layer == &"air"
 
 func flying(e: SimEntity) -> bool:
-	return e.kind == SimEntity.Kind.UNIT and e.air_state != AirSys.PARKED and Content.unit(e.def_id).move_layer == &"air"
+	if e.kind != SimEntity.Kind.UNIT or Content.unit(e.def_id).move_layer != &"air":
+		return false
+	# M3.1: taxiing / rolling jets are on the ground (final approach counts as airborne)
+	return e.air_state == AirSys.FLYING or e.air_state == AirSys.RETURNING or (e.air_state == AirSys.LANDING and e.phase == 0)
 
 func faction_of(pid: int) -> StringName:
 	return players[pid].faction if pid >= 0 and pid < players.size() else &"neutral"

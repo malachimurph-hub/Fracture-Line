@@ -2116,8 +2116,28 @@ func _m25_air() -> void:
 	r.issue({"p": 0, "t": "attack", "ids": [bomber.id], "target": tank.id})
 	var took_off := false
 	var dropped := false
-	for i in 500:
+	var taxied := false
+	var lift_ok := false
+	var landed_rwy := false
+	var max_rwy := 0
+	var ground_tgt := true
+	r.issue({"p": 0, "t": "attack", "ids": [fighter.id], "target": flak.id})
+	for i in 2400:
 		r.advance()
+		var on_rwy := 0
+		for j: SimEntity in [bomber, fighter]:
+			if (j.air_state == AirSys.TAXI_OUT and j.phase >= 1) or (j.air_state == AirSys.LANDING and j.phase <= 2):
+				on_rwy += 1
+		max_rwy = maxi(max_rwy, on_rwy)
+		if bomber.air_state == AirSys.TAXI_OUT:
+			taxied = true
+			ground_tgt = ground_tgt and not w.flying(bomber)
+			# lift-off happens from the runway centre line
+			var rw := AirSys.local_pos(af, AirSys.LIFT_X, AirSys.RWY_Z)
+			if bomber.phase == 2 and FX.dist(bomber.pos, rw) < FX.ONE:
+				lift_ok = true
+		if bomber.air_state == AirSys.LANDING and bomber.phase == 1:
+			landed_rwy = landed_rwy or absi(FX.adiff(bomber.face, AirSys.runway_face(af))) < FX.ANG / 32
 		if bomber.air_state == AirSys.FLYING and not took_off:
 			took_off = true
 			_check(not OrderSys.valid_target(w, tank, bomber) and OrderSys.valid_target(w, flak, bomber), "flying bomber: the tank's cannon cannot target it, the flak gun can")
@@ -2126,6 +2146,9 @@ func _m25_air() -> void:
 		if dropped and bomber.air_state == AirSys.PARKED:
 			break
 	_check(took_off and dropped, "bomber takes off and drops its strike on the tank (hp %d -> %d)" % [hp0, tank.hp])
+	_check(taxied and ground_tgt and lift_ok, "M3.1: the bomber taxis to the runway on the ground and lifts off at the end of the strip")
+	_check(landed_rwy, "M3.1: it lands on the strip aligned with the runway, then taxis back to its bay")
+	_check(max_rwy <= 1, "M3.1: one aircraft on the runway at a time (others hold short / hold over the fix)")
 	_check(bomber.air_state == AirSys.PARKED and bomber.air_t > 0, "after one strike the bomber flies home, lands and rearms (%d ticks left)" % bomber.air_t)
 	_check(OrderSys.valid_target(w, tank, bomber), "a parked aircraft is a ground target")
 	# save / load mid-rearm keeps the air state

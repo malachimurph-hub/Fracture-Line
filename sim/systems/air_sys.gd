@@ -13,6 +13,15 @@ const NONE := Vector2i(-1, -1)
 const FLYING := 0
 const PARKED := 1
 const RETURNING := 2
+const TAXI_OUT := 3   ## M3.1: on the ground: bay -> hold-short (phase 0), runway threshold (1), take-off roll (2)
+const LANDING := 4    ## M3.1: final approach (phase 0), touchdown roll-out (1), runway exit (2), lead-in (3), bay (4)
+## M3.1 runway (model space of the 8 x 8 airfield, tiles from the centre; tools/gfx_m7/us_m7.gd
+## _airbase8): strip along +z at RWY_Z, threshold at the -x end, jets take off and land towards +x.
+const RWY_Z := FX.ONE * 315 / 100
+const HOLD_Z := FX.ONE * 23 / 10
+const RWY_X0 := -FX.ONE * 36 / 10     ## threshold / touchdown
+const LIFT_X := FX.ONE * 26 / 10      ## lift-off point
+const APP_X := -FX.ONE * 12           ## approach fix, 8 tiles out from the threshold
 const IDLE_RETURN_TICKS := 40          ## idle airborne jets head home after 2 s
 const JTAC_RADIUS := FX.ONE * 8        ## boost aura around the JTAC
 const JTAC_BONUS := 25                 ## +% damage for artillery / aircraft hitting near a JTAC
@@ -100,15 +109,19 @@ static func bay_of(w: SimWorld, home: SimEntity, u: SimEntity) -> Array:
 	return mine
 
 static func parking_pos(w: SimWorld, home: SimEntity, u: SimEntity) -> Vector2i:
+	return local_pos(home, _bay_x(w, home, u), PARK_DZ * FX.ONE)
+
+## Bay centre along the hangar row (model x, FX units from the footprint centre).
+static func _bay_x(w: SimWorld, home: SimEntity, u: SimEntity) -> int:
 	var nb := maxi(1, w.bdef(home).air_slots / 2)
 	var bay := bay_of(w, home, u)
 	var fpx := home.fp.x * FX.ONE
+	return fpx * (2 * int(bay[0]) + int(bay[1])) / (2 * nb) - fpx / 2
+
+## Airfield model space (FX units from the footprint centre) -> world, for the building's rotation.
+static func local_pos(home: SimEntity, cx: int, cz: int) -> Vector2i:
+	var fpx := home.fp.x * FX.ONE
 	var fpy := home.fp.y * FX.ONE
-	var lx := fpx * (2 * int(bay[0]) + int(bay[1])) / (2 * nb)
-	var lz := fpy / 2 + PARK_DZ * FX.ONE
-	# model space -> footprint for the building's rotation (view: rotation.y = rot * 90 deg)
-	var cx := lx - fpx / 2
-	var cz := lz - fpy / 2
 	match home.rot:
 		1:
 			var t := cx
@@ -140,6 +153,35 @@ static func park_new(w: SimWorld, b: SimEntity, u: SimEntity) -> void:
 		if o != u and o.alive and o.kind == SimEntity.Kind.UNIT and o.air_home == b.id and o.air_state == PARKED:
 			o.pos = parking_pos(w, b, o)
 			o.home = o.pos
+
+## Heading of the runway's take-off / landing direction (model +x) for the building's rotation.
+static func runway_face(home: SimEntity) -> int:
+	var a := local_pos(home, FX.ONE, 0)
+	var b := local_pos(home, 0, 0)
+	return FX.iatan2(a.x - b.x, a.y - b.y)
+
+## One aircraft on the runway at a time: lined up / rolling, or on final / rolling out.
+static func runway_busy(w: SimWorld, home: SimEntity, me: SimEntity) -> bool:
+	for id in w.ids:
+		var o: SimEntity = w.ents[id]
+		if o == me or not o.alive or o.kind != SimEntity.Kind.UNIT or o.air_home != home.id:
+			continue
+		if (o.air_state == TAXI_OUT and o.phase >= 1) or (o.air_state == LANDING and o.phase <= 2):
+			return true
+	return false
+
+## Ground movement towards p at speed spd (taxiing / rolling); true once there.
+static func _taxi_to(u: SimEntity, p: Vector2i, spd: int, turn_rate: int) -> bool:
+	var dist := FX.dist(u.pos, p)
+	if dist <= maxi(spd, 8):
+		MoveSys._set_pos(u, p)
+		return true
+	var want := FX.iatan2(p.x - u.pos.x, p.y - u.pos.y)
+	u.face = Loco.turn(u.face, want, turn_rate)
+	var hv := FX.dir_of(want)
+	MoveSys._set_pos(u, u.pos + Vector2i(hv.x * spd / FX.ONE, hv.y * spd / FX.ONE))
+	u.dir = FX.dir_of(u.face)
+	return false
 
 static func has_ammo(u: SimEntity, d: UnitDef) -> bool:
 	CombatSys._ensure(u, d)
@@ -188,9 +230,24 @@ static func _jet(w: SimWorld, u: SimEntity, d: UnitDef) -> void:
 					_rearm(u, d)
 					w.events.append({"t": "rearmed", "id": u.id, "owner": u.owner})
 			elif not u.orders.is_empty():
-				u.air_state = FLYING
+				u.air_state = TAXI_OUT   # M3.1: taxi to the runway first
+				u.phase = 0
 				u.phase_t = 0
-				w.events.append({"t": "takeoff", "id": u.id})
+				w.events.append({"t": "taxi", "id": u.id})
+		TAXI_OUT:
+			if home == null:
+				u.air_state = FLYING
+				u.home = u.pos
+				return
+			_taxi_out(w, u, d, home)
+		LANDING:
+			if home == null:
+				u.air_state = FLYING
+				u.home = u.pos
+				return
+			u.orders = []
+			u.target = 0
+			_landing(w, u, d, home)
 		RETURNING:
 			if home == null:
 				u.air_state = FLYING
@@ -201,19 +258,25 @@ static func _jet(w: SimWorld, u: SimEntity, d: UnitDef) -> void:
 				return
 			u.orders = []
 			u.target = 0
-			var pp := parking_pos(w, home, u)
-			u.goal = pp
-			if FX.dist(u.pos, pp) <= FX.ONE * 3 / 4:
-				u.air_state = PARKED
-				u.pos = pp
+			# M3.1: fly to the approach fix, then a straight final onto the runway; while the
+			# runway is in use the jet holds (circles) over the fix
+			var fix := local_pos(home, APP_X, RWY_Z)
+			fix.x = clampi(fix.x, FX.ONE * 2, w.map.w * FX.ONE - FX.ONE * 2)
+			fix.y = clampi(fix.y, FX.ONE * 2, w.map.h * FX.ONE - FX.ONE * 2)
+			if FX.dist(u.pos, fix) <= FX.ONE * 2:
+				if not runway_busy(w, home, u):
+					u.air_state = LANDING
+					u.phase = 0
+					u.goal = NONE
+					u.done_goal = NONE
+					u.path = []
+					return
 				u.goal = NONE
-				u.done_goal = NONE
-				u.spd = 0
-				u.face = home.rot * FX.ANG / 4
-				u.air_t = _rearm_ticks(u, d)
-				if u.air_t == 0:
-					_rearm(u, d)
-				w.events.append({"t": "landed", "id": u.id})
+				u.home = fix
+			elif u.goal == NONE and u.home == fix:
+				pass    # holding over the fix
+			else:
+				u.goal = fix
 		_:
 			if not has_ammo(u, d):
 				u.orders = []
@@ -229,6 +292,88 @@ static func _jet(w: SimWorld, u: SimEntity, d: UnitDef) -> void:
 			else:
 				u.phase_t = 0
 
+static func _taxi_speed(d: UnitDef) -> int:
+	return maxi(FX.ONE / 40, FX.speed_per_tick(d.speed_mtps) / 4)
+
+static func _taxi_out(w: SimWorld, u: SimEntity, d: UnitDef, home: SimEntity) -> void:
+	var lp := Loco.params(d)
+	var bx := _bay_x(w, home, u)
+	var tx := _taxi_speed(d)
+	var turn := int(lp["turn"]) * 2
+	match u.phase:
+		0:   # bay -> hold-short line in front of the bay
+			if _taxi_to(u, local_pos(home, bx, HOLD_Z), tx, turn) and not runway_busy(w, home, u):
+				u.phase = 1
+		1:   # onto the runway, back-taxi to the threshold
+			var thr := local_pos(home, RWY_X0, RWY_Z)
+			var lane := local_pos(home, bx, RWY_Z)
+			if u.phase_t == 0:
+				if _taxi_to(u, lane, tx, turn):
+					u.phase_t = 1
+			elif _taxi_to(u, thr, tx, turn):
+				u.phase = 2
+				u.phase_t = 0
+				u.spd = 0
+				u.face = runway_face(home)
+				w.events.append({"t": "lineup", "id": u.id})
+		2:   # take-off roll: full power down the strip, rotate at the lift-off point
+			var maxs := FX.speed_per_tick(d.speed_mtps)
+			u.spd = mini(maxs, u.spd + maxi(1, maxs * 50 / maxi(1, int(lp["accel_ms"]))))
+			u.face = runway_face(home)
+			var lift := local_pos(home, LIFT_X, RWY_Z)
+			if _taxi_to(u, lift, u.spd, turn):
+				u.air_state = FLYING
+				u.phase = 0
+				u.phase_t = 0
+				u.spd = maxi(u.spd, maxs * 55 / 100)
+				w.events.append({"t": "takeoff", "id": u.id})
+	u.goal = NONE
+
+static func _landing(w: SimWorld, u: SimEntity, d: UnitDef, home: SimEntity) -> void:
+	var lp := Loco.params(d)
+	var maxs := FX.speed_per_tick(d.speed_mtps)
+	var bx := _bay_x(w, home, u)
+	var tx := _taxi_speed(d)
+	var turn := int(lp["turn"]) * 2
+	u.goal = NONE
+	match u.phase:
+		0:   # final approach: straight line to the touchdown point, aligning with the runway
+			var td := local_pos(home, RWY_X0, RWY_Z)
+			u.spd = maxi(maxs * 55 / 100, u.spd - maxi(1, maxs / 40))
+			if _taxi_to(u, td, u.spd, int(lp["turn"]) * 3):
+				u.phase = 1
+				u.face = runway_face(home)
+				w.events.append({"t": "touchdown", "id": u.id})
+		1:   # roll-out: brake along the strip
+			u.face = runway_face(home)
+			u.spd = maxi(tx, u.spd - maxi(1, maxs / 25))
+			var end := local_pos(home, LIFT_X, RWY_Z)
+			var exit := local_pos(home, bx, RWY_Z)
+			var past := FX.dist(u.pos, local_pos(home, RWY_X0, RWY_Z)) >= FX.dist(exit, local_pos(home, RWY_X0, RWY_Z))
+			if (u.spd <= tx and past) or _taxi_to(u, end, u.spd, turn):
+				u.phase = 2
+				u.spd = tx
+		2:   # taxi along the strip to the bay's exit
+			if _taxi_to(u, local_pos(home, bx, RWY_Z), tx, turn):
+				u.phase = 3
+		3:   # off the runway onto the hold-short line (runway free for the next one)
+			if _taxi_to(u, local_pos(home, bx, HOLD_Z), tx, turn):
+				u.phase = 4
+		_:   # lead-in line into the bay; park, rearm
+			var pp := parking_pos(w, home, u)
+			if _taxi_to(u, pp, tx, turn):
+				u.air_state = PARKED
+				u.phase = 0
+				u.pos = pp
+				u.goal = NONE
+				u.done_goal = NONE
+				u.spd = 0
+				u.face = home.rot * FX.ANG / 4
+				u.air_t = _rearm_ticks(u, d)
+				if u.air_t == 0:
+					_rearm(u, d)
+				w.events.append({"t": "landed", "id": u.id})
+
 # ------------------------------------------------------------------ flight
 ## Called by MoveSys for every aircraft instead of ground path following.
 static func fly(w: SimWorld, u: SimEntity, d: UnitDef) -> void:
@@ -236,6 +381,8 @@ static func fly(w: SimWorld, u: SimEntity, d: UnitDef) -> void:
 	if u.air_state == PARKED:
 		u.spd = 0
 		return
+	if u.air_state == TAXI_OUT or u.air_state == LANDING:
+		return    # ground roll / taxi / final: AirSys._jet moves it
 	var lp := Loco.params(d)
 	var maxs := FX.speed_per_tick(d.speed_mtps)
 	if u.vet >= 2:
