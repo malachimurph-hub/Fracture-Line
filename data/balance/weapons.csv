@@ -44,5 +44,6 @@ us_aam,110,9000,0,700,aa_missile,0,1,0,missile,0,0,attack,4,8000,30,0,0
 us_gbu,110,3000,0,500,explosive,900,0,1,missile,0,0,attack,1,8000,45,0,0
 us_hellfire,70,7500,0,700,anti_tank,0,0,1,missile,0,300,attack,4,11000,20,0,0
 us_chaingun,12,6000,0,240,autocannon,0,0,1,tracer_heavy,0,0,attack,20,3500,12,0,300
-us_sam,60,10000,0,900,aa_missile,0,1,1,missile,0,0,attack,0,0,12,0,0
+us_bradley_25mm,20,6500,0,260,autocannon,0,1,1,tracer_heavy,0,0,attack,6,1800,12,0,300
+us_sam,15,10000,0,225,aa_missile,0,1,1,tracer_quad,0,0,attack,0,0,12,0,0
 us_firebase_gun,90,10000,1500,2500,explosive,1200,0,1,shell,0,0,attack,0,0,12,600,0

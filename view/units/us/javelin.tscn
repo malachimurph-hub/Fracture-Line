@@ -6,8 +6,8 @@
 [node name="View" type="Node3D"]
 script = ExtResource("1_iv")
 vat = ExtResource("2_vat")
-formation = PackedVector3Array(-0.17, 0, -0.06, 0.17, 0, 0.08)
-selection_radius = 0.38
+formation = PackedVector3Array(0, 0, 0)
+selection_radius = 0.3
 bar_height = 0.78
 
 [node name="Model" type="Node3D" parent="."]

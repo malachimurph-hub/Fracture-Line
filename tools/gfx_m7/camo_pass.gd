@@ -7,6 +7,8 @@ extends SceneTree
 ## flagged plain by the generator (UV2.y = 1, e.g. safety-yellow dozer parts) is kept. Same
 ## vertex format, count and LOD chain; idempotent (mesh meta "camo").
 const PAT := {"us": 0, "eu": 1, "tpla": 2}
+## M3.0 per-vehicle overrides: 3 = US desert tan, 4 = US woodland
+const PAT_FILE := {"us/halberd": 3, "us/lynx": 3, "us/supply_truck": 3, "us/picket": 4, "us/bradley": 4}
 
 func _initialize() -> void:
 	var paths: Array = Array(OS.get_cmdline_user_args())
@@ -40,7 +42,7 @@ func _initialize() -> void:
 			for i in cols.size():
 				if int(cols[i].a * 20.0 + 0.5) == 0 and uv2[i].y < 0.5:
 					cols[i].a = 1.0
-					uv2[i] = Vector2(float(PAT[fac]), 0.0)
+					uv2[i] = Vector2(float(PAT_FILE.get(fac + "/" + String(p).get_file().get_basename(), PAT[fac])), 0.0)
 					k += 1
 			if k == 0:
 				continue

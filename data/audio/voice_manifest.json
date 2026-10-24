@@ -490,6 +490,17 @@
       "veteran"
      ]
     },
+    "us_bradley": {
+     "folder": "lynx",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ]
+    },
     "us_halberd": {
      "folder": "halberd",
      "events": [

@@ -20,8 +20,8 @@ const CLASSES := {
 	&"tpla_rust_shell": "artillery", &"tpla_svd": "rifle", &"tpla_cd_laser": "rifle", &"tpla_f16_bombs": "mortar", &"eu_flamer": "flame",
 	# M2.5 United States
 	&"us_m16": "rifle", &"us_m4": "rifle", &"us_sniper_rifle": "rifle", &"us_lynx_hmg": "mg", &"us_avenger_mg": "mg",
-	&"us_chaingun": "autocannon", &"us_tank_gun": "cannon", &"us_javelin": "missile", &"us_hellfire": "missile",
-	&"us_stinger": "missile", &"us_aam": "missile", &"us_sam": "missile", &"us_howitzer": "artillery",
+	&"us_chaingun": "autocannon", &"us_bradley_25mm": "autocannon", &"us_tank_gun": "cannon", &"us_javelin": "missile", &"us_hellfire": "missile",
+	&"us_stinger": "missile", &"us_aam": "missile", &"us_sam": "quad", &"us_howitzer": "artillery",
 	&"us_firebase_gun": "artillery", &"us_gbu": "mortar",
 }
 const BY_KIND := {"tracer": "rifle", "tracer_heavy": "mg", "shell": "cannon", "missile": "missile",

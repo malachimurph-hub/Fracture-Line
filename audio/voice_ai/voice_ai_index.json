@@ -1214,12 +1214,6 @@
 "speed": 1.112
 },
 {
-"file": "audio/voice_ai/us/javelin/select_1.ogg",
-"text": "Javelin team.",
-"voice": "am_liam:0.6,am_eric:0.4",
-"speed": 1.04
-},
-{
 "file": "audio/voice_ai/us/javelin/select_2.ogg",
 "text": "Missile ready.",
 "voice": "am_echo",
@@ -1232,7 +1226,7 @@
 "speed": 1.051
 },
 {
-"file": "audio/voice_ai/us/javelin/select_4.ogg",
+"file": "audio/voice_ai/us/javelin/select_1.ogg",
 "text": "We've got tubes.",
 "voice": "am_echo",
 "speed": 1.051
@@ -1299,12 +1293,6 @@
 },
 {
 "file": "audio/voice_ai/us/javelin/created_1.ogg",
-"text": "Javelin team ready.",
-"voice": "am_liam:0.6,am_eric:0.4",
-"speed": 1.04
-},
-{
-"file": "audio/voice_ai/us/javelin/created_2.ogg",
 "text": "Anti-armor team on station.",
 "voice": "am_echo",
 "speed": 1.0
@@ -1556,12 +1544,6 @@
 "speed": 0.986
 },
 {
-"file": "audio/voice_ai/us/lynx/select_1.ogg",
-"text": "Lynx ready.",
-"voice": "am_puck:0.6,am_adam:0.4",
-"speed": 1.048
-},
-{
 "file": "audio/voice_ai/us/lynx/select_2.ogg",
 "text": "Truck's hot.",
 "voice": "am_puck:0.6,am_adam:0.4",
@@ -1574,7 +1556,7 @@
 "speed": 1.102
 },
 {
-"file": "audio/voice_ai/us/lynx/select_4.ogg",
+"file": "audio/voice_ai/us/lynx/select_1.ogg",
 "text": "Let's roll.",
 "voice": "am_puck:0.6,am_adam:0.4",
 "speed": 1.102
@@ -1641,12 +1623,6 @@
 },
 {
 "file": "audio/voice_ai/us/lynx/created_1.ogg",
-"text": "Lynx reporting.",
-"voice": "am_puck:0.6,am_adam:0.4",
-"speed": 1.08
-},
-{
-"file": "audio/voice_ai/us/lynx/created_2.ogg",
 "text": "Light vehicle ready.",
 "voice": "am_puck:0.6,am_adam:0.4",
 "speed": 1.112
@@ -1656,12 +1632,6 @@
 "text": "This crew's seen it all.",
 "voice": "am_puck:0.6,am_adam:0.4",
 "speed": 1.027
-},
-{
-"file": "audio/voice_ai/us/halberd/select_1.ogg",
-"text": "Halberd ready.",
-"voice": "am_fenrir",
-"speed": 0.921
 },
 {
 "file": "audio/voice_ai/us/halberd/select_2.ogg",
@@ -1676,7 +1646,7 @@
 "speed": 0.949
 },
 {
-"file": "audio/voice_ai/us/halberd/select_4.ogg",
+"file": "audio/voice_ai/us/halberd/select_1.ogg",
 "text": "Go ahead.",
 "voice": "am_fenrir",
 "speed": 0.968
@@ -1743,12 +1713,6 @@
 },
 {
 "file": "audio/voice_ai/us/halberd/created_1.ogg",
-"text": "Halberd main battle tank, ready.",
-"voice": "am_fenrir",
-"speed": 0.959
-},
-{
-"file": "audio/voice_ai/us/halberd/created_2.ogg",
 "text": "Armor on the field.",
 "voice": "am_fenrir",
 "speed": 0.968
@@ -1758,12 +1722,6 @@
 "text": "This tank has a reputation now.",
 "voice": "am_fenrir",
 "speed": 0.921
-},
-{
-"file": "audio/voice_ai/us/picket/select_1.ogg",
-"text": "Picket ready.",
-"voice": "am_liam:0.5,am_michael:0.5",
-"speed": 1.071
 },
 {
 "file": "audio/voice_ai/us/picket/select_2.ogg",
@@ -1778,7 +1736,7 @@
 "speed": 1.029
 },
 {
-"file": "audio/voice_ai/us/picket/select_4.ogg",
+"file": "audio/voice_ai/us/picket/select_1.ogg",
 "text": "Go ahead.",
 "voice": "am_liam:0.5,am_michael:0.5",
 "speed": 1.082
@@ -1845,12 +1803,6 @@
 },
 {
 "file": "audio/voice_ai/us/picket/created_1.ogg",
-"text": "Picket on station.",
-"voice": "am_liam:0.5,am_michael:0.5",
-"speed": 1.05
-},
-{
-"file": "audio/voice_ai/us/picket/created_2.ogg",
 "text": "Air defense online.",
 "voice": "am_liam:0.5,am_michael:0.5",
 "speed": 1.05

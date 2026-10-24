@@ -112,7 +112,20 @@ void fragment() {
 		int pat = int(UV2.x + 0.5);
 		vec3 dk = base * vec3(0.7, 0.68, 0.6);
 		vec3 lt = base * vec3(1.18, 1.12, 0.95) + vec3(0.01, 0.008, 0.0);
-		if (pat == 1) {
+		if (pat == 3) {
+			// M3.0 US desert tan: solid CARC tan with faint low-frequency tone variation (no camo)
+			vec4 cm = tri(weather_tex, opos * 0.35 + vec3(1.3, 0.0, 2.9), onrm, 0.3, bias);
+			base = vec3(0.56, 0.47, 0.33) * mix(0.92, 1.06, cm.r);
+		} else if (pat == 4) {
+			// M3.0 US woodland (M81-style): green base, brown and black blotches, khaki highlights
+			vec4 cm = tri(weather_tex, opos * 0.8 + vec3(3.1, 0.0, 1.7), onrm, 0.45, bias);
+			vec4 cm2 = tri(weather_tex, opos * 1.3 + vec3(7.7, 2.0, 0.3), onrm, 0.45, bias);
+			vec3 w = vec3(0.36, 0.42, 0.24);
+			w = mix(w, vec3(0.42, 0.31, 0.19), smoothstep(0.52, 0.56, cm.r));
+			w = mix(w, vec3(0.13, 0.135, 0.12), smoothstep(0.6, 0.64, cm.g) * (1.0 - smoothstep(0.52, 0.56, cm.r)));
+			w = mix(w, vec3(0.58, 0.55, 0.38), smoothstep(0.64, 0.68, cm2.b));
+			base = w;
+		} else if (pat == 1) {
 			// splinter: hard-edged shards from quantised noise
 			vec3 q = floor(opos * vec3(3.0, 2.0, 3.0) + vec3(0.3, 0.1, 0.7));
 			float n = fract(sin(dot(q, vec3(12.99, 78.23, 37.71))) * 43758.55);

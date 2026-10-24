@@ -7,7 +7,11 @@ const CAMO := 20
 
 var plain := false   ## paint emitted while set is exempt from the faction camo pass (UV2.y = 1)
 
+static var remap := {}   ## M3.0: colour remap applied by color() (e.g. the all-white reactor)
+
 func color(c: Variant, cls: int) -> void:
+	if not remap.is_empty() and c is String and remap.has(c):
+		c = remap[c]
 	super.color(c, cls)
 	if cls == PAINT:
 		uv2 = Vector2(0.0, 1.0 if plain else 0.0)

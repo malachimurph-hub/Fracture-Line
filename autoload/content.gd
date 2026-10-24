@@ -18,7 +18,7 @@ const BUILDING_ORDER := [&"eu_hq", &"eu_reactor", &"eu_hub", &"eu_barracks", &"e
 ## militia = Rifleman, rocket_cell = Rocket Man, rattler = Technical, scrapback = Striker (Karrar MBT),
 ## bus = BMP-2 transport, hailstorm = BHX-35 (35 mm AA), blight = Koksan, shrike = Fajr-5.
 const TPLA_UNIT_ORDER := [&"tpla_backhoe", &"tpla_pickup", &"tpla_militia", &"tpla_rocket_cell", &"tpla_marksman", &"tpla_insurgent", &"tpla_rattler", &"tpla_scrapback", &"tpla_bus", &"tpla_hailstorm", &"tpla_blight", &"tpla_shrike", &"tpla_mirage", &"tpla_mig29", &"tpla_f16"]
-const US_UNIT_ORDER := [&"us_dozer", &"us_supply_truck", &"us_grunt", &"us_javelin", &"us_jtac", &"us_sniper", &"us_lynx", &"us_halberd", &"us_picket", &"us_longreach", &"us_harrier", &"us_wraith", &"us_thunderlance"]
+const US_UNIT_ORDER := [&"us_dozer", &"us_supply_truck", &"us_grunt", &"us_javelin", &"us_jtac", &"us_sniper", &"us_lynx", &"us_bradley", &"us_halberd", &"us_picket", &"us_longreach", &"us_harrier", &"us_wraith", &"us_thunderlance"]
 const US_BUILDING_ORDER := [&"us_command", &"us_reactor", &"us_supply_center", &"us_barracks", &"us_garage", &"us_airfield", &"us_strategy", &"us_patriot", &"us_firebase", &"us_drop_zone"]
 const TPLA_BUILDING_ORDER := [&"tpla_den", &"tpla_stash", &"tpla_camp", &"tpla_chop_shop", &"tpla_tunnel", &"tpla_workshop", &"tpla_bazaar", &"tpla_demo_trap", &"tpla_camo_net", &"tpla_wasp_nest", &"tpla_airfield"]
 
