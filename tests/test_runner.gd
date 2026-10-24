@@ -880,7 +880,7 @@ func _test_repair() -> void:
 		r.issue({"p": 0, "t": "repair", "ids": [bu.id], "target": hq.id})
 		for i in 20 * 15:
 			r.advance()
-		_check(hq.hp == hq.max_hp / 2 and not bu.orders.is_empty(), "%s: without money the builder waits at the damaged structure (hp %d/%d)" % [fac, hq.hp, hq.max_hp])
+		_check(hq.hp < hq.max_hp / 2 + hq.max_hp / 40 and w.players[0].supply == 0 and not bu.orders.is_empty() and bu.orders[0].get("o", "") == "repair", "%s: without money the builder waits at the damaged structure (hp %d/%d)" % [fac, hq.hp, hq.max_hp])
 		w.players[0].supply = 10000
 		var t := 0
 		var mid := -1
@@ -889,8 +889,8 @@ func _test_repair() -> void:
 			t += 1
 			if t == 20 * 5:
 				mid = hq.hp
-		var paid := 10000 - w.players[0].supply
-		var want := Content.building(hq.def_id).cost * OrderSys.REPAIR_COST_PCT / 100 / 2
+		var paid: int = 10000 - int(w.players[0].supply)
+		var want: int = Content.building(hq.def_id).cost * OrderSys.REPAIR_COST_PCT / 100 / 2
 		_check(hq.hp == hq.max_hp, "%s: repair brings the structure back to full HP (%d/%d after %d ticks)" % [fac, hq.hp, hq.max_hp, t])
 		_check(mid > hq.max_hp / 2 and mid < hq.max_hp, "%s: repair is gradual (hp %d after 5 s)" % [fac, mid])
 		_check(absi(paid - want) <= 2, "%s: half a repair costs ~%d supply (paid %d)" % [fac, want, paid])

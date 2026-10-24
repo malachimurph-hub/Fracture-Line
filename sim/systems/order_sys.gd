@@ -218,7 +218,7 @@ static func _repair(w: SimWorld, u: SimEntity, o: Dictionary) -> void:
 		var add := mini(rate, b.max_hp - b.hp)
 		# cost in thousandths of a supply unit, carried between ticks (deterministic integers)
 		var acc: int = int(o.get("acc", 0)) + w.bdef(b).cost * REPAIR_COST_PCT * 10 * add / b.max_hp
-		var p := w.players[u.owner]
+		var p: SimPlayer = w.players[u.owner]
 		var due := acc / 1000
 		if due > p.supply:
 			return   # out of money: wait
