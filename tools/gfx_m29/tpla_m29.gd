@@ -1,10 +1,10 @@
 extends RefCounted
-## M2.9 TPLA remodel (tool-time only; run tools/gfx_m29/build_m29.sh). Malachi's roster
-## (notes 2026-10-22): Backhoe, white Toyota-style Pickup and Technical, Karrar-based Striker,
-## BMP-2 transport, BHX-35 (tracked chassis + Skyranger-35-style single 35 mm turret, after the
-## Calidus DAMITA SPAAG), Koksan heavy gun, Fajr-5 rocket truck, F-16 / Mirage 2000 / MiG-29-
-## style jets, and the redone TPLA defences (Tunnel, Wasp Nest, Demo Trap, Camo Net, Decoy).
-## Original procedural geometry only. Node layout matches VehicleView / BuildingView.
+## M2.9 TPLA remodel (tool-time only; run tools/gfx_m29/build_m29.sh), M3.0 E: faction is Iran.
+## Backhoe, white civilian Pickup, Karrar-based Striker, BMP-family (Boragh) transport, Samavat
+## (tracked 35 mm SPAAG), Fajr-5 rocket truck, MiG-29-style interceptor, the redone defences, and
+## the M3.0 E swaps: Safir-style jeep Technical, Raad-2-style SPG, F-4E-style strike jet and a
+## Kowsar / F-5-style fighter. Original procedural geometry only. Node layout matches
+## VehicleView / BuildingView.
 const K := preload("res://tools/gfx_m7/kit8.gd")
 const Geo := preload("res://tools/gfx_m3/geo.gd")
 const VK := preload("res://tools/gfx_m3/vehicle_kit.gd")
@@ -181,43 +181,6 @@ static func _pickup() -> void:
 	_toyota(h, true)
 	V4._antenna(h, Vector3(0.3, 0.66, 0.1), 0.35)
 	_finish(root, model, h, mat, "pickup", [], 0.95)
-
-## Technical: the same white pickup with a .50 cal heavy machine gun on a pedestal, gun shield.
-static func _technical() -> void:
-	var mat: Material = load(VK.MAT_PATH)
-	var root := VK._root({"selection_radius": 0.62, "bar_height": 1.1, "recoil": 0.05, "wreck_s": 6.0, "steer_max": 0.4})
-	var model := VK._n3(root, root, "Model")
-	var h = K.new()
-	_toyota(h, false)
-	h.color("#2b2b2a", Geo.STEEL)
-	h.tube(Vector3(0, 0.32, -0.6), Vector3(0, 0.62, -0.6), 0.03, 8)   # pedestal
-	h.cbox(Vector3(0, 0.33, -0.6), Vector3(0.2, 0.04, 0.2), 0.01)
-	h.color("#5a4b30", Geo.WOOD)   # ammo boxes
-	for x in [-0.22, 0.22]:
-		h.cbox(Vector3(x, 0.38, -0.85), Vector3(0.12, 0.1, 0.18), 0.01)
-	h.color("#2b2b2a", Geo.STEEL)   # roll bar
-	h.pipe([Vector3(-0.33, 0.47, -0.3), Vector3(-0.33, 0.78, -0.32), Vector3(0.33, 0.78, -0.32), Vector3(0.33, 0.47, -0.3)], 0.015)
-	var piv := VK._n3(model, root, "TurretPivot", Vector3(0, 0.66, -0.6))
-	var t = _turret(piv, root, mat, func(t) -> void:
-		t.color("#2b2b2a", Geo.STEEL)
-		t.cyl(0.05, 0.04, 0.06, 8, Transform3D.IDENTITY)
-		t.cbox(Vector3(0, 0.06, -0.04), Vector3(0.1, 0.1, 0.22), 0.012)   # receiver
-		t.tube(Vector3(-0.07, 0.03, -0.18), Vector3(-0.07, 0.09, -0.22), 0.012, 5)   # spade grips
-		t.tube(Vector3(0.07, 0.03, -0.18), Vector3(0.07, 0.09, -0.22), 0.012, 5)
-		t.color("#5a5444", Geo.PAINT)
-		t.plate(Vector3(0, 0.1, 0.12), Vector3(0.36, 0.2, 0.015), Vector3(-8, 0, 0))   # gun shield
-		for s in [-1.0, 1.0]:
-			t.plate(Vector3(s * 0.2, 0.1, 0.08), Vector3(0.12, 0.18, 0.015), Vector3(-8, s * 50.0, 0))
-		t.color("#4a4a3a", Geo.PAINT)
-		t.cbox(Vector3(0.09, 0.04, 0.0), Vector3(0.07, 0.07, 0.12), 0.008)   # ammo can
-		t.color("#ffffff", Geo.TEAM)
-		t.box(Vector3(0, 0.17, 0.131), Vector3(0.24, 0.03, 0.006)))
-	var b = _barrel(piv, root, mat, Vector3(0, 0.07, 0.06), func(b) -> void:
-		b.color("#2b2b2a", Geo.STEEL)
-		b.tube(Vector3(0, 0, 0.0), Vector3(0, 0, 0.5), 0.016, 8)
-		b.tube(Vector3(0, 0, 0.0), Vector3(0, 0, 0.18), 0.026, 8)   # perforated jacket
-		b.tube(Vector3(0, 0, 0.46), Vector3(0, 0, 0.53), 0.022, 8))
-	_finish(root, model, h, mat, "rattler", [t, b], 1.1)
 
 # ------------------------------------------------------------------ Backhoe (builder)
 static func _backhoe() -> void:
@@ -513,56 +476,6 @@ static func _bhx35() -> void:
 		b.tube(Vector3(0, 0, 1.02), Vector3(0, 0, 1.04), 0.024, 10))
 	_finish(root, model, h, mat, "hailstorm", [t, b], 1.45)
 
-# ------------------------------------------------------------------ Koksan heavy gun
-static func _koksan() -> void:
-	var mat: Material = load(VK.MAT_PATH)
-	var root := VK._root({"selection_radius": 0.9, "bar_height": 1.2, "recoil": 0.22, "wreck_s": 8.0})
-	var model := VK._n3(root, root, "Model")
-	var h = K.new()
-	_tracked_hull(h, 0.52, 1.7, 6, 0.42, TP, TP_D)
-	# open gun deck at the rear, crew shields, rear recoil spade
-	h.color(TP_D, Geo.PAINT)
-	h.cbox(Vector3(0, 0.45, -0.35), Vector3(0.96, 0.05, 0.9), 0.01)
-	for s in [-1.0, 1.0]:
-		h.plate(Vector3(s * 0.46, 0.55, -0.4), Vector3(0.02, 0.18, 0.7), Vector3(0, 0, -s * 8.0))
-	h.color(TP_S, Geo.STEEL)
-	h.plate(Vector3(0, 0.2, -0.95), Vector3(0.8, 0.28, 0.04), Vector3(30, 0, 0))   # spade
-	for s in [-0.3, 0.3]:
-		h.tube(Vector3(s, 0.36, -0.82), Vector3(s, 0.22, -0.95), 0.02, 6)
-	h.color("#7a5c3a", Geo.WOOD)
-	for x in [-0.3, -0.15, 0.15, 0.3]:   # shell racks
-		h.tube(Vector3(x, 0.5, -0.72), Vector3(x, 0.5, -0.56), 0.04, 8)
-	h.color("#2e322b", Geo.DARK)
-	h.grille(Vector3(0, 0.426, 0.45), 0.5, 0.3, 8)
-	h.hatch(Vector3(-0.22, 0.43, 0.62), 0.12)
-	V4._lamps(h, 0.4, 0.36, 0.86)
-	h.color(TP_D, Geo.PAINT)   # travel lock
-	h.tube(Vector3(0, 0.43, 0.78), Vector3(0, 0.62, 0.78), 0.025, 6)
-	h.cbox(Vector3(0, 0.63, 0.78), Vector3(0.12, 0.04, 0.04), 0.01)
-	_team_band(h, 0.56, 0.38, -0.3, 0.6)
-	var piv := VK._n3(model, root, "TurretPivot", Vector3(0, 0.5, -0.45))
-	var t = _turret(piv, root, mat, func(t) -> void:
-		t.color(TP_S, Geo.STEEL)
-		t.cyl(0.18, 0.18, 0.04, 12, Transform3D.IDENTITY)
-		t.color(TP, Geo.PAINT)
-		for s in [-1.0, 1.0]:   # trunnion cheeks + recuperators
-			t.cbox(Vector3(s * 0.14, 0.14, 0.05), Vector3(0.06, 0.22, 0.34), 0.02)
-		t.color(TP_S, Geo.STEEL)
-		t.tube(Vector3(-0.07, 0.24, -0.15), Vector3(-0.07, 0.24, 0.42), 0.035, 8)
-		t.tube(Vector3(0.07, 0.24, -0.15), Vector3(0.07, 0.24, 0.42), 0.035, 8)
-		t.color("#ffffff", Geo.TEAM)
-		for s in [-1.0, 1.0]:
-			t.box(Vector3(s * 0.172, 0.14, 0.05), Vector3(0.006, 0.04, 0.3)))
-	var b = _barrel(piv, root, mat, Vector3(0, 0.16, 0.0), func(b) -> void:
-		b.color(TP_D, Geo.PAINT)
-		b.cbox(Vector3(0, 0, -0.1), Vector3(0.14, 0.14, 0.3), 0.02)   # breech
-		b.color(TP, Geo.PAINT)
-		b.gun(0.05, 1.75, 0.05, 0.036, -1.0, true, 10)   # very long 170 mm tube
-		b.color(TP_D, Geo.PAINT)
-		for z in [0.4, 0.9]:
-			b.tube(Vector3(0, 0, z), Vector3(0, 0, z + 0.04), 0.056, 10))
-	_finish(root, model, h, mat, "blight", [t, b], 1.2)
-
 # ------------------------------------------------------------------ Fajr-5 rocket truck
 static func _fajr() -> void:
 	var mat: Material = load(VK.MAT_PATH)
@@ -613,7 +526,7 @@ static func _fajr() -> void:
 		b.box(Vector3.ZERO, Vector3(0.008, 0.06, 0.6), Transform3D(tilt, Vector3(0.315, 0.05, 0.05))))
 	_finish(root, model, h, mat, "shrike", [t, b], 1.25)
 
-# ------------------------------------------------------------------ jets
+# ------------------------------------------------------------------ jets (M3.0 E: F-4E and Kowsar further down)
 static func _jet_root():
 	return VK._root({"selection_radius": 0.85, "bar_height": 1.0, "recoil": 0.0, "wreck_s": 6.0})
 
@@ -627,76 +540,6 @@ static func _nozzle(h, x: float, y: float, z: float, r: float) -> void:
 	h.tube(Vector3(x, y, z), Vector3(x, y, z - 0.14), r, 10, r * 0.85)
 	h.color("#ff7a2a", Geo.LAMP)
 	h.tube(Vector3(x, y, z - 0.14), Vector3(x, y, z - 0.145), r * 0.7, 10)
-
-## F-16 Block 60-style light bomber: single engine, chin intake, cropped delta, single fin,
-## conformal tanks, two bombs under the wings.
-static func _f16() -> void:
-	var mat: Material = load(VK.MAT_PATH)
-	var root = _jet_root()
-	var model := VK._n3(root, root, "Model")
-	var h = K.new()
-	h.color(AIR, Geo.PAINT)
-	h.xloft([[1.0, K.sect(0.225, 0.235, 0.245, 0.004, 0.01, 0.004, 0.0)], [0.66, K.sect(0.17, 0.22, 0.3, 0.04, 0.07, 0.05, 0.015)],
-		[0.2, K.sect(0.15, 0.22, 0.32, 0.08, 0.12, 0.09, 0.03)], [-0.55, K.sect(0.16, 0.22, 0.31, 0.08, 0.12, 0.09, 0.03)], [-0.8, K.sect(0.18, 0.22, 0.27, 0.06, 0.07, 0.06, 0.02)]])
-	for s in [-1.0, 1.0]:   # conformal fuel tanks on the spine
-		h.color(AIR_D, Geo.PAINT)
-		h.xloft([[0.1, K.sect(0.27, 0.29, 0.32, 0.02, 0.035, 0.02, 0.01)], [-0.45, K.sect(0.27, 0.29, 0.32, 0.03, 0.04, 0.03, 0.01)]], Transform3D(Basis.IDENTITY, Vector3(s * 0.08, 0, 0)))
-	h.color(AIR_D, Geo.PAINT)   # chin intake
-	h.xloft([[0.45, K.sect(0.08, 0.1, 0.16, 0.06, 0.065, 0.06, 0.015)], [0.05, K.sect(0.09, 0.11, 0.17, 0.06, 0.065, 0.06, 0.015)]])
-	h.color("#1d1f1e", Geo.DARK)
-	h.box(Vector3(0, 0.12, 0.452), Vector3(0.1, 0.06, 0.008))
-	_canopy(h, 0.72, 0.36, 0.3)
-	h.color(AIR_D, Geo.PAINT)
-	for s in [-1.0, 1.0]:
-		V8._surf(h, [Vector3(s * 0.1, 0.2, 0.2), Vector3(s * 0.66, 0.2, -0.28), Vector3(s * 0.66, 0.2, -0.4), Vector3(s * 0.1, 0.2, -0.45)], Vector3(0, 1, 0), 0.04, 0.01)
-		V8._surf(h, [Vector3(s * 0.08, 0.21, -0.55), Vector3(s * 0.36, 0.2, -0.75), Vector3(s * 0.36, 0.2, -0.84), Vector3(s * 0.08, 0.21, -0.82)], Vector3(0, 1, 0), 0.02, 0.008)
-		h.color(TP_S, Geo.STEEL)   # wingtip AAM rails + under-wing bombs
-		h.tube(Vector3(s * 0.67, 0.2, -0.1), Vector3(s * 0.67, 0.2, -0.42), 0.012, 5)
-		h.color("#5d6250", Geo.PAINT)
-		h.tube(Vector3(s * 0.36, 0.12, 0.0), Vector3(s * 0.36, 0.12, -0.32), 0.035, 8)
-		h.cyl(0.035, 0.0, 0.08, 8, Transform3D(Basis(Vector3.RIGHT, PI * 0.5), Vector3(s * 0.36, 0.12, 0.0)))
-		h.color(AIR_D, Geo.PAINT)
-		h.color("#ffffff", Geo.TEAM)
-		h.box(Vector3(s * 0.45, 0.212, -0.25), Vector3(0.14, 0.01, 0.07))
-		h.color(AIR_D, Geo.PAINT)
-	V8._surf(h, [Vector3(0, 0.3, -0.42), Vector3(0, 0.62, -0.7), Vector3(0, 0.62, -0.8), Vector3(0, 0.3, -0.82)], Vector3(1, 0, 0), 0.025, 0.01)
-	h.color("#ffffff", Geo.TEAM)
-	h.box(Vector3(0, 0.55, -0.74), Vector3(0.03, 0.06, 0.1))
-	_nozzle(h, 0.0, 0.22, -0.8, 0.06)
-	V8._gear(h, [Vector3(0, 0.0, 0.45), Vector3(-0.12, 0.0, -0.2), Vector3(0.12, 0.0, -0.2)], 0.04)
-	_finish(root, model, h, mat, "f16", [], 1.0)
-
-## Mirage 2000-style multirole: tailless delta, half-cone side intakes, single tall fin.
-static func _mirage() -> void:
-	var mat: Material = load(VK.MAT_PATH)
-	var root = _jet_root()
-	var model := VK._n3(root, root, "Model")
-	var h = K.new()
-	h.color(AIR, Geo.PAINT)
-	h.xloft([[1.02, K.sect(0.225, 0.232, 0.24, 0.003, 0.008, 0.003, 0.0)], [0.6, K.sect(0.16, 0.22, 0.3, 0.04, 0.07, 0.05, 0.015)],
-		[0.1, K.sect(0.14, 0.22, 0.31, 0.08, 0.1, 0.08, 0.03)], [-0.6, K.sect(0.15, 0.22, 0.3, 0.08, 0.1, 0.08, 0.03)], [-0.82, K.sect(0.17, 0.22, 0.27, 0.06, 0.07, 0.06, 0.02)]])
-	_canopy(h, 0.68, 0.32, 0.29)
-	for s in [-1.0, 1.0]:
-		h.color(AIR_D, Geo.PAINT)   # half-cone side intakes
-		h.xloft([[0.36, K.sect(0.16, 0.2, 0.26, 0.03, 0.045, 0.03, 0.012)], [-0.1, K.sect(0.15, 0.2, 0.27, 0.04, 0.055, 0.04, 0.015)]], Transform3D(Basis.IDENTITY, Vector3(s * 0.12, 0, 0)))
-		h.color(TP_S, Geo.STEEL)
-		h.cyl(0.03, 0.0, 0.07, 8, Transform3D(Basis(Vector3.RIGHT, PI * 0.5), Vector3(s * 0.12, 0.21, 0.36)))
-		h.color(AIR_D, Geo.PAINT)   # big delta wing
-		V8._surf(h, [Vector3(s * 0.09, 0.19, 0.28), Vector3(s * 0.7, 0.18, -0.58), Vector3(s * 0.7, 0.18, -0.66), Vector3(s * 0.09, 0.19, -0.7)], Vector3(0, 1, 0), 0.05, 0.01)
-		h.color("#5d6250", Geo.PAINT)   # MICA-style AAM + rocket pod
-		h.tube(Vector3(s * 0.45, 0.13, -0.15), Vector3(s * 0.45, 0.13, -0.45), 0.018, 6)
-		h.tube(Vector3(s * 0.25, 0.11, 0.05), Vector3(s * 0.25, 0.11, -0.2), 0.04, 8)
-		h.color("#ffffff", Geo.TEAM)
-		h.box(Vector3(s * 0.4, 0.195, -0.45), Vector3(0.14, 0.01, 0.08))
-	h.color(AIR_D, Geo.PAINT)
-	V8._surf(h, [Vector3(0, 0.3, -0.3), Vector3(0, 0.7, -0.66), Vector3(0, 0.7, -0.76), Vector3(0, 0.3, -0.8)], Vector3(1, 0, 0), 0.025, 0.01)
-	h.color("#ffffff", Geo.TEAM)
-	h.box(Vector3(0, 0.6, -0.7), Vector3(0.03, 0.08, 0.1))
-	h.color(TP_S, Geo.STEEL)
-	h.tube(Vector3(0, 0.235, 1.0), Vector3(0, 0.24, 1.12), 0.006, 4)   # refuelling / pitot probe
-	_nozzle(h, 0.0, 0.22, -0.82, 0.06)
-	V8._gear(h, [Vector3(0, 0.0, 0.42), Vector3(-0.14, 0.0, -0.25), Vector3(0.14, 0.0, -0.25)], 0.04)
-	_finish(root, model, h, mat, "mirage", [], 1.0)
 
 ## MiG-29-style interceptor: wide lifting body with LERX, under-slung twin intakes, twin fins.
 static func _mig29() -> void:
@@ -727,6 +570,194 @@ static func _mig29() -> void:
 		_nozzle(h, s * 0.09, 0.21, -0.86, 0.055)
 	V8._gear(h, [Vector3(0, 0.0, 0.48), Vector3(-0.16, 0.0, -0.25), Vector3(0.16, 0.0, -0.25)], 0.04)
 	_finish(root, model, h, mat, "mig29", [], 1.0)
+
+## M3.0 E (Iran): Safir-style military 4x4 jeep with a 12.7 mm DShK on a pedestal (was the
+## white Technical pickup). Open body, fold-down windscreen frame, roll bar, jerrycans, spare.
+static func _technical() -> void:
+	var mat: Material = load(VK.MAT_PATH)
+	var root := VK._root({"selection_radius": 0.6, "bar_height": 1.1, "recoil": 0.05, "wreck_s": 6.0, "steer_max": 0.4})
+	var model := VK._n3(root, root, "Model")
+	var h = K.new()
+	V8._tyres(h, 0.32, [0.42, -0.4], 0.13, 0.1, 1, TP_S)
+	h.color("#2e2d2a", Geo.DARK)
+	h.cbox(Vector3(0, 0.2, 0.0), Vector3(0.4, 0.06, 1.22), 0.01)   # ladder frame
+	h.color(TP, Geo.PAINT)
+	# flat bonnet with a slatted grille, slab body tub, flat fenders over the wheels
+	h.xloft([[0.7, K.sect(0.22, 0.3, 0.38, 0.3, 0.31, 0.29, 0.02)], [0.28, K.sect(0.22, 0.32, 0.44, 0.32, 0.33, 0.31, 0.02)]])
+	h.xloft([[0.28, K.sect(0.22, 0.3, 0.46, 0.35, 0.35, 0.34, 0.015)], [-0.66, K.sect(0.22, 0.3, 0.46, 0.35, 0.35, 0.34, 0.015)]])
+	h.color(TP_D, Geo.PAINT)
+	for s in [-1.0, 1.0]:
+		for z in [0.42, -0.4]:
+			h.cbox(Vector3(s * 0.33, 0.37, z), Vector3(0.12, 0.025, 0.36), 0.008)   # flat fenders
+		h.cbox(Vector3(s * 0.352, 0.37, -0.1), Vector3(0.012, 0.1, 0.18), 0.004)   # open door cut-out edge
+	h.color("#2b2b2a", Geo.DARK)
+	for x in [-0.18, -0.09, 0.0, 0.09, 0.18]:
+		h.box(Vector3(x, 0.31, 0.705), Vector3(0.03, 0.1, 0.008))   # grille slots
+	V4._lamps(h, 0.24, 0.34, 0.705)
+	h.color(TP_S, Geo.STEEL)
+	h.cbox(Vector3(0, 0.22, 0.73), Vector3(0.66, 0.05, 0.05), 0.01)   # bumper
+	# windscreen frame (glass down), seats, roll bar
+	h.color(TP_D, Geo.PAINT)
+	h.pipe([Vector3(-0.3, 0.44, 0.27), Vector3(-0.3, 0.66, 0.24), Vector3(0.3, 0.66, 0.24), Vector3(0.3, 0.44, 0.27)], 0.012)
+	h.color(GLASS_C, Geo.GLASS)
+	h.plate(Vector3(0, 0.55, 0.255), Vector3(0.56, 0.2, 0.006), Vector3(-10, 0, 0))
+	h.color("#4b4436", Geo.CANVAS)
+	for x in [-0.15, 0.15]:
+		h.cbox(Vector3(x, 0.38, 0.05), Vector3(0.18, 0.06, 0.18), 0.02)
+		h.cbox(Vector3(x, 0.47, -0.04), Vector3(0.18, 0.18, 0.04), 0.015)
+	h.color(TP_S, Geo.STEEL)
+	h.pipe([Vector3(-0.33, 0.46, -0.2), Vector3(-0.33, 0.78, -0.22), Vector3(0.33, 0.78, -0.22), Vector3(0.33, 0.46, -0.2)], 0.015)
+	h.tube(Vector3(0, 0.3, -0.45), Vector3(0, 0.62, -0.45), 0.03, 8)   # gun pedestal
+	h.color("#4d5741", Geo.PAINT)
+	for x in [-0.26, -0.16]:
+		h.jerrycan(Vector3(x, 0.3, -0.69), 0)
+	h.tyre(Vector3(0.18, 0.4, -0.7), 0.12, 0.06, false, TP_S, 10)   # spare on the tail
+	h.color("#5a4b30", Geo.WOOD)
+	h.cbox(Vector3(0.2, 0.34, -0.45), Vector3(0.12, 0.08, 0.16), 0.01)   # ammo box
+	h.color("#b33a2a", Geo.LAMP)
+	for s in [-1.0, 1.0]:
+		h.box(Vector3(s * 0.3, 0.36, -0.665), Vector3(0.04, 0.03, 0.006))
+	_team_band(h, 0.352, 0.28, -0.6, 0.25)
+	V4._antenna(h, Vector3(-0.3, 0.46, -0.6), 0.45)
+	var piv := VK._n3(model, root, "TurretPivot", Vector3(0, 0.66, -0.45))
+	var t = _turret(piv, root, mat, func(t) -> void:
+		t.color("#2b2b2a", Geo.STEEL)
+		t.cyl(0.05, 0.04, 0.06, 8, Transform3D.IDENTITY)
+		t.cbox(Vector3(0, 0.06, -0.04), Vector3(0.1, 0.1, 0.22), 0.012)   # receiver
+		t.tube(Vector3(-0.07, 0.03, -0.18), Vector3(-0.07, 0.09, -0.22), 0.012, 5)   # spade grips
+		t.tube(Vector3(0.07, 0.03, -0.18), Vector3(0.07, 0.09, -0.22), 0.012, 5)
+		t.color(TP_D, Geo.PAINT)
+		t.plate(Vector3(0, 0.1, 0.12), Vector3(0.3, 0.18, 0.015), Vector3(-8, 0, 0))   # small gun shield
+		t.color("#4a4a3a", Geo.PAINT)
+		t.cbox(Vector3(0.09, 0.04, 0.0), Vector3(0.07, 0.07, 0.12), 0.008)   # ammo can
+		t.color("#ffffff", Geo.TEAM)
+		t.box(Vector3(0, 0.16, 0.131), Vector3(0.2, 0.03, 0.006)))
+	var b = _barrel(piv, root, mat, Vector3(0, 0.07, 0.06), func(b) -> void:
+		b.color("#2b2b2a", Geo.STEEL)
+		b.tube(Vector3(0, 0, 0.0), Vector3(0, 0, 0.52), 0.016, 8)   # DShK barrel
+		for z in [0.06, 0.12, 0.18]:
+			b.tube(Vector3(0, 0, z), Vector3(0, 0, z + 0.025), 0.026, 8)   # cooling fins
+		b.tube(Vector3(0, 0, 0.48), Vector3(0, 0, 0.55), 0.024, 8))   # muzzle brake
+	_finish(root, model, h, mat, "rattler", [t, b], 1.1)
+
+## M3.0 E (Iran): Raad-2-style 155 mm self-propelled howitzer (was the Koksan): tracked hull,
+## large boxy rear turret with side doors, long 155 mm barrel with a muzzle brake, travel lock.
+static func _koksan() -> void:
+	var mat: Material = load(VK.MAT_PATH)
+	var root := VK._root({"selection_radius": 0.9, "bar_height": 1.3, "recoil": 0.22, "wreck_s": 8.0})
+	var model := VK._n3(root, root, "Model")
+	var h = K.new()
+	_tracked_hull(h, 0.52, 1.7, 6, 0.44, TP, TP_D)
+	h.color("#2e322b", Geo.DARK)
+	h.grille(Vector3(0.18, 0.446, 0.55), 0.3, 0.26, 6)
+	h.color(TP_D, Geo.PAINT)
+	h.hatch(Vector3(-0.24, 0.45, 0.62), 0.12)
+	V4._lamps(h, 0.4, 0.36, 0.86)
+	h.tube(Vector3(0, 0.45, 0.72), Vector3(0, 0.66, 0.72), 0.025, 6)   # travel lock
+	h.cbox(Vector3(0, 0.67, 0.72), Vector3(0.14, 0.04, 0.05), 0.01)
+	h.color(TP_S, Geo.STEEL)
+	for x in [-0.3, 0.3]:
+		h.plate(Vector3(x, 0.24, -0.88), Vector3(0.16, 0.18, 0.03), Vector3(25, 0, 0))   # rear spades
+	h.color(TP_D, Geo.PAINT)
+	h.plate(Vector3(0, 0.36, -0.86), Vector3(0.4, 0.14, 0.02), Vector3(0, 0, 0))   # rear door
+	_team_band(h, 0.56, 0.38, -0.3, 0.6)
+	var piv := VK._n3(model, root, "TurretPivot", Vector3(0, 0.44, -0.28))
+	var t = _turret(piv, root, mat, func(t) -> void:
+		t.color(TP_S, Geo.STEEL)
+		t.cyl(0.36, 0.36, 0.03, 14, Transform3D.IDENTITY)
+		t.color(TP, Geo.PAINT)
+		t.plan_loft([Vector2(-0.44, -0.52), Vector2(0.44, -0.52), Vector2(0.46, 0.3), Vector2(0.3, 0.46), Vector2(-0.3, 0.46), Vector2(-0.46, 0.3)], 0.02, 0.36, Vector2(0.94, 0.94))
+		t.color(TP_D, Geo.PAINT)
+		for s in [-1.0, 1.0]:
+			t.plate(Vector3(s * 0.455, 0.18, -0.1), Vector3(0.012, 0.24, 0.3), Vector3(0, 0, 0))   # side doors
+		t.cbox(Vector3(0.24, 0.4, -0.1), Vector3(0.18, 0.06, 0.18), 0.012)   # commander's cupola
+		t.hatch(Vector3(-0.22, 0.37, -0.2), 0.13)
+		t.color(TP_S, Geo.STEEL)
+		t.tube(Vector3(0.24, 0.43, -0.1), Vector3(0.24, 0.48, 0.05), 0.012, 4)   # roof MG
+		t.tube(Vector3(0.24, 0.48, 0.05), Vector3(0.24, 0.48, 0.25), 0.01, 4)
+		t.color("#6b5a3a", Geo.CANVAS)
+		t.cbox(Vector3(0, 0.2, -0.56), Vector3(0.7, 0.14, 0.08), 0.02)   # rear stowage
+		t.color("#ffffff", Geo.TEAM)
+		for s in [-1.0, 1.0]:
+			t.box(Vector3(s * 0.462, 0.3, 0.15), Vector3(0.006, 0.04, 0.24)))
+	var b = _barrel(piv, root, mat, Vector3(0, 0.2, 0.46), func(b) -> void:
+		b.color(TP_D, Geo.PAINT)
+		b.cbox(Vector3(0, 0, -0.02), Vector3(0.2, 0.18, 0.1), 0.015)   # mantlet
+		b.color(TP, Geo.PAINT)
+		b.gun(0.03, 1.45, 0.045, 0.034, 0.6, true, 10))   # 155 mm, fume extractor, muzzle brake
+	_finish(root, model, h, mat, "blight", [t, b], 1.3)
+
+## M3.0 E (Iran): F-4E-style strike jet (was the F-16): long drooped nose, tandem canopy, big
+## side intakes with splitter plates, upturned outer wing panels, anhedral tailplanes, twin
+## engines; bombs under the wings.
+static func _f16() -> void:
+	var mat: Material = load(VK.MAT_PATH)
+	var root = _jet_root()
+	var model := VK._n3(root, root, "Model")
+	var h = K.new()
+	h.color(AIR, Geo.PAINT)
+	h.xloft([[1.06, K.sect(0.2, 0.21, 0.22, 0.004, 0.01, 0.004, 0.0)], [0.74, K.sect(0.15, 0.2, 0.28, 0.05, 0.07, 0.05, 0.02)],
+		[0.3, K.sect(0.14, 0.21, 0.32, 0.08, 0.1, 0.08, 0.03)], [-0.5, K.sect(0.13, 0.2, 0.3, 0.14, 0.16, 0.1, 0.03)], [-0.86, K.sect(0.15, 0.2, 0.27, 0.12, 0.13, 0.09, 0.02)]])
+	_canopy(h, 0.72, 0.22, 0.29)
+	for s in [-1.0, 1.0]:
+		h.color(AIR_D, Geo.PAINT)   # rectangular side intakes + splitter plates
+		h.xloft([[0.36, K.sect(0.12, 0.17, 0.27, 0.04, 0.05, 0.04, 0.01)], [-0.2, K.sect(0.12, 0.17, 0.27, 0.05, 0.06, 0.05, 0.015)]], Transform3D(Basis.IDENTITY, Vector3(s * 0.13, 0, 0)))
+		h.color("#1d1f1e", Geo.DARK)
+		h.box(Vector3(s * 0.14, 0.19, 0.362), Vector3(0.08, 0.12, 0.008))
+		h.color(TP_S, Geo.STEEL)
+		h.plate(Vector3(s * 0.085, 0.19, 0.36), Vector3(0.006, 0.13, 0.1), Vector3(0, 0, 0))
+		h.color(AIR_D, Geo.PAINT)
+		V8._surf(h, [Vector3(s * 0.16, 0.16, 0.12), Vector3(s * 0.58, 0.16, -0.28), Vector3(s * 0.58, 0.16, -0.42), Vector3(s * 0.16, 0.16, -0.5)], Vector3(0, 1, 0), 0.04, 0.012)   # inner wing
+		V8._surf(h, [Vector3(s * 0.58, 0.16, -0.28), Vector3(s * 0.8, 0.24, -0.44), Vector3(s * 0.8, 0.24, -0.52), Vector3(s * 0.58, 0.16, -0.42)], Vector3(0, 1, 0), 0.02, 0.008)   # upturned outer panel
+		V8._surf(h, [Vector3(s * 0.1, 0.24, -0.66), Vector3(s * 0.42, 0.14, -0.84), Vector3(s * 0.42, 0.14, -0.92), Vector3(s * 0.1, 0.24, -0.9)], Vector3(0, 1, 0), 0.02, 0.008)   # anhedral tailplane
+		h.color("#5d6250", Geo.PAINT)   # bombs
+		for x in [0.32, 0.46]:
+			h.tube(Vector3(s * x, 0.08, 0.0), Vector3(s * x, 0.08, -0.3), 0.035, 8)
+			h.cyl(0.035, 0.0, 0.08, 8, Transform3D(Basis(Vector3.RIGHT, PI * 0.5), Vector3(s * x, 0.08, 0.0)))
+		h.color("#ffffff", Geo.TEAM)
+		h.box(Vector3(s * 0.42, 0.172, -0.36), Vector3(0.14, 0.01, 0.07))
+		_nozzle(h, s * 0.07, 0.2, -0.86, 0.06)
+	h.color("#5d6250", Geo.PAINT)
+	h.tube(Vector3(0, 0.1, 0.0), Vector3(0, 0.1, -0.4), 0.05, 8)   # centreline fuel tank
+	h.color(AIR_D, Geo.PAINT)
+	V8._surf(h, [Vector3(0, 0.3, -0.4), Vector3(0, 0.62, -0.72), Vector3(0, 0.62, -0.82), Vector3(0, 0.3, -0.84)], Vector3(1, 0, 0), 0.025, 0.01)
+	h.color("#ffffff", Geo.TEAM)
+	h.box(Vector3(0, 0.55, -0.76), Vector3(0.03, 0.06, 0.1))
+	V8._gear(h, [Vector3(0, 0.0, 0.5), Vector3(-0.2, 0.0, -0.22), Vector3(0.2, 0.0, -0.22)], 0.04)
+	_finish(root, model, h, mat, "f16", [], 1.0)
+
+## M3.0 E (Iran): Kowsar / F-5-style light fighter (was the Delta Fighter): slim shark nose,
+## small trapezoid wings with wingtip missiles, LERX, twin engines side by side, single fin.
+static func _mirage() -> void:
+	var mat: Material = load(VK.MAT_PATH)
+	var root = _jet_root()
+	var model := VK._n3(root, root, "Model")
+	var h = K.new()
+	h.color(AIR, Geo.PAINT)
+	h.xloft([[1.04, K.sect(0.225, 0.23, 0.235, 0.003, 0.006, 0.003, 0.0)], [0.66, K.sect(0.18, 0.22, 0.28, 0.035, 0.06, 0.04, 0.015)],
+		[0.2, K.sect(0.16, 0.21, 0.29, 0.06, 0.08, 0.06, 0.02)], [-0.6, K.sect(0.16, 0.21, 0.28, 0.09, 0.1, 0.07, 0.02)], [-0.84, K.sect(0.17, 0.21, 0.26, 0.08, 0.09, 0.06, 0.02)]])
+	_canopy(h, 0.64, 0.36, 0.27)
+	for s in [-1.0, 1.0]:
+		h.color(AIR_D, Geo.PAINT)
+		h.xloft([[0.3, K.sect(0.16, 0.2, 0.25, 0.025, 0.035, 0.025, 0.01)], [-0.2, K.sect(0.15, 0.2, 0.26, 0.035, 0.045, 0.035, 0.012)]], Transform3D(Basis.IDENTITY, Vector3(s * 0.09, 0, 0)))   # side intakes
+		h.color("#1d1f1e", Geo.DARK)
+		h.box(Vector3(s * 0.095, 0.205, 0.302), Vector3(0.05, 0.08, 0.006))
+		h.color(AIR_D, Geo.PAINT)
+		V8._surf(h, [Vector3(s * 0.04, 0.22, 0.5), Vector3(s * 0.14, 0.21, 0.1), Vector3(s * 0.14, 0.21, 0.0), Vector3(s * 0.04, 0.22, 0.0)], Vector3(0, 1, 0), 0.015, 0.008)   # LERX
+		V8._surf(h, [Vector3(s * 0.12, 0.2, 0.06), Vector3(s * 0.56, 0.2, -0.26), Vector3(s * 0.56, 0.2, -0.36), Vector3(s * 0.12, 0.2, -0.4)], Vector3(0, 1, 0), 0.03, 0.008)   # trapezoid wing
+		V8._surf(h, [Vector3(s * 0.08, 0.21, -0.6), Vector3(s * 0.32, 0.21, -0.76), Vector3(s * 0.32, 0.21, -0.84), Vector3(s * 0.08, 0.21, -0.82)], Vector3(0, 1, 0), 0.015, 0.006)
+		h.color("#5d6250", Geo.PAINT)
+		h.tube(Vector3(s * 0.57, 0.2, -0.12), Vector3(s * 0.57, 0.2, -0.42), 0.016, 6)   # wingtip AAM
+		h.tube(Vector3(s * 0.3, 0.12, 0.0), Vector3(s * 0.3, 0.12, -0.26), 0.035, 8)   # rocket pod
+		h.color("#ffffff", Geo.TEAM)
+		h.box(Vector3(s * 0.38, 0.212, -0.25), Vector3(0.12, 0.01, 0.07))
+		_nozzle(h, s * 0.045, 0.21, -0.84, 0.042)
+	h.color(AIR_D, Geo.PAINT)
+	V8._surf(h, [Vector3(0, 0.27, -0.36), Vector3(0, 0.6, -0.68), Vector3(0, 0.6, -0.78), Vector3(0, 0.27, -0.8)], Vector3(1, 0, 0), 0.022, 0.01)
+	h.color("#ffffff", Geo.TEAM)
+	h.box(Vector3(0, 0.52, -0.72), Vector3(0.03, 0.06, 0.1))
+	V8._gear(h, [Vector3(0, 0.0, 0.45), Vector3(-0.12, 0.0, -0.22), Vector3(0.12, 0.0, -0.22)], 0.035)
+	_finish(root, model, h, mat, "mirage", [], 1.0)
 
 # ------------------------------------------------------------------ TPLA defences (BuildingView)
 static func _make_b(short: String, fp: Vector2, top: float, hull_fn: Callable, turret_fn: Callable = Callable(), tpos := Vector3.ZERO) -> void:

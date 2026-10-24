@@ -2,7 +2,7 @@ extends "res://tests/m28_shots.gd"
 ## M3.0 preview screenshots (no release build):
 ##   xvfb-run -a -s "-screen 0 2340x1080x24" godot --path . --resolution 2340x1080 \
 ##     --rendering-method mobile res://tests/m30_shots.tscn -- <out_dir> <part>
-## part: usbase | city | nature | eu | all
+## part: usbase | city | nature | eu | de | ir | all  (de / ir: M3.0 E national roster lineups)
 func _ready() -> void:
 	var args := OS.get_cmdline_user_args()
 	out_dir = args[0] if args.size() > 0 else "/tmp/m30"
@@ -17,6 +17,12 @@ func _ready() -> void:
 		await run_nature()
 	if p in ["eu", "all"]:
 		await run_eu()
+	if p in ["de", "all"]:
+		await run_lineup("eu", [[&"eu_leopold", &"eu_brennus", &"eu_salamander", &"eu_boxer", &"eu_wolfhound", &"eu_flakwerk", &"eu_hearth"],
+			[&"eu_aegis", &"eu_spectre", &"eu_sentinel", &"eu_thunderhead", &"eu_kestrel", &"eu_corvid"]], "m30e_germany_lineup")
+	if p in ["ir", "all"]:
+		await run_lineup("tpla", [[&"tpla_scrapback", &"tpla_bus", &"tpla_hailstorm", &"tpla_blight", &"tpla_shrike", &"tpla_rattler"],
+			[&"tpla_f16", &"tpla_mirage", &"tpla_mig29", &"tpla_pickup", &"tpla_backhoe"]], "m30e_iran_lineup")
 	print("=== M30 SHOTS DONE")
 	get_tree().quit(0)
 
@@ -86,3 +92,17 @@ func run_eu() -> void:
 	m.cam.target_dist = 15.0
 	await frames(60)
 	await shot("m30_eu_units")
+
+## M3.0 E: two rows of a faction's vehicles and aircraft on open ground.
+func run_lineup(fac: String, rows: Array, name: String) -> void:
+	await _start("varno_crossing", [fac, "us"], false)
+	var t := _open_spot(Vector2i(24, 9), Vector2i(60, 50))
+	for r in rows.size():
+		var row: Array = rows[r]
+		for k in row.size():
+			_unit(row[k], t + Vector2i(1 + k * 3 + r * 4, 1 + r * 4), FX.ANG / 4)
+	_look(Vector2(t.x + 8, t.y + 2), 0)
+	m.cam.dist = 21.0
+	m.cam.target_dist = 21.0
+	await frames(60)
+	await shot(name)

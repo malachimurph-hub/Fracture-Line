@@ -210,7 +210,7 @@ UNIT_EU_CRAWLER,Engineer Vehicle
 UNIT_EU_CRAWLER_DESC,Tracked armoured engineer vehicle. Builds and repairs German structures.
 UNIT_EU_HARVESTER,Logistics Truck
 UNIT_EU_HARVESTER_DESC,Heavy 6x6 military logistics truck. Hauls supplies to a Supply Hub; a roof machine gun for self-defence.
-UNIT_EU_GRENADIER,Panzergrenadier
+UNIT_EU_GRENADIER,Panzer-grenadier
 UNIT_EU_GRENADIER_DESC,Mechanised infantry rifleman with rifle grenades. Can garrison.
 UNIT_EU_LANCER,Panzerfaust 3 Soldier
 UNIT_EU_LANCER_DESC,Anti-tank soldier with a Panzerfaust 3 launcher. Strong against vehicles. Can garrison.
@@ -280,28 +280,28 @@ FACTION_TPLA_FULL,Islamic Republic of Iran
 UNIT_TPLA_MILITIA,Rifleman
 UNIT_TPLA_ROCKET_CELL,Rocket Man
 UNIT_TPLA_RATTLER,Technical
-UNIT_TPLA_HAILSTORM,BHX-35
+UNIT_TPLA_HAILSTORM,Samavat SPAAG
 UNIT_TPLA_SCRAPBACK,Striker
 UNIT_TPLA_SHRIKE,Fajr Rocket Launcher
-UNIT_TPLA_BLIGHT,Koksan Heavy Gun
-BLD_TPLA_DEN,Command Den
-BLD_TPLA_STASH,Supply Stash
-BLD_TPLA_CAMP,Militia Camp
-BLD_TPLA_CHOP_SHOP,Chop Shop
+UNIT_TPLA_BLIGHT,Raad-2 Howitzer
+BLD_TPLA_DEN,IRGC Headquarters
+BLD_TPLA_STASH,Supply Depot
+BLD_TPLA_CAMP,Basij Barracks
+BLD_TPLA_CHOP_SHOP,Vehicle Factory
 BLD_TPLA_TUNNEL,Tunnel Network
-BLD_TPLA_WORKSHOP,Workshop
-BLD_TPLA_BAZAAR,Night Bazaar
-BLD_TPLA_DEMO_TRAP,Demo Trap
+BLD_TPLA_WORKSHOP,Defence Workshop
+BLD_TPLA_BAZAAR,Trade Exchange
+BLD_TPLA_DEMO_TRAP,Anti-Tank Mine
 BLD_TPLA_CAMO_NET,Camo Net
-BLD_TPLA_HOLE,Rebuild Hole
-POWER_AMBUSH,Ambush
-POWER_AMBUSH_DESC,Five militia emerge from hiding at the target.
-POWER_SCRAP_RAIN,Scrap Rain
-POWER_SCRAP_RAIN_DESC,Drops four salvage crates at the target.
-POWER_BLIGHT,Blight Shells
-POWER_BLIGHT_DESC,Rust barrage: corrodes everything in the area for 20 s.
-POWER_UPRISING,Uprising
-POWER_UPRISING_DESC,Eight veteran militia rally at your Command Den.
+BLD_TPLA_HOLE,Rebuild Site
+POWER_AMBUSH,Basij Ambush
+POWER_AMBUSH_DESC,Five Basij fighters emerge from hiding at the target.
+POWER_SCRAP_RAIN,Shahed Drone Strike
+POWER_SCRAP_RAIN_DESC,Three one-way attack drones dive on the target area.
+POWER_BLIGHT,Fateh Missile Barrage
+POWER_BLIGHT_DESC,Missiles keep hitting the area for 20 s: everything inside takes steady damage.
+POWER_UPRISING,Basij Mobilisation
+POWER_UPRISING_DESC,Eight veteran Basij volunteers rally at your IRGC Headquarters.
 HUD_NO_POWER_NEEDED,No power needed
 HUD_IDLE_LABORER,Laborer
 HUD_EVACUATE,Evacuate
@@ -347,13 +347,13 @@ UNIT_EU_KESTREL,Tiger Attack Helicopter
 UNIT_EU_KESTREL_DESC,Tandem-seat attack helicopter with anti-tank missiles and a gun pod. Hovers; reloads in the air. Built at the Airfield.
 UNIT_EU_CORVID,Multirole Fighter
 UNIT_EU_CORVID_DESC,Canard-delta multirole fighter: air-to-air missiles and a guided bomb. Uses 2 airfield slots and lands to rearm.
-UNIT_TPLA_BUS,BMP-2 Transport
-UNIT_TPLA_BUS_DESC,BMP-2-based armoured transport with a 30 mm cannon on top. Carries 8 infantry.
+UNIT_TPLA_BUS,Boragh IFV
+UNIT_TPLA_BUS_DESC,Iranian tracked infantry fighting vehicle with a 30 mm cannon. Carries 8 infantry.
 BLD_EU_FLAK_TOWER,Air Defence Gun
 BLD_EU_FLAK_TOWER_DESC,Rapid-fire 35 mm air-defence gun turret. Hits ground and air targets. Needs power to fire.
 BLD_EU_SIGNALS,Signals Center
 BLD_EU_SIGNALS_DESC,"Command and tech centre. Unlocks the Heavy Tank 130, RCH SPA, Fuchs EW Jammer, the Airfield and the advanced structures."
-BLD_EU_RELAY,Field Maintenance Post
+BLD_EU_RELAY,Repair Post
 BLD_EU_RELAY_DESC,Repairs your vehicles and heals infantry within 6 tiles (1% health per second).
 BLD_EU_EXCHANGE,Logistics Centre
 BLD_EU_EXCHANGE_DESC,Contracts civilian logistics: +4 supply per second while powered.
@@ -361,8 +361,8 @@ BLD_EU_AIRSTRIP,Airfield
 BLD_EU_AIRSTRIP_DESC,Builds the Tiger and the multirole fighter. 6 parking slots; each fighter uses 2. Jets land here to rearm.
 BLD_EU_MINEFIELD,Minefield
 BLD_EU_MINEFIELD_DESC,Hidden mine. Explodes when an enemy steps or drives onto it. Detectors reveal it.
-BLD_TPLA_WASP_NEST,Wasp Nest
-BLD_TPLA_WASP_NEST_DESC,Rocket nest. Fires 3-missile salvos at vehicles and aircraft.
+BLD_TPLA_WASP_NEST,Missile Battery
+BLD_TPLA_WASP_NEST_DESC,Dug-in missile launcher. Fires 3-missile salvos at vehicles and aircraft.
 ROLE_FLAME,Flame
 ROLE_JAMMER,Jammer
 ROLE_DETECTOR,Detector
@@ -450,26 +450,26 @@ MAP_OCHRE_DESC,"Arid. A walled market town in a dry basin, ringed by a sandy wad
 UNIT_TPLA_BACKHOE,Backhoe
 UNIT_TPLA_BACKHOE_DESC,Construction backhoe. Builds and repairs Iranian structures. Does not gather supplies.
 UNIT_TPLA_PICKUP,Supply Pickup
-UNIT_TPLA_PICKUP_DESC,White civilian pickup that hauls supplies to a Supply Stash. Cannot build.
-UNIT_TPLA_MILITIA_DESC,"AK-74 insurgent rifleman. Cheap, single soldier, can garrison."
-UNIT_TPLA_ROCKET_CELL_DESC,Shoulder-fired RPG. Strong against vehicles.
+UNIT_TPLA_PICKUP_DESC,Civilian pickup that hauls supplies to a Supply Depot. Cannot build.
+UNIT_TPLA_MILITIA_DESC,"Iranian Army rifleman. Cheap, single soldier, can garrison."
+UNIT_TPLA_ROCKET_CELL_DESC,IRGC soldier with an RPG-7. Strong against vehicles.
 UNIT_TPLA_MARKSMAN,Marksman
-UNIT_TPLA_MARKSMAN_DESC,SVD marksman. Hidden from the enemy unless shooting (nearby units and detectors still see him). Needs a Workshop.
-UNIT_TPLA_INSURGENT,Insurgent
-UNIT_TPLA_INSURGENT_DESC,"Unarmed scout who blends in with the civilian population: always hidden, wide sight. Gives vision outside the base."
-UNIT_TPLA_RATTLER_DESC,Pickup with a .50 cal heavy machine gun. Fast raider; hits ground and air.
-UNIT_TPLA_SCRAPBACK_DESC,Karrar-based main battle tank.
-UNIT_TPLA_HAILSTORM_DESC,Tracked anti-air platform with a single 35 mm cannon and a counter-drone laser.
-UNIT_TPLA_BLIGHT_DESC,Koksan-based 170 mm heavy artillery. Very long range; needs 5 s to set up after moving. Needs a Workshop.
-UNIT_TPLA_SHRIKE_DESC,"Fajr-5-based rocket launcher truck. Lighter artillery, fires without setting up. Needs a Workshop."
-UNIT_TPLA_F16,Falcon Bomber
-UNIT_TPLA_F16_DESC,F-16 Block 60-based light bomber. Uses 2 airfield slots. Needs a Workshop.
-UNIT_TPLA_MIRAGE,Delta Fighter
-UNIT_TPLA_MIRAGE_DESC,Delta-wing multirole fighter: air-to-air missiles and light ground-attack rockets. Uses 2 airfield slots.
+UNIT_TPLA_MARKSMAN_DESC,Army marksman with a Nakhjir sniper rifle. Hidden from the enemy unless shooting (nearby units and detectors still see him). Needs a Defence Workshop.
+UNIT_TPLA_INSURGENT,Basij Scout
+UNIT_TPLA_INSURGENT_DESC,"Unarmed Basij volunteer in civilian clothes who blends in with the population: always hidden, wide sight. Gives vision outside the base."
+UNIT_TPLA_RATTLER_DESC,Light military 4x4 jeep with a 12.7 mm DShK heavy machine gun. Fast raider; hits ground and air.
+UNIT_TPLA_SCRAPBACK_DESC,Karrar main battle tank with a 125 mm gun.
+UNIT_TPLA_HAILSTORM_DESC,Tracked 35 mm anti-aircraft gun vehicle with a search radar and a counter-drone laser.
+UNIT_TPLA_BLIGHT_DESC,Tracked 155 mm self-propelled howitzer. Very long range; needs 5 s to set up after moving. Needs a Defence Workshop.
+UNIT_TPLA_SHRIKE_DESC,"Fajr-5 rocket launcher truck. Lighter artillery, fires without setting up. Needs a Defence Workshop."
+UNIT_TPLA_F16,F-4E Strike Jet
+UNIT_TPLA_F16_DESC,Twin-engine F-4E strike jet: heavy bombs against ground targets. Uses 2 airfield slots. Needs a Defence Workshop.
+UNIT_TPLA_MIRAGE,Kowsar Fighter
+UNIT_TPLA_MIRAGE_DESC,Light Kowsar fighter: air-to-air missiles and ground-attack rockets. Uses 2 airfield slots.
 UNIT_TPLA_MIG29,Fulcrum Interceptor
-UNIT_TPLA_MIG29_DESC,"MiG-29-based interceptor: the best Iranian air-to-air fighter, no ground attack. Uses 2 airfield slots."
+UNIT_TPLA_MIG29_DESC,"MiG-29 interceptor: the best Iranian air-to-air fighter, no ground attack. Uses 2 airfield slots."
 BLD_TPLA_AIRFIELD,Airfield
-BLD_TPLA_AIRFIELD_DESC,Builds Iranian jets. 6 parking slots; every jet uses 2. Jets land here to rearm.
+BLD_TPLA_AIRFIELD_DESC,"Builds the Kowsar, the MiG-29 and the F-4E. 6 parking slots; every jet uses 2. Jets land here to rearm."
 MAP_CRESCENT,Crescent City
 MAP_CRESCENT_DESC,"Desert metropolis. A dense downtown of glass and office towers fills the ground between the four bases: a street grid choked with parked cars, a wide central boulevard, plazas with supplies and garrisonable blocks."
 MAP_RIVERSIDE,Riverside Metro

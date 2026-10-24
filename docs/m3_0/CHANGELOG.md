@@ -75,3 +75,30 @@ Naming rule: real military designations are used in game text; company and brand
   green-white-red with a red centre dot for Iran, white-blue-red for Russia. The US star roundel is unchanged.
   The lobby faction picker shows a small flag next to each name. All of these are original, simple designs.
 - Units and models are unchanged for now. Internal ids (`eu_`, `tpla_`, `ecc_`) stay the same.
+
+## E. National rosters
+Germany and Iran now use real-world equipment roles. Internal ids, costs, HP and roles are mostly unchanged.
+- **Germany, new models:** the LTV is now a Dingo/Eagle-style armoured 4x4 with the roof .50 cal. The Thunderbolt
+  is a Wiesel Ozelot-style tracked missile carrier. The Hearth is a MARS II-style rocket launcher with the same
+  balance. Also new: Puma IFV, Fuchs ECM Carrier, Fuchs EW Jammer, Fennek Recon, Heavy Tank 130 (single
+  130 mm gun), Tiger Attack Helicopter, Multirole Fighter (canard delta, grey) and a gas-turbine Power Plant.
+- **Germany, name and role swaps:** Salamander flame tank → Puma IFV (keeps the old weapon stats, fires autocannon
+  tracers). Aegis shield → Fuchs ECM Carrier (same protection aura). Spectre → Fuchs EW Jammer.
+  Sentinel → Fennek Recon. Brennus → Heavy Tank 130. Lancer → Panzerfaust 3 Soldier. Crawler → Engineer Vehicle.
+  Hauler → Logistics Truck. Fusion Reactor → Power Plant. Flak Tower → Air Defence Gun. Relay → Repair Post.
+  Exchange → Logistics Centre. Shield Overcharge → Smoke Screen.
+- **Germany, aircraft now work:** Kestrel (stub) → Tiger Attack Helicopter (anti-tank missiles and gun, attack
+  helicopter stats). Corvid (stub) → Multirole Fighter (missiles and guided bombs, jet stats, 2 parking slots).
+  The Airstrip is now a real Airfield with 6 parking slots. The German AI builds an Airfield in the late game.
+- **Germany, removed:** the Grid Blackout stub power. **Artillery Barrage** (a strike power) replaces it.
+- **Iran, new models:** the Technical is a Safir-style military jeep with a DShK. Koksan → Raad-2 Howitzer
+  (155 mm SPG). Falcon → F-4E Strike Jet. Delta → Kowsar Fighter (F-5-style).
+- **Iran, renamed:** Insurgent → Basij Scout. BMP-2 → Boragh IFV. BHX-35 → Samavat SPAAG. Den → IRGC Headquarters.
+  Stash → Supply Depot. Militia Camp → Basij Barracks. Chop Shop → Vehicle Factory. Night Bazaar → Trade Exchange.
+  Demo Trap → Anti-Tank Mine. Hole → Rebuild Site. Wasp Nest → Missile Battery. Uprising → Basij Mobilisation.
+  Blight Shells → Fateh Missile Barrage. Ambush → Basij Ambush.
+- **Iran, removed:** the Scrap Rain crate drop. **Shahed Drone Strike** (a strike power at the enemy's biggest
+  group) replaces it.
+- **Kept as is (names Malachi chose):** Panther Tank, Boxer IFV, RCH SPA, Thunderbolt, Hearth, LTV, Striker,
+  Technical, Backhoe/Supply Pickup and MiG-29. The F-14 was not added (too much work), so the MiG-29 stays.
+- Voice lines that say an old name are dropped where the unit has another line for the same event.

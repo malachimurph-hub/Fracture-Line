@@ -587,13 +587,10 @@ func _powers() -> void:
 		var tgt := _enemy_clump()
 		if tgt.x >= 0:
 			cmd({"t": "power", "def": "tpla_blight_shells", "pos": tgt})
-	if PowersSys.ready_in(w, pid, &"tpla_scrap_rain") == 0:
-		var n_salv := 0
-		for u: SimEntity in combat_units():
-			if w.udef(u).tags.has("salvage") and u.tier < 3:
-				n_salv += 1
-		if n_salv >= 3:
-			cmd({"t": "power", "def": "tpla_scrap_rain", "pos": _staging()})
+	if PowersSys.ready_in(w, pid, &"tpla_scrap_rain") == 0:   # M3.0 E: Shahed Drone Strike (was Scrap Rain)
+		var tgs := _enemy_clump()
+		if tgs.x >= 0:
+			cmd({"t": "power", "def": "tpla_scrap_rain", "pos": tgs})
 
 func _engaged_wave() -> Array:
 	var eng: Array = []

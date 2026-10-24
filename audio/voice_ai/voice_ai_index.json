@@ -2,12 +2,6 @@
 "generator": "EU + US: Kokoro-82M v1.0 (Apache-2.0) via kokoro-onnx (MIT); TPLA: see engine per line",
 "lines": [
 {
-"file": "audio/voice_ai/eu/crawler/select_1.ogg",
-"text": "Crawler here.",
-"voice": "bm_george",
-"speed": 0.931
-},
-{
 "file": "audio/voice_ai/eu/crawler/select_2.ogg",
 "text": "Engineer ready.",
 "voice": "bm_george",
@@ -20,7 +14,7 @@
 "speed": 0.95
 },
 {
-"file": "audio/voice_ai/eu/crawler/select_4.ogg",
+"file": "audio/voice_ai/eu/crawler/select_1.ogg",
 "text": "Blade's down, standing by.",
 "voice": "bm_george",
 "speed": 0.969
@@ -39,12 +33,6 @@
 },
 {
 "file": "audio/voice_ai/eu/crawler/move_3.ogg",
-"text": "Moving the Crawler.",
-"voice": "bm_george",
-"speed": 0.997
-},
-{
-"file": "audio/voice_ai/eu/crawler/move_4.ogg",
 "text": "Clearing a path.",
 "voice": "bm_george",
 "speed": 0.977
@@ -81,21 +69,9 @@
 },
 {
 "file": "audio/voice_ai/eu/crawler/created_1.ogg",
-"text": "Crawler online, ready to build.",
-"voice": "bm_george",
-"speed": 0.95
-},
-{
-"file": "audio/voice_ai/eu/crawler/created_2.ogg",
 "text": "Engineering unit reporting.",
 "voice": "bm_george",
 "speed": 0.978
-},
-{
-"file": "audio/voice_ai/eu/harvester/select_1.ogg",
-"text": "Hauler here.",
-"voice": "bm_lewis",
-"speed": 1.03
 },
 {
 "file": "audio/voice_ai/eu/harvester/select_2.ogg",
@@ -110,7 +86,7 @@
 "speed": 1.03
 },
 {
-"file": "audio/voice_ai/eu/harvester/select_4.ogg",
+"file": "audio/voice_ai/eu/harvester/select_1.ogg",
 "text": "Logistics.",
 "voice": "bm_lewis",
 "speed": 0.99
@@ -165,12 +141,6 @@
 },
 {
 "file": "audio/voice_ai/eu/harvester/created_1.ogg",
-"text": "Hauler ready to roll.",
-"voice": "bm_lewis",
-"speed": 0.97
-},
-{
-"file": "audio/voice_ai/eu/harvester/created_2.ogg",
 "text": "Supplies coming right up.",
 "voice": "bm_lewis",
 "speed": 0.97
@@ -290,12 +260,6 @@
 "speed": 1.102
 },
 {
-"file": "audio/voice_ai/eu/lancer/select_1.ogg",
-"text": "Lancers.",
-"voice": "bm_fable",
-"speed": 1.02
-},
-{
 "file": "audio/voice_ai/eu/lancer/select_2.ogg",
 "text": "Tube's loaded.",
 "voice": "bm_fable:0.6,bm_george:0.4",
@@ -308,7 +272,7 @@
 "speed": 1.04
 },
 {
-"file": "audio/voice_ai/eu/lancer/select_4.ogg",
+"file": "audio/voice_ai/eu/lancer/select_1.ogg",
 "text": "Ready.",
 "voice": "bm_fable:0.6,bm_george:0.4",
 "speed": 1.02
@@ -368,19 +332,7 @@
 "speed": 1.192
 },
 {
-"file": "audio/voice_ai/eu/lancer/under_fire_2.ogg",
-"text": "Lancers taking fire!",
-"voice": "bm_fable:0.6,bm_george:0.4",
-"speed": 1.156
-},
-{
 "file": "audio/voice_ai/eu/lancer/created_1.ogg",
-"text": "Lancer squad, ready to hunt tanks.",
-"voice": "bm_fable",
-"speed": 1.01
-},
-{
-"file": "audio/voice_ai/eu/lancer/created_2.ogg",
 "text": "Anti-tank team reporting.",
 "voice": "bm_fable:0.6,bm_george:0.4",
 "speed": 1.02
@@ -578,12 +530,6 @@
 "speed": 0.884
 },
 {
-"file": "audio/voice_ai/eu/aegis/select_1.ogg",
-"text": "Aegis online.",
-"voice": "bm_daniel:0.6,bm_george:0.4",
-"speed": 0.97
-},
-{
 "file": "audio/voice_ai/eu/aegis/select_2.ogg",
 "text": "Shield systems ready.",
 "voice": "bm_daniel:0.6,bm_george:0.4",
@@ -596,7 +542,7 @@
 "speed": 0.951
 },
 {
-"file": "audio/voice_ai/eu/aegis/select_4.ogg",
+"file": "audio/voice_ai/eu/aegis/select_1.ogg",
 "text": "Projector standing by.",
 "voice": "bm_daniel:0.6,bm_george:0.4",
 "speed": 0.96
@@ -663,12 +609,6 @@
 },
 {
 "file": "audio/voice_ai/eu/aegis/created_1.ogg",
-"text": "Aegis online. Shields charged.",
-"voice": "bm_daniel:0.6,bm_george:0.4",
-"speed": 0.96
-},
-{
-"file": "audio/voice_ai/eu/aegis/created_2.ogg",
 "text": "Grid shield vehicle ready.",
 "voice": "bm_daniel:0.6,bm_george:0.4",
 "speed": 0.99
@@ -2707,13 +2647,6 @@
 },
 {
 "file": "audio/voice_ai/tpla/bhx35/move_1.ogg",
-"text": "BHX moving!",
-"voice": "chatterbox/amir-1.5st/ar-v2",
-"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
-"qa": 0.5
-},
-{
-"file": "audio/voice_ai/tpla/bhx35/move_2.ogg",
 "text": "Relocating the guns, now!",
 "voice": "chatterbox/amir-1.5st/ar-v2",
 "engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
@@ -2721,24 +2654,10 @@
 },
 {
 "file": "audio/voice_ai/tpla/bhx35/select_1.ogg",
-"text": "BHX thirty five.",
-"voice": "chatterbox/amir-1.5st/ar-v2",
-"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
-"qa": 0.0
-},
-{
-"file": "audio/voice_ai/tpla/bhx35/select_2.ogg",
 "text": "Air defense ready. Radar is up.",
 "voice": "chatterbox/amir-1.5st/ar-v2",
 "engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
 "qa": 1.0
-},
-{
-"file": "audio/voice_ai/tpla/bhx35/select_3.ogg",
-"text": "BHX. Sky is ours.",
-"voice": "chatterbox/amir-1.5st/ar-v2",
-"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
-"qa": 0.75
 },
 {
 "file": "audio/voice_ai/tpla/bhx35/under_fire_1.ogg",
@@ -2791,13 +2710,6 @@
 },
 {
 "file": "audio/voice_ai/tpla/bmp2/move_1.ogg",
-"text": "BMP moving!",
-"voice": "chatterbox/reza+0.0st/ar-v2",
-"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
-"qa": 1.0
-},
-{
-"file": "audio/voice_ai/tpla/bmp2/move_2.ogg",
 "text": "Rolling out, hold on!",
 "voice": "chatterbox/reza+0.0st/ar-v2",
 "engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
@@ -2805,20 +2717,6 @@
 },
 {
 "file": "audio/voice_ai/tpla/bmp2/select_1.ogg",
-"text": "BMP two.",
-"voice": "chatterbox/reza+0.0st/ar-v2",
-"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
-"qa": 1.0
-},
-{
-"file": "audio/voice_ai/tpla/bmp2/select_2.ogg",
-"text": "BMP ready. Men inside.",
-"voice": "chatterbox/reza+0.0st/ar-v2",
-"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
-"qa": 1.0
-},
-{
-"file": "audio/voice_ai/tpla/bmp2/select_3.ogg",
 "text": "Transport ready.",
 "voice": "chatterbox/reza+0.0st/ar-v2",
 "engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
@@ -2854,13 +2752,6 @@
 },
 {
 "file": "audio/voice_ai/tpla/f16/attack_2.ogg",
-"text": "Falcon, attack! Destroy it!",
-"voice": "chatterbox/reza-0.5st/ar-v2",
-"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
-"qa": 1.0
-},
-{
-"file": "audio/voice_ai/tpla/f16/attack_3.ogg",
 "text": "Drop everything! Now!",
 "voice": "chatterbox/reza-0.5st/ar-v2",
 "engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
@@ -2875,13 +2766,6 @@
 },
 {
 "file": "audio/voice_ai/tpla/f16/move_1.ogg",
-"text": "Falcon moving!",
-"voice": "chatterbox/reza-0.5st/ar-v2",
-"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
-"qa": 1.0
-},
-{
-"file": "audio/voice_ai/tpla/f16/move_2.ogg",
 "text": "On my way!",
 "voice": "chatterbox/reza-0.5st/ar-v2",
 "engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
@@ -2889,20 +2773,6 @@
 },
 {
 "file": "audio/voice_ai/tpla/f16/select_1.ogg",
-"text": "Falcon here.",
-"voice": "chatterbox/reza-0.5st/ar-v2",
-"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
-"qa": 1.0
-},
-{
-"file": "audio/voice_ai/tpla/f16/select_2.ogg",
-"text": "Falcon ready. Bombs loaded.",
-"voice": "chatterbox/reza-0.5st/ar-v2",
-"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
-"qa": 1.0
-},
-{
-"file": "audio/voice_ai/tpla/f16/select_3.ogg",
 "text": "Falcon. Show me the target.",
 "voice": "chatterbox/reza-0.5st/ar-v2",
 "engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
@@ -3077,13 +2947,6 @@
 "qa": 1.0
 },
 {
-"file": "audio/voice_ai/tpla/insurgent/select_3.ogg",
-"text": "Insurgent. Ready.",
-"voice": "chatterbox/reza+2.0st/ar-v2",
-"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
-"qa": 1.0
-},
-{
 "file": "audio/voice_ai/tpla/insurgent/under_fire_1.ogg",
 "text": "They see me! Run!",
 "voice": "chatterbox/reza+2.0st/ar-v2",
@@ -3105,13 +2968,6 @@
 "qa": 1.0
 },
 {
-"file": "audio/voice_ai/tpla/koksan/attack_1.ogg",
-"text": "Koksan, fire! Fire the big gun!",
-"voice": "chatterbox/amir+1.5st/ar-v2",
-"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
-"qa": 0.83
-},
-{
 "file": "audio/voice_ai/tpla/koksan/attack_2.ogg",
 "text": "Shell away! Hit them hard!",
 "voice": "chatterbox/amir+1.5st/ar-v2",
@@ -3119,7 +2975,7 @@
 "qa": 0.8
 },
 {
-"file": "audio/voice_ai/tpla/koksan/attack_3.ogg",
+"file": "audio/voice_ai/tpla/koksan/attack_1.ogg",
 "text": "Bring the thunder! Fire!",
 "voice": "chatterbox/amir+1.5st/ar-v2",
 "engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
@@ -3134,13 +2990,6 @@
 },
 {
 "file": "audio/voice_ai/tpla/koksan/move_1.ogg",
-"text": "Koksan moving.",
-"voice": "chatterbox/amir+1.5st/ar-v2",
-"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
-"qa": 0.5
-},
-{
-"file": "audio/voice_ai/tpla/koksan/move_2.ogg",
 "text": "Pack the gun, we move!",
 "voice": "chatterbox/amir+1.5st/ar-v2",
 "engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
@@ -3148,20 +2997,6 @@
 },
 {
 "file": "audio/voice_ai/tpla/koksan/select_1.ogg",
-"text": "Koksan gun.",
-"voice": "chatterbox/amir+1.5st/ar-v2",
-"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
-"qa": 0.5
-},
-{
-"file": "audio/voice_ai/tpla/koksan/select_2.ogg",
-"text": "Koksan ready. Give coordinates.",
-"voice": "chatterbox/amir+1.5st/ar-v2",
-"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
-"qa": 0.75
-},
-{
-"file": "audio/voice_ai/tpla/koksan/select_3.ogg",
 "text": "Heavy gun here.",
 "voice": "chatterbox/amir+1.5st/ar-v2",
 "engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
@@ -3173,13 +3008,6 @@
 "voice": "chatterbox/amir+1.5st/ar-v2",
 "engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
 "qa": 1.0
-},
-{
-"file": "audio/voice_ai/tpla/koksan/under_fire_2.ogg",
-"text": "Taking fire! Move the Koksan!",
-"voice": "chatterbox/amir+1.5st/ar-v2",
-"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
-"qa": 0.8
 },
 {
 "file": "audio/voice_ai/tpla/koksan/veteran_1.ogg",

@@ -26,7 +26,7 @@
   70-150 triangles per tree, cars about 300, and towers gained about 1-2k triangles each.
 - Carried over from M2.9:
   - The TPLA AI only uses the Airfield on medium and hard, and builds just one.
-  - The BHX-35 is tracked on purpose (the real DAMITA is 8x8).
+  - The Samavat SPAAG (old BHX-35) still uses the tracked 35 mm turret model.
   - 24 of the M2.9 TPLA AI voice lines score under 0.8 on Whisper word match (`tools/voice_qa_m29.json`).
     The Fajr "created" line reuses its select line.
   - The Hearth uses the Wolfhound/LTV voice set, which has no rocket lines.
@@ -37,7 +37,18 @@
   - Map load is about 0.5 s slower on large maps because of the splat blur.
   - Germany, Iran and Russia still use the old internal ids `eu_`, `tpla_` and `ecc_` (ids, file names,
     folders, the faction key in saves and Map Builder maps). This is on purpose, so saves and maps keep working.
-  - Several Germany/Iran units are still based on other countries' equipment, and Iran still uses militia/insurgent
-    framing. The nation audit lists them, and remodels come later.
+  - E. National rosters:
+    - Some voice lines still say an old name, because they are the only line for that event: Lancer veteran,
+      Flak Tower veteran, BHX-35 / BMP-2 / Koksan created and veteran, Falcon / Mirage created, select and veteran,
+      and Insurgent created.
+    - The Fateh Missile Barrage keeps the old Blight mechanic, which leaves a lasting damage zone. Its effect still
+      looks rusty.
+    - The Puma IFV keeps the Salamander's short range and flame damage type, so its balance stays the same.
+    - The German AI builds the Airfield, but in tests it seldom builds a Tiger or a fighter, likely because of
+      the pop cap.
+    - The Boragh, Samavat, Basij infantry and all Iran building models are unchanged. Only their names and text
+      changed. The Anti-Tank Mine still looks like the old wired trap. The salvage mechanic stays as battlefield
+      recovery.
+    - The Germany Harvester (Logistics Truck) and Air Defence Gun models are unchanged.
   - Iran voices still have Persian accents. Faction voice lines do not say the nation names.
   - Older items: `docs/m2_8/KNOWN_ISSUES.md`.
