@@ -3561,6 +3561,588 @@
 "voice": "chatterbox/reza+1.5st/ar-v2",
 "engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
 "qa": 1.0
+},
+{
+"file": "audio/voice_ai/ecc/engineer/select_1.ogg",
+"text": "What do we build?",
+"voice": "chatterbox/ganji-1.5st/ar-v2",
+"note": "M3.0 F reused from tpla/backhoe/select_3"
+},
+{
+"file": "audio/voice_ai/ecc/engineer/select_2.ogg",
+"text": "Ready to dig.",
+"voice": "chatterbox/ganji-1.5st/ar-v2",
+"note": "M3.0 F reused from tpla/backhoe/select_2"
+},
+{
+"file": "audio/voice_ai/ecc/engineer/move_1.ogg",
+"text": "Going there.",
+"voice": "chatterbox/ganji-1.5st/ar-v2",
+"note": "M3.0 F reused from tpla/backhoe/move_2"
+},
+{
+"file": "audio/voice_ai/ecc/engineer/build_1.ogg",
+"text": "I will build it.",
+"voice": "chatterbox/ganji-1.5st/ar-v2",
+"note": "M3.0 F reused from tpla/backhoe/build_1"
+},
+{
+"file": "audio/voice_ai/ecc/engineer/build_2.ogg",
+"text": "Digging now. It will be strong.",
+"voice": "chatterbox/ganji-1.5st/ar-v2",
+"note": "M3.0 F reused from tpla/backhoe/build_2"
+},
+{
+"file": "audio/voice_ai/ecc/engineer/under_fire_1.ogg",
+"text": "Taking fire! I am only a digger!",
+"voice": "chatterbox/ganji-1.5st/ar-v2",
+"note": "M3.0 F reused from tpla/backhoe/under_fire_2"
+},
+{
+"file": "audio/voice_ai/ecc/engineer/created_1.ogg",
+"text": "What do we build?",
+"voice": "chatterbox/ganji-1.5st/ar-v2",
+"note": "M3.0 F reused from tpla/backhoe/select_3"
+},
+{
+"file": "audio/voice_ai/ecc/cargo_truck/select_1.ogg",
+"text": "Load the cargo?",
+"voice": "chatterbox/reza-1.0st/ar-v2",
+"note": "M3.0 F reused from tpla/pickup/select_3"
+},
+{
+"file": "audio/voice_ai/ecc/cargo_truck/move_1.ogg",
+"text": "Driving now.",
+"voice": "chatterbox/reza-1.0st/ar-v2",
+"note": "M3.0 F reused from tpla/pickup/move_2"
+},
+{
+"file": "audio/voice_ai/ecc/cargo_truck/harvest_1.ogg",
+"text": "Loading supplies.",
+"voice": "chatterbox/reza-1.0st/ar-v2",
+"note": "M3.0 F reused from tpla/pickup/harvest_1"
+},
+{
+"file": "audio/voice_ai/ecc/cargo_truck/harvest_2.ogg",
+"text": "Taking the cargo home.",
+"voice": "chatterbox/reza-1.0st/ar-v2",
+"note": "M3.0 F reused from tpla/pickup/harvest_2"
+},
+{
+"file": "audio/voice_ai/ecc/cargo_truck/under_fire_1.ogg",
+"text": "Taking fire! Save the supplies!",
+"voice": "chatterbox/reza-1.0st/ar-v2",
+"note": "M3.0 F reused from tpla/pickup/under_fire_2"
+},
+{
+"file": "audio/voice_ai/ecc/cargo_truck/created_1.ogg",
+"text": "Load the cargo?",
+"voice": "chatterbox/reza-1.0st/ar-v2",
+"note": "M3.0 F reused from tpla/pickup/select_3"
+},
+{
+"file": "audio/voice_ai/ecc/rifleman/select_1.ogg",
+"text": "We're here.",
+"voice": "chatterbox/ganji+1.5st",
+"note": "M3.0 F reused from tpla/militia/select_2"
+},
+{
+"file": "audio/voice_ai/ecc/rifleman/move_1.ogg",
+"text": "Through the alleys!",
+"voice": "chatterbox/ganji+1.5st",
+"note": "M3.0 F reused from tpla/militia/move_2"
+},
+{
+"file": "audio/voice_ai/ecc/rifleman/attack_1.ogg",
+"text": "Fire, fire!",
+"voice": "chatterbox/ganji+1.5st",
+"note": "M3.0 F reused from tpla/militia/attack_2"
+},
+{
+"file": "audio/voice_ai/ecc/rifleman/under_fire_1.ogg",
+"text": "Scatter! Take cover!",
+"voice": "chatterbox/ganji+1.5st",
+"note": "M3.0 F reused from tpla/militia/under_fire_2"
+},
+{
+"file": "audio/voice_ai/ecc/rifleman/created_1.ogg",
+"text": "Fighters reporting.",
+"voice": "chatterbox/ganji+1.5st",
+"note": "M3.0 F reused from tpla/militia/created_2"
+},
+{
+"file": "audio/voice_ai/ecc/rifleman/veteran_1.ogg",
+"text": "Fire, fire!",
+"voice": "chatterbox/ganji+1.5st",
+"note": "M3.0 F reused from tpla/militia/attack_2"
+},
+{
+"file": "audio/voice_ai/ecc/rifleman/garrison_1.ogg",
+"text": "Get inside!",
+"voice": "chatterbox/ganji+1.5st",
+"note": "M3.0 F reused from tpla/militia/garrison_2"
+},
+{
+"file": "audio/voice_ai/ecc/machine_gunner/select_1.ogg",
+"text": "Eyes on.",
+"voice": "chatterbox/amir+0.5st/ar-v2",
+"note": "M3.0 F reused from tpla/marksman/select_2"
+},
+{
+"file": "audio/voice_ai/ecc/machine_gunner/select_2.ogg",
+"text": "Ready to fight.",
+"voice": "chatterbox/amir+0.5st",
+"note": "M3.0 F reused from tpla/militia/select_4"
+},
+{
+"file": "audio/voice_ai/ecc/machine_gunner/move_1.ogg",
+"text": "Moving the gun.",
+"voice": "chatterbox/amir-1.0st/ru",
+"note": "M3.0 F Russian-accent render"
+},
+{
+"file": "audio/voice_ai/ecc/machine_gunner/attack_1.ogg",
+"text": "Fire! Drop him!",
+"voice": "chatterbox/amir+0.5st/ar-v2",
+"note": "M3.0 F reused from tpla/marksman/attack_3"
+},
+{
+"file": "audio/voice_ai/ecc/machine_gunner/attack_2.ogg",
+"text": "Take them down!",
+"voice": "chatterbox/amir+0.5st",
+"note": "M3.0 F reused from tpla/militia/attack_4"
+},
+{
+"file": "audio/voice_ai/ecc/machine_gunner/under_fire_1.ogg",
+"text": "Under fire! Changing belt!",
+"voice": "chatterbox/amir-1.0st/ru",
+"note": "M3.0 F Russian-accent render"
+},
+{
+"file": "audio/voice_ai/ecc/machine_gunner/created_1.ogg",
+"text": "Ready to fight.",
+"voice": "chatterbox/amir+0.5st",
+"note": "M3.0 F reused from tpla/militia/select_4"
+},
+{
+"file": "audio/voice_ai/ecc/machine_gunner/veteran_1.ogg",
+"text": "We've learned their tricks.",
+"voice": "chatterbox/amir+0.5st",
+"note": "M3.0 F reused from tpla/militia/veteran_1"
+},
+{
+"file": "audio/voice_ai/ecc/machine_gunner/garrison_1.ogg",
+"text": "Window taken. I watch the street.",
+"voice": "chatterbox/amir+0.5st/ar-v2",
+"note": "M3.0 F reused from tpla/marksman/garrison_1"
+},
+{
+"file": "audio/voice_ai/ecc/rpg/select_1.ogg",
+"text": "Rocket ready.",
+"voice": "chatterbox/ganji+1.0st/ar-v2",
+"note": "M3.0 F reused from tpla/rocket_man/select_2"
+},
+{
+"file": "audio/voice_ai/ecc/rpg/select_2.ogg",
+"text": "RPG loaded. Show me the tank.",
+"voice": "chatterbox/ganji+1.0st/ar-v2",
+"note": "M3.0 F reused from tpla/rocket_man/select_3"
+},
+{
+"file": "audio/voice_ai/ecc/rpg/move_1.ogg",
+"text": "Moving!",
+"voice": "chatterbox/ganji+1.0st/ar-v2",
+"note": "M3.0 F reused from tpla/rocket_man/move_1"
+},
+{
+"file": "audio/voice_ai/ecc/rpg/move_2.ogg",
+"text": "Going, keep low!",
+"voice": "chatterbox/ganji+1.0st/ar-v2",
+"note": "M3.0 F reused from tpla/rocket_man/move_2"
+},
+{
+"file": "audio/voice_ai/ecc/rpg/attack_1.ogg",
+"text": "RPG! Fire!",
+"voice": "chatterbox/ganji+1.0st/ar-v2",
+"note": "M3.0 F reused from tpla/rocket_man/attack_1"
+},
+{
+"file": "audio/voice_ai/ecc/rpg/attack_2.ogg",
+"text": "Rocket away! Kill the tank!",
+"voice": "chatterbox/ganji+1.0st/ar-v2",
+"note": "M3.0 F reused from tpla/rocket_man/attack_2"
+},
+{
+"file": "audio/voice_ai/ecc/rpg/attack_3.ogg",
+"text": "Hit it! Hit it again!",
+"voice": "chatterbox/ganji+1.0st/ar-v2",
+"note": "M3.0 F reused from tpla/rocket_man/attack_3"
+},
+{
+"file": "audio/voice_ai/ecc/rpg/under_fire_1.ogg",
+"text": "They are shooting at me! Cover!",
+"voice": "chatterbox/ganji+1.0st/ar-v2",
+"note": "M3.0 F reused from tpla/rocket_man/under_fire_1"
+},
+{
+"file": "audio/voice_ai/ecc/rpg/under_fire_2.ogg",
+"text": "Taking fire! Reload, reload!",
+"voice": "chatterbox/ganji+1.0st/ar-v2",
+"note": "M3.0 F reused from tpla/rocket_man/under_fire_2"
+},
+{
+"file": "audio/voice_ai/ecc/rpg/created_1.ogg",
+"text": "Rocket ready.",
+"voice": "chatterbox/ganji+1.0st/ar-v2",
+"note": "M3.0 F reused from tpla/rocket_man/select_2"
+},
+{
+"file": "audio/voice_ai/ecc/rpg/veteran_1.ogg",
+"text": "Every rocket finds a tank!",
+"voice": "chatterbox/ganji+1.0st/ar-v2",
+"note": "M3.0 F reused from tpla/rocket_man/veteran_1"
+},
+{
+"file": "audio/voice_ai/ecc/rpg/garrison_1.ogg",
+"text": "Inside. Rockets ready at the window.",
+"voice": "chatterbox/ganji+1.0st/ar-v2",
+"note": "M3.0 F reused from tpla/rocket_man/garrison_1"
+},
+{
+"file": "audio/voice_ai/ecc/infiltrator/select_1.ogg",
+"text": "Yes?",
+"voice": "chatterbox/reza+2.0st/ar-v2",
+"note": "M3.0 F reused from tpla/insurgent/select_1"
+},
+{
+"file": "audio/voice_ai/ecc/infiltrator/select_2.ogg",
+"text": "I am here. No one sees me.",
+"voice": "chatterbox/reza+2.0st/ar-v2",
+"note": "M3.0 F reused from tpla/insurgent/select_2"
+},
+{
+"file": "audio/voice_ai/ecc/infiltrator/move_1.ogg",
+"text": "I go.",
+"voice": "chatterbox/reza+2.0st/ar-v2",
+"note": "M3.0 F reused from tpla/insurgent/move_1"
+},
+{
+"file": "audio/voice_ai/ecc/infiltrator/attack_1.ogg",
+"text": "Now! Strike!",
+"voice": "chatterbox/reza+2.0st/ar-v2",
+"note": "M3.0 F reused from tpla/insurgent/attack_1"
+},
+{
+"file": "audio/voice_ai/ecc/infiltrator/attack_2.ogg",
+"text": "Go, go, attack!",
+"voice": "chatterbox/reza+2.0st/ar-v2",
+"note": "M3.0 F reused from tpla/insurgent/attack_2"
+},
+{
+"file": "audio/voice_ai/ecc/infiltrator/under_fire_1.ogg",
+"text": "They see me! Run!",
+"voice": "chatterbox/reza+2.0st/ar-v2",
+"note": "M3.0 F reused from tpla/insurgent/under_fire_1"
+},
+{
+"file": "audio/voice_ai/ecc/infiltrator/under_fire_2.ogg",
+"text": "I am spotted! Scatter!",
+"voice": "chatterbox/reza+2.0st/ar-v2",
+"note": "M3.0 F reused from tpla/insurgent/under_fire_2"
+},
+{
+"file": "audio/voice_ai/ecc/infiltrator/created_1.ogg",
+"text": "I am here. No one sees me.",
+"voice": "chatterbox/reza+2.0st/ar-v2",
+"note": "M3.0 F reused from tpla/insurgent/select_2"
+},
+{
+"file": "audio/voice_ai/ecc/infiltrator/veteran_1.ogg",
+"text": "They never see me coming!",
+"voice": "chatterbox/reza+2.0st/ar-v2",
+"note": "M3.0 F reused from tpla/insurgent/veteran_1"
+},
+{
+"file": "audio/voice_ai/ecc/infiltrator/garrison_1.ogg",
+"text": "I am here. No one sees me.",
+"voice": "chatterbox/reza+2.0st/ar-v2",
+"note": "M3.0 F reused from tpla/insurgent/select_2"
+},
+{
+"file": "audio/voice_ai/ecc/tigr/select_1.ogg",
+"text": "Yes? The fifty is ready.",
+"voice": "chatterbox/reza+1.5st/ar-v2",
+"note": "M3.0 F reused from tpla/technical/select_3"
+},
+{
+"file": "audio/voice_ai/ecc/tigr/move_1.ogg",
+"text": "Go, go, hit the gas!",
+"voice": "chatterbox/reza+1.5st/ar-v2",
+"note": "M3.0 F reused from tpla/technical/move_2"
+},
+{
+"file": "audio/voice_ai/ecc/tigr/attack_1.ogg",
+"text": "Light them up! Shoot!",
+"voice": "chatterbox/reza+1.5st/ar-v2",
+"note": "M3.0 F reused from tpla/technical/attack_2"
+},
+{
+"file": "audio/voice_ai/ecc/tigr/attack_2.ogg",
+"text": "Kill them all, keep firing!",
+"voice": "chatterbox/reza+1.5st/ar-v2",
+"note": "M3.0 F reused from tpla/technical/attack_3"
+},
+{
+"file": "audio/voice_ai/ecc/tigr/under_fire_1.ogg",
+"text": "Taking fire! Get us out!",
+"voice": "chatterbox/reza+1.5st/ar-v2",
+"note": "M3.0 F reused from tpla/technical/under_fire_2"
+},
+{
+"file": "audio/voice_ai/ecc/tigr/created_1.ogg",
+"text": "Yes? The fifty is ready.",
+"voice": "chatterbox/reza+1.5st/ar-v2",
+"note": "M3.0 F reused from tpla/technical/select_3"
+},
+{
+"file": "audio/voice_ai/ecc/tigr/veteran_1.ogg",
+"text": "Kill them all, keep firing!",
+"voice": "chatterbox/reza+1.5st/ar-v2",
+"note": "M3.0 F reused from tpla/technical/attack_3"
+},
+{
+"file": "audio/voice_ai/ecc/btr/select_1.ogg",
+"text": "Transport ready.",
+"voice": "chatterbox/reza+0.0st/ar-v2",
+"note": "M3.0 F reused from tpla/bmp2/select_1"
+},
+{
+"file": "audio/voice_ai/ecc/btr/move_1.ogg",
+"text": "Rolling out, hold on!",
+"voice": "chatterbox/reza+0.0st/ar-v2",
+"note": "M3.0 F reused from tpla/bmp2/move_1"
+},
+{
+"file": "audio/voice_ai/ecc/btr/attack_1.ogg",
+"text": "Cannon, fire! Fire!",
+"voice": "chatterbox/reza+0.0st/ar-v2",
+"note": "M3.0 F reused from tpla/bmp2/attack_1"
+},
+{
+"file": "audio/voice_ai/ecc/btr/attack_2.ogg",
+"text": "Thirty mil, hit them!",
+"voice": "chatterbox/reza+0.0st/ar-v2",
+"note": "M3.0 F reused from tpla/bmp2/attack_2"
+},
+{
+"file": "audio/voice_ai/ecc/btr/attack_3.ogg",
+"text": "Shoot! Keep shooting!",
+"voice": "chatterbox/reza+0.0st/ar-v2",
+"note": "M3.0 F reused from tpla/bmp2/attack_3"
+},
+{
+"file": "audio/voice_ai/ecc/btr/under_fire_1.ogg",
+"text": "We are hit! Armor holding!",
+"voice": "chatterbox/reza+0.0st/ar-v2",
+"note": "M3.0 F reused from tpla/bmp2/under_fire_1"
+},
+{
+"file": "audio/voice_ai/ecc/btr/under_fire_2.ogg",
+"text": "Taking fire! Protect the men!",
+"voice": "chatterbox/reza+0.0st/ar-v2",
+"note": "M3.0 F reused from tpla/bmp2/under_fire_2"
+},
+{
+"file": "audio/voice_ai/ecc/btr/created_1.ogg",
+"text": "Transport ready.",
+"voice": "chatterbox/reza+0.0st/ar-v2",
+"note": "M3.0 F reused from tpla/bmp2/select_1"
+},
+{
+"file": "audio/voice_ai/ecc/btr/veteran_1.ogg",
+"text": "Shoot! Keep shooting!",
+"voice": "chatterbox/reza+0.0st/ar-v2",
+"note": "M3.0 F reused from tpla/bmp2/attack_3"
+},
+{
+"file": "audio/voice_ai/ecc/typhoon/select_1.ogg",
+"text": "Transport ready.",
+"voice": "chatterbox/reza+0.0st/ar-v2",
+"note": "M3.0 F reused from tpla/bmp2/select_1"
+},
+{
+"file": "audio/voice_ai/ecc/typhoon/move_1.ogg",
+"text": "Rolling out, hold on!",
+"voice": "chatterbox/reza+0.0st/ar-v2",
+"note": "M3.0 F reused from tpla/bmp2/move_1"
+},
+{
+"file": "audio/voice_ai/ecc/typhoon/attack_1.ogg",
+"text": "Shoot! Keep shooting!",
+"voice": "chatterbox/reza+0.0st/ar-v2",
+"note": "M3.0 F reused from tpla/bmp2/attack_3"
+},
+{
+"file": "audio/voice_ai/ecc/typhoon/under_fire_1.ogg",
+"text": "Taking fire! Protect the men!",
+"voice": "chatterbox/reza+0.0st/ar-v2",
+"note": "M3.0 F reused from tpla/bmp2/under_fire_2"
+},
+{
+"file": "audio/voice_ai/ecc/typhoon/created_1.ogg",
+"text": "Transport ready.",
+"voice": "chatterbox/reza+0.0st/ar-v2",
+"note": "M3.0 F reused from tpla/bmp2/select_1"
+},
+{
+"file": "audio/voice_ai/ecc/typhoon/veteran_1.ogg",
+"text": "Shoot! Keep shooting!",
+"voice": "chatterbox/reza+0.0st/ar-v2",
+"note": "M3.0 F reused from tpla/bmp2/attack_3"
+},
+{
+"file": "audio/voice_ai/ecc/t90/select_1.ogg",
+"text": "Armour up. Give me a target.",
+"voice": "chatterbox/ganji-3.5st/ru",
+"note": "M3.0 F Russian-accent render"
+},
+{
+"file": "audio/voice_ai/ecc/t90/move_1.ogg",
+"text": "Tank moving!",
+"voice": "chatterbox/ganji-3.5st/ru",
+"note": "M3.0 F Russian-accent render"
+},
+{
+"file": "audio/voice_ai/ecc/t90/move_2.ogg",
+"text": "Tracks rolling!",
+"voice": "chatterbox/ganji-3.5st/ru",
+"note": "M3.0 F Russian-accent render"
+},
+{
+"file": "audio/voice_ai/ecc/t90/attack_1.ogg",
+"text": "Main gun, kill that tank!",
+"voice": "chatterbox/ganji-2.0st/ar-v2",
+"note": "M3.0 F reused from tpla/striker/attack_2"
+},
+{
+"file": "audio/voice_ai/ecc/t90/attack_2.ogg",
+"text": "Hit them! Burn them down!",
+"voice": "chatterbox/ganji-2.0st/ar-v2",
+"note": "M3.0 F reused from tpla/striker/attack_3"
+},
+{
+"file": "audio/voice_ai/ecc/t90/under_fire_1.ogg",
+"text": "We are hit! Armor holding!",
+"voice": "chatterbox/ganji-2.0st/ar-v2",
+"note": "M3.0 F reused from tpla/striker/under_fire_1"
+},
+{
+"file": "audio/voice_ai/ecc/t90/under_fire_2.ogg",
+"text": "They are on us! Turn the turret!",
+"voice": "chatterbox/ganji-2.0st/ar-v2",
+"note": "M3.0 F reused from tpla/striker/under_fire_2"
+},
+{
+"file": "audio/voice_ai/ecc/t90/created_1.ogg",
+"text": "Armour up. Give me a target.",
+"voice": "chatterbox/ganji-3.5st/ru",
+"note": "M3.0 F Russian-accent render"
+},
+{
+"file": "audio/voice_ai/ecc/t90/veteran_1.ogg",
+"text": "Hit them! Burn them down!",
+"voice": "chatterbox/ganji-2.0st/ar-v2",
+"note": "M3.0 F reused from tpla/striker/attack_3"
+},
+{
+"file": "audio/voice_ai/ecc/msta/select_1.ogg",
+"text": "Heavy gun here.",
+"voice": "chatterbox/amir+1.5st/ar-v2",
+"note": "M3.0 F reused from tpla/koksan/select_1"
+},
+{
+"file": "audio/voice_ai/ecc/msta/move_1.ogg",
+"text": "Pack the gun, we move!",
+"voice": "chatterbox/amir+1.5st/ar-v2",
+"note": "M3.0 F reused from tpla/koksan/move_1"
+},
+{
+"file": "audio/voice_ai/ecc/msta/attack_1.ogg",
+"text": "Bring the thunder! Fire!",
+"voice": "chatterbox/amir+1.5st/ar-v2",
+"note": "M3.0 F reused from tpla/koksan/attack_1"
+},
+{
+"file": "audio/voice_ai/ecc/msta/attack_2.ogg",
+"text": "Shell away! Hit them hard!",
+"voice": "chatterbox/amir+1.5st/ar-v2",
+"note": "M3.0 F reused from tpla/koksan/attack_2"
+},
+{
+"file": "audio/voice_ai/ecc/msta/under_fire_1.ogg",
+"text": "They found the gun! Protect it!",
+"voice": "chatterbox/amir+1.5st/ar-v2",
+"note": "M3.0 F reused from tpla/koksan/under_fire_1"
+},
+{
+"file": "audio/voice_ai/ecc/msta/created_1.ogg",
+"text": "Heavy gun here.",
+"voice": "chatterbox/amir+1.5st/ar-v2",
+"note": "M3.0 F reused from tpla/koksan/select_1"
+},
+{
+"file": "audio/voice_ai/ecc/msta/veteran_1.ogg",
+"text": "Bring the thunder! Fire!",
+"voice": "chatterbox/amir+1.5st/ar-v2",
+"note": "M3.0 F reused from tpla/koksan/attack_1"
+},
+{
+"file": "audio/voice_ai/ecc/zeus/select_1.ogg",
+"text": "Air defense ready. Radar is up.",
+"voice": "chatterbox/amir-1.5st/ar-v2",
+"note": "M3.0 F reused from tpla/bhx35/select_1"
+},
+{
+"file": "audio/voice_ai/ecc/zeus/move_1.ogg",
+"text": "Relocating the guns, now!",
+"voice": "chatterbox/amir-1.5st/ar-v2",
+"note": "M3.0 F reused from tpla/bhx35/move_1"
+},
+{
+"file": "audio/voice_ai/ecc/zeus/attack_1.ogg",
+"text": "Aircraft! Fire, fire!",
+"voice": "chatterbox/amir-1.5st/ar-v2",
+"note": "M3.0 F reused from tpla/bhx35/attack_1"
+},
+{
+"file": "audio/voice_ai/ecc/zeus/attack_2.ogg",
+"text": "Shoot them down! Now!",
+"voice": "chatterbox/amir-1.5st/ar-v2",
+"note": "M3.0 F reused from tpla/bhx35/attack_3"
+},
+{
+"file": "audio/voice_ai/ecc/zeus/under_fire_1.ogg",
+"text": "We are hit! Keep the radar up!",
+"voice": "chatterbox/amir-1.5st/ar-v2",
+"note": "M3.0 F reused from tpla/bhx35/under_fire_1"
+},
+{
+"file": "audio/voice_ai/ecc/zeus/under_fire_2.ogg",
+"text": "They found us! Return fire!",
+"voice": "chatterbox/amir-1.5st/ar-v2",
+"note": "M3.0 F reused from tpla/bhx35/under_fire_2"
+},
+{
+"file": "audio/voice_ai/ecc/zeus/created_1.ogg",
+"text": "Air defense ready. Radar is up.",
+"voice": "chatterbox/amir-1.5st/ar-v2",
+"note": "M3.0 F reused from tpla/bhx35/select_1"
+},
+{
+"file": "audio/voice_ai/ecc/zeus/veteran_1.ogg",
+"text": "Shoot them down! Now!",
+"voice": "chatterbox/amir-1.5st/ar-v2",
+"note": "M3.0 F reused from tpla/bhx35/attack_3"
 }
 ]
 }

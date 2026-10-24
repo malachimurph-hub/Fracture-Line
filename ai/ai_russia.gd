@@ -14,6 +14,18 @@ func faction() -> StringName:
 	return &"ecc"
 
 func _unit_allowed(ud: UnitDef) -> bool:
+	# keep the pop for armour: the Barracks trains faster than the Vehicle Factory builds, so
+	# without a cap the army fills with infantry that melts against defences (M3.0 F test).
+	if ud.tags.has("infantry"):
+		var inf := 0
+		var all := combat_units()
+		for u: SimEntity in all:
+			if w.udef(u).tags.has("infantry"):
+				inf += 1
+		if inf >= maxi(8, all.size() * 2 / 5):
+			return false
+		if ud.id == &"ecc_machine_gunner" and _count_type(ud.id) >= 2 + all.size() / 8:
+			return false
 	if ud.id == &"ecc_infiltrator":
 		return _count_type(ud.id) < 1 + combat_units().size() / 12
 	if ud.id == &"ecc_msta":

@@ -583,8 +583,143 @@
   "ecc": {
    "label": "Russia",
    "radio": true,
-   "units": {},
-   "later": true
+   "radio_style": "eu",
+   "units": {
+    "ecc_engineer": {
+     "folder": "engineer",
+     "events": [
+      "select",
+      "move",
+      "build",
+      "under_fire",
+      "created"
+     ]
+    },
+    "ecc_cargo_truck": {
+     "folder": "cargo_truck",
+     "events": [
+      "select",
+      "move",
+      "harvest",
+      "under_fire",
+      "created"
+     ]
+    },
+    "ecc_rifleman": {
+     "folder": "rifleman",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran",
+      "garrison"
+     ]
+    },
+    "ecc_machine_gunner": {
+     "folder": "machine_gunner",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran",
+      "garrison"
+     ]
+    },
+    "ecc_rpg": {
+     "folder": "rpg",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran",
+      "garrison"
+     ]
+    },
+    "ecc_infiltrator": {
+     "folder": "infiltrator",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran",
+      "garrison"
+     ]
+    },
+    "ecc_tigr": {
+     "folder": "tigr",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ]
+    },
+    "ecc_btr": {
+     "folder": "btr",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ]
+    },
+    "ecc_typhoon": {
+     "folder": "typhoon",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ]
+    },
+    "ecc_t90": {
+     "folder": "t90",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ]
+    },
+    "ecc_msta": {
+     "folder": "msta",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ]
+    },
+    "ecc_zeus": {
+     "folder": "zeus",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ]
+    }
+   }
   }
  },
  "announcer": {
@@ -592,7 +727,8 @@
   "folders": {
    "eu": "announcer",
    "tpla": "announcer_tpla",
-   "us": "announcer_us"
+   "us": "announcer_us",
+   "ecc": "announcer_us"
   },
   "radio": false,
   "events": {
@@ -733,6 +869,27 @@
     "tunnel_lost"
    ],
    "us": [
+    "unit_ready",
+    "construction_complete",
+    "building",
+    "base_under_attack",
+    "units_under_attack",
+    "low_power",
+    "insufficient_funds",
+    "cannot_build",
+    "building_captured",
+    "unit_promoted",
+    "general_promoted",
+    "enemy_power_detected",
+    "player_eliminated",
+    "you_eliminated",
+    "victory",
+    "defeat",
+    "battle_start",
+    "airfield_full",
+    "air_support"
+   ],
+   "ecc": [
     "unit_ready",
     "construction_complete",
     "building",
