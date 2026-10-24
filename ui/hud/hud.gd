@@ -41,6 +41,7 @@ var rank_lbl: Label
 var general_btn: HudButton
 var build_btn: HudButton
 var idle_btn: HudButton
+var compass_btn: HudCompass
 var army_btn: HudButton
 var top: HBoxContainer
 var group_btns: Array = []
@@ -222,6 +223,13 @@ func _build() -> void:
 	fill.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	top.add_child(fill)
+	compass_btn = HudCompass.new()   # M3.1: 360 camera; tap = north-up
+	compass_btn.cam = cam
+	compass_btn.name = "Compass"
+	compass_btn.custom_minimum_size = Vector2(TOP_H, TOP_H)
+	compass_btn.tooltip_text = tr("HUD_COMPASS_TIP")
+	compass_btn.primary.connect(func(): cam.reset_north())
+	top.add_child(compass_btn)
 	clock_lbl = UiTheme.label("00:00", 14)
 	top.add_child(clock_lbl)
 	pause_btn = _hud_btn("II", Vector2(TOP_H, TOP_H))
@@ -233,7 +241,7 @@ func _build() -> void:
 	menu_btn.primary.connect(toggle_pause_menu)
 	top.add_child(menu_btn)
 	top.add_theme_constant_override("separation", int(TOP_PAD * 2))
-	for c in [army, idle, pause_btn, menu_btn, groups_btn] + group_btns:
+	for c in [army, idle, pause_btn, menu_btn, groups_btn, compass_btn] + group_btns:
 		c.hit_pad = TOP_PAD
 		c.add_theme_font_size_override("font_size", 11)
 		blockers.append(c)
@@ -301,10 +309,24 @@ func _build_pause_menu() -> void:
 	var pc := PanelContainer.new()
 	pc.name = "P"
 	pause_menu.add_child(pc)
+	var hb := HBoxContainer.new()
+	hb.add_theme_constant_override("separation", 18)
+	pc.add_child(hb)
 	var v := VBoxContainer.new()
+	v.name = "V"
 	v.add_theme_constant_override("separation", 8)
-	pc.add_child(v)
+	hb.add_child(v)
 	v.add_child(UiTheme.label(tr("PAUSE_TITLE"), 20, UiTheme.GOLD))
+	# M3.1: touch controls help next to the buttons
+	var hv := VBoxContainer.new()
+	hv.name = "Controls"
+	hv.add_theme_constant_override("separation", 4)
+	hb.add_child(hv)
+	hv.add_child(UiTheme.label(tr("HELP_CONTROLS"), 16, UiTheme.GOLD))
+	var hl := UiTheme.label(tr("HELP_CONTROLS_BODY"), 11)
+	hl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hl.custom_minimum_size = Vector2(300, 0)
+	hv.add_child(hl)
 	var items := [["PAUSE_RESUME", func(): toggle_pause_menu()],
 		["PAUSE_SPEED", func(): m.cycle_speed(); _update_pause_menu()],
 		["PAUSE_HEALTHBARS", func(): Settings.s("always_health_bars", not Settings.g("always_health_bars")); _update_pause_menu()],
@@ -319,7 +341,7 @@ func _build_pause_menu() -> void:
 		v.add_child(b)
 
 func _update_pause_menu() -> void:
-	var v := pause_menu.get_node("P").get_child(0)
+	var v := pause_menu.get_node("P").find_child("V", true, false)
 	v.get_node("PAUSE_SPEED").text = tr("PAUSE_SPEED") + ": %sx" % str(m.speed)
 	v.get_node("PAUSE_HEALTHBARS").text = tr("PAUSE_HEALTHBARS") + ": " + (tr("ON") if Settings.g("always_health_bars") else tr("OFF"))
 	v.get_node("PAUSE_PERF").text = tr("PAUSE_PERF") + ": " + (tr("ON") if Settings.g("perf_overlay") else tr("OFF"))

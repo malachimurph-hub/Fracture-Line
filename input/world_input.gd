@@ -11,7 +11,10 @@ extends Node
 signal box_changed(rect: Rect2, active: bool)
 signal hold_progress(pos: Vector2, k: float)
 
-enum G { IDLE, PENDING, PAN, HOLD, BOX, GHOST, MULTI }
+enum G { IDLE, PENDING, PAN, HOLD, BOX, GHOST, MULTI, MULTIBOX }
+## M3.1: two fingers held still this long -> selection box between the fingers
+const TWO_HOLD_MS := 350
+const TWIST_START := 0.14   ## radians of twist before rotation kicks in (pinch stays clean)
 
 var ctl: PlayerController
 var cam: CameraRig
@@ -30,6 +33,11 @@ var pinch_mid := Vector2.ZERO
 var multi_t0: int = 0
 var multi_moved: bool = false
 var multi_max: int = 0
+var pinch_ang0: float = 0.0
+var twist_acc: float = 0.0
+var twisting: bool = false
+var multi_locked: bool = false   ## after a two-finger box select: ignore until all fingers are up
+var multi_start: Array = []
 var haptic_done: bool = false
 ## mouse
 var m_down: bool = false
@@ -89,11 +97,15 @@ func _touch(ev: InputEventScreenTouch) -> void:
 				state = G.GHOST
 				ctl.move_ghost_screen(ev.position + _offset())
 		elif touches.size() >= 2:
-			if state == G.BOX:
+			if state == G.BOX or state == G.MULTIBOX:
 				box_changed.emit(Rect2(), false)
 			if state != G.MULTI:
 				multi_t0 = _now()
 				multi_moved = false
+				twist_acc = 0.0
+				twisting = false
+				multi_locked = false
+				multi_start = _two()
 			state = G.MULTI
 			multi_max = maxi(multi_max, touches.size())
 			_pinch_reset()
@@ -104,8 +116,16 @@ func _touch(ev: InputEventScreenTouch) -> void:
 		return
 	touches.erase(ev.index)
 	get_viewport().set_input_as_handled()
+	if state == G.MULTIBOX:
+		# M3.1: lifting a finger ends the two-finger box: select own units inside
+		ctl.box_select(_two_rect(true))
+		box_changed.emit(Rect2(), false)
+		state = G.MULTI
+		multi_locked = true
+		multi_moved = true
 	if state == G.MULTI:
 		if touches.is_empty():
+			multi_locked = false
 			if not multi_moved and _now() - multi_t0 < 350 and multi_max >= 2:
 				_two_finger_tap()
 			cam.snap_zoom()
@@ -138,8 +158,12 @@ func _drag(ev: InputEventScreenDrag) -> void:
 		return
 	touches[ev.index]["pos"] = ev.position
 	get_viewport().set_input_as_handled()
+	if state == G.MULTIBOX:
+		box_changed.emit(_two_rect(), true)
+		return
 	if state == G.MULTI:
-		_pinch_update()
+		if not multi_locked:
+			_pinch_update()
 		return
 	var p := ev.position
 	match state:
@@ -162,7 +186,22 @@ func _drag(ev: InputEventScreenDrag) -> void:
 	last_pos = p
 	last_move_ms = _now()
 
+## M3.1: the screen rectangle between the two touch points (live while fingers spread / pinch).
+var _last_two_rect := Rect2()
+func _two_rect(final := false) -> Rect2:
+	var pts := _two()
+	if pts.size() >= 2:
+		var a: Vector2 = pts[0]
+		var b: Vector2 = pts[1]
+		_last_two_rect = Rect2(Vector2(minf(a.x, b.x), minf(a.y, b.y)), (a - b).abs())
+	return _last_two_rect
+
 func _process(delta: float) -> void:
+	if state == G.MULTI and not multi_locked and not multi_moved and touches.size() == 2 and _now() - multi_t0 >= TWO_HOLD_MS:
+		state = G.MULTIBOX
+		box_changed.emit(_two_rect(), true)
+		if Settings.g("haptics"):
+			Input.vibrate_handheld(15)
 	if state == G.PENDING:
 		var held := _now() - t_down
 		if held >= 120:
@@ -186,7 +225,10 @@ func _process(delta: float) -> void:
 			if Input.is_physical_key_pressed(KEY_D): kp.x += 1
 			if Input.is_physical_key_pressed(KEY_A) and ctl.own_units_selected().is_empty(): kp.x -= 1
 	if kp != Vector2.ZERO:
-		cam.focus += Vector3(kp.x, 0, kp.y) * cam.dist * 0.9 * delta
+		cam.focus += cam.screen_dir(kp) * cam.dist * 0.9 * delta
+	if not _typing():
+		if Input.is_physical_key_pressed(KEY_Q): cam.rotate_by(1.6 * delta)
+		if Input.is_physical_key_pressed(KEY_E): cam.rotate_by(-1.6 * delta)
 	if Settings.g("edge_pan") and not UiScale.is_mobile() and DisplayServer.window_is_focused():
 		var mp := get_viewport().get_mouse_position()
 		var vs := get_viewport().get_visible_rect().size
@@ -195,7 +237,7 @@ func _process(delta: float) -> void:
 		elif mp.x > vs.x - 4: e.x = 1
 		if mp.y < 4: e.y = -1
 		elif mp.y > vs.y - 4: e.y = 1
-		cam.focus += Vector3(e.x, 0, e.y) * cam.dist * 0.8 * delta
+		cam.focus += cam.screen_dir(e) * cam.dist * 0.8 * delta
 
 ## WASD panning collides with A (attack-move) and S (stop) per GDD 6.6: A/S pan only when no
 ## units are selected; with a selection they are commands.
@@ -212,6 +254,7 @@ func _pinch_reset() -> void:
 		return
 	pinch_d0 = maxf(1.0, pts[0].distance_to(pts[1]))
 	pinch_mid = (pts[0] + pts[1]) * 0.5
+	pinch_ang0 = (pts[1] - pts[0]).angle()
 
 func _pinch_update() -> void:
 	var pts := _two()
@@ -219,12 +262,22 @@ func _pinch_update() -> void:
 		return
 	var d := maxf(1.0, pts[0].distance_to(pts[1]))
 	var mid: Vector2 = (pts[0] + pts[1]) * 0.5
-	if absf(d - pinch_d0) > 6.0 or mid.distance_to(pinch_mid) > 6.0:
-		multi_moved = true
+	var ang: float = (pts[1] - pts[0]).angle()
+	var da := angle_difference(pinch_ang0, ang)
+	if multi_start.size() >= 2 and (pts[0].distance_to(multi_start[0]) > 12.0 or pts[1].distance_to(multi_start[1]) > 12.0):
+		multi_moved = true   # fingers moved: camera control, no two-finger box / tap
+	# M3.1 twist -> 360 rotation about the screen centre's ground point (after a small dead zone)
+	twist_acc += da
+	if not twisting and absf(twist_acc) > TWIST_START:
+		twisting = true
+		da = twist_acc
+	if twisting:
+		cam.rotate_by(da)
 	cam.pinch(d / pinch_d0)
 	cam.pan_screen(mid - pinch_mid)
 	pinch_d0 = d
 	pinch_mid = mid
+	pinch_ang0 = ang
 
 func _two() -> Array:
 	var out: Array = []

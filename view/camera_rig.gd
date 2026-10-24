@@ -1,7 +1,9 @@
 class_name CameraRig
 extends Node3D
-## Tilted RTS camera (fixed ~55 deg pitch, north-up, Generals-like). Three soft zoom levels
+## Tilted RTS camera (fixed ~55 deg pitch, Generals-like). Three soft zoom levels
 ## (close / default / far tactical), pan with inertia, clamped to the map.
+## M3.1: full 360 yaw (two-finger twist, Q/E keys); reset_north() eases back to north-up.
+## Ground picking, panning and the minimap frame all go through ray casts, so they follow yaw.
 
 signal zoom_level_changed(level: int)
 const PITCH_DEG := 55.0
@@ -17,6 +19,8 @@ var level: int = 1
 var velocity := Vector3.ZERO
 var map_size := Vector2(128, 128)
 var history: Array = []   ## previous focus for "Back" after alert jumps
+var yaw := 0.0            ## radians, 0 = north-up; positive turns the camera counter-clockwise
+var _yaw_goal := NAN      ## reset_north() target while easing
 
 func _ready() -> void:
 	cam = Camera3D.new()
@@ -32,15 +36,32 @@ func _process(delta: float) -> void:
 		focus += velocity * delta
 		velocity *= exp(-5.0 * delta)  # frame-rate independent decay
 	dist = lerpf(dist, target_dist, minf(1.0, delta * 10.0))
+	if not is_nan(_yaw_goal):
+		yaw = lerp_angle(yaw, _yaw_goal, minf(1.0, delta * 8.0))
+		if absf(angle_difference(yaw, _yaw_goal)) < 0.002:
+			yaw = _yaw_goal
+			_yaw_goal = NAN
 	_apply()
 
 func _apply() -> void:
 	focus.x = clampf(focus.x, 4.0, map_size.x - 4.0)
 	focus.z = clampf(focus.z, 4.0, map_size.y - 2.0)
 	var pitch := deg_to_rad(PITCH_DEG)
-	var off := Vector3(0, sin(pitch), cos(pitch)) * dist
+	var off := (Basis(Vector3.UP, yaw) * Vector3(0, sin(pitch), cos(pitch))) * dist
 	cam.position = focus + off
 	cam.look_at(focus, Vector3.UP)
+
+func rotate_by(a: float) -> void:
+	_yaw_goal = NAN
+	yaw = wrapf(yaw + a, -PI, PI)
+	_apply()
+
+func reset_north() -> void:
+	_yaw_goal = 0.0
+
+## World-space direction for a screen-space pan input (x right, y down on screen).
+func screen_dir(v: Vector2) -> Vector3:
+	return Basis(Vector3.UP, yaw) * Vector3(v.x, 0, v.y)
 
 func set_level(l: int) -> void:
 	l = clampi(l, 0, LEVELS.size() - 1)

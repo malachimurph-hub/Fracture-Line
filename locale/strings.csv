@@ -29,6 +29,11 @@ LOBBY_DIFF_HARD,Hard
 LOBBY_COMING_LATER,coming later
 LOBBY_COMING_SOON,Coming soon
 LOADING_BATTLE,Loading battle…
+HUD_COMPASS_TIP,Compass: tap to turn the camera back to north
+HELP_CONTROLS,Controls
+HELP_CONTROLS_BODY,"Tap: select, or order selected units. Drag: pan. Hold, then drag: selection box. Hold and release: attack-move. Double-tap: select all of that type on screen.
+Two fingers: pinch to zoom, twist to rotate the camera (compass: back to north). Hold two fingers still: a selection box between them; spread or pinch to size it, lift to select. Two-finger tap: cancel or deselect.
+Builders: tap a damaged structure of yours to repair it."
 LOBBY_RANDOM,Random
 LOBBY_MONEY,Starting cash $%d
 LOBBY_FOG,Fog of war + shroud
