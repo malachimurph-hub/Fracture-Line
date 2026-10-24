@@ -10,7 +10,7 @@ extends Node3D
 const CLASSES := {
 	# weapon id -> effect class (falls back to the weapon's vfx kind)
 	&"eu_tank_cannon": "cannon", &"eu_twin_cannon": "cannon", &"tpla_scrap_cannon": "cannon",
-	&"eu_autocannon": "autocannon", &"eu_bunker_cannon": "autocannon",
+	&"eu_autocannon": "autocannon", &"eu_boxer_30mm": "autocannon", &"eu_hmg50": "mg", &"eu_thunderbolt_msl": "missile", &"eu_bunker_cannon": "autocannon",
 	&"tpla_hmg": "mg", &"tpla_tunnel_mg": "mg", &"tpla_30mm": "autocannon", &"eu_harvester_mg": "mg",
 	&"eu_rifle": "rifle", &"tpla_carbine": "rifle",
 	&"eu_gatling": "quad", &"tpla_quad": "autocannon", &"eu_flak": "flak",

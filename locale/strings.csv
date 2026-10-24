@@ -210,10 +210,12 @@ UNIT_EU_CRAWLER,Crawler
 UNIT_EU_HARVESTER,Supply Hauler
 UNIT_EU_GRENADIER,Grenadier
 UNIT_EU_LANCER,Lancer
-UNIT_EU_WOLFHOUND,Wolfhound Scout Car
-UNIT_EU_LEOPOLD,Leopold Tank
+UNIT_EU_WOLFHOUND,LTV
+UNIT_EU_BOXER,Boxer IFV
+UNIT_EU_BOXER_DESC,8x8 infantry fighting vehicle with a 30mm cannon. Carries six infantry who can fire from inside.
+UNIT_EU_LEOPOLD,Panther Tank
 UNIT_EU_AEGIS,Aegis Shield Carrier
-UNIT_EU_FLAKWERK,Flakwerk Flak Gun
+UNIT_EU_FLAKWERK,Thunderbolt
 BLD_EU_HQ,Command HQ
 BLD_EU_REACTOR,Fusion Reactor
 BLD_EU_HUB,Supply Hub
@@ -323,8 +325,8 @@ UNIT_EU_BRENNUS,Brennus Siege Tank
 UNIT_EU_BRENNUS_DESC,"Twin-cannon super-heavy tank. Slow, very tough, fires two-round salvos. Needs a Signals Center."
 UNIT_EU_SALAMANDER,Salamander Flame Tank
 UNIT_EU_SALAMANDER_DESC,"Short-range flame projector. Burns infantry and structures, weak against heavy armour."
-UNIT_EU_THUNDERHEAD,Thunderhead Howitzer
-UNIT_EU_THUNDERHEAD_DESC,"Long-range self-propelled howitzer. Slow to aim, cannot hit close targets. Needs a Signals Center."
+UNIT_EU_THUNDERHEAD,RCH SPA
+UNIT_EU_THUNDERHEAD_DESC,"Wheeled 155mm self-propelled howitzer. Long range, slow to aim, cannot hit close targets. Needs a Signals Center."
 UNIT_EU_HEARTH,Hearth Rocket Artillery
 UNIT_EU_HEARTH_DESC,Light rocket artillery. A 6-tube pod fires a rocket salvo against infantry and light vehicles.
 UNIT_EU_SPECTRE,Spectre Jammer
@@ -340,7 +342,7 @@ UNIT_TPLA_BUS_DESC,BMP-2-based armoured transport with a 30 mm cannon on top. Ca
 BLD_EU_FLAK_TOWER,Flak Tower
 BLD_EU_FLAK_TOWER_DESC,Rapid-fire rotary gun tower. Hits ground and air targets. Needs power to fire.
 BLD_EU_SIGNALS,Signals Center
-BLD_EU_SIGNALS_DESC,"Command and tech centre. Unlocks the Brennus, Thunderhead, Spectre and the advanced structures."
+BLD_EU_SIGNALS_DESC,"Command and tech centre. Unlocks the Brennus, RCH SPA, Spectre and the advanced structures."
 BLD_EU_RELAY,Field Relay Mast
 BLD_EU_RELAY_DESC,Repairs your vehicles and heals infantry within 6 tiles (1% health per second).
 BLD_EU_EXCHANGE,Data Exchange

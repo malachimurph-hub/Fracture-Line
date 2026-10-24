@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="WeaponDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/weapon_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"eu_hmg50"
+damage = 12
+range_mt = 5500
+min_range_mt = 0
+cooldown_ms = 220
+damage_type = &"hmg"
+splash_mt = 0
+targets_air = true
+targets_ground = true
+vfx = &"tracer_heavy"
+min_tier = 0
+pre_attack_ms = 0
+pre_attack_type = &"attack"
+clip_size = 8
+reload_ms = 1400
+aim_deg = 12
+scatter_mt = 0
+scatter_inf_mt = 0

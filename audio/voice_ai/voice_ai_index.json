@@ -404,12 +404,6 @@
 "speed": 1.06
 },
 {
-"file": "audio/voice_ai/eu/wolfhound/select_1.ogg",
-"text": "Wolfhound.",
-"voice": "bm_lewis:0.6,bm_fable:0.4",
-"speed": 1.111
-},
-{
 "file": "audio/voice_ai/eu/wolfhound/select_2.ogg",
 "text": "Recon ready.",
 "voice": "bm_lewis:0.6,bm_fable:0.4",
@@ -422,7 +416,7 @@
 "speed": 1.133
 },
 {
-"file": "audio/voice_ai/eu/wolfhound/select_4.ogg",
+"file": "audio/voice_ai/eu/wolfhound/select_1.ogg",
 "text": "Where to?",
 "voice": "bm_lewis:0.6,bm_fable:0.4",
 "speed": 1.111
@@ -477,24 +471,12 @@
 },
 {
 "file": "audio/voice_ai/eu/wolfhound/under_fire_1.ogg",
-"text": "Wolfhound taking hits!",
-"voice": "bm_lewis:0.6,bm_fable:0.4",
-"speed": 1.324
-},
-{
-"file": "audio/voice_ai/eu/wolfhound/under_fire_2.ogg",
 "text": "We need to pull back!",
 "voice": "bm_lewis:0.6,bm_fable:0.4",
 "speed": 1.337
 },
 {
 "file": "audio/voice_ai/eu/wolfhound/created_1.ogg",
-"text": "Wolfhound ready for recon.",
-"voice": "bm_lewis:0.6,bm_fable:0.4",
-"speed": 1.1
-},
-{
-"file": "audio/voice_ai/eu/wolfhound/created_2.ogg",
 "text": "Armoured car on the line.",
 "voice": "bm_lewis:0.6,bm_fable:0.4",
 "speed": 1.111
@@ -504,12 +486,6 @@
 "text": "Wolfhound crew promoted.",
 "voice": "bm_lewis:0.6,bm_fable:0.4",
 "speed": 1.11
-},
-{
-"file": "audio/voice_ai/eu/leopold/select_1.ogg",
-"text": "Leopold.",
-"voice": "bm_george:0.7,bm_daniel:0.3",
-"speed": 0.902
 },
 {
 "file": "audio/voice_ai/eu/leopold/select_2.ogg",
@@ -524,7 +500,7 @@
 "speed": 0.911
 },
 {
-"file": "audio/voice_ai/eu/leopold/select_4.ogg",
+"file": "audio/voice_ai/eu/leopold/select_1.ogg",
 "text": "Give the order.",
 "voice": "bm_george:0.7,bm_daniel:0.3",
 "speed": 0.948
@@ -591,12 +567,6 @@
 },
 {
 "file": "audio/voice_ai/eu/leopold/created_1.ogg",
-"text": "Leopold ready for combat.",
-"voice": "bm_george:0.7,bm_daniel:0.3",
-"speed": 0.911
-},
-{
-"file": "audio/voice_ai/eu/leopold/created_2.ogg",
 "text": "Main battle tank on the line.",
 "voice": "bm_george:0.7,bm_daniel:0.3",
 "speed": 0.911
@@ -710,12 +680,6 @@
 "speed": 0.932
 },
 {
-"file": "audio/voice_ai/eu/flakwerk/select_1.ogg",
-"text": "Flakwerk.",
-"voice": "bm_fable:0.5,bm_lewis:0.5",
-"speed": 1.029
-},
-{
 "file": "audio/voice_ai/eu/flakwerk/select_2.ogg",
 "text": "Eyes on the sky.",
 "voice": "bm_fable:0.5,bm_lewis:0.5",
@@ -728,16 +692,10 @@
 "speed": 1.029
 },
 {
-"file": "audio/voice_ai/eu/flakwerk/select_4.ogg",
+"file": "audio/voice_ai/eu/flakwerk/select_1.ogg",
 "text": "Radar's clean.",
 "voice": "bm_fable:0.5,bm_lewis:0.5",
 "speed": 1.05
-},
-{
-"file": "audio/voice_ai/eu/flakwerk/move_1.ogg",
-"text": "Moving the flak.",
-"voice": "bm_fable:0.5,bm_lewis:0.5",
-"speed": 1.146
 },
 {
 "file": "audio/voice_ai/eu/flakwerk/move_2.ogg",
@@ -752,16 +710,10 @@
 "speed": 1.08
 },
 {
-"file": "audio/voice_ai/eu/flakwerk/move_4.ogg",
+"file": "audio/voice_ai/eu/flakwerk/move_1.ogg",
 "text": "Right away.",
 "voice": "bm_fable:0.5,bm_lewis:0.5",
 "speed": 1.124
-},
-{
-"file": "audio/voice_ai/eu/flakwerk/attack_1.ogg",
-"text": "Flak up!",
-"voice": "bm_fable:0.5,bm_lewis:0.5",
-"speed": 1.132
 },
 {
 "file": "audio/voice_ai/eu/flakwerk/attack_2.ogg",
@@ -776,31 +728,19 @@
 "speed": 1.155
 },
 {
-"file": "audio/voice_ai/eu/flakwerk/attack_4.ogg",
+"file": "audio/voice_ai/eu/flakwerk/attack_1.ogg",
 "text": "Air target, firing!",
 "voice": "bm_fable:0.5,bm_lewis:0.5",
 "speed": 1.178
 },
 {
 "file": "audio/voice_ai/eu/flakwerk/under_fire_1.ogg",
-"text": "Flak battery under fire!",
-"voice": "bm_fable:0.5,bm_lewis:0.5",
-"speed": 1.264
-},
-{
-"file": "audio/voice_ai/eu/flakwerk/under_fire_2.ogg",
 "text": "We can't take much more!",
 "voice": "bm_fable:0.5,bm_lewis:0.5",
 "speed": 1.251
 },
 {
 "file": "audio/voice_ai/eu/flakwerk/created_1.ogg",
-"text": "Flakwerk ready. Nothing flies over us.",
-"voice": "bm_fable:0.5,bm_lewis:0.5",
-"speed": 1.05
-},
-{
-"file": "audio/voice_ai/eu/flakwerk/created_2.ogg",
 "text": "Air defence on the line.",
 "voice": "bm_fable:0.5,bm_lewis:0.5",
 "speed": 1.082

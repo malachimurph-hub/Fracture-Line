@@ -100,6 +100,17 @@
       "veteran"
      ]
     },
+    "eu_boxer": {
+     "folder": "wolfhound",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ]
+    },
     "eu_leopold": {
      "folder": "leopold",
      "events": [

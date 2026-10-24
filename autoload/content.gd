@@ -12,7 +12,7 @@ var combat: CombatTable
 var errors: PackedStringArray = []
 var power_order: Array[StringName] = []
 
-const UNIT_ORDER := [&"eu_crawler", &"eu_harvester", &"eu_grenadier", &"eu_lancer", &"eu_wolfhound", &"eu_flakwerk", &"eu_leopold", &"eu_aegis", &"eu_salamander", &"eu_hearth", &"eu_spectre", &"eu_sentinel", &"eu_brennus", &"eu_thunderhead", &"eu_kestrel", &"eu_corvid"]
+const UNIT_ORDER := [&"eu_crawler", &"eu_harvester", &"eu_grenadier", &"eu_lancer", &"eu_wolfhound", &"eu_boxer", &"eu_flakwerk", &"eu_leopold", &"eu_aegis", &"eu_salamander", &"eu_hearth", &"eu_spectre", &"eu_sentinel", &"eu_brennus", &"eu_thunderhead", &"eu_kestrel", &"eu_corvid"]
 const BUILDING_ORDER := [&"eu_hq", &"eu_reactor", &"eu_hub", &"eu_barracks", &"eu_motor_pool", &"eu_heavy_factory", &"eu_gun_bunker", &"eu_flak_tower", &"eu_minefield", &"eu_signals", &"eu_relay", &"eu_exchange", &"eu_airstrip"]
 ## M2.9: Malachi's TPLA roster (notes 2026-10-22). Internal ids kept where a unit took over a slot:
 ## militia = Rifleman, rocket_cell = Rocket Man, rattler = Technical, scrapback = Striker (Karrar MBT),

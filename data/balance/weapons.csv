@@ -3,6 +3,9 @@ eu_rifle,12,5000,0,800,small_arms,0,0,1,tracer,0,0,attack,0,0,12,0,0
 eu_grenade,34,4500,1000,3200,explosive,1100,0,1,grenade,0,300,attack,0,0,12,300,0
 eu_lancer_missile,60,6000,0,2500,anti_tank,0,1,1,missile,0,500,attack,0,0,12,0,0
 eu_autocannon,22,6000,0,300,autocannon,0,1,1,tracer_heavy,0,0,attack,4,1900,12,0,300
+eu_hmg50,12,5500,0,220,hmg,0,1,1,tracer_heavy,0,0,attack,8,1400,12,0,0
+eu_boxer_30mm,24,6800,0,280,autocannon,0,1,1,tracer_heavy,0,0,attack,6,1900,12,0,300
+eu_thunderbolt_msl,55,8500,0,500,aa_missile,0,1,0,missile,0,0,attack,4,6000,30,0,0
 eu_tank_cannon,115,7000,0,2800,cannon,600,0,1,shell,0,0,attack,0,0,6,0,900
 eu_flak,26,7000,0,300,flak,1000,1,1,flak,0,0,attack,3,2100,12,0,0
 eu_harvester_mg,7,4500,0,800,small_arms,0,0,1,tracer,0,0,attack,0,0,12,0,0
