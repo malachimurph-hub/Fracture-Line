@@ -102,3 +102,26 @@ Germany and Iran now use real-world equipment roles. Internal ids, costs, HP and
 - **Kept as is (names Malachi chose):** Panther Tank, Boxer IFV, RCH SPA, Thunderbolt, Hearth, LTV, Striker,
   Technical, Backhoe/Supply Pickup and MiG-29. The F-14 was not added (too much work), so the MiG-29 stays.
 - Voice lines that say an old name are dropped where the unit has another line for the same event.
+
+## F. Russia
+Russia is now playable in the skirmish lobby (no longer "coming later"), in the Map Builder palette and for
+the skirmish AI. Internal ids stay `ecc_`. The default paint is Russian green camo.
+- **Malachi's units:** T-90M (MBT, 125 mm, close to the Panther), Tiger-M (light armoured 4x4, roof HMG,
+  carries 5), BTR (BTR-82A-style 8x8, 30 mm, carries 7, close to the Boxer), Typhoon (heavy MRAP, remote HMG,
+  carries 10), 2S Msta (tracked 152 mm howitzer, needs a Supply Depot), Zeus (quad 23 mm AA).
+- **Infantry (single soldiers):** Rifleman (AK-74), Machine Gunner (PKM, high rate of fire, strong against
+  infantry and weak against armour), RPG Man (RPG-7V3, anti-tank), Infiltrator (elite, AK-12 and grenades,
+  hidden while still, needs the Vehicle Factory).
+- **Stand-ins so Russia is playable (pending Malachi's list):** Engineer Vehicle (builder), Cargo Truck
+  (gatherer), Headquarters, Power Station, Supply Depot, Barracks, Vehicle Factory, Defence Bunker (autocannon)
+  and Air Defence Site (SAM). They are Russian-styled and follow the US power economy. There is no airfield,
+  because Russia has no aircraft yet.
+- **Powers (stand-ins, they reuse existing power types):** Recon Drone, Supply Convoy, Artillery Strike,
+  Field Repair.
+- **AI:** new "Steppe" personality. It opens Power, Depot, Barracks, Power, Factory, Bunker, then leans on the T-90M.
+  It caps infantry, Machine Gunners, Infiltrators and Msta so the army stays tank-led, and it buys and uses the
+  four powers.
+- **UI:** Russia theme (dark olive, red frame, gold accents), Map Builder colour, weathering preset.
+- **Voices:** 97 lines under `audio/voice_ai/ecc/`. Most are reused male Iran lines that don't say a unit or
+  faction name. There are 5 new Russian-accent Chatterbox lines for the T-90M and Machine Gunner. The announcer
+  reuses the US announcer.

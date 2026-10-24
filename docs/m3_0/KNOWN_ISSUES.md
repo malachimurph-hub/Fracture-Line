@@ -50,5 +50,16 @@
       changed. The Anti-Tank Mine still looks like the old wired trap. The salvage mechanic stays as battlefield
       recovery.
     - The Germany Harvester (Logistics Truck) and Air Defence Gun models are unchanged.
+  - F. Russia:
+    - Stand-in, pending Malachi's list: Engineer Vehicle, Cargo Truck, and all seven buildings (Headquarters,
+      Power Station, Supply Depot, Barracks, Vehicle Factory, Defence Bunker, Air Defence Site).
+    - Stand-in, pending Malachi's list: the four powers (Recon Drone, Supply Convoy, Artillery Strike, Field Repair).
+      They reuse existing power types and effects.
+    - Stand-in, pending Malachi's list: no airfield and no aircraft.
+    - Voices: generation stopped at the ~20 minute cap after 15 renders. Only 5 Russian-accent lines were kept
+      (T-90M, Machine Gunner). The rest reuse Iran lines with Persian accents. The BTR and Typhoon share one voice
+      set. Russia uses the US announcer.
+    - AI-vs-AI: when Russia plays Iran as player 0, two of three test matches ran to the 30-minute timeout
+      against Iran's spread-out base. Russia was ahead in one of them. All other test matches ended in a win.
   - Iran voices still have Persian accents. Faction voice lines do not say the nation names.
   - Older items: `docs/m2_8/KNOWN_ISSUES.md`.

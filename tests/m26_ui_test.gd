@@ -166,7 +166,7 @@ func test_pause() -> void:
 
 # ------------------------------------------------------------------ 2 placement
 func test_placement() -> void:
-	for fac in ["eu", "us", "tpla"]:
+	for fac in ["eu", "us", "tpla", "ecc"]:   # M3.0 F: + Russia
 		await _start(fac)
 		sim.players[0].supply = 50000
 		var b := _builder()
@@ -174,7 +174,7 @@ func test_placement() -> void:
 		m.cam.jump_to(FX.to_world(b.pos), false)
 		m.cam.set_level(1)
 		await frames(10)
-		var bid: StringName = {"eu": &"eu_reactor", "us": &"us_reactor", "tpla": &"tpla_camp"}[fac]
+		var bid: StringName = {"eu": &"eu_reactor", "us": &"us_reactor", "tpla": &"tpla_camp", "ecc": &"ecc_power"}[fac]
 		m.ctl.begin_place(bid)
 		await frames(5)
 		var pc: PlaceConfirm = m.hud.place_confirm
@@ -275,7 +275,7 @@ func test_bar_and_top() -> void:
 # ------------------------------------------------------------------ 5 faction themes
 func test_themes() -> void:
 	var looks := {}
-	for fac in ["eu", "tpla", "us"]:
+	for fac in ["eu", "tpla", "us", "ecc"]:   # M3.0 F: + Russia
 		await _start(fac, "eu" if fac != "eu" else "us")
 		var b := _builder()
 		m.ctl.set_selection([b.id])
@@ -289,7 +289,8 @@ func test_themes() -> void:
 		# every command-card / selection caption fits in the faction font (US: "Marine Rifleman")
 		var chk := func(name: String, ok: bool, info = null): check(fac + " text fit: " + name, ok, info)
 		await HudTextCheck.exercise(m, StringName(fac), get_tree(), chk)
-	check("three distinct faction looks", looks["eu"][0] != looks["tpla"][0] and looks["tpla"][0] != looks["us"][0] and looks["eu"][1] != looks["us"][1], looks)
+	check("four distinct faction looks", looks["eu"][0] != looks["tpla"][0] and looks["tpla"][0] != looks["us"][0] and looks["eu"][1] != looks["us"][1]
+		and looks["ecc"][1] != looks["eu"][1] and looks["ecc"][1] != looks["tpla"][1] and looks["ecc"][1] != looks["us"][1], looks)
 
 # ------------------------------------------------------------------ 6 main menu battle
 ## Menu layout: whatever the title (renamed game, long localisation), every menu button sits
