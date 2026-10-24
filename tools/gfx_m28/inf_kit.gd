@@ -208,6 +208,49 @@ func eu_launcher() -> void:
 	box(Vector3(0, 0.0, 0.0), Vector3(0.03, 0.1, 0.04))
 	box(Vector3(0, 0.0, 0.22), Vector3(0.03, 0.09, 0.04))
 
+## M3.0 F Russia: AK-74M (black polymer furniture, folding stock, 5.45 mm curved magazine).
+func ak74() -> void:
+	color(STEEL)
+	box(Vector3(0, 0.05, 0.05), Vector3(0.05, 0.075, 0.3))
+	cyl(Vector3(0, 0.06, 0.4), Vector3(0, 0.06, 0.62), 0.009)
+	cyl(Vector3(0, 0.1, 0.2), Vector3(0, 0.1, 0.42), 0.011)
+	box(Vector3(0, 0.1, 0.52), Vector3(0.012, 0.05, 0.02))
+	cyl(Vector3(0, 0.06, 0.62), Vector3(0, 0.06, 0.7), 0.015)                 # muzzle brake
+	color(BLK)
+	box(Vector3(0, 0.05, 0.3), Vector3(0.058, 0.06, 0.18))
+	box(Vector3(0, 0.03, -0.22), Vector3(0.04, 0.08, 0.26))
+	box(Vector3(0, -0.04, -0.03), Vector3(0.03, 0.09, 0.04))
+	color("#6b4a2e")
+	for k in 5:
+		var a := k * 0.09
+		box(Vector3(0, -0.02 - k * 0.035, 0.09 + a * 0.35 + k * 0.012), Vector3(0.03, 0.04, 0.065))
+
+## AK-12-style: black, top rail with a red-dot optic, longer handguard (Infiltrator).
+func ak12() -> void:
+	ak74()
+	color(BLK)
+	box(Vector3(0, 0.1, 0.12), Vector3(0.03, 0.012, 0.42))                    # top rail
+	box(Vector3(0, 0.13, 0.08), Vector3(0.04, 0.045, 0.08))                   # optic
+	color("#1a3a2a")
+	box(Vector3(0, 0.135, 0.125), Vector3(0.03, 0.03, 0.004))
+
+## PKM-style general-purpose machine gun: long barrel with flash hider, bipod, skeleton stock,
+## box magazine on the right.
+func pkm() -> void:
+	color(STEEL)
+	box(Vector3(0, 0.05, 0.08), Vector3(0.055, 0.08, 0.38))
+	cyl(Vector3(0, 0.06, 0.27), Vector3(0, 0.06, 0.84), 0.012)
+	cyl(Vector3(0, 0.06, 0.84), Vector3(0, 0.06, 0.9), 0.016)
+	cyl(Vector3(0, 0.1, 0.26), Vector3(0, 0.1, 0.6), 0.01)                    # gas tube
+	box(Vector3(0, 0.12, 0.1), Vector3(0.05, 0.02, 0.2))                      # feed cover
+	color(BLK)
+	box(Vector3(0, 0.0, -0.24), Vector3(0.035, 0.1, 0.3))
+	box(Vector3(0, -0.04, -0.02), Vector3(0.03, 0.09, 0.04))
+	for s in [-1.0, 1.0]:
+		cyl(Vector3(0, 0.05, 0.7), Vector3(s * 0.06, -0.12, 0.76), 0.006)     # bipod legs
+	color(OD)
+	box(Vector3(0.07, -0.02, 0.08), Vector3(0.07, 0.1, 0.11))                 # 100-round box
+
 # ================================================================== gear (model space)
 ## b: body box in model space (position = feet-centre-ish AABB), front = +z.
 func gear(kind: String, b: AABB, colr: String, accent: String) -> void:

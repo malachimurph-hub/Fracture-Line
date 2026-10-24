@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"ecc_btr"
+faction = &"ecc"
+name_key = "UNIT_ECC_BTR"
+desc_key = "UNIT_ECC_BTR_DESC"
+cost = 1000
+build_time_ms = 11000
+pop = 2
+prereqs = PackedStringArray()
+tags = PackedStringArray("vehicle", "transport", "ifv")
+max_hp = 840
+armor_type = &"light"
+weapons = PackedStringArray("ecc_btr_30mm")
+speed_mtps = 2300
+move_layer = &"vehicle"
+sight = 9
+radius_mt = 580
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 0
+role = &"ifv"
+view_scene = "res://view/units/ecc/btr.tscn"
+stubs = PackedStringArray("fire_from_inside")
+loco = &""
+turn_dps = 150
+accel_ms = 800
+turret_dps = 160
+abilities = PackedStringArray()
+transport_capacity = 7
+detector = false
+air_slots = 0

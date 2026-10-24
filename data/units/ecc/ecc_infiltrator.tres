@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"ecc_infiltrator"
+faction = &"ecc"
+name_key = "UNIT_ECC_INFILTRATOR"
+desc_key = "UNIT_ECC_INFILTRATOR_DESC"
+cost = 600
+build_time_ms = 9000
+pop = 1
+prereqs = PackedStringArray("ecc_factory")
+tags = PackedStringArray("infantry", "garrison", "stealth_still")
+max_hp = 240
+armor_type = &"infantry"
+weapons = PackedStringArray("ecc_ak12", "ecc_grenade")
+speed_mtps = 1250
+move_layer = &"foot"
+sight = 9
+radius_mt = 360
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 0
+role = &"infantry"
+view_scene = "res://view/units/ecc/infiltrator.tscn"
+stubs = PackedStringArray()
+loco = &""
+turn_dps = 0
+accel_ms = 0
+turret_dps = 0
+abilities = PackedStringArray()
+transport_capacity = 0
+detector = false
+air_slots = 0

@@ -146,7 +146,7 @@ def render(job):
     if militia:
         import gen_ai_voices_me as gm
         ref = gm.prompt_for(actor)
-        lang, fx, rough, base_lufs = "ar", "", 0.0, -16.0
+        lang, fx, rough, base_lufs = actor.get("lang", "ar"), "", 0.0, -16.0   # M3.0 F: Russia passes lang "ru"
     else:
         ref = prompt(fac, uid, actor, akey)
         lang = "ar" if fac == "tpla" else ACC_LANG.get(actor.get("acc"), "en") if fac == "eu" else "en"
@@ -156,7 +156,7 @@ def render(job):
     lufs = min(-12.0, base_lufs + dl)
     nw = len(g.words(text))
     # retake ladder: (exaggeration, cfg, language, seed)
-    alt = "en" if fac != "tpla" else "ar"
+    alt = actor.get("lang", "en" if fac != "tpla" else "ar")
     ladder = [(ex, cfg, lang, h), (ex, cfg, lang, h + 1), (ex - 0.2, cfg + 0.1, alt, h + 2), (max(0.6, ex - 0.4), 0.5, alt, h + 3)]
     best = (-9, None, "", None, {})
     with tempfile.TemporaryDirectory() as td:

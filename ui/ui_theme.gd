@@ -61,6 +61,7 @@ static func get_theme() -> Theme:
 ##  Germany (eu) - gunmetal + gold + cyan, rounded bevelled frames (the base theme)
 ##  Iran (tpla)  - rust / umber / sand, square riveted frames, slanted buttons, heavy stencil-ish font
 ##  US           - navy + steel blue + white, chamfer-like tight corners, wide-spaced font
+##  Russia (ecc) - dark olive + signal red + pale gold, plain square frames (M3.0 F)
 const PALETTES := {
 	&"eu": {"bg": Color(0.09, 0.10, 0.12, 0.96), "btn": Color("#343a44"), "btn_hover": Color("#3f4652"), "btn_pressed": Color("#1a1d22"),
 		"edge": Color("#4b5260"), "frame": Color("#c9a24a"), "accent": Color("#6fe3ff"), "title": Color("#c9a24a"),
@@ -74,6 +75,11 @@ const PALETTES := {
 		"edge": Color("#41648c"), "frame": Color("#7fb0e6"), "accent": Color("#ffffff"), "title": Color("#cfe4ff"),
 		"money": Color("#9fe0a0"), "text": Color("#e6eef8"), "radius": 2, "btn_radius": 2, "frame_w": 1, "skew": 0.0,
 		"embolden": 0.0, "spacing": 0, "slant": 0.0},
+	# M3.0 F Russia: dark olive + signal red + pale gold, plain square frames
+	&"ecc": {"bg": Color(0.08, 0.10, 0.07, 0.96), "btn": Color("#323b2c"), "btn_hover": Color("#3d4835"), "btn_pressed": Color("#181d15"),
+		"edge": Color("#56614a"), "frame": Color("#b8352b"), "accent": Color("#e8d27a"), "title": Color("#e0574a"),
+		"money": Color("#e8d27a"), "text": Color("#e9e8dc"), "radius": 1, "btn_radius": 1, "frame_w": 1, "skew": 0.0,
+		"embolden": 0.15, "spacing": 0, "slant": 0.0},
 }
 static var _fthemes: Dictionary = {}
 

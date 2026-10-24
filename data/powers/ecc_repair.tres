@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="PowerDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/power_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"ecc_repair"
+name_key = "POWER_ECC_REPAIR"
+desc_key = "POWER_ECC_REPAIR_DESC"
+rank_required = 4
+point_cost = 2
+stub = false
+cooldown_ms = 240000
+radius = 8
+duration_ms = 0
+amount = 50
+kind = &"repair"

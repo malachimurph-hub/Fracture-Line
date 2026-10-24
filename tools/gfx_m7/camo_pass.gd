@@ -6,7 +6,7 @@ extends SceneTree
 ## (0 US soft three-tone, 1 EU splinter, 2 TPLA sprayed bands; see model_m3.gdshaderinc). Paint
 ## flagged plain by the generator (UV2.y = 1, e.g. safety-yellow dozer parts) is kept. Same
 ## vertex format, count and LOD chain; idempotent (mesh meta "camo").
-const PAT := {"us": 3, "eu": 1, "tpla": 2}   # M3.0: every US vehicle is desert tan
+const PAT := {"us": 3, "eu": 1, "tpla": 2, "ecc": 0}   # M3.0 F: Russia green (pattern 0)   # M3.0: every US vehicle is desert tan
 ## M3.0 per-vehicle overrides (3 = US desert tan, 4 = woodland, unused since M3.0 all-tan)
 const PAT_FILE := {"eu/corvid": 0, "us/wraith": 0, "us/thunderlance": 0, "us/dozer": 0, "us/supply_truck": 0, "us/longreach": 0}   # pattern 0 = original US olive-green blotches (jets: their own grey)
 

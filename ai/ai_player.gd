@@ -59,6 +59,8 @@ static func create(fac: StringName) -> AIPlayer:
 		return AITpla.new()
 	if fac == &"us":
 		return AIUs.new()
+	if fac == &"ecc":
+		return AIRussia.new()
 	return AIPlayer.new()
 
 func from_dict(runner: MatchRunner, d: Dictionary) -> void:
@@ -242,7 +244,7 @@ func _next_building() -> StringName:
 	if seconds() > 780 and counts.get(R["motor"], 0) < 2 and p.supply > 1500:
 		return R["motor"]
 	# M2.4 tech and support structures (ZH China-style: tech centre, repair, income, AA, mines)
-	if seconds() > 480 and counts.get(R["heavy"], 0) >= 1 and counts.get(R["tech"], 0) < 1 and p.supply > 1700:
+	if _has_role("tech") and seconds() > 480 and counts.get(R["heavy"], 0) >= 1 and counts.get(R["tech"], 0) < 1 and p.supply > 1700:
 		return R["tech"]
 	if _has_role("support") and counts.get(R["tech"], 0) >= 1 and counts.get(R["support"], 0) < 1 and p.supply > 800:
 		return R["support"]

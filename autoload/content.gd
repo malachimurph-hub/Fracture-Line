@@ -20,6 +20,10 @@ const BUILDING_ORDER := [&"eu_hq", &"eu_reactor", &"eu_hub", &"eu_barracks", &"e
 const TPLA_UNIT_ORDER := [&"tpla_backhoe", &"tpla_pickup", &"tpla_militia", &"tpla_rocket_cell", &"tpla_marksman", &"tpla_insurgent", &"tpla_rattler", &"tpla_scrapback", &"tpla_bus", &"tpla_hailstorm", &"tpla_blight", &"tpla_shrike", &"tpla_mirage", &"tpla_mig29", &"tpla_f16"]
 const US_UNIT_ORDER := [&"us_dozer", &"us_supply_truck", &"us_grunt", &"us_javelin", &"us_jtac", &"us_sniper", &"us_lynx", &"us_bradley", &"us_halberd", &"us_picket", &"us_longreach", &"us_harrier", &"us_wraith", &"us_thunderlance"]
 const US_BUILDING_ORDER := [&"us_command", &"us_reactor", &"us_supply_center", &"us_barracks", &"us_garage", &"us_airfield", &"us_strategy", &"us_patriot", &"us_firebase", &"us_drop_zone"]
+## M3.0 F: Russia (Malachi's list 2026-10-23: T-90M, Tiger-M, BTR, Typhoon, 2S Msta, Zeus and four
+## single soldiers). Engineer, Cargo Truck and every building are stand-ins until his list covers them.
+const ECC_UNIT_ORDER := [&"ecc_engineer", &"ecc_cargo_truck", &"ecc_rifleman", &"ecc_machine_gunner", &"ecc_rpg", &"ecc_infiltrator", &"ecc_tigr", &"ecc_btr", &"ecc_typhoon", &"ecc_t90", &"ecc_zeus", &"ecc_msta"]
+const ECC_BUILDING_ORDER := [&"ecc_hq", &"ecc_power", &"ecc_depot", &"ecc_barracks", &"ecc_factory", &"ecc_bunker", &"ecc_aa_site"]
 const TPLA_BUILDING_ORDER := [&"tpla_den", &"tpla_stash", &"tpla_camp", &"tpla_chop_shop", &"tpla_tunnel", &"tpla_workshop", &"tpla_bazaar", &"tpla_demo_trap", &"tpla_camo_net", &"tpla_wasp_nest", &"tpla_airfield"]
 
 ## Playable factions (skirmish). "power": whether the faction uses the power economy.
@@ -36,6 +40,10 @@ const FACTIONS := {
 	&"us": {"name_key": "FACTION_US", "hq": &"us_command", "builder": &"us_dozer", "start_units": [&"us_dozer"],
 		"units": US_UNIT_ORDER, "buildings": US_BUILDING_ORDER, "power": true, "personality": &"us_vanguard",
 		"powers": [&"us_uav_recon", &"us_paradrop", &"us_precision_strike", &"us_field_repair"]},
+	# M3.0 F: Russia (power economy like the US; separate builder and gatherer)
+	&"ecc": {"name_key": "FACTION_ECC", "hq": &"ecc_hq", "builder": &"ecc_engineer", "start_units": [&"ecc_engineer"],
+		"units": ECC_UNIT_ORDER, "buildings": ECC_BUILDING_ORDER, "power": true, "personality": &"ecc_steppe",
+		"powers": [&"ecc_recon", &"ecc_logistics", &"ecc_strike", &"ecc_repair"]},
 }
 
 func faction(f) -> Dictionary:
@@ -56,6 +64,8 @@ static func faction_of_id(id) -> StringName:
 		return &"eu"
 	if s.begins_with("us_"):
 		return &"us"
+	if s.begins_with("ecc_"):
+		return &"ecc"
 	return &"neutral"
 
 func btag(id, tag: String) -> bool:
@@ -83,9 +93,11 @@ func load_all() -> void:
 	_load_dir("res://data/units/eu", units)
 	_load_dir("res://data/units/tpla", units)
 	_load_dir("res://data/units/us", units)
+	_load_dir("res://data/units/ecc", units)
 	_load_dir("res://data/buildings/eu", buildings)
 	_load_dir("res://data/buildings/tpla", buildings)
 	_load_dir("res://data/buildings/us", buildings)
+	_load_dir("res://data/buildings/ecc", buildings)
 	_load_dir("res://data/buildings/neutral", buildings)
 	_load_dir("res://data/weapons", weapons)
 	_load_dir("res://data/powers", powers)
@@ -163,7 +175,7 @@ func is_building(id) -> bool:
 	return buildings.has(StringName(id))
 
 func producer_of(unit_id) -> StringName:
-	for bid in BUILDING_ORDER + TPLA_BUILDING_ORDER + US_BUILDING_ORDER:
+	for bid in BUILDING_ORDER + TPLA_BUILDING_ORDER + US_BUILDING_ORDER + ECC_BUILDING_ORDER:
 		var b: BuildingDef = buildings[bid]
 		if b.produces.has(String(unit_id)):
 			return bid

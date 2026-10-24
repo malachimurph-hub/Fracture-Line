@@ -474,3 +474,50 @@ MAP_CRESCENT,Crescent City
 MAP_CRESCENT_DESC,"Desert metropolis. A dense downtown of glass and office towers fills the ground between the four bases: a street grid choked with parked cars, a wide central boulevard, plazas with supplies and garrisonable blocks."
 MAP_RIVERSIDE,Riverside Metro
 MAP_RIVERSIDE_DESC,"Temperate city split by a river. Four avenue bridges and two edge fords link north and south; apartment towers, shop rows and parked cars line every street."
+UNIT_ECC_ENGINEER,Engineer Vehicle
+UNIT_ECC_ENGINEER_DESC,Tracked combat engineering vehicle with a dozer blade and crane. Builds and repairs structures.
+UNIT_ECC_CARGO_TRUCK,Cargo Truck
+UNIT_ECC_CARGO_TRUCK_DESC,Six-wheel military cargo truck. Hauls supplies from supply sources to a Supply Depot.
+UNIT_ECC_RIFLEMAN,Rifleman
+UNIT_ECC_RIFLEMAN_DESC,"One soldier with an AK-74. Standard infantry, can garrison buildings."
+UNIT_ECC_MACHINE_GUNNER,Machine Gunner
+UNIT_ECC_MACHINE_GUNNER_DESC,"One soldier with a PKM. High rate of fire, shreds infantry, weak against armour."
+UNIT_ECC_RPG,RPG Man
+UNIT_ECC_RPG_DESC,"One soldier with an RPG-7V3. Anti-tank rockets, cannot hit aircraft."
+UNIT_ECC_INFILTRATOR,Infiltrator
+UNIT_ECC_INFILTRATOR_DESC,FSB elite operator with a rifle and grenades. Hidden while standing still. Needs a Vehicle Factory.
+UNIT_ECC_TIGR,Tiger-M
+UNIT_ECC_TIGR_DESC,"Fast armoured 4x4 with a roof 12.7 mm machine gun. Carries 5 infantry, who can fire from inside."
+UNIT_ECC_BTR,BTR
+UNIT_ECC_BTR_DESC,"BTR-82A 8x8 armoured personnel carrier with a 30 mm cannon. Carries 7 infantry, who can fire from inside."
+UNIT_ECC_TYPHOON,Typhoon
+UNIT_ECC_TYPHOON_DESC,Heavy mine-protected transport with a remote 12.7 mm gun. Carries 10 infantry and takes a lot of damage.
+UNIT_ECC_T90,T-90M
+UNIT_ECC_T90_DESC,Main battle tank with a 125 mm gun and reactive armour.
+UNIT_ECC_MSTA,2S Msta
+UNIT_ECC_MSTA_DESC,"2S19 Msta-S tracked 152 mm self-propelled howitzer. Long range, cannot fire up close. Needs a Supply Depot."
+UNIT_ECC_ZEUS,Zeus
+UNIT_ECC_ZEUS_DESC,ZSU-23-4 tracked anti-aircraft gun with four 23 mm cannons. Also hits ground targets.
+BLD_ECC_HQ,Headquarters
+BLD_ECC_HQ_DESC,Russian headquarters. Builds Engineer Vehicles.
+BLD_ECC_POWER,Power Station
+BLD_ECC_POWER_DESC,Diesel power station. Supplies power to the base.
+BLD_ECC_DEPOT,Supply Depot
+BLD_ECC_DEPOT_DESC,Supply drop-off point. Comes with a Cargo Truck and builds more.
+BLD_ECC_BARRACKS,Barracks
+BLD_ECC_BARRACKS_DESC,"Trains Riflemen, Machine Gunners, RPG Men and Infiltrators."
+BLD_ECC_FACTORY,Vehicle Factory
+BLD_ECC_FACTORY_DESC,"Builds Tiger-M, BTR, Typhoon, T-90M, Zeus, 2S Msta and Engineer Vehicles."
+BLD_ECC_BUNKER,Defence Bunker
+BLD_ECC_BUNKER_DESC,Concrete bunker with a 30 mm cannon. Defends against ground units. Needs power.
+BLD_ECC_AA_SITE,Air Defence Site
+BLD_ECC_AA_SITE_DESC,Short-range surface-to-air missile launcher. Defends against aircraft. Needs power.
+POWER_ECC_RECON,Recon Drone
+POWER_ECC_RECON_DESC,A drone reveals a 14-tile area for 20 s.
+POWER_ECC_LOGISTICS,Supply Convoy
+POWER_ECC_LOGISTICS_DESC,An instant drop of 1500 supplies.
+POWER_ECC_STRIKE,Artillery Strike
+POWER_ECC_STRIKE_DESC,A heavy artillery barrage on the target area.
+POWER_ECC_REPAIR,Field Repair
+POWER_ECC_REPAIR_DESC,Vehicles and structures in the area regain half their health.
+AI_STEPPE,Steppe

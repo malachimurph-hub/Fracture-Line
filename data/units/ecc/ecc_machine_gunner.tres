@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"ecc_machine_gunner"
+faction = &"ecc"
+name_key = "UNIT_ECC_MACHINE_GUNNER"
+desc_key = "UNIT_ECC_MACHINE_GUNNER_DESC"
+cost = 300
+build_time_ms = 6000
+pop = 1
+prereqs = PackedStringArray()
+tags = PackedStringArray("infantry", "garrison")
+max_hp = 190
+armor_type = &"infantry"
+weapons = PackedStringArray("ecc_pkm")
+speed_mtps = 1050
+move_layer = &"foot"
+sight = 7
+radius_mt = 380
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 0
+role = &"infantry"
+view_scene = "res://view/units/ecc/machine_gunner.tscn"
+stubs = PackedStringArray()
+loco = &""
+turn_dps = 0
+accel_ms = 0
+turret_dps = 0
+abilities = PackedStringArray()
+transport_capacity = 0
+detector = false
+air_slots = 0

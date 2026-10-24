@@ -6,6 +6,7 @@ const TEX := "res://assets/textures/materials/"
 const FACTION := {
 	&"eu": {"rust": 0.12, "wear": 0.45, "dirt": 0.55},
 	&"tpla": {"rust": 0.55, "wear": 0.85, "dirt": 0.85},
+	&"ecc": {"rust": 0.2, "wear": 0.55, "dirt": 0.7},   # M3.0 F Russia: worn field paint
 }
 const NEUTRAL := {"rust": 0.35, "wear": 0.6, "dirt": 0.7}
 

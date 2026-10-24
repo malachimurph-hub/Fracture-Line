@@ -58,6 +58,20 @@ const SPECS := {
 	"tpla_insurgent": {"head": ["wrap", "#e2dccb", "#b8ae96"], "head_node": "Character_Enemy_Head", "file": "Character_Enemy.gltf", "weapon": "Knife_1", "keep": ["Character_Enemy", "Character_Enemy_Head"],
 		"node_colors": {"Character_Enemy_Head": {"Enemy_Red": "#d6cfbc", "Black": "team"}},
 		"colors": {"Enemy_Red": "#d9d3c2", "Grey": "#5d5f66", "DarkGrey": "#4a3e30", "Black": "#3a3128", "Skin": "#b98a64", "Grey2": "#6a6a66", "Wood": "#7a5530", "LightGrey": "#b0a890"}},
+	# M3.0 F Russia: single soldiers in green camo (Ratnik-style helmet cover, plate carrier); FSB
+	# Infiltrator in black. Team colour on the shoulder pads / helmet band.
+	"ecc_rifleman": {"gun": "ak74", "gear": [["plate_carrier", "#55603f", "#454f33"], ["pack", "#4d5639", "#3e462e"]], "head": ["helmet_cover", "#59643f", ""], "head_node": "Head", "file": "Character_Soldier.gltf", "weapon": "AK", "keep": ["Body", "Head", "ShoulderPad.L", "ShoulderPad.R"],
+		"node_colors": {"Head": {"Black": "team"}},
+		"colors": {"Character_Main": "#5c6743", "Pants": "#4f5838", "Grey": "team", "DarkGrey": "#33372c", "Black": "#1e201b", "Skin": "#d2a681", "Grey2": "#565a4b", "Wood": "#6b5236", "LightGrey": "#9aa08c"}},
+	"ecc_machine_gunner": {"gun": "pkm", "gear": [["plate_carrier", "#55603f", "#454f33"], ["pack", "#4d5639", "#3e462e"]], "head": ["helmet_cover", "#59643f", ""], "head_node": "Head", "file": "Character_Soldier.gltf", "weapon": "AK", "keep": ["Body", "Head", "ShoulderPad.L", "ShoulderPad.R"],
+		"node_colors": {"Head": {"Black": "team"}},
+		"colors": {"Character_Main": "#5c6743", "Pants": "#4f5838", "Grey": "team", "DarkGrey": "#33372c", "Black": "#1e201b", "Skin": "#c79a76", "Grey2": "#565a4b", "Wood": "#6b5236", "LightGrey": "#9aa08c"}},
+	"ecc_rpg": {"gun": "rpg", "gear": [["plate_carrier", "#55603f", "#454f33"], ["rocket_pack", "#4d5639", ""]], "head": ["helmet_cover", "#59643f", ""], "head_node": "Head", "file": "Character_Soldier.gltf", "weapon": "RocketLauncher", "keep": ["Body", "Head", "ShoulderPad.L", "ShoulderPad.R"],
+		"node_colors": {"Head": {"Black": "team"}},
+		"colors": {"Character_Main": "#5c6743", "Pants": "#4f5838", "Grey": "team", "DarkGrey": "#33372c", "Black": "#1e201b", "Skin": "#b98a64", "Grey2": "#565a4b", "Wood": "#6b5236", "LightGrey": "#9aa08c"}},
+	"ecc_infiltrator": {"gun": "ak12", "gear": [["plate_carrier", "#2a2c2b", "#202221"], ["radio", "#2a2c2b", "#555555"]], "head": ["helmet_cover", "#2c2e2d", ""], "head_node": "Head", "file": "Character_Soldier.gltf", "weapon": "SMG", "keep": ["Body", "Head", "ShoulderPad.L", "ShoulderPad.R"],
+		"node_colors": {"Head": {"Black": "team"}},
+		"colors": {"Character_Main": "#343734", "Pants": "#2c2e2c", "Grey": "team", "DarkGrey": "#1f2120", "Black": "#151615", "Skin": "#d2a681", "Grey2": "#3e413e", "Wood": "#3a3a3a", "LightGrey": "#6a6e6a"}},
 	"ecc_rifleman_placeholder": {"file": "Character_Hazmat.gltf", "weapon": "Shotgun", "keep": ["Character_Hazmat", "Character_Hazmat_Head"],
 		"colors": {"Hazmat_Main": "#5d6748", "DarkGrey": "#3a3f33", "Black": "#1e201c", "Grey": "team", "Grey2": "#55594c", "Wood": "#6b5236", "LightGrey": "#9aa08c"}},
 }

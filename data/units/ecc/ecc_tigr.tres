@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"ecc_tigr"
+faction = &"ecc"
+name_key = "UNIT_ECC_TIGR"
+desc_key = "UNIT_ECC_TIGR_DESC"
+cost = 700
+build_time_ms = 8000
+pop = 2
+prereqs = PackedStringArray()
+tags = PackedStringArray("vehicle", "transport", "raider")
+max_hp = 560
+armor_type = &"light"
+weapons = PackedStringArray("ecc_kord")
+speed_mtps = 2900
+move_layer = &"vehicle"
+sight = 10
+radius_mt = 500
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 0
+role = &"ifv"
+view_scene = "res://view/units/ecc/tigr.tscn"
+stubs = PackedStringArray("fire_from_inside")
+loco = &""
+turn_dps = 200
+accel_ms = 600
+turret_dps = 200
+abilities = PackedStringArray()
+transport_capacity = 5
+detector = false
+air_slots = 0

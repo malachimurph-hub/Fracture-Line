@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"ecc_t90"
+faction = &"ecc"
+name_key = "UNIT_ECC_T90"
+desc_key = "UNIT_ECC_T90_DESC"
+cost = 1100
+build_time_ms = 12000
+pop = 3
+prereqs = PackedStringArray()
+tags = PackedStringArray("vehicle", "tank")
+max_hp = 970
+armor_type = &"heavy"
+weapons = PackedStringArray("ecc_125mm")
+speed_mtps = 1750
+move_layer = &"vehicle"
+sight = 8
+radius_mt = 600
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 0
+role = &"tank"
+view_scene = "res://view/units/ecc/t90.tscn"
+stubs = PackedStringArray()
+loco = &""
+turn_dps = 0
+accel_ms = 0
+turret_dps = 80
+abilities = PackedStringArray()
+transport_capacity = 0
+detector = false
+air_slots = 0

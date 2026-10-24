@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"ecc_rifleman"
+faction = &"ecc"
+name_key = "UNIT_ECC_RIFLEMAN"
+desc_key = "UNIT_ECC_RIFLEMAN_DESC"
+cost = 225
+build_time_ms = 5000
+pop = 1
+prereqs = PackedStringArray()
+tags = PackedStringArray("infantry", "garrison")
+max_hp = 180
+armor_type = &"infantry"
+weapons = PackedStringArray("ecc_ak74")
+speed_mtps = 1150
+move_layer = &"foot"
+sight = 7
+radius_mt = 360
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 0
+role = &"infantry"
+view_scene = "res://view/units/ecc/rifleman.tscn"
+stubs = PackedStringArray()
+loco = &""
+turn_dps = 0
+accel_ms = 0
+turret_dps = 0
+abilities = PackedStringArray()
+transport_capacity = 0
+detector = false
+air_slots = 0

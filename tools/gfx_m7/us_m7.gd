@@ -52,6 +52,7 @@ static func build(only: Array) -> void:
 	jobs.merge(load("res://tools/gfx_m30/us_m30.gd").jobs(), true)   # M3.0 USA list supersedes both
 	jobs.merge(load("res://tools/gfx_m30/eu_m30.gd").jobs(), true)   # M3.0 EU list
 	jobs.merge(load("res://tools/gfx_m30/de_m30.gd").jobs(), true)   # M3.0 E: Germany roster
+	jobs.merge(load("res://tools/gfx_m30/ru_m30.gd").jobs(), true)   # M3.0 F: Russia roster
 	for k in jobs:
 		if all or k in only:
 			jobs[k].call()

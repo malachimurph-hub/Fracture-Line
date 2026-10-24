@@ -1,0 +1,18 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://view/infantry/infantry_view.gd" id="1_iv"]
+[ext_resource type="Resource" path="res://assets/models/infantry/ecc_rpg.res" id="2_vat"]
+
+[node name="View" type="Node3D"]
+script = ExtResource("1_iv")
+vat = ExtResource("2_vat")
+formation = PackedVector3Array(0, 0, 0)
+selection_radius = 0.3
+bar_height = 0.78
+
+[node name="Model" type="Node3D" parent="."]
+
+[node name="Squad" type="MultiMeshInstance3D" parent="Model"]
+
+[node name="HealthBarAnchor" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.78, 0)

@@ -2,7 +2,7 @@ extends "res://tests/m28_shots.gd"
 ## M3.0 preview screenshots (no release build):
 ##   xvfb-run -a -s "-screen 0 2340x1080x24" godot --path . --resolution 2340x1080 \
 ##     --rendering-method mobile res://tests/m30_shots.tscn -- <out_dir> <part>
-## part: usbase | city | nature | eu | de | ir | all  (de / ir: M3.0 E national roster lineups)
+## part: usbase | city | nature | eu | de | ir | ru | all  (de / ir / ru: national roster lineups)
 func _ready() -> void:
 	var args := OS.get_cmdline_user_args()
 	out_dir = args[0] if args.size() > 0 else "/tmp/m30"
@@ -23,6 +23,8 @@ func _ready() -> void:
 	if p in ["ir", "all"]:
 		await run_lineup("tpla", [[&"tpla_scrapback", &"tpla_bus", &"tpla_hailstorm", &"tpla_blight", &"tpla_shrike", &"tpla_rattler"],
 			[&"tpla_f16", &"tpla_mirage", &"tpla_mig29", &"tpla_pickup", &"tpla_backhoe"]], "m30e_iran_lineup")
+	if p in ["ru", "all"]:
+		await run_ru()
 	print("=== M30 SHOTS DONE")
 	get_tree().quit(0)
 
@@ -106,3 +108,31 @@ func run_lineup(fac: String, rows: Array, name: String) -> void:
 	m.cam.target_dist = 21.0
 	await frames(60)
 	await shot(name)
+
+## M3.0 F: Russia lineup framed in the clear middle of the screen (away from minimap and panels).
+func run_ru() -> void:
+	await _start("varno_crossing", ["ecc", "us"], false)
+	var t := _open_spot(Vector2i(14, 12), Vector2i(60, 50))
+	var rows := [[&"ecc_t90", &"ecc_msta", &"ecc_zeus", &"ecc_engineer"], [&"ecc_btr", &"ecc_typhoon", &"ecc_tigr", &"ecc_cargo_truck"],
+		[&"ecc_rifleman", &"ecc_machine_gunner", &"ecc_rpg", &"ecc_infiltrator"]]
+	for r in rows.size():
+		for k in rows[r].size():
+			var sp := 3 if r < 2 else 2
+			_unit(rows[r][k], t + Vector2i(2 + k * sp + (3 if r == 2 else 0), 1 + r * 3 - (1 if r == 2 else 0)), FX.ANG / 4)
+	_look(Vector2(t.x + 7, t.y + 4), 0)
+	m.cam.dist = 16.0
+	m.cam.target_dist = 16.0
+	await frames(60)
+	await shot("m30f_russia_lineup")
+	if OS.get_environment("RU_BASE") != "":   # tool check of the stand-in buildings (not a deliverable)
+		var bt := _open_spot(Vector2i(18, 10), Vector2i(40, 60))
+		var bl := [[&"ecc_hq", Vector2i(2, 2)], [&"ecc_power", Vector2i(7, 2)], [&"ecc_depot", Vector2i(11, 2)], [&"ecc_barracks", Vector2i(15, 2)],
+			[&"ecc_factory", Vector2i(2, 7)], [&"ecc_bunker", Vector2i(8, 7)], [&"ecc_aa_site", Vector2i(11, 7)]]
+		for e in bl:
+			var b := sim._place_building(Content.building(e[0]), 0, bt + e[1], 0, true)
+			_ensure(b)
+		_look(Vector2(bt.x + 9, bt.y + 5), 0)
+		m.cam.dist = 18.0
+		m.cam.target_dist = 18.0
+		await frames(60)
+		await shot("ru_base_check")

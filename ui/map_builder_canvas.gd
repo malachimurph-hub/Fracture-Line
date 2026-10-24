@@ -19,7 +19,7 @@ const PROP_LABELS := {"tower_glass": "Glass tower", "tower_office": "Office towe
 	"car_silver": "Car (silver)", "car_taxi": "Taxi", "car_van": "Van", "car_suv": "SUV", "streetlight": "Street light",
 	"streetlight_double": "Double street light", "wreck_car": "Burnt-out car", "palm": "Palm tree", "oak": "Oak tree",
 	"pine": "Pine tree", "bush": "Bush", "rock": "Rock"}
-const FAC_COL := {&"eu": Color("#6fe3ff"), &"us": Color("#cfe4ff"), &"tpla": Color("#f0b860"), &"neutral": Color("#c8c2b4")}
+const FAC_COL := {&"eu": Color("#6fe3ff"), &"us": Color("#cfe4ff"), &"tpla": Color("#f0b860"), &"ecc": Color("#e0574a"), &"neutral": Color("#c8c2b4")}
 
 var w := 64
 var h := 64

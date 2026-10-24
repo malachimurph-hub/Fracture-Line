@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="BuildingDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/building_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"ecc_depot"
+faction = &"ecc"
+name_key = "BLD_ECC_DEPOT"
+desc_key = "BLD_ECC_DEPOT_DESC"
+category = &"base"
+cost = 1500
+build_time_ms = 15000
+footprint = Vector2i(3, 3)
+max_hp = 1500
+power = -2
+grid_radius = 0
+sight = 6
+prereqs = PackedStringArray("ecc_power")
+produces = PackedStringArray("ecc_cargo_truck")
+is_hq = false
+is_refinery = true
+passive_income = 0
+free_unit = &"ecc_cargo_truck"
+shield_pct = 0
+view_scene = "res://view/buildings/ecc/depot.tscn"
+stubs = PackedStringArray()
+weapons = PackedStringArray()
+needs_power_to_fire = false
+garrison_capacity = 0
+capturable = false
+capture_income = 0
+buildable = true
+tags = PackedStringArray()
+aux_radius = 0
+air_slots = 0
