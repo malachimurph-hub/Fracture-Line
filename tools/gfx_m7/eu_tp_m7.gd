@@ -87,37 +87,38 @@ static func _tower(g, c: Vector3, r: float, h: float, col: String, col_d: String
 		var p0 := c + Vector3(cos(a2) * r * 1.02, 0, sin(a2) * r * 1.02)
 		g.tube(p0, p0 + Vector3(cos(a2 + 0.3) * -0.02, 0.16, sin(a2 + 0.3) * -0.02), 0.018, 4)
 
-# ================================================================== EU Fusion Reactor
-## Tokamak hall: a drum with a glowing torus belt of magnet coils under a white containment
-## dome, cooling tower, turbine annex with roof fans, coolant loops and a switchyard.
+# ================================================================== EU (Germany) Power Plant
+## M3.0 E: gas-turbine plant (was the M2.7 tokamak); cooling tower, annex, pipes, switchyard.
 static func _eu_reactor(g) -> void:
+	# M3.0 E (Germany): gas-turbine power plant. Turbine hall with a low gable roof and a window
+	# band, two heat-recovery boiler blocks on the roof, each with a tall banded exhaust stack.
 	var c := Vector3(0.3, Y0, 0.25)
-	var t := Transform3D(Basis.IDENTITY, c)
 	g.color(CON, Geo.CONCRETE)
-	g.lathe([[0.0, 0.82], [0.04, 0.82], [0.06, 0.79], [0.5, 0.79], [0.54, 0.76]], 22, t)
-	g.color(CON_D, Geo.CONCRETE)
-	g.ribs(0.79, 0.06, 0.5, 12, 0.05, 0.06, t, 0.13)
+	g.cbox(c + Vector3(0, 0.03, 0), Vector3(1.5, 0.06, 1.3), 0.02)   # plinth
+	g.color(EU, Geo.PAINT)
+	g.cbox(c + Vector3(0, 0.36, 0), Vector3(1.36, 0.6, 1.14), 0.03)   # turbine hall
+	g.color(EU_D, Geo.CORR)
+	g.prism_x([Vector2(-0.58, 0.66), Vector2(0.58, 0.66), Vector2(0.0, 0.82)], -0.69, 0.69, Transform3D(Basis.IDENTITY, c))   # gable roof
+	g.windows(c + Vector3(0, 0.5, 0.572), 1.1, 0.1, 9)
 	g.color("#ffffff", Geo.TEAM)
-	g.band(0.79, 0.4, 0.04, 0.012, 22, t)
-	# torus belt (magnet ring) with coils and a breathing plasma window
+	g.box(c + Vector3(0, 0.3, 0.573), Vector3(1.2, 0.04, 0.006))
+	g.color("#2b2d2c", Geo.DARK)
+	g.rollup(c + Vector3(-0.35, 0.2, 0.573), 0.34, 0.3)
+	for k in 2:
+		var bx := c + Vector3(-0.32 + k * 0.62, 0.0, -0.15)
+		g.color(EU_W, Geo.PAINT)
+		g.cbox(bx + Vector3(0, 0.98, 0), Vector3(0.34, 0.34, 0.5), 0.02)   # heat-recovery boiler
+		g.color(EU_S, Geo.STEEL)
+		g.lathe([[0.0, 0.11], [0.95, 0.1], [0.97, 0.12], [1.0, 0.12]], 12, Transform3D(Basis.IDENTITY, bx + Vector3(0, 1.15, -0.08)))   # exhaust stack
+		g.color("#ffffff", Geo.TEAM)
+		g.band(0.105, 1.85, 0.06, 0.006, 12, Transform3D(Basis.IDENTITY, bx + Vector3(0, 0.0, -0.08)))
+		U._lamp(g, bx + Vector3(0, 2.16, -0.08))
+		g.color(EU_S, Geo.STEEL)
+		g.rail_ring(0.13, 2.0, 10, 0.08, Transform3D(Basis.IDENTITY, bx + Vector3(0, 0, -0.08)))
 	g.color(EU_S, Geo.STEEL)
-	g.lathe([[0.54, 0.7], [0.6, 0.8], [0.7, 0.84], [0.8, 0.8], [0.86, 0.7]], 22, t)
-	g.pulse_color("#7fc8ff", 0.0)
-	g.band(0.8, 0.66, 0.08, 0.045, 22, t)
-	g.end_pulse()
-	g.color("#c58a3a", Geo.STEEL)   # copper-clad coils
-	for i in 12:
-		var a := TAU * float(i) / 12.0
-		g.box(Vector3.ZERO, Vector3(0.1, 0.36, 0.09), t * Transform3D(Basis(Vector3.UP, -a), Vector3(cos(a) * 0.86, 0.7, sin(a) * 0.86)))
-	g.color(EU_W, Geo.PAINT)
-	g.lathe([[0.86, 0.66], [0.9, 0.62]], 22, t, false, false)
-	g.dome(0.62, 0.48, 5, 22, Transform3D(Basis.IDENTITY, c + Vector3(0, 0.9, 0)))
-	g.color(CON_D, Geo.CONCRETE)
-	g.lathe([[1.36, 0.12], [1.42, 0.1], [1.42, 0.0]], 10, t, false, true)   # top vent cap
-	g.rail_ring(0.84, 0.86, 18, 0.1, t)
-	g.color(EU_S, Geo.STEEL)
-	g.ladder(c + Vector3(0.0, 0.0, 0.86), 0.86, Vector3.RIGHT)
-	U._lamp(g, c + Vector3(0, 1.43, 0))
+	g.ladder(c + Vector3(0.69, 0.06, 0.2), 0.62, Vector3.RIGHT)
+	for z in [-0.25, 0.05, 0.35]:
+		g.box(c + Vector3(-0.69, 0.4, z), Vector3(0.03, 0.12, 0.16))   # intake filter housings
 	# airlock / entrance
 	g.color(CON_D, Geo.CONCRETE)
 	g.cbox(c + Vector3(0.62, 0.17, 0.62), Vector3(0.36, 0.34, 0.3), 0.02, Transform3D(Basis(Vector3.UP, -PI * 0.25), Vector3.ZERO))

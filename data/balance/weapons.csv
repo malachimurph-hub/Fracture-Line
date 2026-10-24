@@ -20,7 +20,7 @@ tpla_rust_shell,130,14000,3500,6000,explosive,1600,0,1,rust_shell,0,0,attack,0,0
 tpla_tunnel_mg,15,6000,0,450,hmg,0,1,1,tracer_heavy,0,0,attack,0,0,12,0,0
 tpla_demo_charge,380,1500,0,1000,demolition,2600,0,1,bomb,0,0,attack,0,0,12,0,0
 eu_twin_cannon,105,7500,0,400,cannon,600,0,1,shell,0,0,attack,2,3000,6,0,900
-eu_flamer,30,3500,0,500,flame,700,0,1,flame,0,0,attack,0,0,20,0,0
+eu_flamer,30,3500,0,500,flame,700,0,1,tracer_heavy,0,0,attack,0,0,20,0,0
 eu_howitzer,160,14000,4000,6000,explosive,1500,0,1,shell,0,1500,attack,0,0,8,800,0
 eu_hearth_rockets,29,10000,2500,300,explosive,1000,0,1,rocket_salvo,0,0,attack,6,12000,12,700,0
 eu_gatling,14,7500,0,200,quad,0,1,1,tracer_quad,0,300,attack,0,0,15,0,0
@@ -44,9 +44,13 @@ us_stinger,45,8000,0,350,aa_missile,0,1,0,missile,0,300,attack,4,2500,30,0,0
 us_avenger_mg,10,5000,0,200,hmg,0,1,1,tracer_heavy,0,0,attack,0,0,12,0,0
 us_bomb_bay,700,1300,0,300,demolition,3000,0,1,bomb,0,0,attack,1,45000,90,0,0
 us_aam,110,9000,0,700,aa_missile,0,1,0,missile,0,0,attack,4,8000,30,0,0
+eu_aam,110,9000,0,700,aa_missile,0,1,0,missile,0,0,attack,4,8000,30,0,0
 us_gbu,110,3000,0,500,explosive,900,0,1,missile,0,0,attack,1,8000,45,0,0
+eu_gbu,110,3000,0,500,explosive,900,0,1,missile,0,0,attack,1,8000,45,0,0
 us_hellfire,70,7500,0,700,anti_tank,0,0,1,missile,0,300,attack,4,11000,20,0,0
+eu_tiger_atgm,70,7500,0,700,anti_tank,0,0,1,missile,0,300,attack,4,11000,20,0,0
 us_chaingun,12,6000,0,240,autocannon,0,0,1,tracer_heavy,0,0,attack,20,3500,12,0,300
+eu_tiger_gun,12,6000,0,240,autocannon,0,0,1,tracer_heavy,0,0,attack,20,3500,12,0,300
 us_bradley_25mm,20,6500,0,260,autocannon,0,1,1,tracer_heavy,0,0,attack,6,1800,12,0,300
 us_sam,15,10000,0,225,aa_missile,0,1,1,tracer_quad,0,0,attack,0,0,12,0,0
 us_firebase_gun,90,10000,1500,2500,explosive,1200,0,1,shell,0,0,attack,0,0,12,600,0

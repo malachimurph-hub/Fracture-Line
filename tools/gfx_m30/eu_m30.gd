@@ -2,10 +2,9 @@ extends RefCounted
 ## M3.0 EU list (tool-time only): original procedural models resembling the real vehicles; no
 ## brand names in game text. Node layout (Model / TurretPivot / Turret / Barrel / BarrelMesh /
 ## Hull) matches the older EU scenes; EU splinter camo is applied by camo_pass.gd.
-##   LTV (wolfhound.tscn)        - French Sherpa Light-style 4x4 with a roof .50 cal
+##   LTV (wolfhound.tscn)        - Dingo / Eagle-style protected 4x4 with a roof .50 cal (M3.0 E)
 ##   Boxer IFV (boxer.tscn)      - 8x8 modular IFV with an unmanned 30 mm turret
 ##   RCH SPA (thunderhead.tscn)  - 6x6 wheeled 155 mm howitzer, armoured cab, rear gun module
-##   Thunderbolt (flakwerk.tscn) - light 4x4 armoured truck with a 4-round MANPADS launcher
 ## The Panther Tank keeps the M2.7b Leopard 2A6-style model (eu_tp_v8._leopold).
 const K := preload("res://tools/gfx_m7/kit8.gd")
 const Geo := preload("res://tools/gfx_m3/geo.gd")
@@ -27,7 +26,6 @@ static func jobs() -> Dictionary:
 		"eu_ltv": func() -> void: _ltv(),
 		"eu_boxer": func() -> void: _boxer(),
 		"eu_rch": func() -> void: _rch(),
-		"eu_thunderbolt": func() -> void: _thunderbolt(),
 	}
 
 static func _glass_band(h, z0: float, z1: float, y0: float, y1: float, hw: float) -> void:
@@ -35,7 +33,7 @@ static func _glass_band(h, z0: float, z1: float, y0: float, y1: float, hw: float
 	for s in [-1.0, 1.0]:
 		h.box(Vector3(s * (hw + 0.003), (y0 + y1) * 0.5, (z0 + z1) * 0.5), Vector3(0.006, y1 - y0, z1 - z0))
 
-# ------------------------------------------------------------------ LTV (Sherpa Light-style)
+# ------------------------------------------------------------------ LTV (Dingo / Eagle-style)
 static func _ltv() -> void:
 	var mat: Material = load(VK.MAT_PATH)
 	var root := VK._root({"selection_radius": 0.75, "bar_height": 1.3, "recoil": 0.03, "wreck_s": 7.0, "steer_max": 0.45})
@@ -44,18 +42,22 @@ static func _ltv() -> void:
 	V8()._tyres(h, 0.38, [0.48, -0.42], 0.15, 0.13, 1, EU_S)
 	h.color(EU_D, Geo.PAINT)
 	h.cbox(Vector3(0, 0.27, 0.02), Vector3(0.56, 0.1, 1.3), 0.02)   # chassis / belly
-	# body: long flat bonnet with a slight slope, upright armoured cab, flat rear tub
+	# M3.0 E: Dingo / Eagle-style protected 4x4: short sloped bonnet, one tall armoured body
+	# from the windscreen to the tail (crew and dismounts under armour), V-shaped belly
 	h.color(EU, Geo.PAINT)
-	h.xloft([[0.7, K.sect(0.3, 0.42, 0.5, 0.36, 0.37, 0.34, 0.03)], [0.3, K.sect(0.3, 0.44, 0.56, 0.38, 0.39, 0.37, 0.03)]])   # bonnet
-	var c0 := K.sect(0.3, 0.5, 0.86, 0.39, 0.39, 0.35, 0.03)
-	h.xloft([[0.32, K.sect(0.3, 0.5, 0.84, 0.39, 0.39, 0.34, 0.03)], [0.26, c0], [-0.3, c0], [-0.32, K.sect(0.3, 0.5, 0.84, 0.38, 0.38, 0.34, 0.03)]])   # cab
+	h.xloft([[0.72, K.sect(0.3, 0.4, 0.48, 0.34, 0.36, 0.32, 0.03)], [0.4, K.sect(0.3, 0.44, 0.56, 0.38, 0.39, 0.36, 0.03)]])   # bonnet
+	var c0 := K.sect(0.3, 0.5, 0.88, 0.4, 0.4, 0.35, 0.03)
+	h.xloft([[0.42, K.sect(0.3, 0.5, 0.6, 0.39, 0.39, 0.37, 0.03)], [0.26, c0], [-0.66, c0], [-0.7, K.sect(0.32, 0.5, 0.84, 0.38, 0.38, 0.33, 0.03)]])   # armoured body
 	h.color(EU_D, Geo.PAINT)
-	h.cbox(Vector3(0, 0.45, -0.52), Vector3(0.76, 0.28, 0.4), 0.025)   # rear stowage tub
-	# glazing: near-vertical split windscreen, side windows in two doors each side
+	h.prism_x([Vector2(-0.5, 0.2), Vector2(0.5, 0.2), Vector2(0.58, 0.3), Vector2(-0.58, 0.3)], -0.24, 0.24)   # V belly
+	# glazing: steep two-piece armoured windscreen, small thick side windows
 	h.color(GLASS_C, Geo.GLASS)
 	for x in [-0.16, 0.16]:
-		h.plate(Vector3(x, 0.72, 0.325), Vector3(0.28, 0.17, 0.006), Vector3(-8, 0, 0))
-	_glass_band(h, -0.22, 0.2, 0.62, 0.78, 0.39)
+		h.plate(Vector3(x, 0.72, 0.33), Vector3(0.27, 0.2, 0.006), Vector3(-22, 0, 0))
+	_glass_band(h, 0.0, 0.2, 0.62, 0.78, 0.4)
+	_glass_band(h, -0.42, -0.24, 0.64, 0.76, 0.4)
+	h.color(EU_D, Geo.PAINT)
+	h.plate(Vector3(0, 0.6, -0.705), Vector3(0.44, 0.4, 0.02), Vector3(0, 0, 0))   # rear door
 	h.color(EU, Geo.PAINT)
 	for s in [-1.0, 1.0]:
 		h.box(Vector3(s * 0.395, 0.7, -0.01), Vector3(0.008, 0.2, 0.03))   # B pillar

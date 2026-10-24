@@ -1699,12 +1699,12 @@ func _roster_heal_stub_prod() -> void:
 	w.power_dirty = true
 	_ticks(r, 100)
 	_check(relay.powered and tank.hp > h0, "Field Relay Mast repairs nearby vehicles (%d -> %d)" % [h0, tank.hp])
-	# [STUB] aircraft cannot be produced; real units can
+	# M3.0 E: the German Airfield builds real aircraft (Tiger helicopter, multirole fighter)
 	var strip := w._place_building(Content.building(&"eu_airstrip"), 0, c + Vector2i(-6, -6), 0, true)
 	w.players[0].supply = 50000
 	r.issue({"p": 0, "t": "queue", "target": strip.id, "def": "eu_kestrel", "n": 1})
 	_ticks(r, 2)
-	_check(strip.queue.is_empty(), "[STUB] Kestrel is rejected at the Airstrip")
+	_check(not strip.queue.is_empty() and Content.building(&"eu_airstrip").air_slots == 6, "Tiger is queued at the German Airfield (6 parking slots)")
 	var mp := w._place_building(Content.building(&"eu_motor_pool"), 0, c + Vector2i(-6, 4), 0, true)
 	var before := w.count_owned(0, &"eu_salamander")
 	r.issue({"p": 0, "t": "queue", "target": mp.id, "def": "eu_salamander", "n": 1})

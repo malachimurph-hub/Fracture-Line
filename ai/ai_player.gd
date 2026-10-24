@@ -134,6 +134,8 @@ func think() -> void:
 		_capture()
 	if cfg["powers"]:
 		_powers()
+	if faction() == &"eu" and _every("t_air", 40):   # M3.0 E: German Tiger / fighters
+		_air()
 
 # ------------------------------------------------------------------ threat detection
 func _update_threats() -> void:
@@ -250,6 +252,10 @@ func _next_building() -> StringName:
 		return R["income"]
 	if seconds() > 540 and difficulty != "easy" and _has_role("mine") and counts.get(R["mine"], 0) < (4 if difficulty == "hard" else 2) and p.supply > 600:
 		return R["mine"]
+	# M3.0 E: Germany gets a working Airfield (Tiger, multirole fighter) once the tech centre is up
+	if faction() == &"eu" and seconds() > (840 if difficulty == "hard" else 1020) and difficulty != "easy" \
+			and counts.get(R["tech"], 0) >= 1 and counts.get(&"eu_airstrip", 0) < 1 and p.supply > 2400:
+		return &"eu_airstrip"
 	return &""
 
 ## Dynamic build pick for a role; "" when the faction lacks that structure.
@@ -489,7 +495,9 @@ func _production() -> void:
 var _cur_b: SimEntity = null   ## producer being filled by _production (for _unit_allowed)
 
 ## Faction hook: may this unit be queued at _cur_b right now (e.g. US airfield slots)?
-func _unit_allowed(_ud: UnitDef) -> bool:
+func _unit_allowed(ud: UnitDef) -> bool:
+	if faction() == &"eu" and ud.air_slots > 0:   # M3.0 E: German Airfield parking slots
+		return _air_slot_ok(ud)
 	return true
 
 func _pick_unit(bd: BuildingDef) -> StringName:
@@ -822,7 +830,12 @@ func _victims() -> void:
 ## "w.tick % N == 0" checks never fired for most players - this replaces them.
 ## Units the wave logic must not touch (raid squads, salvage runs, tunnel guards...).
 func _reserved_ids() -> Dictionary:
-	return {}
+	var out := {}
+	if faction() == &"eu":   # M3.0 E: jets fly their own sorties (see _air)
+		for u: SimEntity in my_ents(SimEntity.Kind.UNIT):
+			if w.udef(u).tags.has("jet"):
+				out[u.id] = true
+	return out
 
 ## Where badly damaged wave units go (EU: staging, then the base repair zone).
 func _send_back(ids: Array) -> void:
@@ -1049,6 +1062,10 @@ func _powers() -> void:
 				engaged.append(e)
 		if engaged.size() >= 4:
 			cmd({"t": "power", "def": "eu_shield_overcharge", "pos": _centroid(engaged)})
+	if PowersSys.ready_in(w, pid, &"eu_blackout") == 0 and not bb["wave"].is_empty():   # M3.0 E: Artillery Barrage
+		var tb := _pick_target()
+		if tb.x >= 0:
+			cmd({"t": "power", "def": "eu_blackout", "pos": tb})
 	if PowersSys.ready_in(w, pid, &"eu_recon_sweep") == 0 and not bb["wave"].is_empty():
 		var tgt := _pick_target()
 		if tgt.x >= 0:

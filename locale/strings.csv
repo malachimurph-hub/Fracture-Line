@@ -83,7 +83,7 @@ HUD_GENERAL,General
 HUD_GENERAL_RANK,Gen. R%d
 HUD_BUILD,Build
 HUD_ARMY,Army
-HUD_IDLE_CRAWLER,Crawler
+HUD_IDLE_CRAWLER,Engineer
 HUD_BACK,Back
 HUD_ROTATE,Rotate
 HUD_CANCEL,Cancel
@@ -157,7 +157,7 @@ ALERT_BASE_ATTACK,Our base is under attack
 ALERT_UNITS_ATTACK,Units under attack
 ALERT_BUILT,%s complete
 ALERT_UNIT_READY,%s ready
-ALERT_LOW_POWER,Low power! Build a Reactor
+ALERT_LOW_POWER,Low power! Build a Power Plant
 ALERT_RANK,Promoted to General rank %d — point available
 ALERT_ELIMINATED,Player %d eliminated
 ALERT_YOU_ELIMINATED,You have been eliminated
@@ -196,7 +196,7 @@ REASON_SHROUD,Unexplored ground — scout it first
 REASON_UNREACHABLE,No path for the selected builder (water or cliffs in the way)
 REASON_INVALID,Can't do that
 REASON_LOW_POWER,Low power: production at half speed
-REASON_NO_BUILDER,Select a Crawler to build
+REASON_NO_BUILDER,Select an engineer vehicle to build
 REASON_NO_POWER,Offline: no power
 REASON_OWNED,Already owned
 REASON_POINTS,Not enough General points
@@ -206,18 +206,28 @@ REASON_RANK,Needs a higher General rank
 REASON_RESOURCE,Too close to a supply seam
 REASON_STUB,[STUB] Not available yet
 REASON_TERRAIN,Can't build on that ground
-UNIT_EU_CRAWLER,Crawler
-UNIT_EU_HARVESTER,Supply Hauler
-UNIT_EU_GRENADIER,Grenadier
-UNIT_EU_LANCER,Lancer
+UNIT_EU_CRAWLER,Engineer Vehicle
+UNIT_EU_CRAWLER_DESC,Tracked armoured engineer vehicle. Builds and repairs German structures.
+UNIT_EU_HARVESTER,Logistics Truck
+UNIT_EU_HARVESTER_DESC,Heavy 6x6 military logistics truck. Hauls supplies to a Supply Hub; a roof machine gun for self-defence.
+UNIT_EU_GRENADIER,Panzergrenadier
+UNIT_EU_GRENADIER_DESC,Mechanised infantry rifleman with rifle grenades. Can garrison.
+UNIT_EU_LANCER,Panzerfaust 3 Soldier
+UNIT_EU_LANCER_DESC,Anti-tank soldier with a Panzerfaust 3 launcher. Strong against vehicles. Can garrison.
 UNIT_EU_WOLFHOUND,LTV
+UNIT_EU_WOLFHOUND_DESC,Protected 4x4 patrol vehicle with a roof .50 cal heavy machine gun. Carries 4 infantry.
 UNIT_EU_BOXER,Boxer IFV
 UNIT_EU_BOXER_DESC,8x8 infantry fighting vehicle with a 30mm cannon. Carries six infantry who can fire from inside.
 UNIT_EU_LEOPOLD,Panther Tank
-UNIT_EU_AEGIS,Aegis Shield Carrier
+UNIT_EU_LEOPOLD_DESC,Main battle tank with a 120 mm smoothbore gun. Needs a Heavy Factory.
+UNIT_EU_AEGIS,Fuchs ECM Carrier
+UNIT_EU_AEGIS_DESC,6x6 armoured carrier with jammers and smoke. Nearby friendly units take 35% less damage. Unarmed. Needs a Heavy Factory.
 UNIT_EU_FLAKWERK,Thunderbolt
+UNIT_EU_FLAKWERK_DESC,Light tracked air-defence carrier with a 4-round short-range missile launcher. Air targets only.
 BLD_EU_HQ,Command HQ
-BLD_EU_REACTOR,Fusion Reactor
+BLD_EU_HQ_DESC,Headquarters. Builds engineer vehicles.
+BLD_EU_REACTOR,Power Plant
+BLD_EU_REACTOR_DESC,Gas-turbine power plant. Powers the base and extends the power grid.
 BLD_EU_HUB,Supply Hub
 BLD_EU_BARRACKS,Barracks
 BLD_EU_MOTOR_POOL,Motor Pool
@@ -225,16 +235,16 @@ BLD_EU_HEAVY_FACTORY,Heavy Factory
 BLD_EU_GUN_BUNKER,Gun Bunker
 BLD_CIV_BLOCK,Civilian Block
 BLD_PUMP,Veridite Pump
-SHORT_EU_CRAWLER,CRW
-SHORT_EU_HARVESTER,HAUL
-SHORT_EU_GRENADIER,GREN
-SHORT_EU_LANCER,LANC
-SHORT_EU_WOLFHOUND,WOLF
-SHORT_EU_LEOPOLD,LEO
-SHORT_EU_AEGIS,AEG
-SHORT_EU_FLAKWERK,FLAK
+SHORT_EU_CRAWLER,ENG
+SHORT_EU_HARVESTER,LOG
+SHORT_EU_GRENADIER,PZGR
+SHORT_EU_LANCER,PZF3
+SHORT_EU_WOLFHOUND,LTV
+SHORT_EU_LEOPOLD,PNTR
+SHORT_EU_AEGIS,ECM
+SHORT_EU_FLAKWERK,TBLT
 SHORT_EU_HQ,HQ
-SHORT_EU_REACTOR,REACT
+SHORT_EU_REACTOR,POWER
 SHORT_EU_HUB,HUB
 SHORT_EU_BARRACKS,BARR
 SHORT_EU_MOTOR_POOL,MOTOR
@@ -248,10 +258,10 @@ POWER_RECON,Recon Sweep
 POWER_RECON_DESC,Reveals a 12-tile area for 20 s.
 POWER_LOGISTICS,Emergency Logistics
 POWER_LOGISTICS_DESC,Instant supply drop.
-POWER_OVERCHARGE,Shield Overcharge
-POWER_OVERCHARGE_DESC,Your units in the area gain a strong temporary shield.
-POWER_BLACKOUT,Grid Blackout
-POWER_BLACKOUT_DESC,[STUB] Not implemented yet.
+POWER_OVERCHARGE,Smoke Screen
+POWER_OVERCHARGE_DESC,Smoke and decoys: your units in the area are much harder to hit (a strong temporary damage shield).
+POWER_BLACKOUT,Artillery Barrage
+POWER_BLACKOUT_DESC,Three heavy 155 mm shells hit the target area.
 CREDITS_BODY,"RULES OF ENGAGEMENT (formerly FRACTURE LINE) — Milestone 2.9 (skirmish: Germany, Iran and United States).
 Design, code, procedural 3D models (M2.6 model upgrade with automatic LODs), weathering and surface-detail shaders, decals, effects, maps, faction HUD themes, UI and text: original work made for Malachi Murphy with Grok Bot. US unit names are original and only inspired by real equipment roles.
 Textures: ambientCG (ambientcg.com), CC0 1.0 public domain — Ground097, Ground109, Grass004, Rock063, Asphalt033, Gravel035, Concrete034, CorrugatedSteel005, Rust004; winter: Snow006, Ground054, Snow004, Rock035, Ice002, Snow010A; temperate: Grass001, Ground037, Rock023, PavingStones130; arid: Ground090, Ground102, Rock061, Ground079S.
@@ -321,34 +331,34 @@ ROLE_SHIELD,Shield support
 ROLE_ANTI_AIR,Anti-air
 ROLE_ARTILLERY,Artillery
 ROLE_SUICIDE,Bomb truck
-UNIT_EU_BRENNUS,Brennus Siege Tank
-UNIT_EU_BRENNUS_DESC,"Twin-cannon super-heavy tank. Slow, very tough, fires two-round salvos. Needs a Signals Center."
-UNIT_EU_SALAMANDER,Salamander Flame Tank
-UNIT_EU_SALAMANDER_DESC,"Short-range flame projector. Burns infantry and structures, weak against heavy armour."
+UNIT_EU_BRENNUS,Heavy Tank 130
+UNIT_EU_BRENNUS_DESC,"Next-generation heavy tank with a 130 mm gun and an autoloader that fires two-round bursts. Slow, very tough. Needs a Signals Center."
+UNIT_EU_SALAMANDER,Puma IFV
+UNIT_EU_SALAMANDER_DESC,"Tracked infantry fighting vehicle with a 30 mm airburst cannon. Short range; shreds infantry and structures, weak against heavy armour."
 UNIT_EU_THUNDERHEAD,RCH SPA
 UNIT_EU_THUNDERHEAD_DESC,"Wheeled 155mm self-propelled howitzer. Long range, slow to aim, cannot hit close targets. Needs a Signals Center."
 UNIT_EU_HEARTH,Hearth Rocket Artillery
-UNIT_EU_HEARTH_DESC,Light rocket artillery. A 6-tube pod fires a rocket salvo against infantry and light vehicles.
-UNIT_EU_SPECTRE,Spectre Jammer
-UNIT_EU_SPECTRE_DESC,Unarmed electronic-warfare truck. Enemy vehicles within 6 tiles cannot fire. Needs a Signals Center.
-UNIT_EU_SENTINEL,Sentinel Outpost
-UNIT_EU_SENTINEL_DESC,"Unarmed recon carrier. Detects hidden mines, traps and camouflaged structures; carries 2 infantry."
-UNIT_EU_KESTREL,Kestrel Helo
-UNIT_EU_KESTREL_DESC,[STUB] Transport helicopter. Aircraft are not in the game yet; listed for the full roster.
-UNIT_EU_CORVID,Corvid Jet
-UNIT_EU_CORVID_DESC,[STUB] Strike jet. Aircraft are not in the game yet; listed for the full roster.
+UNIT_EU_HEARTH_DESC,Tracked multiple rocket launcher with two 6-round pods. Fires rocket salvos against infantry and light vehicles.
+UNIT_EU_SPECTRE,Fuchs EW Jammer
+UNIT_EU_SPECTRE_DESC,6x6 electronic-warfare vehicle with a jamming mast. Enemy vehicles within 6 tiles cannot fire. Needs a Signals Center.
+UNIT_EU_SENTINEL,Fennek Recon
+UNIT_EU_SENTINEL_DESC,"Low 4x4 scout car with a sensor mast. Detects hidden mines, traps and camouflaged structures; carries 2 infantry."
+UNIT_EU_KESTREL,Tiger Attack Helicopter
+UNIT_EU_KESTREL_DESC,Tandem-seat attack helicopter with anti-tank missiles and a gun pod. Hovers; reloads in the air. Built at the Airfield.
+UNIT_EU_CORVID,Multirole Fighter
+UNIT_EU_CORVID_DESC,Canard-delta multirole fighter: air-to-air missiles and a guided bomb. Uses 2 airfield slots and lands to rearm.
 UNIT_TPLA_BUS,BMP-2 Transport
 UNIT_TPLA_BUS_DESC,BMP-2-based armoured transport with a 30 mm cannon on top. Carries 8 infantry.
-BLD_EU_FLAK_TOWER,Flak Tower
-BLD_EU_FLAK_TOWER_DESC,Rapid-fire rotary gun tower. Hits ground and air targets. Needs power to fire.
+BLD_EU_FLAK_TOWER,Air Defence Gun
+BLD_EU_FLAK_TOWER_DESC,Rapid-fire 35 mm air-defence gun turret. Hits ground and air targets. Needs power to fire.
 BLD_EU_SIGNALS,Signals Center
-BLD_EU_SIGNALS_DESC,"Command and tech centre. Unlocks the Brennus, RCH SPA, Spectre and the advanced structures."
-BLD_EU_RELAY,Field Relay Mast
+BLD_EU_SIGNALS_DESC,"Command and tech centre. Unlocks the Heavy Tank 130, RCH SPA, Fuchs EW Jammer, the Airfield and the advanced structures."
+BLD_EU_RELAY,Field Maintenance Post
 BLD_EU_RELAY_DESC,Repairs your vehicles and heals infantry within 6 tiles (1% health per second).
-BLD_EU_EXCHANGE,Data Exchange
-BLD_EU_EXCHANGE_DESC,Trades data for supply: +4 supply per second while powered.
-BLD_EU_AIRSTRIP,Airstrip
-BLD_EU_AIRSTRIP_DESC,[STUB] Aircraft production. Aircraft are not in the game yet.
+BLD_EU_EXCHANGE,Logistics Centre
+BLD_EU_EXCHANGE_DESC,Contracts civilian logistics: +4 supply per second while powered.
+BLD_EU_AIRSTRIP,Airfield
+BLD_EU_AIRSTRIP_DESC,Builds the Tiger and the multirole fighter. 6 parking slots; each fighter uses 2. Jets land here to rearm.
 BLD_EU_MINEFIELD,Minefield
 BLD_EU_MINEFIELD_DESC,Hidden mine. Explodes when an enemy steps or drives onto it. Detectors reveal it.
 BLD_TPLA_WASP_NEST,Wasp Nest

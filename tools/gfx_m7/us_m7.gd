@@ -51,6 +51,7 @@ static func build(only: Array) -> void:
 	jobs.merge(load("res://tools/gfx_m7/us_v8.gd").jobs(), true)   # M2.7b vehicle remodel supersedes M2.7
 	jobs.merge(load("res://tools/gfx_m30/us_m30.gd").jobs(), true)   # M3.0 USA list supersedes both
 	jobs.merge(load("res://tools/gfx_m30/eu_m30.gd").jobs(), true)   # M3.0 EU list
+	jobs.merge(load("res://tools/gfx_m30/de_m30.gd").jobs(), true)   # M3.0 E: Germany roster
 	for k in jobs:
 		if all or k in only:
 			jobs[k].call()

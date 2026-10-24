@@ -17,7 +17,7 @@ const CLASSES := {
 	&"eu_lancer_missile": "missile", &"tpla_wasp_missile": "missile",
 	&"tpla_rpg": "rocket", &"tpla_mirage_rockets": "salvo", &"tpla_mica": "missile", &"tpla_r73": "missile", &"tpla_buggy_rockets": "salvo",
 	&"eu_howitzer": "artillery", &"eu_hearth_rockets": "salvo", &"eu_grenade": "grenade",
-	&"tpla_rust_shell": "artillery", &"tpla_svd": "rifle", &"tpla_cd_laser": "rifle", &"tpla_f16_bombs": "mortar", &"eu_flamer": "flame",
+	&"tpla_rust_shell": "artillery", &"tpla_svd": "rifle", &"tpla_cd_laser": "rifle", &"tpla_f16_bombs": "mortar", &"eu_flamer": "autocannon", &"eu_tiger_atgm": "missile", &"eu_tiger_gun": "autocannon", &"eu_aam": "missile", &"eu_gbu": "mortar",
 	# M2.5 United States
 	&"us_m16": "rifle", &"us_m4": "rifle", &"us_sniper_rifle": "rifle", &"us_lynx_hmg": "mg", &"us_avenger_mg": "mg",
 	&"us_chaingun": "autocannon", &"us_bradley_25mm": "autocannon", &"us_tank_gun": "cannon", &"us_javelin": "missile", &"us_hellfire": "missile",
