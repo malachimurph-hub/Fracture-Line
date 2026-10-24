@@ -43,8 +43,17 @@ const FACTIONS := {
 	# M3.0 F: Russia (power economy like the US; separate builder and gatherer)
 	&"ecc": {"name_key": "FACTION_ECC", "hq": &"ecc_hq", "builder": &"ecc_engineer", "start_units": [&"ecc_engineer"],
 		"units": ECC_UNIT_ORDER, "buildings": ECC_BUILDING_ORDER, "power": true, "personality": &"ecc_steppe",
-		"powers": [&"ecc_recon", &"ecc_logistics", &"ecc_strike", &"ecc_repair"]},
+		"powers": [&"ecc_recon", &"ecc_logistics", &"ecc_strike", &"ecc_repair"],
+		"enabled": false},   # M3.0 release: Russia is "Coming soon" (shown locked; code and assets stay for later)
 }
+
+## M3.0: false for a faction that is shown as "Coming soon" (locked, never picked by players, AI or random).
+func faction_enabled(f) -> bool:
+	var k := StringName(f)
+	return FACTIONS.has(k) and bool(FACTIONS[k].get("enabled", true))
+
+func playable_factions() -> Array:
+	return FACTIONS.keys().filter(func(k): return faction_enabled(k))
 
 func faction(f) -> Dictionary:
 	return FACTIONS.get(StringName(f), FACTIONS[&"eu"])

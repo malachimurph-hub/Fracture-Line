@@ -35,7 +35,7 @@ static func run(t: Node) -> void:
 	for id in Content.buildings:
 		if Content.faction_of_id(id) == &"neutral":
 			want += 1
-	for f in Content.FACTIONS:
+	for f in Content.playable_factions():
 		want += Content.faction(f)["units"].size() + Content.faction(f)["buildings"].size()
 	t._check(n == want and n > 80, "asset list has every placeable asset (%d)" % n)
 	# terrain: a river across the map

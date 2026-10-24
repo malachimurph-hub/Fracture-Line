@@ -146,12 +146,14 @@ func _build_rows() -> void:
 		fac.fit_to_longest_item = false
 		fac.clip_text = true
 		for f in FACTIONS:
-			fac.add_icon_item(FactionEmblem.flag_texture(StringName(f[0])), tr(f[1]) + ("" if f[2] else " — " + tr("LOBBY_COMING_LATER")))   # M3.0 flag icon
-			fac.set_item_disabled(fac.item_count - 1, not f[2])
+			var on: bool = f[2] and Content.faction_enabled(f[0])   # M3.0: locked factions show "Coming soon", greyed out
+			fac.add_icon_item(FactionEmblem.flag_texture(StringName(f[0])), tr(f[1]) + ("" if on else " — " + tr("LOBBY_COMING_SOON")))   # M3.0 flag icon
+			fac.set_item_disabled(fac.item_count - 1, not on)
 		var fi := 0
 		for k in FACTIONS.size():
-			if FACTIONS[k][0] == String(s.get("faction", "eu")):
+			if FACTIONS[k][0] == String(s.get("faction", "eu")) and not fac.is_item_disabled(k):
 				fi = k
+		s["faction"] = FACTIONS[fi][0]
 		fac.selected = fi
 		fac.item_selected.connect(func(idx): s["faction"] = FACTIONS[idx][0]; _validate())
 		r.add_child(fac)

@@ -92,7 +92,7 @@ static func resolve(cfg: Dictionary) -> Dictionary:
 			var k := rng.range_int(free.size())
 			s["spawn"] = free[k]
 			free.remove_at(k)
-		if not s.has("faction") or not Content.FACTIONS.has(StringName(s["faction"])):
+		if not s.has("faction") or not Content.FACTIONS.has(StringName(s["faction"])) or not Content.faction_enabled(s["faction"]):
 			s["faction"] = "eu"
 		if s["kind"] == "ai" and not s.has("personality"):
 			s["personality"] = String(Content.faction(StringName(s["faction"]))["personality"])

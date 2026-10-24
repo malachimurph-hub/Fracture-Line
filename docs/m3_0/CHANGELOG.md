@@ -1,4 +1,4 @@
-# Rules of Engagement M3.0 (work in progress, branch m30; no release build yet)
+# Rules of Engagement M3.0 (version 0.3.0, versionCode 14, released Oct 24 2026)
 
 Naming rule: real military designations are used in game text; company and brand names are not.
 
@@ -103,9 +103,13 @@ Germany and Iran now use real-world equipment roles. Internal ids, costs, HP and
   Technical, Backhoe/Supply Pickup and MiG-29. The F-14 was not added (too much work), so the MiG-29 stays.
 - Voice lines that say an old name are dropped where the unit has another line for the same event.
 
-## F. Russia
-Russia is now playable in the skirmish lobby (no longer "coming later"), in the Map Builder palette and for
-the skirmish AI. Internal ids stay `ecc_`. The default paint is Russian green camo.
+## F. Russia: coming soon
+Russia is **not playable in M3.0**. It shows as "Russia — Coming soon", greyed out and locked, in every
+lobby faction dropdown (player and AI slots). The Map Builder shows a greyed "Russia: Coming soon" heading with
+no Russian assets. The AI, the main-menu battle and the lobby never pick Russia. A saved lobby set to Russia
+falls back to Germany. One central switch controls this (`enabled` in `Content.FACTIONS`).
+
+The Russian roster is already built on the branch and will ship in a later release:
 - **Malachi's units:** T-90M (MBT, 125 mm, close to the Panther), Tiger-M (light armoured 4x4, roof HMG,
   carries 5), BTR (BTR-82A-style 8x8, 30 mm, carries 7, close to the Boxer), Typhoon (heavy MRAP, remote HMG,
   carries 10), 2S Msta (tracked 152 mm howitzer, needs a Supply Depot), Zeus (quad 23 mm AA).

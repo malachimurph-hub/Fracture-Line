@@ -237,6 +237,9 @@ func asset_categories() -> Array:
 		props.append({"t": "prop", "kind": k, "label": MapBuilderCanvas.PROP_LABELS[k]})
 	cats.append(["City & scenery props", props])
 	for f in [[&"us", tr("FACTION_US")], [&"eu", tr("FACTION_EU")], [&"tpla", tr("FACTION_TPLA")], [&"ecc", tr("FACTION_ECC")]]:
+		if not Content.faction_enabled(f[0]):   # M3.0: shown as a locked "Coming soon" heading, no assets
+			cats.append([f[1] + ": " + tr("LOBBY_COMING_SOON"), [], true])
+			continue
 		var fd: Dictionary = Content.faction(f[0])
 		var us: Array = []
 		for id in fd["units"]:
@@ -268,6 +271,11 @@ func _build_assets() -> Control:
 	v.add_theme_constant_override("separation", 3)
 	asset_scroll.add_child(v)
 	for cat in asset_categories():
+		if cat.size() > 2 and cat[2]:
+			var lk := UiTheme.label(cat[0], 12, UiTheme.GOLD)
+			lk.modulate = Color(1, 1, 1, 0.45)   # greyed: locked faction
+			v.add_child(lk)
+			continue
 		_section(v, "%s (%d)" % [cat[0], cat[1].size()])
 		var g := _grid(v, 2)
 		for a in cat[1]:

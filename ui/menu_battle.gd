@@ -122,7 +122,7 @@ func _new_battle() -> void:
 	var mid: StringName = maps[_rng.randi() % maps.size()]
 	if force_map != &"" and Content.maps.has(force_map):
 		mid = force_map
-	var facs: Array = Content.FACTIONS.keys()
+	var facs: Array = Content.playable_factions()   # M3.0: never a "Coming soon" faction
 	facs.shuffle()
 	_facs = [facs[0], facs[1]]
 	var cfg := SkirmishConfig.default_setup()
