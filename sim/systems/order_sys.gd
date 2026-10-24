@@ -141,6 +141,8 @@ static func _think(w: SimWorld, u: SimEntity) -> void:
 					_pop(u)   # unreachable
 				else:
 					_goto(u, bp)
+		"repair":
+			_repair(w, u, o)
 		"harvest":
 			EconSys.harvest_think(w, u)
 		"garrison":
@@ -194,6 +196,43 @@ static func _think(w: SimWorld, u: SimEntity) -> void:
 					_pop(u)
 				else:
 					_goto(u, cp)
+
+## M3.1 building repair (Zero Hour dozer style): next to the structure, each builder restores
+## REPAIR_TICKS-th of its max HP per tick (a full repair takes ~30 s for one builder) and pays as
+## it goes: a 0-to-full repair costs REPAIR_COST_PCT % of the building's price. With no supply the
+## builder waits. It stays until the building is at full HP, then the order ends.
+const REPAIR_TICKS := 600
+const REPAIR_COST_PCT := 25
+
+static func _repair(w: SimWorld, u: SimEntity, o: Dictionary) -> void:
+	var b := w.get_ent(int(o["target"]))
+	if b == null or not b.alive or b.owner != u.owner or not b.built or b.hp >= b.max_hp:
+		if b != null and b.alive and b.hp >= b.max_hp and o.has("busy"):
+			w.events.append({"t": "repaired", "id": b.id, "owner": u.owner})
+		_pop(u)
+		return
+	if w.dist_to_building(u.pos, b) <= u.radius + TILE:
+		u.goal = NONE
+		o["busy"] = true
+		var rate := maxi(1, b.max_hp / REPAIR_TICKS)
+		var add := mini(rate, b.max_hp - b.hp)
+		# cost in thousandths of a supply unit, carried between ticks (deterministic integers)
+		var acc: int = int(o.get("acc", 0)) + w.bdef(b).cost * REPAIR_COST_PCT * 10 * add / b.max_hp
+		var p := w.players[u.owner]
+		var due := acc / 1000
+		if due > p.supply:
+			return   # out of money: wait
+		p.supply -= due
+		o["acc"] = acc - due * 1000
+		b.hp += add
+		if (w.tick + u.id) % 10 == 0:
+			w.events.append({"t": "repair", "id": b.id, "by": u.id})
+	else:
+		var rp := FX.tile_center(w.map.nearest_passable(FX.to_tile(u.pos).clamp(b.tile - Vector2i.ONE, b.tile + b.fp), true))
+		if _reached(u, rp):
+			_pop(u)   # unreachable
+		else:
+			_goto(u, rp)
 
 static func _enter_tunnel(w: SimWorld, u: SimEntity, b: SimEntity) -> void:
 	if b.owner != u.owner or not b.built:

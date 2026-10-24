@@ -268,7 +268,7 @@ func issue(c: Dictionary) -> void:
 ## Unit voice acknowledgement for an order (GDD 16.3), spoken by the first unit.
 func _ack(c: Dictionary) -> void:
 	var ev: String = {"move": "move", "amove": "attack", "attack": "attack", "guard": "move", "harvest": "harvest",
-		"garrison": "garrison", "capture": "move", "place": "build", "resume_build": "build"}.get(String(c.get("t", "")), "")
+		"garrison": "garrison", "capture": "move", "place": "build", "resume_build": "build", "repair": "build"}.get(String(c.get("t", "")), "")
 	if ev == "" or not c.has("ids") or (c["ids"] as Array).is_empty():
 		return
 	var e := sim.get_ent(int(c["ids"][0]))
@@ -297,13 +297,14 @@ func _queue_flag() -> bool:
 	return Input.is_key_pressed(KEY_SHIFT)
 
 ## Context-sensitive order at a screen point (tap with a selection, right click).
-## The own unfinished structure under the finger, when builders are selected (resume tap).
+## The own unfinished (resume) or damaged (M3.1 repair) structure under the finger, when
+## builders are selected: the tap orders them to it instead of selecting it (ZH).
 func resume_site_at(screen: Vector2) -> SimEntity:
 	if _filter(own_units_selected(), "builder").is_empty():
 		return null
 	for oid in pick_all(screen):
 		var o: SimEntity = sim.get_ent(oid)
-		if o != null and o.owner == pid and o.kind == SimEntity.Kind.BUILDING and not o.built:
+		if o != null and o.owner == pid and o.kind == SimEntity.Kind.BUILDING and (not o.built or o.hp < o.max_hp):
 			return o
 	return null
 
@@ -375,6 +376,11 @@ func smart_command(screen: Vector2) -> void:
 			issue({"t": "resume_build", "ids": b, "target": t.id, "q": q})
 			world.marker(t.pos, Color("#7dff8a"))
 			units = _minus(units, b)
+	elif t != null and t.owner == pid and t.kind == SimEntity.Kind.BUILDING and t.built and t.hp < t.max_hp and not _filter(units, "builder").is_empty():
+		var rb := _filter(units, "builder")   # M3.1: builders repair a damaged own structure
+		issue({"t": "repair", "ids": rb, "target": t.id, "q": q})
+		world.marker(t.pos, Color("#7dff8a"))
+		units = _minus(units, rb)
 	elif t != null and t.kind == SimEntity.Kind.BUILDING and Content.building(t.def_id).is_refinery:
 		var hv2 := _filter(units, "harvester")
 		if not hv2.is_empty():

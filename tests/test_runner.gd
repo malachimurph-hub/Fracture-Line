@@ -854,7 +854,52 @@ func test_corners() -> void:
 
 ## Zero Hour scaffolds: an interrupted build pauses and keeps its progress; a resume order
 ## finishes it; a second builder does not speed it up; the AI resumes its own scaffolds.
+## M3.1: builders repair a damaged own structure (US Dozer, German crane, Iran Backhoe): gradual
+## HP restore, pays ~25 % of the price for a full repair, stops at full HP, waits without money.
+func _test_repair() -> void:
+	for fac in ["us", "eu", "tpla"]:
+		var r := MatchRunner.new()
+		r.record_replay = false
+		r.start(make_cfg("1v1", 9, ["medium", "medium"], [fac, "eu"]))
+		r.ais.clear()
+		var w := r.sim
+		var hq: SimEntity = null
+		var bu: SimEntity = null
+		var bdef: StringName = Content.faction(StringName(fac))["builder"]
+		for id in w.ids:
+			var e: SimEntity = w.ents[id]
+			if e.owner == 0 and e.kind == SimEntity.Kind.BUILDING and e.built and hq == null:
+				hq = e
+			if e.owner == 0 and e.def_id == bdef:
+				bu = e
+		if hq == null or bu == null:
+			_check(false, "%s: repair test setup (hq %s builder %s)" % [fac, hq, bu])
+			continue
+		hq.hp = hq.max_hp / 2
+		w.players[0].supply = 0
+		r.issue({"p": 0, "t": "repair", "ids": [bu.id], "target": hq.id})
+		for i in 20 * 15:
+			r.advance()
+		_check(hq.hp == hq.max_hp / 2 and not bu.orders.is_empty(), "%s: without money the builder waits at the damaged structure (hp %d/%d)" % [fac, hq.hp, hq.max_hp])
+		w.players[0].supply = 10000
+		var t := 0
+		var mid := -1
+		while hq.hp < hq.max_hp and t < 20 * 60:
+			r.advance()
+			t += 1
+			if t == 20 * 5:
+				mid = hq.hp
+		var paid := 10000 - w.players[0].supply
+		var want := Content.building(hq.def_id).cost * OrderSys.REPAIR_COST_PCT / 100 / 2
+		_check(hq.hp == hq.max_hp, "%s: repair brings the structure back to full HP (%d/%d after %d ticks)" % [fac, hq.hp, hq.max_hp, t])
+		_check(mid > hq.max_hp / 2 and mid < hq.max_hp, "%s: repair is gradual (hp %d after 5 s)" % [fac, mid])
+		_check(absi(paid - want) <= 2, "%s: half a repair costs ~%d supply (paid %d)" % [fac, want, paid])
+		for i in 5:
+			r.advance()
+		_check(bu.orders.is_empty(), "%s: builder's repair order ends at full HP" % fac)
+
 func test_resume() -> void:
+	_test_repair()
 	for fac in ["eu", "tpla"]:
 		var r := MatchRunner.new()
 		r.record_replay = false

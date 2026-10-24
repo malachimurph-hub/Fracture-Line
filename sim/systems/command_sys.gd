@@ -94,6 +94,15 @@ static func apply(w: SimWorld, c: Dictionary) -> void:
 					_push(u, {"o": "build", "target": site.id}, bool(c.get("q", false)))
 					if w.udef(u).harvest_capacity > 0:
 						u.phase = -1
+		"repair":   # M3.1 (ZH): builders restore an own damaged structure, paying as they go
+			var rb := w.get_ent(int(c.get("target", 0)))
+			if rb == null or rb.owner != pid or rb.kind != SimEntity.Kind.BUILDING or not rb.built or rb.hp >= rb.max_hp:
+				return
+			for u: SimEntity in _own_units(w, pid, c):
+				if w.udef(u).tags.has("builder"):
+					_push(u, {"o": "repair", "target": rb.id, "acc": 0}, bool(c.get("q", false)))
+					if w.udef(u).harvest_capacity > 0:
+						u.phase = -1
 		"cancel_build":
 			var s2 := w.get_ent(int(c.get("target", 0)))
 			if s2 != null and s2.owner == pid and s2.kind == SimEntity.Kind.BUILDING and not s2.built:

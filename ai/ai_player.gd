@@ -296,6 +296,12 @@ func _build() -> void:
 			break
 	if free == null:
 		return
+	# M3.1: an idle builder repairs a badly damaged structure when there is money to spare
+	if p.supply > 800:
+		for b2: SimEntity in my_ents(SimEntity.Kind.BUILDING):
+			if b2.built and b2.hp * 5 < b2.max_hp * 2:
+				cmd({"t": "repair", "ids": [free.id], "target": b2.id})
+				return
 	var next := _next_building()
 	if next == &"":
 		return
