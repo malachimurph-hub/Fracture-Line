@@ -87,7 +87,7 @@ func _ready() -> void:
 	await get_tree().process_frame
 	if not is_inside_tree():
 		return
-	_new_battle()
+	await _new_battle()
 	_fade_in()
 
 ## M3.0.1: the backdrop container fades from the flat menu background into the battle.
@@ -121,7 +121,16 @@ func pool_size() -> int:
 		n += roster_pool(f).size()
 	return n
 
+var _building := false   ## M3.0.1: a new battle is being built over several frames
+
+## M3.0.1: one step of the build per frame (map + sim, view, each base, each wave), so the menu
+## stays responsive while a fresh backdrop is made; _process waits until it is done.
+func _step() -> bool:
+	await get_tree().process_frame
+	return is_inside_tree()
+
 func _new_battle() -> void:
+	_building = true
 	for n in _env_nodes:
 		n.queue_free()
 	_env_nodes.clear()
@@ -156,7 +165,11 @@ func _new_battle() -> void:
 	runner.ais.clear()               # no economy / base building: just the fight
 	for p in runner.sim.players:
 		p.supply = 0
+	if not await _step():
+		return
 	_build_view()
+	if not await _step():
+		return
 	# two fronts either side of the map centre, along the line between the two bases
 	var hq: Array[Vector2] = [Vector2.ZERO, Vector2.ZERO]
 	for id in runner.sim.ids:
@@ -175,10 +188,15 @@ func _new_battle() -> void:
 		bc = bc.clamp(Vector2(8, 8), Vector2(runner.sim.map.w - 8, runner.sim.map.h - 8))
 		_bases[pid] = Vector3(bc.x, 0, bc.y)
 		_lay_base(pid, bc, dir * -side)
+		if not await _step():
+			return
 	_pools.clear()
 	for pid in 2:
 		_pools[pid] = []
+	for pid in 2:
 		_wave(pid)
+		if not await _step():
+			return
 	_look = Vector3(c.x, 0, c.y)
 	_clash = _look
 	_hot.clear()
@@ -189,6 +207,7 @@ func _new_battle() -> void:
 	_cut = true
 	_place_cam(0.0, 1.0)
 	_map_t = 0.0
+	_building = false
 
 ## M3.0.1: the fight goes on on the map already built (the waves refill on their own); only
 ## the camera cuts to a new shot. A new map is picked each time the backdrop is created, and
@@ -445,7 +464,7 @@ func _alive(pid: int) -> Array:
 	return out
 
 func _process(delta: float) -> void:
-	if runner == null:
+	if runner == null or _building:
 		return
 	_acc += minf(delta, 0.1)
 	var steps := 0

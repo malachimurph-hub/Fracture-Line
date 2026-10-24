@@ -17,7 +17,7 @@ func _ready() -> void:
 	var mm: Node = (load("res://ui/main_menu.tscn") as PackedScene).instantiate()
 	add_child(mm)
 	var bg: Node = null
-	while bg == null:
+	while bg == null or bg.runner == null or bg._building:   # M3.0.1: built over a few frames
 		await get_tree().process_frame
 		bg = mm.find_child("MenuBattle", true, false)
 	# let the armies meet (~20 s of game time; software rendering is slow, so count ticks)

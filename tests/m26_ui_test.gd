@@ -339,6 +339,10 @@ func test_menu_battle() -> void:
 	check("main menu has a live battle behind it", bg != null)
 	if bg == null:
 		return
+	var wb := 0
+	while (bg.runner == null or bg._building) and wb < 3000:   # M3.0.1: built over a few frames
+		await get_tree().process_frame
+		wb += 1
 	var t0: int = bg.runner.sim.tick
 	var c0: Vector3 = bg.cam.focus
 	# wait for ~25 s of game time (the box renders in software, so wall time varies)
