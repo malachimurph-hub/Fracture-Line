@@ -6,11 +6,11 @@
 // Per-instance amounts (set by EntityView from the faction): rust_amt, wear_amt, dirt_amt.
 // Texture quality (global fl_tex_quality): Medium skips scratches/stencils and biases mips.
 global uniform float fl_tex_quality;
-uniform sampler2D base_tex : source_color, hint_default_white, filter_linear_mipmap, repeat_enable;
+uniform sampler2D base_tex : source_color, hint_default_white, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform float base_tex_amount = 0.0;
 uniform float base_tex_scale = 0.6;
 uniform sampler2D weather_tex : hint_default_white, filter_linear_mipmap_anisotropic, repeat_enable;
-uniform sampler2D rust_tex : source_color, hint_default_white, filter_linear_mipmap, repeat_enable;
+uniform sampler2D rust_tex : source_color, hint_default_white, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D stencil_tex : source_color, hint_default_transparent, filter_linear_mipmap, repeat_enable;
 uniform vec4 albedo : source_color = vec4(1.0);
 uniform bool use_vertex_color = true;
