@@ -433,7 +433,7 @@ BLD_US_GARAGE_DESC,Builds US vehicles.
 BLD_US_AIRFIELD,Airfield
 BLD_US_AIRFIELD_DESC,"Builds aircraft. 6 parking slots: bomber 4, fighter 2, gunship 0. Jets land here to rearm."
 BLD_US_STRATEGY,Strategic Center
-BLD_US_STRATEGY_DESC,"Tech centre: unlocks the Scout Sniper, Longreach Howitzer, Thunderlance Bomber and Data Center."
+BLD_US_STRATEGY_DESC,"Tech centre: unlocks the Scout Sniper, M109A7 howitzer, Thunderlance Bomber and Data Center."
 BLD_US_PATRIOT,LPWS
 BLD_US_PATRIOT_DESC,"C-RAM air defence: trailer-mounted 20mm rotary gun, strong against aircraft, weak against ground targets. Needs power."
 BLD_US_FIREBASE,M777A2

@@ -657,11 +657,14 @@ static func _eu_crawler() -> void:
 	# telescopic boom: 3 sections, laid forward over the cab on a boom rest; luffing ram
 	var bt := Transform3D(Basis(Vector3.RIGHT, deg_to_rad(-4.0)), Vector3(0.1, 0.7, -0.55))
 	h.color(CY, Geo.PAINT)
-	h.xloft([[0.0, K.sect(-0.07, -0.06, 0.07, 0.09, 0.1, 0.08, 0.02)], [0.7, K.sect(-0.065, -0.055, 0.065, 0.085, 0.09, 0.075, 0.02)]], bt)
+	h.xloft([[0.0, K.sect(-0.06, -0.05, 0.06, 0.065, 0.07, 0.055, 0.015)], [0.75, K.sect(-0.055, -0.045, 0.055, 0.06, 0.065, 0.05, 0.015)]], bt)
 	h.color(CY_D, Geo.PAINT)
-	h.xloft([[0.7, K.sect(-0.055, -0.045, 0.055, 0.07, 0.075, 0.06, 0.016)], [1.18, K.sect(-0.05, -0.04, 0.05, 0.065, 0.07, 0.055, 0.016)]], bt)
+	h.xloft([[0.75, K.sect(-0.045, -0.037, 0.045, 0.05, 0.054, 0.042, 0.012)], [1.25, K.sect(-0.042, -0.034, 0.042, 0.047, 0.05, 0.04, 0.012)]], bt)
 	h.color(CY, Geo.PAINT)
-	h.xloft([[1.18, K.sect(-0.045, -0.035, 0.045, 0.055, 0.06, 0.045, 0.012)], [1.5, K.sect(-0.04, -0.032, 0.04, 0.05, 0.055, 0.042, 0.012)]], bt)
+	h.xloft([[1.25, K.sect(-0.035, -0.028, 0.035, 0.038, 0.042, 0.032, 0.01)], [1.5, K.sect(-0.032, -0.026, 0.032, 0.035, 0.038, 0.03, 0.01)]], bt)
+	h.color("#c23a2a", Geo.PAINT)
+	for z in [0.68, 1.2]:
+		h.box(bt * Vector3(0, 0, z), Vector3(0.14, 0.13, 0.03))   # section collars
 	h.color(EU_S, Geo.STEEL)
 	h.tube(bt * Vector3(0, 0.0, 1.5), bt * Vector3(0, -0.03, 1.56), 0.05, 10)   # boom head sheaves
 	h.tube(bt * Vector3(0, -0.05, 1.56), Vector3(0.1, 0.42, 1.0), 0.004, 3)    # hook rope
