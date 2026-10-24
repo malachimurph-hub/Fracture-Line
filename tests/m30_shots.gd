@@ -76,13 +76,13 @@ func run_nature() -> void:
 func run_eu() -> void:
 	await _start("varno_crossing", ["eu", "us"], false)
 	var c := Vector2i(60, 50)
-	var t := _open_spot(Vector2i(12, 4), c)
-	var row := [&"eu_leopold", &"eu_wolfhound", &"eu_brennus", &"eu_thunderhead", &"eu_flakwerk", &"eu_hearth"]
+	var t := _open_spot(Vector2i(18, 5), c)
+	var row := [&"eu_leopold", &"eu_wolfhound", &"eu_boxer", &"eu_thunderhead", &"eu_flakwerk", &"eu_hearth"]
 	for k in row.size():
 		if Content.unit(row[k]) != null:
-			_unit(row[k], t + Vector2i(k * 2, 1), FX.ANG / 4)
-	_look(Vector2(t.x + 6, t.y + 2), 0)
-	m.cam.dist = 13.0
-	m.cam.target_dist = 13.0
+			_unit(row[k], t + Vector2i(k * 3, 1 + (k % 2) * 2), FX.ANG / 4)
+	_look(Vector2(t.x + 8, t.y + 3), 0)
+	m.cam.dist = 15.0
+	m.cam.target_dist = 15.0
 	await frames(60)
 	await shot("m30_eu_units")

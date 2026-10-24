@@ -447,15 +447,15 @@ UNIT_TPLA_MARKSMAN,Marksman
 UNIT_TPLA_MARKSMAN_DESC,SVD marksman. Hidden from the enemy unless shooting (nearby units and detectors still see him). Needs a Workshop.
 UNIT_TPLA_INSURGENT,Insurgent
 UNIT_TPLA_INSURGENT_DESC,"Unarmed scout who blends in with the civilian population: always hidden, wide sight. Gives vision outside the base."
-UNIT_TPLA_RATTLER_DESC,Toyota-style pickup with a .50 cal heavy machine gun. Fast raider; hits ground and air.
+UNIT_TPLA_RATTLER_DESC,Pickup with a .50 cal heavy machine gun. Fast raider; hits ground and air.
 UNIT_TPLA_SCRAPBACK_DESC,Karrar-based main battle tank.
 UNIT_TPLA_HAILSTORM_DESC,Tracked anti-air platform with a single 35 mm cannon and a counter-drone laser.
 UNIT_TPLA_BLIGHT_DESC,Koksan-based 170 mm heavy artillery. Very long range; needs 5 s to set up after moving. Needs a Workshop.
 UNIT_TPLA_SHRIKE_DESC,"Fajr-5-based rocket launcher truck. Lighter artillery, fires without setting up. Needs a Workshop."
 UNIT_TPLA_F16,Falcon Bomber
 UNIT_TPLA_F16_DESC,F-16 Block 60-based light bomber. Uses 2 airfield slots. Needs a Workshop.
-UNIT_TPLA_MIRAGE,Mirage Fighter
-UNIT_TPLA_MIRAGE_DESC,Mirage 2000-based fighter: air-to-air missiles and light ground-attack rockets. Uses 2 airfield slots.
+UNIT_TPLA_MIRAGE,Delta Fighter
+UNIT_TPLA_MIRAGE_DESC,Delta-wing multirole fighter: air-to-air missiles and light ground-attack rockets. Uses 2 airfield slots.
 UNIT_TPLA_MIG29,Fulcrum Interceptor
 UNIT_TPLA_MIG29_DESC,"MiG-29-based interceptor: the best TPLA air-to-air fighter, no ground attack. Uses 2 airfield slots."
 BLD_TPLA_AIRFIELD,Airfield

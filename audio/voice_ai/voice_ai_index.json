@@ -3365,13 +3365,6 @@
 },
 {
 "file": "audio/voice_ai/tpla/mirage/attack_2.ogg",
-"text": "Mirage, attack! Hit them!",
-"voice": "chatterbox/amir+1.0st/ar-v2",
-"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
-"qa": 1.0
-},
-{
-"file": "audio/voice_ai/tpla/mirage/attack_3.ogg",
 "text": "Rockets! Burn them!",
 "voice": "chatterbox/amir+1.0st/ar-v2",
 "engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
@@ -3386,13 +3379,6 @@
 },
 {
 "file": "audio/voice_ai/tpla/mirage/move_1.ogg",
-"text": "Mirage moving!",
-"voice": "chatterbox/amir+1.0st/ar-v2",
-"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
-"qa": 1.0
-},
-{
-"file": "audio/voice_ai/tpla/mirage/move_2.ogg",
 "text": "Turning now!",
 "voice": "chatterbox/amir+1.0st/ar-v2",
 "engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
@@ -3400,20 +3386,6 @@
 },
 {
 "file": "audio/voice_ai/tpla/mirage/select_1.ogg",
-"text": "Mirage pilot.",
-"voice": "chatterbox/amir+1.0st/ar-v2",
-"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
-"qa": 1.0
-},
-{
-"file": "audio/voice_ai/tpla/mirage/select_2.ogg",
-"text": "Mirage ready. Engines hot.",
-"voice": "chatterbox/amir+1.0st/ar-v2",
-"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
-"qa": 1.0
-},
-{
-"file": "audio/voice_ai/tpla/mirage/select_3.ogg",
 "text": "Mirage. Give me a target.",
 "voice": "chatterbox/amir+1.0st/ar-v2",
 "engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
@@ -3421,13 +3393,6 @@
 },
 {
 "file": "audio/voice_ai/tpla/mirage/under_fire_1.ogg",
-"text": "I am hit! Mirage is hit!",
-"voice": "chatterbox/amir+1.0st/ar-v2",
-"engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
-"qa": 1.0
-},
-{
-"file": "audio/voice_ai/tpla/mirage/under_fire_2.ogg",
 "text": "Missile lock! Break, break!",
 "voice": "chatterbox/amir+1.0st/ar-v2",
 "engine": "chatterbox-multilingual (MIT), lang=ar, M2.9 (Militia-style prompt)",
