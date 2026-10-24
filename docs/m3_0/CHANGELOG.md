@@ -15,7 +15,7 @@ Naming rule: real military designations are used in game text; company and brand
 - **Anti Armor Soldier** (was the 2-man Javelin Team): one soldier, 160 HP (was 260), 350 cost (was 500),
   same missile. Keeps its voices.
 - **M1083A1P2 Supply Truck**: remodelled as the 5-ton FMTV 6x6 cargo truck (flat-front cab, three axles,
-  canvas-covered bed), desert tan.
+  canvas-covered bed), olive green.
 - **Data Center** replaces the US **Supply Drop Zone**. That was the only US-buildable passive-income
   structure (us_drop_zone, +4 income). It is now a server hall with roof chillers, generators and a fence.
   Same id and balance. The neutral map supply stashes are untouched.
@@ -29,8 +29,9 @@ Naming rule: real military designations are used in game text; company and brand
 - Voice lines that spoke an old unit name (Halberd, Lynx, Picket, Javelin) were dropped where the unit had
   another line for that event.
 
-- **All US vehicles are desert tan** (follow-up): M1A3, JLTV, MAAS, M3 Bradley, Longreach, Dozer,
-  M1083A1P2 and the attack helicopter. The two jets keep their dark grey (they had no green/camo finish).
+- **US paint (Malachi's final choice):** desert tan for the M1A3, JLTV, MAAS, M3 Bradley and Harrier Gunship.
+  The original US olive-green finish for the Dozer (keeps its safety-yellow blade and cab), the M1083A1P2
+  Supply Truck and the Longreach Howitzer. The Wraith and Thunderlance jets stay dark grey.
 
 ## B. Environment
 - **Trees**: alpha-cut leaf cards on visible branches (oak, pine, snow pine, palm, scrub, bush). Each kind
