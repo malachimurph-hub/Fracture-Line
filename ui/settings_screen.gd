@@ -39,6 +39,7 @@ func build() -> void:
 	_slider(a, "SET_GHOST_OFFSET", "ghost_offset_mm", 0, 20, 1)
 	_slider(b, "SET_RENDER_SCALE", "render_scale", 0.5, 1.0, 0.05)
 	_choice(b, "SET_FPS", "fps_cap", [30, 60, 120])
+	_choice(b, "SET_GFX_PRESET", "graphics_preset", ["ultra", "high", "medium", "low"])
 	_choice(b, "SET_TEX_QUALITY", "texture_quality", ["high", "medium"])
 	_choice(b, "SET_HOLD_ACTION", "hold_action", ["attack_move", "move"])
 	_toggle(b, "SET_HAPTICS", "haptics")

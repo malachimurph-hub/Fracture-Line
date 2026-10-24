@@ -72,6 +72,9 @@ SET_RENDER_SCALE,3D render scale
 SET_FPS,Frame-rate cap
 SET_TEX_QUALITY,Texture quality
 OPT_HIGH,High
+SET_GFX_PRESET,Graphics
+OPT_ULTRA,Ultra
+OPT_LOW,Low
 OPT_MEDIUM,Medium
 SET_HOLD_ACTION,Hold + release does
 SET_HAPTICS,Haptics

@@ -42,6 +42,32 @@ void vertex() {
 }
 
 
+// M3.1: B-spline bicubic splat lookup (4 bilinear taps): per-tile splat weights no longer show
+// as stair-stepped squares / diamonds along road and shore edges.
+vec4 cubic_w(float v) {
+	vec4 n = vec4(1.0, 2.0, 3.0, 4.0) - v;
+	vec4 s = n * n * n;
+	float x = s.x;
+	float y = s.y - 4.0 * s.x;
+	float z = s.z - 4.0 * s.y + 6.0 * s.x;
+	return vec4(x, y, z, 6.0 - x - y - z) * (1.0 / 6.0);
+}
+vec4 tex_bicubic(sampler2D t, vec2 uv) {
+	vec2 ts = vec2(textureSize(t, 0));
+	vec2 tc = uv * ts - 0.5;
+	vec2 f = fract(tc);
+	tc -= f;
+	vec4 xc = cubic_w(f.x);
+	vec4 yc = cubic_w(f.y);
+	vec4 c = tc.xxyy + vec2(-0.5, 1.5).xyxy;
+	vec4 s = vec4(xc.xz + xc.yw, yc.xz + yc.yw);
+	vec4 o = (c + vec4(xc.yw, yc.yw) / s) / ts.xxyy;
+	vec4 s0 = texture(t, o.xz), s1 = texture(t, o.yz), s2 = texture(t, o.xw), s3 = texture(t, o.yw);
+	float sx = s.x / (s.x + s.y);
+	float sy = s.z / (s.z + s.w);
+	return mix(mix(s3, s2, sx), mix(s1, s0, sx), sy);
+}
+
 void fragment() {
 	vec2 p = wpos.xz;
 	bool hi = fl_tex_quality > 0.5;
@@ -50,12 +76,12 @@ void fragment() {
 	vec2 jitter = (vec2(n1, vnoise(p * 0.9 + 3.1)) - 0.5) * 0.9
 		+ (vec2(vnoise(p * 0.21 + 9.7), vnoise(p * 0.21 + 4.3)) - 0.5) * 1.6;   // M2.9: larger-scale wobble on blend edges
 	vec2 suv = (p + jitter) / map_size;
-	vec4 a = texture(splat_a, suv);
-	vec4 b = texture(splat_b, (p + jitter * 0.25) / map_size);
+	vec4 a = hi ? tex_bicubic(splat_a, suv) : texture(splat_a, suv);
+	vec4 b = hi ? tex_bicubic(splat_b, (p + jitter * 0.25) / map_size) : texture(splat_b, (p + jitter * 0.25) / map_size);
 	float steep = smoothstep(0.92, 0.7, wnrm.y);
 	b.g = max(b.g, steep);
 	a = pow(a, vec4(1.6)); b = pow(b, vec4(1.6));
-	b.r = texture(splat_b, p / map_size).r; // asphalt stays crisp
+	b.r = hi ? smoothstep(0.3, 0.7, tex_bicubic(splat_b, p / map_size).r) : texture(splat_b, p / map_size).r; // asphalt stays crisp, smooth curves
 	float sum = a.r + a.g + a.b + a.a + b.r + b.g + b.b + b.a + 1e-4;
 	a /= sum; b /= sum;
 	float w[7] = float[](a.r, a.g, a.b + a.a, b.r, b.g, b.b, b.a);

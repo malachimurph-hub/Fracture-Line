@@ -14,8 +14,11 @@
 // Weathering (object-space triplanar, so it sticks to moving parts) as the M2 shader: panel
 // lines, chipped paint, rust, grime, ground dirt, stencils, plus damage soot / scorch.
 global uniform float fl_tex_quality;
-uniform sampler2D weather_tex : hint_default_white, filter_linear_mipmap, repeat_enable;
-uniform sampler2D rust_tex : source_color, hint_default_white, filter_linear_mipmap, repeat_enable;
+uniform sampler2D weather_tex : hint_default_white, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform sampler2D rust_tex : source_color, hint_default_white, filter_linear_mipmap_anisotropic, repeat_enable;
+// M3.1: 2048 px detail normal map (plate seams, rivets, hatches, grain), object-space triplanar.
+// Replaces the old derivative (dFdx/fwidth) bump + edge tricks that showed 2x2-pixel blocks.
+uniform sampler2D detail_n : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D stencil_tex : source_color, hint_default_transparent, filter_linear_mipmap, repeat_enable;
 uniform float stencil_amount = 0.6;
 instance uniform vec4 team_color : source_color = vec4(0.18, 0.5, 0.88, 1.0);
@@ -37,6 +40,23 @@ vec4 tri(sampler2D t, vec3 p, vec3 n, float s, float bias) {
 	vec3 w = pow(abs(n), vec3(4.0));
 	w /= (w.x + w.y + w.z + 1e-4);
 	return texture(t, p.zy * s, bias) * w.x + texture(t, p.xz * s, bias) * w.y + texture(t, p.xy * s, bias) * w.z;
+}
+
+vec3 dn(vec2 uv, float bias) {
+	vec2 t = texture(detail_n, uv, bias).rg * 2.0 - 1.0;
+	return vec3(t, sqrt(clamp(1.0 - dot(t, t), 0.0, 1.0)));
+}
+// whiteout-blended triplanar tangent normals -> object-space normal around n
+vec3 tri_n(vec3 p, vec3 n, float s, float k, float bias) {
+	vec3 w = pow(abs(n), vec3(4.0));
+	w /= (w.x + w.y + w.z + 1e-4);
+	vec3 tx = dn(p.zy * s, bias); tx.xy *= k;
+	vec3 ty = dn(p.xz * s, bias); ty.xy *= k;
+	vec3 tz = dn(p.xy * s, bias); tz.xy *= k;
+	tx = vec3(tx.xy + n.zy, abs(tx.z) * n.x);
+	ty = vec3(ty.xy + n.xz, abs(ty.z) * n.y);
+	tz = vec3(tz.xy + n.xy, abs(tz.z) * n.z);
+	return normalize(tx.zyx * w.x + ty.xzy * w.y + tz.xyz * w.z);
 }
 
 vec3 srgb_to_linear(vec3 c) {
@@ -86,7 +106,7 @@ void fragment() {
 	float weather = 1.0;     // how much rust / chipping applies
 	float stencil = 0.0;
 	vec3 emit = vec3(0.0);
-	vec4 wt = tri(weather_tex, opos + vec3(0.37, 0.0, 0.11), onrm, 1.6, bias);   // panels, scratches
+	vec4 wt = tri(weather_tex, opos + vec3(0.37, 0.0, 0.11), onrm, 1.0, bias);   // M3.1: 2048 px, ~0.12 u plates   // panels, scratches
 	vec4 wl = tri(weather_tex, opos * 0.8 + vec3(0.71, 0.3, 0.2), onrm, 0.35, bias); // large blotches
 	if (cls == 1 || cls == 15) {
 		base = team_color.rgb * mix(0.85, 1.0, COLOR.r);
@@ -122,12 +142,13 @@ void fragment() {
 			vec4 cm2 = tri(weather_tex, opos * 1.3 + vec3(7.7, 2.0, 0.3), onrm, 0.45, bias);
 			vec3 w = vec3(0.36, 0.42, 0.24);
 			w = mix(w, vec3(0.42, 0.31, 0.19), smoothstep(0.52, 0.56, cm.r));
-			w = mix(w, vec3(0.13, 0.135, 0.12), smoothstep(0.6, 0.64, cm.g) * (1.0 - smoothstep(0.52, 0.56, cm.r)));
-			w = mix(w, vec3(0.58, 0.55, 0.38), smoothstep(0.64, 0.68, cm2.b));
+			w = mix(w, vec3(0.13, 0.135, 0.12), 1.0 - smoothstep(0.36, 0.4, cm.r));   // M3.1: noise only (G = plate seams)
+			w = mix(w, vec3(0.58, 0.55, 0.38), smoothstep(0.66, 0.7, cm2.r));
 			base = w;
 		} else if (pat == 1) {
-			// splinter: hard-edged shards from quantised noise
-			vec3 q = floor(opos * vec3(3.0, 2.0, 3.0) + vec3(0.3, 0.1, 0.7));
+			// splinter: hard-edged shards from quantised noise on a sheared lattice (M3.1: slanted
+			// parallelograms, not axis-aligned boxes)
+			vec3 q = floor(mat3(vec3(3.0, 0.0, -1.1), vec3(1.3, 2.0, 0.6), vec3(0.9, 0.0, 3.0)) * opos + vec3(0.3, 0.1, 0.7));
 			float n = fract(sin(dot(q, vec3(12.99, 78.23, 37.71))) * 43758.55);
 			vec4 sp = tri(weather_tex, opos * 0.5 + q * 0.13, onrm, 0.6, bias);
 			float k = sp.r * 0.5 + n * 0.5;
@@ -135,7 +156,7 @@ void fragment() {
 		} else {
 			vec4 cm = tri(weather_tex, opos + vec3(3.1, 0.0, 1.7), onrm, pat == 2 ? 0.55 : 0.42, bias);
 			float a1 = smoothstep(0.55, 0.6, cm.r);
-			float a2 = smoothstep(0.6, 0.65, cm.g) * (1.0 - a1);
+			float a2 = 1.0 - smoothstep(0.38, 0.43, cm.r);   // M3.1: three tones from one noise (G = plate seams now)
 			vec3 c2 = pat == 2 ? base * vec3(0.8, 0.68, 0.55) : base * vec3(0.86, 0.78, 0.6);
 			base = mix(mix(base, c2, a1), pat == 2 ? lt : dk, a2);
 		}
@@ -151,7 +172,7 @@ void fragment() {
 		if (cls == 13) base *= mix(0.75, 1.0, smoothstep(0.0, 0.2, abs(fract(opos.y * 9.0) - 0.5)));
 	} else if (cls == 10) {
 		metal = 0.0; rough = 0.92; panel = 0.35; weather = 0.0;
-		base *= mix(0.82, 1.06, wl.g);
+		base *= mix(0.84, 1.05, wl.r);   // M3.1: smooth tone (G is plate seams)
 	} else if (cls == 11) {
 		float rib = 0.5 + 0.5 * sin(opos.x * 75.0);
 		base *= mix(0.78, 1.04, rib);
@@ -172,7 +193,7 @@ void fragment() {
 	}
 	vec3 col = base;
 	float side = 1.0 - abs(onrm.y);
-	col *= mix(1.0, wt.g, 0.7 * panel);
+	col *= mix(1.0, wt.g, 0.42 * panel);   // M3.1: thin irregular seams, softer
 	float grime = (1.0 - wl.r) * (0.22 + 0.16 * side);
 	col *= 1.0 - grime * dirt_amt;
 	if (hi && weather > 0.0) {
@@ -205,13 +226,8 @@ void fragment() {
 		float sk = texture(weather_tex, vec2((opos.x + opos.z) * 2.3, opos.y * 0.22), bias).r;
 		float streak = smoothstep(0.45, 0.85, sk) * side2 * (cls == 10 || cls == 11 ? 0.32 : 0.2);
 		col *= 1.0 - streak * dirt_amt;
-		// edge wear: bright worn metal on hard edges (curvature from normal derivatives)
-		float curv = clamp(length(fwidth(onrm)) * 1.6, 0.0, 1.0);
-		float ew = curv * smoothstep(0.35, 0.75, wt.b + 0.25) * weather * wear_amt;
-		col = mix(col, vec3(0.5, 0.49, 0.46), clamp(ew, 0.0, 1.0) * 0.55);
-		metal = mix(metal, 0.8, ew * 0.6);
-		rough = mix(rough, 0.38, ew * 0.6);
-		// micro roughness breakup
+		// micro roughness breakup (M3.1: the fwidth edge-wear term is gone: it drew blocky
+		// 2x2-pixel quads on mobile GPUs; chipping now follows the plate bevels in weather.png B)
 		rough = clamp(rough + (wt.r - 0.5) * 0.12, 0.05, 1.0);
 	}
 	// contact shadow / cavity near the ground plane (reads like baked AO)
@@ -222,29 +238,16 @@ void fragment() {
 		col *= mix(0.86, 1.14, smoothstep(0.25, 0.9, onrm.y));     // sun-catching tops vs walls
 		float rim = 1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0);
 		col *= 1.0 + 0.22 * rim * rim * rim;                        // silhouette lift
-		if (hi && cls != 2) {
-			// crisp edge highlight where faces meet (normal derivative), strongest on upper edges
-			float ce = clamp(length(fwidth(onrm)) * 2.2, 0.0, 1.0);
-			col = mix(col, col * 1.5 + vec3(0.025), ce * 0.6 * smoothstep(-0.3, 0.45, onrm.y));
-		}
 	}
-	if (hi && panel > 0.0) {
-		// bump from panel seams + rivet grid (derivative normal perturbation, no extra texture)
-		float seam = 1.0 - wt.g;
-		vec2 rp = (abs(onrm.x) > abs(onrm.z) ? opos.zy : opos.xy) * 26.0;
-		float rv = 1.0 - smoothstep(0.08, 0.16, length(fract(rp) - 0.5));
-		rv *= step(0.72, fract(sin(dot(floor(rp * 0.25), vec2(7.13, 3.71))) * 951.3));
-		float hgt = (-seam * 0.7 + rv * 0.5) * panel;
-		vec3 dpdx = dFdx(VERTEX);
-		vec3 dpdy = dFdy(VERTEX);
-		float dhx = dFdx(hgt);
-		float dhy = dFdy(hgt);
-		vec3 r1 = cross(dpdy, NORMAL);
-		vec3 r2 = cross(NORMAL, dpdx);
-		float det = dot(dpdx, r1);
-		vec3 grad = sign(det) * (dhx * r1 + dhy * r2);
-		NORMAL = normalize(abs(det) * NORMAL - grad * 0.012);
-		col *= 1.0 - rv * 0.12;
+	if (hi && cls != 2 && cls != 5 && cls != 15 && cls != 19) {
+		// M3.1 detail normals: plate seams / rivets / hatches where there are panels, fine grain
+		// everywhere else; Ultra adds a second, larger octave so the pattern never reads as a tile
+		float k = 0.22 + panel * 0.5;
+		vec3 nd = tri_n(opos + vec3(0.37, 0.0, 0.11), onrm, 1.0, k, bias);
+		if (fl_tex_quality > 1.5)
+			nd = normalize(nd + tri_n(opos * 0.8 + vec3(0.71, 0.3, 0.2), onrm, 0.45, 0.5, bias) - onrm);
+		vec3 dv = (VIEW_MATRIX * (MODEL_MATRIX * vec4(nd - onrm, 0.0))).xyz;
+		NORMAL = normalize(NORMAL + dv / max(length((MODEL_MATRIX * vec4(onrm, 0.0)).xyz), 1e-3));
 	}
 	if (damage_amt > 0.0) {
 		// soot + scorch blotches grow with damage; burnt-out = nearly all char, embers in cracks
