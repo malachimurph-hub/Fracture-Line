@@ -22,25 +22,244 @@ static func _tower_bands(st: SurfaceTool, w: float, d: float, y0: float, y1: flo
 		box(st, Vector3(0, y, 0), Vector3(w + 0.03, fh * 0.48, d * 0.86), glass)
 		box(st, Vector3(0, y, 0), Vector3(w * 0.86, fh * 0.48, d + 0.03), glass)
 
+## M3.0 civilian cars at real-world scale next to the units (~0.25 tile per metre: sedan 4.6 m
+## = 1.15 long, 1.8 m = 0.45 wide, 1.45 m = 0.36 tall; van / SUV larger). Lower body with wheel
+## arches, bonnet + boot, glasshouse with pillars, bumpers, grille, lamps, mirrors, plate, tyres.
 static func _car(st: SurfaceTool, body: Color, kind: String) -> void:
 	var van := kind == "car_van"
 	var suv := kind == "car_suv"
-	var l := 1.05 if van else 0.92
-	var hgt := 0.5 if van else (0.4 if suv else 0.3)
-	box(st, Vector3(0, 0.2, 0), Vector3(0.44, 0.2, l), body)                                     # lower body
-	box(st, Vector3(0, 0.12, 0), Vector3(0.46, 0.06, l + 0.02), Color("#2a2a2a"))                # bumpers / sills
-	var cab_l := l * (0.9 if van else (0.62 if suv else 0.5))
-	var cab_z := -0.04 if van else (-0.08 if suv else -0.04)
-	box(st, Vector3(0, 0.3 + hgt * 0.5, cab_z), Vector3(0.4, hgt, cab_l), body)               # cabin
-	box(st, Vector3(0, 0.3 + hgt * 0.5, cab_z), Vector3(0.41, hgt * 0.6, cab_l * 0.86), Color("#25303a"))   # side glass
-	box(st, Vector3(0, 0.3 + hgt * 0.55, cab_z + cab_l * 0.5), Vector3(0.36, hgt * 0.6, 0.02), Color("#2e3b46"), Vector3(-25, 0, 0))
-	for wx in [-0.21, 0.21]:
-		for wz in [-l * 0.32, l * 0.32]:
-			cyl(st, Vector3(wx, 0.1, wz), 0.1, 0.1, 0.08, Color("#1d1c1b"), 7, Vector3(0, 0, 90))
-	box(st, Vector3(0, 0.24, l * 0.5 + 0.005), Vector3(0.36, 0.05, 0.02), Color("#e8e2c8"))      # headlights
-	box(st, Vector3(0, 0.24, -l * 0.5 - 0.005), Vector3(0.36, 0.05, 0.02), Color("#a8281e"))     # tail lights
+	var l := 1.25 if van else (1.18 if suv else 1.15)
+	var w := 0.5 if van else (0.47 if suv else 0.45)
+	var sill := 0.1 if suv else 0.07
+	var belt := sill + (0.2 if van or suv else 0.16)
+	var roof := 0.5 if van else (0.44 if suv else 0.36)
+	var dark := Color("#1f2224")
+	var glass := Color("#25313b")
+	# lower body, bumpers
+	box(st, Vector3(0, (sill + belt) * 0.5, 0), Vector3(w, belt - sill, l - 0.04), body)
+	box(st, Vector3(0, sill + 0.04, l * 0.5 - 0.02), Vector3(w + 0.01, 0.06, 0.05), dark)
+	box(st, Vector3(0, sill + 0.04, -l * 0.5 + 0.02), Vector3(w + 0.01, 0.06, 0.05), dark)
+	box(st, Vector3(0, sill + 0.005, 0), Vector3(w - 0.02, 0.02, l - 0.15), dark)   # sills / underbody
+	# cabin (glasshouse): van = full length box, else pillars + sloped screens
+	var cab_l := l * (0.86 if van else (0.6 if suv else 0.48))
+	var cab_z := -0.03 if van else (-0.08 if suv else -0.05)
+	var ch := roof - belt
+	box(st, Vector3(0, belt + ch * 0.5, cab_z), Vector3(w * 0.92, ch, cab_l), body)
+	box(st, Vector3(0, belt + ch * 0.5, cab_z), Vector3(w * 0.93, ch * 0.62, cab_l * 0.86), glass)   # side glass
+	for zz in [-0.05, 0.12] if not van else [0.0]:
+		box(st, Vector3(0, belt + ch * 0.5, cab_z + zz * cab_l), Vector3(w * 0.94, ch * 0.64, 0.025), body)   # B / C pillars
+	if not van:
+		wedge(st, Vector3(0, belt + ch * 0.5, cab_z + cab_l * 0.5 + 0.06), Vector3(w * 0.9, ch, 0.12), glass, Vector3(-90, 0, 0))   # raked windscreen
+		wedge(st, Vector3(0, belt + ch * 0.5, cab_z - cab_l * 0.5 - 0.05), Vector3(w * 0.9, ch, 0.1), glass, Vector3(90, 0, 0))   # rear screen
+	else:
+		box(st, Vector3(0, belt + ch * 0.55, cab_z + cab_l * 0.5 + 0.004), Vector3(w * 0.8, ch * 0.55, 0.01), glass)
+	# bonnet crease, grille, lamps, plate
+	box(st, Vector3(0, belt + 0.003, l * 0.32), Vector3(w * 0.7, 0.006, l * 0.22), body.darkened(0.08))
+	box(st, Vector3(0, sill + 0.09, l * 0.5 - 0.005), Vector3(w * 0.4, 0.05, 0.012), dark)
+	for sx in [-1.0, 1.0]:
+		box(st, Vector3(sx * w * 0.36, belt - 0.03, l * 0.5 - 0.01), Vector3(w * 0.2, 0.035, 0.015), lit("#f4efdc"))
+		box(st, Vector3(sx * w * 0.38, belt - 0.03, -l * 0.5 + 0.015), Vector3(w * 0.18, 0.035, 0.012), Color("#b02a20"))
+		box(st, Vector3(sx * (w * 0.5 + 0.02), belt + 0.03, cab_z + cab_l * 0.5 - 0.02), Vector3(0.04, 0.03, 0.03), body)   # mirrors
+		box(st, Vector3(sx * (w * 0.5 + 0.002), (sill + belt) * 0.5 + 0.01, cab_z), Vector3(0.006, 0.006, cab_l * 0.9), body.darkened(0.15))   # door line
+	box(st, Vector3(0, sill + 0.06, -l * 0.5 - 0.004), Vector3(0.12, 0.03, 0.006), Color("#e6e2d2"))
+	# tyres in arches
+	var wr := 0.09 if van or suv else 0.08
+	for wx in [-w * 0.46, w * 0.46]:
+		for wz in [-l * 0.33, l * 0.33]:
+			cyl(st, Vector3(wx, wr, wz), wr, wr, 0.07, Color("#1b1a19"), 8, Vector3(0, 0, 90))
+			cyl(st, Vector3(wx * 1.02, wr, wz), wr * 0.55, wr * 0.55, 0.072, Color("#8a8d90"), 6, Vector3(0, 0, 90))
 	if kind == "car_taxi":
-		box(st, Vector3(0, 0.3 + hgt + 0.03, cab_z), Vector3(0.14, 0.05, 0.08), Color("#f2efe4"))
+		box(st, Vector3(0, roof + 0.025, cab_z), Vector3(0.16, 0.05, 0.07), lit("#f2efe4"))
+	if suv:
+		for sx in [-1.0, 1.0]:
+			box(st, Vector3(sx * w * 0.36, roof + 0.012, cab_z), Vector3(0.02, 0.02, cab_l * 0.9), dark)   # roof rails
+
+# ---------------------------------------------------------------- M3.0 helpers
+const LEAF := 0.75        ## vertex alpha: alpha-cut foliage card (prop.gdshader samples leaf_tex)
+const LIT := 0.05         ## vertex alpha: steady emissive (lit windows, signs, lamps)
+const BLINK := 0.3        ## vertex alpha: blinking aviation light
+const TREES := ["palm", "scrub_tree", "pine", "pine_snow", "oak", "bush"]
+const TREE_VARIANTS := 3
+
+static func lit(hex: String) -> Color:
+	return Color(hex, LIT)
+
+## Textured foliage card: quad centred at c spanned by half-vectors r (across) and u (up), UVs in
+## atlas quadrant q (0 broadleaf, 1 conifer, 2 palm frond, 3 scrub); normals bent away from `ctr`
+## so the crown shades like a volume instead of flat planes.
+static func card(st: SurfaceTool, c: Vector3, r: Vector3, u: Vector3, q: int, col: Color, ctr: Vector3, uv_lo := Vector2.ZERO, uv_hi := Vector2.ONE) -> void:
+	var o := Vector2(float(q % 2), float(q / 2)) * 0.5
+	var pts := [c - r - u, c + r - u, c + r + u, c - r + u]
+	var uvs := [Vector2(uv_lo.x, uv_hi.y), Vector2(uv_hi.x, uv_hi.y), Vector2(uv_hi.x, uv_lo.y), Vector2(uv_lo.x, uv_lo.y)]
+	var cc := Color(col.r, col.g, col.b, LEAF)
+	for i in [0, 1, 2, 0, 2, 3]:
+		st.set_color(cc)
+		var n: Vector3 = (pts[i] - ctr).normalized() + Vector3(0, 0.6, 0)
+		st.set_normal(n.normalized())
+		st.set_uv(o + uvs[i] * 0.5)
+		st.add_vertex(pts[i])
+
+## Cluster of three crossed cards (+ a flat one) - reads as a leafy clump from any angle.
+static func clump(st: SurfaceTool, c: Vector3, size: float, q: int, col: Color, ctr: Vector3, rng: RandomNumberGenerator) -> void:
+	var y0 := rng.randf() * PI
+	for k in 3:
+		var a := y0 + k * PI / 3.0
+		var r := Vector3(cos(a), 0, sin(a)) * size * 0.5
+		card(st, c, r, Vector3(0, size * 0.5, 0) + Vector3(-sin(a), 0, cos(a)) * size * 0.08, q, col.darkened(k * 0.06), ctr)
+	card(st, c + Vector3(0, size * 0.12, 0), Vector3(size * 0.5, 0, 0), Vector3(0, 0, size * 0.5), q, col.lightened(0.06), ctr)
+
+static func branch(st: SurfaceTool, a: Vector3, b: Vector3, r0: float, r1: float, col: Color) -> void:
+	var d := b - a
+	var l := d.length()
+	var up := d / l
+	var x := up.cross(Vector3.FORWARD if absf(up.z) < 0.9 else Vector3.RIGHT).normalized()
+	var z := x.cross(up)
+	var m := CylinderMesh.new()
+	m.top_radius = r1
+	m.bottom_radius = r0
+	m.height = l
+	m.radial_segments = 5
+	m.rings = 1
+	add_prim(st, m, Transform3D(Basis(x, up, z), (a + b) * 0.5), col)
+
+static func _tree(st: SurfaceTool, kind: String, v: int) -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash(kind) + v * 7919
+	var bark := Color("#5c4a36").lightened(v * 0.04)
+	match kind:
+		"oak":
+			var hues := [Color("#5a7a34"), Color("#4b6b2c"), Color("#6a7f36")]
+			var leafc: Color = hues[v % 3]
+			var top := Vector3(rng.randf_range(-0.08, 0.08), 1.05 + v * 0.12, rng.randf_range(-0.08, 0.08))
+			branch(st, Vector3.ZERO, top, 0.13, 0.08, bark)
+			var ctr := top + Vector3(0, 0.45, 0)
+			sph(st, ctr, Vector3(0.55, 0.42, 0.55), leafc.darkened(0.45), 6)   # shaded inner mass
+			var nb := 4 + v
+			for i in nb:
+				var a := TAU * i / nb + rng.randf_range(-0.3, 0.3)
+				var e := top + Vector3(cos(a) * rng.randf_range(0.5, 0.75), rng.randf_range(0.2, 0.55), sin(a) * rng.randf_range(0.5, 0.75))
+				branch(st, top - Vector3(0, rng.randf_range(0.0, 0.25), 0), e, 0.06, 0.025, bark)
+				clump(st, e + Vector3(0, 0.1, 0), rng.randf_range(0.8, 1.05), 0, leafc.lightened(rng.randf_range(-0.05, 0.08)), ctr, rng)
+			clump(st, ctr + Vector3(0, 0.45, 0), 1.0, 0, leafc.lightened(0.1), ctr, rng)
+		"pine", "pine_snow":
+			var snow := kind == "pine_snow"
+			var hgt := 2.6 + v * 0.35
+			branch(st, Vector3.ZERO, Vector3(0, hgt, 0), 0.1, 0.03, bark)
+			var tiers := 5 + v
+			var g := Color("#3a5a32").lightened(v * 0.03)
+			cyl(st, Vector3(0, hgt * 0.55, 0), 0.05, 0.55, hgt * 0.8, g.darkened(0.45), 6)   # dense core
+			for k in tiers:
+				var t := float(k) / float(tiers)
+				var y := 0.5 + t * (hgt - 0.6)
+				var rr := lerpf(1.0, 0.25, t) * rng.randf_range(0.9, 1.1)
+				var th := rr * 1.1
+				var ctr := Vector3(0, y, 0)
+				var a0 := rng.randf() * PI
+				for j in 3:
+					var a := a0 + j * PI / 3.0
+					var col := g if not (snow and k % 2 == 1) else Color("#dfe6ec")
+					card(st, Vector3(0, y + th * 0.25, 0), Vector3(cos(a), 0, sin(a)) * rr, Vector3(0, th * 0.5, 0), 1, col.darkened(j * 0.05), ctr - Vector3(0, 0.5, 0))
+			if snow:
+				cyl(st, Vector3(0, hgt * 0.98, 0), 0.0, 0.16, 0.3, Color("#e8eef5"), 6)
+		"palm":
+			var lean := rng.randf_range(-12.0, 12.0)
+			var p := Vector3.ZERO
+			var segs := 6
+			for i in segs:
+				var t := float(i + 1) / segs
+				var q := Vector3(sin(t * 1.5) * 0.25 * (1.0 + v * 0.2), t * (2.6 + v * 0.3), 0).rotated(Vector3.UP, deg_to_rad(lean * 10.0))
+				branch(st, p, q, 0.1 - t * 0.03, 0.09 - t * 0.03, Color("#8a6f4d").darkened(i * 0.03))
+				p = q
+			var top := p
+			sph(st, top, Vector3(0.16, 0.13, 0.16), Color("#6b5530"), 5)
+			for k in 3:
+				sph(st, top + Vector3(cos(k * 2.1) * 0.1, -0.1, sin(k * 2.1) * 0.1), Vector3(0.06, 0.06, 0.06), Color("#5a4a2a"), 4)
+			var nf := 8 + v
+			for k in nf:
+				var a := k * TAU / nf + rng.randf_range(-0.15, 0.15)
+				var d := Vector3(cos(a), 0, sin(a))
+				var side := Vector3(-sin(a), 0, cos(a))
+				var l := rng.randf_range(1.0, 1.3)
+				var droop := rng.randf_range(0.15, 0.45)
+				var lc := Color("#5d7a2e") if k % 2 == 0 else Color("#6f8a35")
+				var mid := top + d * l * 0.5 + Vector3(0, 0.12, 0)
+				var tip := top + d * l + Vector3(0, -droop, 0)
+				card(st, (top + mid) * 0.5, (mid - top) * 0.5, side * 0.3 + Vector3(0, 0.02, 0), 2, lc, top - Vector3(0, 1, 0), Vector2(0.0, 0.0), Vector2(0.5, 1.0))
+				card(st, (mid + tip) * 0.5, (tip - mid) * 0.5, side * 0.28, 2, lc.darkened(0.06), top - Vector3(0, 1, 0), Vector2(0.5, 0.0), Vector2(1.0, 1.0))
+		"scrub_tree":
+			var hues2 := [Color("#7a7d3c"), Color("#858a45"), Color("#6c7034")]
+			var lc2: Color = hues2[v % 3]
+			var top2 := Vector3(rng.randf_range(-0.1, 0.1), 0.55 + v * 0.08, 0)
+			branch(st, Vector3.ZERO, top2, 0.07, 0.045, Color("#6e5a40"))
+			var ctr2 := top2 + Vector3(0, 0.3, 0)
+			sph(st, ctr2, Vector3(0.35, 0.25, 0.35), lc2.darkened(0.4), 5)
+			for i in 3 + v:
+				var a := TAU * i / (3 + v) + rng.randf()
+				var e := top2 + Vector3(cos(a) * 0.4, rng.randf_range(0.15, 0.4), sin(a) * 0.4)
+				branch(st, top2, e, 0.035, 0.015, Color("#6e5a40"))
+				clump(st, e, rng.randf_range(0.6, 0.8), 3, lc2.lightened(rng.randf_range(-0.05, 0.08)), ctr2, rng)
+		"bush":
+			var lc3 := Color("#53702f").lightened(v * 0.04)
+			sph(st, Vector3(0, 0.18, 0), Vector3(0.35, 0.2, 0.32), lc3.darkened(0.4), 5)
+			for i in 2 + v:
+				var a := TAU * i / (2 + v) + rng.randf()
+				clump(st, Vector3(cos(a) * 0.18, 0.28, sin(a) * 0.18), rng.randf_range(0.5, 0.7), 3 if v != 1 else 0, lc3.lightened(rng.randf_range(-0.05, 0.08)), Vector3(0, 0.1, 0), rng)
+
+## M3.0 angular boulders: a few rotated, faceted blocks per rock with lighter sun-facing tops,
+## darker undersides and lichen / dust tints (replaces the old smooth blobs).
+static func _rock(st: SurfaceTool, small: bool, v: int) -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 4242 + v * 31 + (7 if small else 0)
+	var sc := 0.35 if small else 1.0
+	var base: Color = [Color("#9c8a72"), Color("#8f8678"), Color("#a39480")][v % 3]
+	var n := 2 if small else 3 + v % 2
+	for i in n:
+		var a := rng.randf() * TAU
+		var r := rng.randf_range(0.0, 0.45) * sc * (0.0 if i == 0 else 1.0)
+		var sz := Vector3(rng.randf_range(0.6, 1.0), rng.randf_range(0.45, 0.75), rng.randf_range(0.55, 0.9)) * sc * (1.0 if i == 0 else 0.65)
+		var c := Vector3(cos(a) * r, sz.y * 0.4, sin(a) * r)
+		var rot := Vector3(rng.randf_range(-18, 18), rng.randf_range(0, 360), rng.randf_range(-22, 22))
+		var col: Color = base.darkened(rng.randf_range(0.0, 0.15))
+		box(st, c, sz, col, rot)
+		box(st, c + Vector3(0, sz.y * 0.32, 0), sz * Vector3(0.78, 0.5, 0.78), col.lightened(0.12), rot + Vector3(0, 45, 0))   # bevelled cap
+		if not small and rng.randf() < 0.6:
+			box(st, c + Vector3(0, sz.y * 0.52, 0), sz * Vector3(0.5, 0.06, 0.45), Color("#7d8256"), rot)   # lichen / dust patch
+
+## Lit / dark window panes over a tower's glass bands (fixed hash per kind -> stable look) and
+## vertical mullions; ~lit_frac of the panes glow warm at night-ish exposure.
+static func _tower_windows(st: SurfaceTool, w: float, d: float, y0: float, y1: float, floors: int, seed_i: int, lit_frac := 0.3) -> void:
+	var fh := (y1 - y0) / floors
+	var cols_w := maxi(3, int(w / 0.45))
+	var cols_d := maxi(3, int(d / 0.45))
+	var mull := Color("#5d666c")
+	for face in 4:
+		var along_x := face < 2
+		var n := cols_w if along_x else cols_d
+		var span := (w if along_x else d) * 0.86
+		var off := (d if along_x else w) * 0.5 + 0.02
+		var sgn := 1.0 if face % 2 == 0 else -1.0
+		for k in range(1, n):
+			var a := -span * 0.5 + span * k / n
+			var pc := Vector3(a, (y0 + y1) * 0.5, sgn * off) if along_x else Vector3(sgn * off, (y0 + y1) * 0.5, a)
+			box(st, pc, Vector3(0.03, y1 - y0, 0.03), mull)
+		for f in floors:
+			var y := y0 + fh * (f + 0.55)
+			for k in n:
+				if absi(hash(Vector3i(seed_i * 13 + face, f, k))) % 1000 >= int(lit_frac * 1000.0):
+					continue
+				var a2 := -span * 0.5 + span * (k + 0.5) / n
+				var pc2 := Vector3(a2, y, sgn * (off + 0.002)) if along_x else Vector3(sgn * (off + 0.002), y, a2)
+				var sz := Vector3(span / n * 0.62, fh * 0.36, 0.012) if along_x else Vector3(0.012, fh * 0.36, span / n * 0.62)
+				var warm: String = ["#ffe2a0", "#fff1cc", "#ffd38a", "#dfe9ff"][absi(hash(Vector2i(f, k))) % 4]
+				box(st, pc2, sz, lit(warm))
+
+static func _roof_beacons(st: SurfaceTool, hw: float, hd: float, y: float) -> void:
+	for c in [Vector2(-hw, -hd), Vector2(hw, -hd), Vector2(hw, hd), Vector2(-hw, hd)]:
+		box(st, Vector3(c.x, y + 0.08, c.y), Vector3(0.1, 0.1, 0.1), Color("#ff3020", BLINK))
+
+## Sidewalk-height planter / kerb ring around a building footprint (city detail at street level).
+static func _plinth(st: SurfaceTool, w: float, d: float) -> void:
+	box(st, Vector3(0, 0.03, 0), Vector3(w + 0.1, 0.06, d + 0.1), Color("#a9a59c"))
 
 static func add_prim(st: SurfaceTool, prim: PrimitiveMesh, xf: Transform3D, col: Color) -> void:
 	var arr := prim.get_mesh_arrays()
@@ -97,44 +316,21 @@ static func make(kind: String) -> Mesh:
 		return _cache[kind]
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	# M3.0: trees come in TREE_VARIANTS shapes ("oak:2"); the bare kind is variant 0
+	var base := kind.get_slice(":", 0)
+	if base == "rock" or base == "rock_small":
+		_rock(st, base == "rock_small", int(kind.get_slice(":", 1)) if kind.contains(":") else 0)
+		st.index()
+		var rm := st.commit()
+		_cache[kind] = rm
+		return rm
+	if base in TREES:
+		_tree(st, base, int(kind.get_slice(":", 1)) if kind.contains(":") else 0)
+		st.index()
+		var tm := st.commit()
+		_cache[kind] = tm
+		return tm
 	match kind:
-		"palm":
-			var trunk := Color("#8a6f4d")
-			for i in 5:
-				var t := float(i) / 5.0
-				cyl(st, Vector3(sin(t * 1.6) * 0.18, 0.3 + i * 0.5, 0), 0.07 - t * 0.02, 0.09 - t * 0.02, 0.52, trunk.darkened(i * 0.04), 6, Vector3(0, 0, -8 - i * 3))
-			var top := Vector3(sin(1.6) * 0.2, 2.65, 0)
-			for k in 7:
-				var a := k * TAU / 7.0
-				var dir := Vector3(cos(a), 0, sin(a))
-				var leaf := Color("#5d7a2e") if k % 2 == 0 else Color("#6f8a35")
-				box(st, top + dir * 0.55 + Vector3(0, -0.12, 0), Vector3(1.1, 0.04, 0.24), leaf, Vector3(0, -rad_to_deg(a), -22))
-			sph(st, top, Vector3(0.14, 0.12, 0.14), Color("#6b5530"), 5)
-		"scrub_tree":
-			cyl(st, Vector3(0, 0.35, 0), 0.05, 0.08, 0.7, Color("#6e5a40"), 5)
-			sph(st, Vector3(0, 0.95, 0), Vector3(0.55, 0.4, 0.5), Color("#7a7d3c"), 7)
-			sph(st, Vector3(0.25, 0.78, 0.15), Vector3(0.38, 0.3, 0.35), Color("#6c7034"), 6)
-			sph(st, Vector3(-0.22, 0.8, -0.18), Vector3(0.36, 0.28, 0.34), Color("#858a45"), 6)
-		"pine", "pine_snow":
-			# M2.5 conifer (temperate / winter maps); the snow variant carries white caps on each tier
-			var snow := kind == "pine_snow"
-			cyl(st, Vector3(0, 0.35, 0), 0.07, 0.1, 0.7, Color("#5a4632"), 6)
-			for k in 4:
-				var y := 0.55 + k * 0.52
-				var r := 0.95 - k * 0.2
-				var g := Color("#2f4a2c").lightened(k * 0.03)
-				cyl(st, Vector3(0, y + 0.3, 0), 0.03, r, 0.78, g, 8)
-				if snow:
-					cyl(st, Vector3(0, y + 0.42, 0), 0.02, r * 0.78, 0.42, Color("#e8eef5"), 8)
-		"oak":
-			cyl(st, Vector3(0, 0.55, 0), 0.08, 0.13, 1.1, Color("#5c4a36"), 6)
-			cyl(st, Vector3(0.18, 1.05, 0.05), 0.04, 0.06, 0.5, Color("#5c4a36"), 5, Vector3(0, 0, -35))
-			sph(st, Vector3(0, 1.55, 0), Vector3(0.95, 0.7, 0.9), Color("#4c6b2f"), 8)
-			sph(st, Vector3(0.45, 1.35, 0.3), Vector3(0.6, 0.48, 0.55), Color("#577a34"), 7)
-			sph(st, Vector3(-0.4, 1.4, -0.3), Vector3(0.62, 0.5, 0.58), Color("#45622b"), 7)
-		"bush":
-			sph(st, Vector3(0, 0.22, 0), Vector3(0.5, 0.3, 0.45), Color("#53702f"), 6)
-			sph(st, Vector3(0.3, 0.16, 0.18), Vector3(0.32, 0.22, 0.3), Color("#4a6229"), 5)
 		"fence":
 			for fx in [-0.9, -0.3, 0.3, 0.9]:
 				box(st, Vector3(fx, 0.3, 0), Vector3(0.08, 0.6, 0.08), Color("#6e5a42"))
@@ -174,6 +370,10 @@ static func make(kind: String) -> Mesh:
 			box(st, Vector3(0.4, 0.35, 0.86), Vector3(0.45, 0.7, 0.04), Color("#5a4632"))
 			box(st, Vector3(-0.45, 0.6, 0.86), Vector3(0.4, 0.3, 0.04), Color("#2e3338"))
 			box(st, Vector3(-0.9, 0.3, -0.6), Vector3(0.35, 0.6, 0.35), Color("#8a6a3a"))
+			box(st, Vector3(-0.45, 0.6, 0.875), Vector3(0.32, 0.22, 0.01), lit("#ffd38a"))   # lit window
+			box(st, Vector3(0.4, 0.72, 0.88), Vector3(0.55, 0.04, 0.03), Color("#4a3a2a"))   # door lintel
+			box(st, Vector3(0.95, 0.75, 0.2), Vector3(0.12, 0.2, 0.35), Color("#9a9a96"))   # AC box
+			cyl(st, Vector3(-0.6, 1.25, -0.4), 0.03, 0.03, 0.4, Color("#6a6a66"), 5)   # flue
 		"gas_station":
 			var conc := Color("#c8bfae")
 			box(st, Vector3(-0.6, 0.6, 0), Vector3(1.6, 1.2, 1.8), conc)                           # shop
@@ -186,6 +386,10 @@ static func make(kind: String) -> Mesh:
 				box(st, Vector3(0.9, 0.3, zz * 0.5), Vector3(0.25, 0.6, 0.18), Color("#a83524"))     # pumps
 			box(st, Vector3(1.55, 1.6, 0.8), Vector3(0.08, 1.2, 0.08), Color("#5a5650"))
 			box(st, Vector3(1.55, 2.25, 0.8), Vector3(0.5, 0.35, 0.06), Color("#e7b23a"))           # sign
+			box(st, Vector3(1.55, 2.25, 0.835), Vector3(0.42, 0.26, 0.01), lit("#ffe08a"))
+			box(st, Vector3(0.9, 1.275, 0), Vector3(1.2, 0.01, 1.7), lit("#f4f0e0"))                 # canopy lights
+			box(st, Vector3(0.2, 0.5, 0), Vector3(0.01, 0.5, 1.1), lit("#fff1cc"))                  # lit shop window
+			box(st, Vector3(-0.6, 1.3, -0.5), Vector3(0.4, 0.14, 0.3), Color("#9a9a96"))
 		# ---------------------------------------------------------- M2.9 urban props
 		"tower_glass":   # 4 x 4 glass office tower with a podium, crown and rooftop plant
 			box(st, Vector3(0, 0.6, 0), Vector3(3.9, 1.2, 3.9), Color("#9c968a"))
@@ -196,6 +400,11 @@ static func make(kind: String) -> Mesh:
 			box(st, Vector3(0, 8.75, 0), Vector3(3.3, 0.3, 3.3), Color("#c9cdd0"))
 			box(st, Vector3(0.6, 9.1, 0.4), Vector3(1.2, 0.5, 1.0), Color("#8d9296"))
 			cyl(st, Vector3(-0.8, 9.6, -0.8), 0.02, 0.05, 1.6, Color("#4b4f52"), 5)
+			_tower_windows(st, 3.2, 3.2, 1.2, 8.6, 12, 1, 0.28)
+			_roof_beacons(st, 1.55, 1.55, 8.9)
+			box(st, Vector3(-0.8, 10.45, -0.8), Vector3(0.09, 0.09, 0.09), Color("#ff3020", BLINK))
+			box(st, Vector3(0, 0.55, 1.985), Vector3(3.0, 0.5, 0.02), lit("#fff1cc"))   # lit lobby
+			_plinth(st, 3.9, 3.9)
 		"tower_apart":   # 4 x 4 concrete apartment block: window bands, balconies, water tanks
 			_tower_bands(st, 3.8, 3.8, 0.0, 5.6, 8, Color("#c8bba0"), Color("#3d4650"))
 			for i in 7:
@@ -207,6 +416,12 @@ static func make(kind: String) -> Mesh:
 			for x in [-1.0, 0.9]:
 				cyl(st, Vector3(x, 6.05, 0.8), 0.28, 0.28, 0.55, Color("#d9d4c8"), 8)
 			box(st, Vector3(1.1, 0.4, 1.95), Vector3(0.8, 0.8, 0.06), Color("#5a4632"))
+			_tower_windows(st, 3.8, 3.8, 0.0, 5.6, 8, 2, 0.35)
+			_roof_beacons(st, 1.85, 1.85, 5.78)
+			for x in [-1.0, 0.9]:
+				cyl(st, Vector3(x, 6.5, 0.8), 0.02, 0.3, 0.35, Color("#a9a49a"), 8)   # tank roofs
+			box(st, Vector3(-1.1, 0.4, 1.95), Vector3(0.6, 0.35, 0.03), lit("#ffe2a0"))
+			_plinth(st, 3.8, 3.8)
 		"tower_office":   # stepped 4 x 4 office: three setbacks and an antenna mast
 			_tower_bands(st, 3.9, 3.9, 0.0, 3.0, 4, Color("#b7aa94"), Color("#33444f"))
 			_tower_bands(st, 3.0, 3.0, 3.0, 6.4, 5, Color("#a99c86"), Color("#34505f"))
@@ -214,10 +429,23 @@ static func make(kind: String) -> Mesh:
 			box(st, Vector3(0, 9.3, 0), Vector3(2.1, 0.2, 2.1), Color("#7d7468"))
 			cyl(st, Vector3(0, 10.6, 0), 0.03, 0.08, 2.6, Color("#4b4f52"), 6)
 			box(st, Vector3(0, 0.45, 1.96), Vector3(1.4, 0.9, 0.06), Color("#24303a"))
+			box(st, Vector3(0, 0.45, 1.995), Vector3(1.2, 0.7, 0.01), lit("#fff1cc"))
+			_tower_windows(st, 3.9, 3.9, 0.0, 3.0, 4, 3, 0.3)
+			_tower_windows(st, 3.0, 3.0, 3.0, 6.4, 5, 4, 0.3)
+			_tower_windows(st, 2.0, 2.0, 6.4, 9.2, 4, 5, 0.3)
+			_roof_beacons(st, 0.95, 0.95, 9.3)
+			box(st, Vector3(0, 11.9, 0), Vector3(0.1, 0.1, 0.1), Color("#ff3020", BLINK))
+			for c in [Vector2(-1.85, -1.85), Vector2(1.85, 1.85), Vector2(1.4, -1.4), Vector2(-1.4, 1.4)]:
+				box(st, Vector3(c.x, 3.12, c.y), Vector3(0.08, 0.08, 0.08), Color("#ff3020", BLINK))
+			_plinth(st, 3.9, 3.9)
 		"tower_slim":   # 3 x 3 residential tower with a red crown
 			_tower_bands(st, 2.7, 2.7, 0.0, 7.0, 10, Color("#d6cdb8"), Color("#3a4652"))
 			box(st, Vector3(0, 7.2, 0), Vector3(2.8, 0.4, 2.8), Color("#a3402e"))
 			box(st, Vector3(0, 7.6, 0), Vector3(1.2, 0.5, 1.2), Color("#8a8278"))
+			_tower_windows(st, 2.7, 2.7, 0.0, 7.0, 10, 6, 0.33)
+			_roof_beacons(st, 1.3, 1.3, 7.4)
+			box(st, Vector3(0, 7.25, 1.405), Vector3(2.4, 0.12, 0.01), lit("#ffe9c0"))   # crown light strip
+			_plinth(st, 2.7, 2.7)
 		"shops":   # 4 x 3 two-storey shop row with coloured awnings and signs
 			box(st, Vector3(0, 1.0, 0), Vector3(3.9, 2.0, 2.9), Color("#d2c3a2"))
 			box(st, Vector3(0, 2.05, 0), Vector3(4.0, 0.12, 3.0), Color("#8f8574"))
@@ -229,6 +457,15 @@ static func make(kind: String) -> Mesh:
 				box(st, Vector3(x, 1.4, 1.46), Vector3(0.6, 0.35, 0.04), Color("#3a4652"))
 				box(st, Vector3(x, 1.85, 1.47), Vector3(0.7, 0.18, 0.04), cols[(i + 2) % 4])
 			box(st, Vector3(1.2, 2.3, -0.6), Vector3(0.7, 0.4, 0.6), Color("#9a9a96"))
+			for i in 4:   # M3.0: lit shop fronts + glowing signs, upstairs lights, AC units
+				var x2 := -1.46 + i * 0.97
+				box(st, Vector3(x2, 0.42, 1.475), Vector3(0.7, 0.55, 0.01), lit(["#ffe2a0", "#fff1cc", "#ffd38a", "#e8f0ff"][i]))
+				box(st, Vector3(x2, 1.85, 1.49), Vector3(0.6, 0.12, 0.01), lit(["#ff6a50", "#7fd0ff", "#9cf08a", "#ffd060"][i]))
+				if i % 2 == 0:
+					box(st, Vector3(x2, 1.4, 1.475), Vector3(0.5, 0.25, 0.01), lit("#ffe2a0"))
+				box(st, Vector3(x2 + 0.25, 1.4, 1.52), Vector3(0.22, 0.14, 0.1), Color("#b7b7b0"))
+			box(st, Vector3(0, 2.13, 1.46), Vector3(4.0, 0.05, 0.08), Color("#6d6559"))   # parapet
+			_plinth(st, 3.9, 2.9)
 		"car_red", "car_white", "car_blue", "car_silver", "car_taxi", "car_van", "car_suv":
 			_car(st, Color(CAR_COL[kind]), kind)
 		"streetlight_double":

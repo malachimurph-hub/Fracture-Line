@@ -67,11 +67,25 @@ void fragment() {
 	for (int i = 0; i < 7; i++) {
 		if (w[i] > 0.01) {
 			vec2 uv = p * sc[i];
-			if (i == 4) uv += vec2(0.0, wpos.y * 0.25);
 			float tm = tile_mix(p, float(i));
 			vec2 uv2 = uv_alt(uv, float(i));
 			vec3 c = texture(t_albedo, vec3(uv, float(i)), bias).rgb;
 			if (tm > 0.02) c = mix(c, texture(t_albedo, vec3(uv2, float(i)), bias).rgb, tm);
+			if (i == 4) { // M3.0 mountains: triplanar rock on the faces (no smeared stretch), strata, crevices
+				vec3 bw = pow(abs(wnrm), vec3(3.0)); bw /= (bw.x + bw.y + bw.z);
+				if (bw.y < 0.95) {
+					vec3 cx = texture(t_albedo, vec3(ROT2 * wpos.zy * sc[i] * 1.3, 4.0), bias).rgb;
+					vec3 cz = texture(t_albedo, vec3(wpos.xy * sc[i] * 1.3 + 0.41, 4.0), bias).rgb;
+					c = c * bw.y + cx * bw.x + cz * bw.z;
+				}
+				float sn = vnoise(p * 0.35 + wpos.y * 0.6);
+				float strata = 0.5 + 0.5 * sin(wpos.y * 5.5 + sn * 3.5 + vnoise(p * 0.12) * 4.0);
+				c *= mix(0.86, 1.1, strata);
+				float crev = smoothstep(0.62, 0.8, vnoise(p * 1.7 + wpos.y * 1.3));
+				c *= 1.0 - crev * 0.28 * (1.0 - wnrm.y);
+				c = mix(c, c * vec3(1.08, 1.04, 0.98) + 0.03, smoothstep(0.75, 0.95, wnrm.y) * smoothstep(1.0, 2.2, wpos.y)); // sun-bleached ledges
+				c *= mix(0.88, 1.08, smoothstep(0.3, 3.0, wpos.y)); // darker foot, lighter summits
+			}
 			c *= mix(vec3(1.0), tint[i], desert_tint);
 			if (i == 3 && asphalt_dark > 0.0) { // M2.9: dark city asphalt, keeps the texture's grain
 				float la = dot(c, vec3(0.3, 0.59, 0.11));
@@ -88,6 +102,14 @@ void fragment() {
 				if (tm > 0.02) n0 = mix(n0, texture(t_nrao, vec3(uv2, float(i)), bias), tm);
 				nr += w[i] * n0;
 			}
+		}
+	}
+	// M3.0: flat ledges high on the massifs catch dust / dry grass (breaks up big rock fields)
+	if (w[4] > 0.05 && wpos.y > 0.9) {
+		float cap = smoothstep(0.86, 0.97, wnrm.y) * smoothstep(0.35, 0.7, vnoise(p * 0.5 + 5.0)) * w[4];
+		if (cap > 0.01) {
+			vec3 g = texture(t_albedo, vec3(p * sc[2], 2.0), bias).rgb * mix(vec3(1.0), vec3(1.15, 1.0, 0.7), desert_tint * dry_scrub);
+			col = mix(col, g, cap * 0.7);
 		}
 	}
 	// macro variation (baked, ~64 m period) against visible tiling

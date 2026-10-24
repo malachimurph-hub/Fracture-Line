@@ -64,6 +64,8 @@ func build(map: SimMap, tiles_path: String = "", env: Dictionary = {}) -> void:
 	prop_tint = env["prop_tint"]
 	prop_material = _prop_mat(0.0, 0.0, null)
 	prop_sway_material = _prop_mat(1.0, 0.0, null)
+	prop_sway_material.set_shader_parameter("leaf_tex", load(TEX + "props/leaf_atlas.png"))
+	prop_material.set_shader_parameter("leaf_tex", load(TEX + "props/leaf_atlas.png"))
 	prop_detail_material = _prop_mat(0.0, 0.55, load(TEX + "materials/concrete.png"))
 	prop_tower_material = _prop_mat(0.0, 0.55, load(TEX + "materials/concrete.png"))
 	heights = _corner_heights()
@@ -174,7 +176,43 @@ func height_at_tile(t: Vector2i) -> float:
 			return 1.0
 	return 0.0
 
+## Smooth value noise over tile space (bilinear over the per-tile hash), 0..1.
+func _vn(fx: float, fy: float) -> float:
+	var ix := floori(fx)
+	var iy := floori(fy)
+	var tx := fx - ix
+	var ty := fy - iy
+	tx = tx * tx * (3.0 - 2.0 * tx)
+	ty = ty * ty * (3.0 - 2.0 * ty)
+	return lerpf(lerpf(_h(ix, iy), _h(ix + 1, iy), tx), lerpf(_h(ix, iy + 1), _h(ix + 1, iy + 1), tx), ty)
+
+## Chebyshev distance (tiles) from each cliff tile to the nearest non-cliff tile; 0 off-cliff.
+func _cliff_distance() -> PackedInt32Array:
+	var dist := PackedInt32Array()
+	dist.resize(m.w * m.h)
+	var q: Array[Vector2i] = []
+	for y in m.h:
+		for x in m.w:
+			if m.ttype(Vector2i(x, y)) == SimMap.T.CLIFF:
+				dist[y * m.w + x] = 1 << 20
+			else:
+				dist[y * m.w + x] = 0
+				q.append(Vector2i(x, y))
+	var head := 0
+	while head < q.size():
+		var c: Vector2i = q[head]
+		head += 1
+		var dc := dist[c.y * m.w + c.x]
+		for dy in range(-1, 2):
+			for dx in range(-1, 2):
+				var n := c + Vector2i(dx, dy)
+				if m.in_bounds(n) and dist[n.y * m.w + n.x] > dc + 1:
+					dist[n.y * m.w + n.x] = dc + 1
+					q.append(n)
+	return dist
+
 func _corner_heights() -> PackedFloat32Array:
+	var cdist := _cliff_distance()
 	var hts := PackedFloat32Array()
 	hts.resize((m.w + 1) * (m.h + 1))
 	for y in m.h + 1:
@@ -198,7 +236,16 @@ func _corner_heights() -> PackedFloat32Array:
 					lo = minf(lo, height_at_tile(t))
 			var v := 0.0
 			if n_cliff == cnt:
-				v = 0.9 + _h(x, y) * 0.9 + _h(x / 3, y / 3) * 0.6     # rocky outcrop top
+				# M3.0 mountains: rise with distance into the massif + smooth multi-octave relief
+				# (value noise, not per-corner hash spikes), small crags on top
+				var dd := 99
+				for d2: Vector2i in [Vector2i(-1, -1), Vector2i(0, -1), Vector2i(-1, 0), Vector2i(0, 0)]:
+					var t2 := Vector2i(x, y) + d2
+					dd = mini(dd, cdist[t2.y * m.w + t2.x] if m.in_bounds(t2) else 99)
+				var rise := minf(float(dd), 4.0)
+				v = 0.85 + rise * 0.4 * (0.75 + _vn(x * 0.21, y * 0.21) * 0.5) + _vn(x * 0.37 + 11.0, y * 0.37) * 0.55 + _h(x, y) * 0.18
+			elif n_cliff == cnt - 1 and n_wet == 0:
+				v = 0.4 + _vn(x * 0.37, y * 0.37) * 0.25                 # M3.0: chamfer the inside corners of massifs (no stair steps)
 			elif n_wet == cnt:
 				v = lo
 			elif n_wet > 0:
@@ -394,6 +441,79 @@ func _build_lane_markings() -> void:
 	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(mmi)
 
+## M3.0 city detail: raised concrete sidewalks with kerbs along every road edge that meets a
+## non-road tile, solid white edge lines just inside the kerb, and zebra crossings where a
+## two-lane road meets a junction. One mesh per 32 x 32 chunk (frustum-culled), no shadows.
+func _build_sidewalks() -> void:
+	var road := func(x: int, y: int) -> bool: return m.in_bounds(Vector2i(x, y)) and (m.ttype(Vector2i(x, y)) == SimMap.T.ROAD or m.ttype(Vector2i(x, y)) == SimMap.T.BRIDGE)
+	var walk := Color("#9d9a92")
+	var kerb := Color("#c4c0b6")
+	var line := Color("#e8e6dc")
+	var sts := {}
+	var dirs := [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]
+	for y in m.h:
+		for x in m.w:
+			if not road.call(x, y):
+				continue
+			for d: Vector2i in dirs:
+				var nx := x + d.x
+				var ny := y + d.y
+				if not m.in_bounds(Vector2i(nx, ny)) or road.call(nx, ny):
+					continue
+				var nt := m.ttype(Vector2i(nx, ny))
+				if nt == SimMap.T.WATER or nt == SimMap.T.FORD:
+					continue
+				var ck := Vector2i(x >> 5, y >> 5)
+				if not sts.has(ck):
+					var st0 := SurfaceTool.new()
+					st0.begin(Mesh.PRIMITIVE_TRIANGLES)
+					sts[ck] = st0
+				var st: SurfaceTool = sts[ck]
+				var c := Vector3(x + 0.5 + d.x * 0.5, 0.0, y + 0.5 + d.y * 0.5)
+				var along := Vector3(1, 0, 0) if d.x == 0 else Vector3(0, 0, 1)
+				var out := Vector3(d.x, 0, d.y)
+				var sz := along * 1.0 + out.abs() * 0.34
+				PropMeshes.box(st, c + out * 0.17 + Vector3(0, 0.03, 0), sz + Vector3(0, 0.06, 0), walk)   # pavement slab
+				_flat(st, c + out * 0.02 + Vector3(0, 0.062, 0), along * 1.0 + out.abs() * 0.04, kerb)   # kerb stone
+				_flat(st, c - out * 0.09 + Vector3(0, 0.012, 0), along * 0.98 + out.abs() * 0.035, line)   # edge line
+				if (x + y) % 3 == 0:   # pavement joints
+					_flat(st, c + out * 0.19 + Vector3(0, 0.062, 0), out.abs() * 0.3 + along * 0.015, walk.darkened(0.15))
+	# zebra crossings: road tile with road on both sides along one axis and a junction ahead
+	for y in range(1, m.h - 1):
+		for x in range(1, m.w - 1):
+			if not road.call(x, y):
+				continue
+			var ck2 := Vector2i(x >> 5, y >> 5)
+			if not sts.has(ck2):
+				continue
+			var st2: SurfaceTool = sts[ck2]
+			# vertical road (kerbs left/right), junction below: stripes across x
+			if not road.call(x - 1, y) and road.call(x + 1, y) and not road.call(x + 2, y) and road.call(x, y + 1) and road.call(x - 1, y + 1) and road.call(x + 2, y + 1) and road.call(x, y - 1):
+				for k in 6:
+					_flat(st2, Vector3(x + 0.18 + k * 0.33, 0.013, y + 0.8), Vector3(0.16, 0, 0.36), line)
+			if not road.call(x, y - 1) and road.call(x, y + 1) and not road.call(x, y + 2) and road.call(x + 1, y) and road.call(x + 1, y - 1) and road.call(x + 1, y + 2) and road.call(x - 1, y):
+				for k in 6:
+					_flat(st2, Vector3(x + 0.8, 0.013, y + 0.18 + k * 0.33), Vector3(0.36, 0, 0.16), line)
+	for ck in sts:
+		var st3: SurfaceTool = sts[ck]
+		st3.index()
+		var mi := MeshInstance3D.new()
+		mi.name = "Sidewalks_%d_%d" % [ck.x, ck.y]
+		mi.mesh = st3.commit()
+		mi.material_override = prop_detail_material
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		add_child(mi)
+
+## Upward-facing quad (2 tris) of size s.x x s.z centred at c: road paint, kerb tops, joints.
+func _flat(st: SurfaceTool, c: Vector3, s: Vector3, col: Color) -> void:
+	var hx := s.x * 0.5
+	var hz := s.z * 0.5
+	for p: Vector3 in [Vector3(-hx, 0, -hz), Vector3(hx, 0, -hz), Vector3(hx, 0, hz), Vector3(-hx, 0, -hz), Vector3(hx, 0, hz), Vector3(-hx, 0, hz)]:
+		st.set_color(col)
+		st.set_normal(Vector3.UP)
+		st.set_uv(Vector2(c.x + p.x, c.z + p.z))
+		st.add_vertex(c + p)
+
 func _box(st: SurfaceTool, c: Vector3, s: Vector3, col: Color) -> void:
 	PropMeshes.box(st, c, s, col)
 
@@ -450,6 +570,8 @@ func _build_props(tiles_path: String) -> void:
 	for kind in by_kind:
 		urban = urban or (PropMeshes.FOOTPRINT.has(kind) and by_kind[kind].size() >= 8)
 	material.set_shader_parameter("asphalt_dark", 1.0 if urban else 0.0)
+	if urban:
+		_build_sidewalks()
 	for kind in by_kind:
 		var mesh: Mesh = PropMeshes.make(kind)
 		if mesh == null:
@@ -464,14 +586,18 @@ func _build_props(tiles_path: String) -> void:
 			mat = prop_detail_material
 		# M2.9: one MultiMesh per kind per 32x32-tile chunk so off-screen props are frustum-culled
 		# (dense urban maps carry thousands of cars / lights / towers)
+		# M3.0: trees are split over TREE_VARIANTS shapes by a position hash (more variety)
+		var nv: int = PropMeshes.TREE_VARIANTS if kind in PropMeshes.TREES or kind.begins_with("rock") else 1
 		var chunks := {}
 		for it in by_kind[kind]:
-			var ck := Vector2i(int(it[0]) >> 5, int(it[1]) >> 5)
+			var v := int(_h(int(it[0] * 3.0), int(it[1] * 5.0)) * nv) % nv
+			var ck := Vector3i(int(it[0]) >> 5, int(it[1]) >> 5, v)
 			if not chunks.has(ck):
 				chunks[ck] = []
 			chunks[ck].append(it)
 		for ck in chunks:
-			_multimesh(chunks[ck], mesh, mat, kind, "_%d_%d" % [ck.x, ck.y])
+			var vm: Mesh = mesh if ck.z == 0 else PropMeshes.make("%s:%d" % [kind, ck.z])
+			_multimesh(chunks[ck], vm, mat, kind, "_%d_%d_%d" % [ck.x, ck.y, ck.z])
 
 func _multimesh(items: Array, mesh: Mesh, mat: Material, kind: String, suffix: String = "") -> void:
 	var mm := MultiMesh.new()
