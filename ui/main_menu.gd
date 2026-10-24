@@ -1,11 +1,9 @@
 extends ScreenBase
 ## Main menu: Skirmish, Continue (suspended match), Settings, Credits/About, Quit.
 
-var _old_fps := 0
-
 func build() -> void:
 	get_tree().set_auto_accept_quit(true)
-	_add_battle_backdrop()
+	_add_backdrop()
 	var h := HBoxContainer.new()
 	body.add_child(h)
 	var left := VBoxContainer.new()
@@ -173,55 +171,35 @@ func _shadowed(l: Label, outline: int) -> Label:
 	l.add_theme_constant_override("shadow_outline_size", outline + 4)
 	return l
 
-## M2.6: live battle behind the menu (reduced-resolution 3D, 30 FPS cap while shown).
-## M2.7: 3D at 67% scale instead of a half-size viewport (sharper models), lighter veil.
-func _add_battle_backdrop() -> void:
-	if not Settings.g("menu_battle"):
-		GameSession.drop_menu_backdrop()
-		return
-	var reuse: Control = GameSession.take_menu_backdrop()   # M3.0.1: back from a menu screen
-	if reuse != null:
-		add_child(reuse)
-		move_child(reuse, 1)
-		_add_backdrop_overlays()
-		return
-	var svc := SubViewportContainer.new()
-	svc.name = "BattleBackdrop"
-	svc.stretch = true
-	svc.stretch_shrink = 1
-	svc.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	svc.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(svc)
-	move_child(svc, 1)               # above the flat background, below the menu
-	var vp := SubViewport.new()
-	vp.own_world_3d = true
-	vp.audio_listener_enable_3d = false
-	vp.msaa_3d = Viewport.MSAA_DISABLED
-	vp.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
-	vp.scaling_3d_scale = 0.67
-	svc.add_child(vp)
-	var mb := MenuBattle.new()
-	mb.name = "MenuBattle"
-	vp.add_child(mb)
-	_add_backdrop_overlays()
+## M3.1 (Malachi: "forgo the animated menu screen"): a static key-art battle scene behind the
+## menu, rendered offline at high resolution from the real in-game models (tools/render_keyart_m31.gd)
+## and shipped as one compressed image. The menu opens instantly and costs nothing per frame.
+const KEYART := "res://assets/ui/menu_keyart.jpg"
 
-func _add_backdrop_overlays() -> void:
-	# readability: dark gradient on the menu side, light veil elsewhere
+func _add_backdrop() -> void:
+	var art := TextureRect.new()
+	art.name = "KeyArt"
+	art.texture = load(KEYART)
+	art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	art.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(art)
+	move_child(art, 1)               # above the flat background, below the menu
+	# readability: light veil, darker on the button side, soft backing behind the title column
 	var veil := ColorRect.new()
-	veil.color = Color(0.03, 0.035, 0.045, 0.16)
+	veil.color = Color(0.03, 0.035, 0.045, 0.12)
 	veil.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	veil.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(veil)
 	move_child(veil, 2)
 	var side := ColorRect.new()
-	side.color = Color(0.03, 0.035, 0.045, 0.4)
+	side.color = Color(0.03, 0.035, 0.045, 0.36)
 	side.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	side.set_anchors_preset(Control.PRESET_FULL_RECT)
 	side.anchor_left = 0.6
 	add_child(side)
 	move_child(side, 3)
-	# M2.7b: soft dark backing behind the title column (fades out toward the middle and
-	# toward the top and bottom), so the title reads over snow without boxing it in
 	var grad := Gradient.new()
 	grad.set_color(0, Color(0.02, 0.025, 0.035, 0.62))
 	grad.set_color(1, Color(0.02, 0.025, 0.035, 0.0))
@@ -244,21 +222,6 @@ func _add_backdrop_overlays() -> void:
 	back.anchor_bottom = 0.88
 	add_child(back)
 	move_child(back, 4)
-	_old_fps = Engine.max_fps
-	Engine.max_fps = 30
-	_fps_set = true
-
-var _fps_set := false
-
-## M3.0.1: called by GameSession before the backdrop is parked (it leaves this scene).
-func release_backdrop() -> void:
-	if _fps_set:
-		Engine.max_fps = _old_fps
-		_fps_set = false
-
-func _exit_tree() -> void:
-	if _fps_set:
-		Engine.max_fps = _old_fps
 
 func _continue() -> void:
 	var d := SaveSystem.load_suspend()

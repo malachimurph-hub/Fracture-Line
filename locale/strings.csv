@@ -70,7 +70,6 @@ OPT_HIGH,High
 OPT_MEDIUM,Medium
 SET_HOLD_ACTION,Hold + release does
 SET_HAPTICS,Haptics
-SET_MENU_BATTLE,Battle behind the main menu
 SET_INERTIA,Camera inertia
 SET_EDGE_PAN,Edge panning (mouse)
 PAUSE_TITLE,Paused

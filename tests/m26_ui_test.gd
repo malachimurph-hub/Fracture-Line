@@ -326,41 +326,22 @@ func test_menu_layout(mm: Node) -> void:
 		check("menu logo shown, fits the left column, clear of the buttons", lr.size.y >= 120.0 and lr.end.x <= right_x and get_viewport().get_visible_rect().grow(0.5).encloses(lr),
 			"logo %s buttons_x %.0f" % [lr, right_x])
 
-func test_menu_battle() -> void:
+func test_menu_battle() -> void:   # M3.1: static key art replaced the live battle
 	if m != null:
 		m.queue_free()
 		m = null
 	await frames(2)
+	var t0 := Time.get_ticks_msec()
 	var mm: Node = (load("res://ui/main_menu.tscn") as PackedScene).instantiate()
 	add_child(mm)
-	await secs(1.0)
+	await frames(2)
+	var open_ms := Time.get_ticks_msec() - t0
 	await test_menu_layout(mm)
-	var bg: Node = mm.find_child("MenuBattle", true, false)
-	check("main menu has a live battle behind it", bg != null)
-	if bg == null:
-		return
-	var wb := 0
-	while (bg.runner == null or bg._building) and wb < 3000:   # M3.0.1: built over a few frames
-		await get_tree().process_frame
-		wb += 1
-	var t0: int = bg.runner.sim.tick
-	var c0: Vector3 = bg.cam.focus
-	# wait for ~25 s of game time (the box renders in software, so wall time varies)
-	var waited := 0.0
-	while bg.runner.sim.tick < t0 + 500 and waited < 120.0:
-		await secs(1.0)
-		waited += 1.0
-	check("menu battle sim runs and units fight", bg.runner.sim.tick > t0 + 60 and bg.shots_seen > 0, "tick %d->%d shots %d" % [t0, bg.runner.sim.tick, bg.shots_seen])
-	check("menu camera drifts", bg.cam.focus.distance_to(c0) > 0.5, bg.cam.focus.distance_to(c0))
-	var facs := {}
-	for id in bg.runner.sim.ids:
-		var e: SimEntity = bg.runner.sim.ents[id]
-		if e.kind == SimEntity.Kind.UNIT:
-			facs[String(e.def_id).split("_")[0]] = true
-	check("menu battle fields roster units from the content (not a hard-coded list)", bg.pool_size() >= 10 and facs.size() >= 2, "pool %d facs %s map %s" % [bg.pool_size(), facs.keys(), bg.runner.sim.map_id])
-	await shot("m26_main_menu_battle")
-	await secs(4.0)
-	await shot("m26_main_menu_battle_2")
+	var art: TextureRect = mm.find_child("KeyArt", true, false)
+	check("main menu shows the key-art battle image", art != null and art.texture != null and art.texture.get_width() >= 2560, art.texture.get_size() if art != null and art.texture != null else "none")
+	check("no live battle behind the menu", mm.find_children("*", "SubViewport", true, false).is_empty())
+	check("menu opens quickly", open_ms < 1500, "%d ms" % open_ms)
+	await shot("m31_main_menu_keyart")
 	mm.queue_free()
 
 ## M2.7: credits wrap inside the panel and scroll only vertically (nothing cut off or sideways).

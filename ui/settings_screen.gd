@@ -42,7 +42,6 @@ func build() -> void:
 	_choice(b, "SET_TEX_QUALITY", "texture_quality", ["high", "medium"])
 	_choice(b, "SET_HOLD_ACTION", "hold_action", ["attack_move", "move"])
 	_toggle(b, "SET_HAPTICS", "haptics")
-	_toggle(b, "SET_MENU_BATTLE", "menu_battle")
 	_toggle(b, "SET_INERTIA", "camera_inertia")
 	_toggle(b, "PAUSE_HEALTHBARS", "always_health_bars")
 	_toggle(b, "PAUSE_PERF", "perf_overlay")
