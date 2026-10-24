@@ -414,8 +414,8 @@ def check_unit_voices_male():
 check_unit_voices_male()
 EVENT_SPEED = {"select": 1.0, "move": 1.06, "attack": 1.1, "under_fire": 1.18, "created": 1.0, "veteran": 0.98, "build": 1.0, "harvest": 1.0, "garrison": 1.06}
 
-FACTIONS = {"eu": {"label": "EU Alliance", "units": EU_UNITS, "announcer": ANNOUNCER_EU, "ann_folder": "announcer", "radio": "eu"},
-            "tpla": {"label": "TPLA (The Peoples Liberation Army, working name)", "units": TPLA_UNITS, "announcer": ANNOUNCER_TPLA, "ann_folder": "announcer_tpla", "radio": "tpla"},
+FACTIONS = {"eu": {"label": "Germany", "units": EU_UNITS, "announcer": ANNOUNCER_EU, "ann_folder": "announcer", "radio": "eu"},
+            "tpla": {"label": "Iran", "units": TPLA_UNITS, "announcer": ANNOUNCER_TPLA, "ann_folder": "announcer_tpla", "radio": "tpla"},
             "us": {"label": "United States", "units": US_UNITS, "announcer": ANNOUNCER_US, "ann_folder": "announcer_us", "radio": "us"}}
 
 def ann_rule(fac, ev):
@@ -443,7 +443,7 @@ def build_manifest():
         for uid, sib in VOICE_ALIASES.get(f, {}).items():
             u = fd["units"][sib]
             fac[f]["units"][uid] = {"folder": u["folder"], "events": u["events"], "alias_of": sib}
-    for later, label in [("ecc", "Eastern Communist Coalition (ECC)")]:
+    for later, label in [("ecc", "Russia")]:
         fac[later] = {"label": label, "radio": True, "units": {}, "later": True}
     ann_events = {}
     for f in FACTIONS:

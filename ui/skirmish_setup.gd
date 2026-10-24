@@ -146,7 +146,7 @@ func _build_rows() -> void:
 		fac.fit_to_longest_item = false
 		fac.clip_text = true
 		for f in FACTIONS:
-			fac.add_item(tr(f[1]) + ("" if f[2] else " — " + tr("LOBBY_COMING_LATER")))
+			fac.add_icon_item(FactionEmblem.flag_texture(StringName(f[0])), tr(f[1]) + ("" if f[2] else " — " + tr("LOBBY_COMING_LATER")))   # M3.0 flag icon
 			fac.set_item_disabled(fac.item_count - 1, not f[2])
 		var fi := 0
 		for k in FACTIONS.size():

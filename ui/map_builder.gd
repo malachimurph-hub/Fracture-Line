@@ -236,7 +236,7 @@ func asset_categories() -> Array:
 	for k in MapBuilderCanvas.PROP_LABELS:
 		props.append({"t": "prop", "kind": k, "label": MapBuilderCanvas.PROP_LABELS[k]})
 	cats.append(["City & scenery props", props])
-	for f in [[&"us", "US"], [&"eu", "EU"], [&"tpla", "TPLA"]]:
+	for f in [[&"us", tr("FACTION_US")], [&"eu", tr("FACTION_EU")], [&"tpla", tr("FACTION_TPLA")]]:
 		var fd: Dictionary = Content.faction(f[0])
 		var us: Array = []
 		for id in fd["units"]:

@@ -1,5 +1,5 @@
 class_name UiTheme
-## Code-built theme (EU Alliance: gunmetal + gold + cyan). Sizes are in dp (logical units).
+## Code-built theme (Germany, id eu: gunmetal + gold + cyan). Sizes are in dp (logical units).
 
 const GUNMETAL := Color("#23272e")
 const GUNMETAL_LIGHT := Color("#343a44")
@@ -58,8 +58,8 @@ static func get_theme() -> Theme:
 
 # ---------------------------------------------------------------- M2.6 faction HUD themes
 ## Zero Hour gives each faction its own command-bar look. Ours (Malachi, M2.6):
-##  EU Alliance  - gunmetal + gold + cyan, rounded bevelled frames (the base theme)
-##  TPLA         - rust / umber / sand, square riveted frames, slanted buttons, heavy stencil-ish font
+##  Germany (eu) - gunmetal + gold + cyan, rounded bevelled frames (the base theme)
+##  Iran (tpla)  - rust / umber / sand, square riveted frames, slanted buttons, heavy stencil-ish font
 ##  US           - navy + steel blue + white, chamfer-like tight corners, wide-spaced font
 const PALETTES := {
 	&"eu": {"bg": Color(0.09, 0.10, 0.12, 0.96), "btn": Color("#343a44"), "btn_hover": Color("#3f4652"), "btn_pressed": Color("#1a1d22"),

@@ -35,4 +35,9 @@
   - M2.8 saves with removed TPLA units may not load.
   - The Superweapons lobby option is hidden.
   - Map load is about 0.5 s slower on large maps because of the splat blur.
+  - Germany, Iran and Russia still use the old internal ids `eu_`, `tpla_` and `ecc_` (ids, file names,
+    folders, the faction key in saves and Map Builder maps). This is on purpose, so saves and maps keep working.
+  - Several Germany/Iran units are still based on other countries' equipment, and Iran still uses militia/insurgent
+    framing. The nation audit lists them, and remodels come later.
+  - Iran voices still have Persian accents. Faction voice lines do not say the nation names.
   - Older items: `docs/m2_8/KNOWN_ISSUES.md`.

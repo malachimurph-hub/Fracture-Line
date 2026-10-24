@@ -65,3 +65,13 @@ Naming rule: real military designations are used in game text; company and brand
 ## Also
 - In-game text no longer uses brand names: the TPLA "Mirage Fighter" is now the **Delta Fighter**, and
   "Toyota-style" was dropped from the Technical's description.
+
+## D. Factions become single nations
+- **EU Alliance is now Germany**, **TPLA is now Iran**, and the planned **ECC is now Russia** (still "coming later"
+  in the lobby). The US is unchanged. This leaves room for more nations later.
+- Updated the faction names in the main menu subtitle, skirmish lobby, Map Builder palette headings and HUD, plus
+  the descriptions and tooltips that named the old factions. "Outside the EU Grid" is now "Outside the power grid".
+- Faction badges are now simple roundels in the national flag colours: black-red-gold for Germany,
+  green-white-red with a red centre dot for Iran, white-blue-red for Russia. The US star roundel is unchanged.
+  The lobby faction picker shows a small flag next to each name. All of these are original, simple designs.
+- Units and models are unchanged for now. Internal ids (`eu_`, `tpla_`, `ecc_`) stay the same.

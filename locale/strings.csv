@@ -1,6 +1,6 @@
 keys,en
 APP_TITLE,RULES OF ENGAGEMENT
-MENU_SUBTITLE,Skirmish command — EU Alliance
+MENU_SUBTITLE,Skirmish command — Germany
 MENU_BUILD,"Milestone %s · original game, not affiliated with any other RTS"
 MENU_SKIRMISH,Skirmish
 MENU_CONTINUE,Continue suspended match
@@ -39,7 +39,7 @@ LOBBY_ERR_COLOR,Two players have the same color — pick different colors.
 LOBBY_ERR_SPAWN,Two players have the same start position.
 LOBBY_ERR_MAP,Map missing.
 MAP_VARNO_CROSSING,Varno Crossing
-FACTION_EU,EU Alliance
+FACTION_EU,Germany
 FACTION_PACT,Iron Pact
 FACTION_COALITION,Free Coalition
 COLOR_BLUE,Blue
@@ -191,7 +191,7 @@ SET_VOICE_STATUS,"Voice lines: %d of %d recorded by you, %d AI-generated (offlin
 REASON_BLOCKED,Blocked
 REASON_ENEMY,Too close to enemies
 REASON_FUNDS,Not enough money
-REASON_GRID,Outside the EU Grid
+REASON_GRID,Outside the power grid
 REASON_SHROUD,Unexplored ground — scout it first
 REASON_UNREACHABLE,No path for the selected builder (water or cliffs in the way)
 REASON_INVALID,Can't do that
@@ -252,21 +252,21 @@ POWER_OVERCHARGE,Shield Overcharge
 POWER_OVERCHARGE_DESC,Your units in the area gain a strong temporary shield.
 POWER_BLACKOUT,Grid Blackout
 POWER_BLACKOUT_DESC,[STUB] Not implemented yet.
-CREDITS_BODY,"RULES OF ENGAGEMENT (formerly FRACTURE LINE) — Milestone 2.9 (skirmish: EU Alliance, TPLA and United States).
+CREDITS_BODY,"RULES OF ENGAGEMENT (formerly FRACTURE LINE) — Milestone 2.9 (skirmish: Germany, Iran and United States).
 Design, code, procedural 3D models (M2.6 model upgrade with automatic LODs), weathering and surface-detail shaders, decals, effects, maps, faction HUD themes, UI and text: original work made for Malachi Murphy with Grok Bot. US unit names are original and only inspired by real equipment roles.
 Textures: ambientCG (ambientcg.com), CC0 1.0 public domain — Ground097, Ground109, Grass004, Rock063, Asphalt033, Gravel035, Concrete034, CorrugatedSteel005, Rust004; winter: Snow006, Ground054, Snow004, Rock035, Ice002, Snow010A; temperate: Grass001, Ground037, Rock023, PavingStones130; arid: Ground090, Ground102, Rock061, Ground079S.
 Soldier models and animations: Quaternius, ""Toon Shooter Game Kit"" (quaternius.com), CC0 1.0 public domain — recoloured and re-equipped per faction, re-proportioned, decimated and baked to vertex animation.
 Sound effects and music (menu ""Breach Point""; battle shuffle ""Iron Convoy"", ""Dust Devils"", ""Last Light Rising"", ""Steel Rain""): original, synthesized for this game (no samples, no third-party audio).
 Voices (AI-generated, original lines, no real person's voice cloned):
-• EU and US: Kokoro-82M speech model (hexgrad, Apache-2.0) via kokoro-onnx (MIT); phonemes by eSpeak NG (GPL-3.0 build tool, only audio ships).
-• TPLA (English with Middle Eastern accents): Chatterbox Multilingual (Resemble AI, MIT; output carries Resemble's Perth audio watermark), prompted with synthetic speakers derived from Piper Persian voices amir, ganji and reza_ibrahim (CC0 datasets, but fine-tuned from Piper's research-only ""lessac"" voice — licence not clearly permissive; these TPLA voices will be replaced in a later update; Piper GPL-3.0 build tool only). Checked with faster-whisper / Whisper (MIT).
+• Germany and US: Kokoro-82M speech model (hexgrad, Apache-2.0) via kokoro-onnx (MIT); phonemes by eSpeak NG (GPL-3.0 build tool, only audio ships).
+• Iran (English with Persian accents): Chatterbox Multilingual (Resemble AI, MIT; output carries Resemble's Perth audio watermark), prompted with synthetic speakers derived from Piper Persian voices amir, ganji and reza_ibrahim (CC0 datasets, but fine-tuned from Piper's research-only ""lessac"" voice — licence not clearly permissive; these Iran voices will be replaced in a later update; Piper GPL-3.0 build tool only). Checked with faster-whisper / Whisper (MIT).
 US Scout Sniper voiced by Malachi Murphy.
 Your own recordings in audio/voice replace the AI voices.
 Inspired by the classic base-building RTS genre; no names, art, audio or text from any other game are used.
 UI font: Godot's built-in default font. Title font: Black Ops One by James Grieshaber and Eben Sorkin (SIL Open Font License 1.1, ui/fonts/BlackOpsOne-OFL.txt). Logo badge lettering: Barlow Semi Condensed Black by Jeremy Tribby (SIL Open Font License 1.1; baked into the logo image only)."
 CREDITS_ENGINE,"Built with Godot Engine %s (MIT license, see below)."
-FACTION_TPLA,TPLA
-FACTION_TPLA_FULL,The Peoples Liberation Army
+FACTION_TPLA,Iran
+FACTION_TPLA_FULL,Islamic Republic of Iran
 UNIT_TPLA_MILITIA,Rifleman
 UNIT_TPLA_ROCKET_CELL,Rocket Man
 UNIT_TPLA_RATTLER,Technical
@@ -303,7 +303,7 @@ HUD_STEALTHED,Hidden
 HUD_CRATE,Salvage crate
 HUD_CRATE_VALUE,Worth $%d or one salvage tier
 FACTION_US,United States
-FACTION_ECC,Eastern Communist Coalition (ECC)
+FACTION_ECC,Russia
 HUD_IDLE_BUILDER,Idle %s
 HUD_MENU,Menu
 HUD_EVACUATE_TIP,Everyone in the tunnel network climbs out here
@@ -438,7 +438,7 @@ ALERT_AIR_SUPPORT,JTAC: air support inbound
 MAP_OCHRE,Ochre Wells
 MAP_OCHRE_DESC,"Arid. A walled market town in a dry basin, ringed by a sandy wadi you can ford almost anywhere, with deep oasis pools on the diagonals. Mesas and salt flats outside; garrisonable town blocks inside."
 UNIT_TPLA_BACKHOE,Backhoe
-UNIT_TPLA_BACKHOE_DESC,Construction backhoe. Builds and repairs TPLA structures. Does not gather supplies.
+UNIT_TPLA_BACKHOE_DESC,Construction backhoe. Builds and repairs Iranian structures. Does not gather supplies.
 UNIT_TPLA_PICKUP,Supply Pickup
 UNIT_TPLA_PICKUP_DESC,White civilian pickup that hauls supplies to a Supply Stash. Cannot build.
 UNIT_TPLA_MILITIA_DESC,"AK-74 insurgent rifleman. Cheap, single soldier, can garrison."
@@ -457,9 +457,9 @@ UNIT_TPLA_F16_DESC,F-16 Block 60-based light bomber. Uses 2 airfield slots. Need
 UNIT_TPLA_MIRAGE,Delta Fighter
 UNIT_TPLA_MIRAGE_DESC,Delta-wing multirole fighter: air-to-air missiles and light ground-attack rockets. Uses 2 airfield slots.
 UNIT_TPLA_MIG29,Fulcrum Interceptor
-UNIT_TPLA_MIG29_DESC,"MiG-29-based interceptor: the best TPLA air-to-air fighter, no ground attack. Uses 2 airfield slots."
+UNIT_TPLA_MIG29_DESC,"MiG-29-based interceptor: the best Iranian air-to-air fighter, no ground attack. Uses 2 airfield slots."
 BLD_TPLA_AIRFIELD,Airfield
-BLD_TPLA_AIRFIELD_DESC,Builds TPLA jets. 6 parking slots; every TPLA jet uses 2. Jets land here to rearm.
+BLD_TPLA_AIRFIELD_DESC,Builds Iranian jets. 6 parking slots; every jet uses 2. Jets land here to rearm.
 MAP_CRESCENT,Crescent City
 MAP_CRESCENT_DESC,"Desert metropolis. A dense downtown of glass and office towers fills the ground between the four bases: a street grid choked with parked cars, a wide central boulevard, plazas with supplies and garrisonable blocks."
 MAP_RIVERSIDE,Riverside Metro

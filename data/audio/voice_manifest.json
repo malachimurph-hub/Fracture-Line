@@ -41,7 +41,7 @@
  },
  "factions": {
   "eu": {
-   "label": "EU Alliance",
+   "label": "Germany",
    "radio": true,
    "radio_style": "eu",
    "units": {
@@ -243,7 +243,7 @@
    }
   },
   "tpla": {
-   "label": "TPLA (The Peoples Liberation Army, working name)",
+   "label": "Iran",
    "radio": true,
    "radio_style": "tpla",
    "units": {
@@ -581,7 +581,7 @@
    }
   },
   "ecc": {
-   "label": "Eastern Communist Coalition (ECC)",
+   "label": "Russia",
    "radio": true,
    "units": {},
    "later": true

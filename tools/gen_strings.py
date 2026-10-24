@@ -3,7 +3,7 @@
 import csv, os
 S = {
 "APP_TITLE": "RULES OF ENGAGEMENT",
-"MENU_SUBTITLE": "Skirmish command — EU Alliance",
+"MENU_SUBTITLE": "Skirmish command — Germany",
 "MENU_BUILD": "Milestone %s · original game, not affiliated with any other RTS",
 "MENU_SKIRMISH": "Skirmish", "MENU_CONTINUE": "Continue suspended match", "MENU_SETTINGS": "Settings",
 "MENU_CREDITS": "Credits / About", "MENU_QUIT": "Quit", "BACK": "Back", "ON": "On", "OFF": "Off",
@@ -24,7 +24,7 @@ S = {
     "MAP_HARROW_DESC": "Temperate. A canal runs through a small city: three bridges and a weir, a street grid of garrisonable blocks, farmland and oak woods around the bases.",
     "MAP_VARNO_DESC": "Desert. A river town with three bridges and two fords, oil derricks and supply piles by the town.",
     "LOBBY_MAP": "Map",
-"FACTION_EU": "EU Alliance", "FACTION_PACT": "Iron Pact", "FACTION_COALITION": "Free Coalition",
+"FACTION_EU": "Germany", "FACTION_PACT": "Iron Pact", "FACTION_COALITION": "Free Coalition",
 "COLOR_BLUE": "Blue", "COLOR_RED": "Red", "COLOR_YELLOW": "Yellow", "COLOR_PURPLE": "Purple", "COLOR_GREEN": "Green", "COLOR_ORANGE": "Orange",
 "STUB_SUPERWEAPONS": "[STUB] No superweapon structures exist in M1; this toggle is saved but has no effect yet.",
 "STUB_TRANSPORT": "[STUB] Wolfhound transport (carry infantry) is not implemented in M1.",
