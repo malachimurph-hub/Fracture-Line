@@ -59,7 +59,8 @@
     - Voices: generation stopped at the ~20 minute cap after 15 renders. Only 5 Russian-accent lines were kept
       (T-90M, Machine Gunner). The rest reuse Iran lines with Persian accents. The BTR and Typhoon share one voice
       set. Russia uses the US announcer.
-    - AI-vs-AI: when Russia plays Iran as player 0, two of three test matches ran to the 30-minute timeout
-      against Iran's spread-out base. Russia was ahead in one of them. All other test matches ended in a win.
+    - AI-vs-AI (medium/hard): Russia won 5 of 8 test matches and lost 1 (to Iran). The other 2 ran to the
+      30-minute timeout, both Russia (player 0) vs Iran, against Iran's spread-out base. Russia was ahead in one
+      of them.
   - Iran voices still have Persian accents. Faction voice lines do not say the nation names.
   - Older items: `docs/m2_8/KNOWN_ISSUES.md`.

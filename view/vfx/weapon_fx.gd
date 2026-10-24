@@ -23,6 +23,10 @@ const CLASSES := {
 	&"us_chaingun": "autocannon", &"us_bradley_25mm": "autocannon", &"us_tank_gun": "cannon", &"us_javelin": "missile", &"us_hellfire": "missile",
 	&"us_stinger": "missile", &"us_aam": "missile", &"us_sam": "quad", &"us_howitzer": "artillery",
 	&"us_firebase_gun": "artillery", &"us_gbu": "mortar",
+	# M3.0 F Russia
+	&"ecc_ak74": "rifle", &"ecc_ak12": "rifle", &"ecc_pkm": "mg", &"ecc_kord": "mg", &"ecc_kord_rws": "mg",
+	&"ecc_btr_30mm": "autocannon", &"ecc_bunker_gun": "autocannon", &"ecc_125mm": "cannon", &"ecc_152mm": "artillery",
+	&"ecc_rpg7": "rocket", &"ecc_grenade": "grenade", &"ecc_zu23": "quad", &"ecc_sam": "missile",
 }
 const BY_KIND := {"tracer": "rifle", "tracer_heavy": "mg", "shell": "cannon", "missile": "missile",
 	"rocket": "rocket", "rocket_salvo": "salvo", "tracer_quad": "quad", "flak": "flak", "grenade": "grenade",

@@ -121,6 +121,7 @@ the skirmish AI. Internal ids stay `ecc_`. The default paint is Russian green ca
 - **AI:** new "Steppe" personality. It opens Power, Depot, Barracks, Power, Factory, Bunker, then leans on the T-90M.
   It caps infantry, Machine Gunners, Infiltrators and Msta so the army stays tank-led, and it buys and uses the
   four powers.
+- **Weapon effects:** all Russian weapons have tracer, shell, rocket and missile effect classes.
 - **UI:** Russia theme (dark olive, red frame, gold accents), Map Builder colour, weathering preset.
 - **Voices:** 97 lines under `audio/voice_ai/ecc/`. Most are reused male Iran lines that don't say a unit or
   faction name. There are 5 new Russian-accent Chatterbox lines for the T-90M and Machine Gunner. The announcer
