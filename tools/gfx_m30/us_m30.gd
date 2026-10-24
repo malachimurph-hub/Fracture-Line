@@ -33,12 +33,12 @@ static func V8():
 static func jobs() -> Dictionary:
 	var u = U()
 	return {
-		"us_command": func() -> void: u._make("command", Vector2(4, 4), 1.2, _hq),
+		"us_command": func() -> void: u._make("command", Vector2(4, 4), 1.2, _hq),   # M3.0.1: command compound with vehicle bay
 		"us_supply_center": func() -> void: u._make("supply_center", Vector2(3, 3), 1.1, _depot),
 		"us_barracks": func() -> void: u._make("barracks", Vector2(3, 3), 1.3, _barracks),
 		"us_garage": func() -> void: u._make("garage", Vector2(4, 4), 1.55, _motor_pool),
 		"us_reactor": func() -> void: u._make("reactor", Vector2(3, 3), 2.1, _reactor_white),
-		"us_strategy": func() -> void: u._make("strategy", Vector2(3, 3), 2.0, _office),
+		"us_strategy": func() -> void: u._make("strategy", Vector2(3, 3), 1.0, _pentagon),   # M3.0.1: Pentagon-style (was the office block, _office)
 		"us_airfield": func() -> void: u._make("airfield", Vector2(8, 8), 2.2, _airfield_lit),
 		"us_drop_zone": func() -> void: u._make("drop_zone", Vector2(3, 3), 1.0, _data_center),
 		"us_firebase": func() -> void: u._make("firebase", Vector2(2, 2), 0.9, _m777_pad, _m777, Vector3(0, Y0 + 0.02, 0)),
@@ -87,12 +87,103 @@ static func _win_grid(g, c: Vector3, w: float, h: float, cols: int, rows: int, t
 static func _face_t(yaw_deg: float, at: Vector3) -> Transform3D:
 	return Transform3D(Basis(Vector3.UP, deg_to_rad(yaw_deg)), at)
 
-# ================================================================== HQ (Pentagon-style)
-## Five-sided ring of stepped office wings round a courtyard: limestone facade with window bands,
-## inner ring a storey higher, courtyard with a small pavilion, flag and a comms mast. 4 x 4 pad.
+# ================================================================== HQ (military command compound)
+## M3.0.1 (Malachi: dozers coming out of a Pentagon looked odd): a low hardened command building
+## in desert-tan concrete with battered walls, slit windows, roof comms (lattice mast, whip
+## antennas, satcom dish), a flag, blast walls, and a large vehicle bay on the front whose open
+## door lines up with the sim's exit tile (rot 0: local x +0.5, front +z), so the dozers drive
+## out of it. 4 x 4 pad, footprint and gameplay unchanged; rooftop beacons kept.
+const TAN := "#c9b48a"
+const TAN_D := "#a8956c"
+const TAN_L := "#dccaa2"
+const CONC := "#b3ab9a"
 static func _hq(g) -> void:
+	# apron + drive-out lane to the exit tile
+	g.color(CONC, Geo.CONCRETE)
+	g.cbox(Vector3(0, Y0 + 0.01, 0), Vector3(3.8, 0.02, 3.8), 0.01)
+	g.color("#8f897c", Geo.CONCRETE)
+	g.box(Vector3(0.5, Y0 + 0.022, 1.45), Vector3(1.0, 0.006, 0.95))
+	g.color("#e8d34a", Geo.PAINT)
+	for x in [0.02, 0.98]:
+		g.box(Vector3(x, Y0 + 0.027, 1.45), Vector3(0.03, 0.004, 0.95))
+	# main command block: low, battered (sloped) walls, parapet roof
+	var by0 := Y0 + 0.02
+	var bh := 0.55
+	var plan := [Vector2(-1.75, -1.6), Vector2(1.6, -1.6), Vector2(1.6, 0.55), Vector2(-1.75, 0.55)]
+	g.color(TAN, Geo.CONCRETE)
+	g.plan_loft(plan, by0, by0 + bh, Vector2(0.95, 0.92), Vector2(-0.004, -0.04))
+	g.color(TAN_D, Geo.CONCRETE)
+	g.cbox(Vector3(-0.075, by0 + bh + 0.02, -0.565), Vector3(3.2, 0.05, 1.95), 0.01)   # roof slab
+	g.color(TAN_L, Geo.CONCRETE)
+	for z in [-1.52, 0.4]:   # parapet lips
+		g.box(Vector3(-0.075, by0 + bh + 0.07, z), Vector3(3.15, 0.06, 0.05))
+	for x in [-1.62, 1.47]:
+		g.box(Vector3(x, by0 + bh + 0.07, -0.565), Vector3(0.05, 0.06, 1.9))
+	# slit windows (few lit), front and sides
+	_win_grid(g, Vector3(0, by0 + 0.36, 0), 1.3, 0.06, 7, 1, _face_t(0, Vector3(-0.95, 0, 0.535)), 3, 0.3, TAN_D)
+	_win_grid(g, Vector3(0, by0 + 0.36, 0), 1.5, 0.06, 7, 1, _face_t(90, Vector3(1.585, 0, -0.55)), 4, 0.25, TAN_D)
+	_win_grid(g, Vector3(0, by0 + 0.36, 0), 1.5, 0.06, 7, 1, _face_t(-90, Vector3(-1.735, 0, -0.55)), 5, 0.25, TAN_D)
+	# armoured personnel door with canopy (front left)
+	g.color("#4a4c48", Geo.STEEL)
+	g.box(Vector3(-1.2, by0 + 0.12, 0.555), Vector3(0.2, 0.24, 0.02))
+	g.color(TAN_L, Geo.CONCRETE)
+	g.cbox(Vector3(-1.2, by0 + 0.27, 0.65), Vector3(0.34, 0.03, 0.22), 0.006)
+	g.color("#fff3c4", Geo.LAMP)
+	g.box(Vector3(-1.2, by0 + 0.3, 0.57), Vector3(0.05, 0.025, 0.02))
+	# vehicle bay: tall block projecting from the front, open door with the shutter half up
+	var bx := 0.5
+	g.color(TAN, Geo.CONCRETE)
+	g.cbox(Vector3(bx, by0 + 0.4, 0.62), Vector3(1.2, 0.8, 0.9), 0.015)
+	g.color(TAN_D, Geo.CONCRETE)
+	g.cbox(Vector3(bx, by0 + 0.82, 0.62), Vector3(1.24, 0.05, 0.94), 0.01)
+	g.color("#16171a", Geo.DARK)   # dark interior seen through the opening
+	g.box(Vector3(bx, by0 + 0.27, 1.06), Vector3(0.84, 0.54, 0.02))
+	g.color("#2b2d2c", Geo.DARK)
+	g.box(Vector3(bx, by0 + 0.002, 0.85), Vector3(0.84, 0.004, 0.45))
+	g.rollup(Vector3(bx, by0 + 0.62, 1.075), 0.86, 0.14)   # shutter rolled up into the head
+	g.color("#3a3c3a", Geo.STEEL)   # door frame
+	for x in [bx - 0.45, bx + 0.45]:
+		g.box(Vector3(x, by0 + 0.35, 1.075), Vector3(0.05, 0.7, 0.04))
+	g.box(Vector3(bx, by0 + 0.71, 1.075), Vector3(0.95, 0.04, 0.04))
+	g.color("#e8d34a", Geo.PAINT)   # hazard chevrons on the jambs
+	for i in 4:
+		for x in [bx - 0.45, bx + 0.45]:
+			g.box(Vector3(x, by0 + 0.08 + i * 0.16, 1.097), Vector3(0.05, 0.06, 0.004))
+	g.color("#fff3c4", Geo.LAMP)   # bay floodlights
+	for x in [bx - 0.3, bx + 0.3]:
+		g.box(Vector3(x, by0 + 0.76, 1.1), Vector3(0.08, 0.03, 0.04))
+	g.color("#ffffff", Geo.TEAM)   # team band over the bay
+	g.box(Vector3(bx, by0 + 0.765, 1.072), Vector3(0.3, 0.05, 0.006))
+	# roof: lattice comms mast, whip antennas, satcom dish, AC unit, hatch
+	g.color(US_S, Geo.STEEL)
+	g.lattice(Vector3(-1.3, by0 + bh + 0.05, -1.25), 0.95, 0.07, 5)
+	for p in [Vector3(-0.2, by0 + bh + 0.05, -1.35), Vector3(0.4, by0 + bh + 0.05, -1.3), Vector3(1.3, by0 + bh + 0.05, -0.2)]:
+		V4._antenna(g, p, 0.45)
+	g.dish(Vector3(0.9, by0 + bh + 0.06, -1.05), 0.14, 35.0, 0.25)
+	U()._ac_unit(g, Vector3(-0.5, by0 + bh + 0.05, -0.5))
+	g.color(US_S, Geo.STEEL)
+	g.hatch(Vector3(0.3, by0 + bh + 0.06, -0.4), 0.14)
+	# flag on a plinth by the entrance, blast walls (T-walls) along the front left
+	g.color(TAN_L, Geo.CONCRETE)
+	g.cbox(Vector3(-0.55, Y0 + 0.04, 1.15), Vector3(0.18, 0.06, 0.18), 0.01)
+	U()._flag(g, Vector3(-0.55, Y0 + 0.07, 1.15), 0.95)
+	g.color(CONC, Geo.CONCRETE)
+	for i in 5:
+		var x := -1.75 + i * 0.22
+		g.cbox(Vector3(x, Y0 + 0.17, 1.62), Vector3(0.2, 0.32, 0.07), 0.01)
+		g.cbox(Vector3(x, Y0 + 0.03, 1.62), Vector3(0.2, 0.04, 0.2), 0.01)
+	g.sandbag(Vector3(1.55, Y0 + 0.03, 1.35), 0.5, 90.0, "#b8a47a")
+	_roof_lights(g, _corners(-0.075, -0.565, 1.55, 0.9, by0 + bh + 0.1) + [Vector3(bx - 0.55, by0 + 0.85, 1.02), Vector3(bx + 0.55, by0 + 0.85, 1.02)], Vector3(-1.3, by0 + bh + 1.05, -1.25))
+
+# ================================================================== Strategic Center (Pentagon-style)
+## Five-sided ring of stepped office wings round a courtyard: limestone facade with window bands,
+## inner ring a storey higher, courtyard with a small pavilion, flag and a comms mast.
+## M3.0.1: moved here from the HQ (Malachi: dozers driving out of it looked odd), scaled to the
+## Strategic Center's 3 x 3 pad (S = 0.74 of the old 4 x 4 layout).
+const PS := 0.74
+static func _pentagon(g) -> void:
 	var c := Vector3(0, Y0, 0)
-	var rings := [[1.82, 1.32, 0.0, 0.42, LIME], [1.3, 0.86, 0.0, 0.56, "#d3ccba"]]
+	var rings := [[1.82 * PS, 1.32 * PS, 0.0, 0.42, LIME], [1.3 * PS, 0.86 * PS, 0.0, 0.56, "#d3ccba"]]
 	for ri in rings.size():
 		var ro: float = rings[ri][0]
 		var rin: float = rings[ri][1]
@@ -116,33 +207,33 @@ static func _hq(g) -> void:
 			var t := Transform3D(Basis(Vector3.UP, -am + PI * 0.5), Vector3(cos(am) * (apo + 0.004), 0, sin(am) * (apo + 0.004)))
 			var floors := 3 if ri == 0 else 4
 			for f in floors:
-				_win_grid(g, Vector3(0, Y0 + 0.08 + f * (hgt - 0.12) / floors, 0), fw, 0.06, 14, 1, t, i * 10 + f + ri * 100, 0.35)
+				_win_grid(g, Vector3(0, Y0 + 0.08 + f * (hgt - 0.12) / floors, 0), fw, 0.06, 10, 1, t, i * 10 + f + ri * 100, 0.35)
 	# courtyard: lawn, paths, pavilion
 	g.color("#5f7a3e", Geo.CONCRETE)
-	g.cyl(0.84, 0.84, 0.012, 5, Transform3D(Basis(Vector3.UP, PI / 5.0 + PI * 0.5), c))
+	g.cyl(0.84 * PS, 0.84 * PS, 0.012, 5, Transform3D(Basis(Vector3.UP, PI / 5.0 + PI * 0.5), c))
 	g.color(LIME, Geo.CONCRETE)
-	g.cbox(c + Vector3(0, 0.07, 0), Vector3(0.28, 0.14, 0.28), 0.02)
+	g.cbox(c + Vector3(0, 0.07, 0), Vector3(0.28, 0.14, 0.28) * PS, 0.02)
 	g.color("#3c5a7a", Geo.PAINT)
-	g.dome(0.12, 0.08, 3, 10, Transform3D(Basis.IDENTITY, c + Vector3(0, 0.14, 0)))
+	g.dome(0.12 * PS, 0.08, 3, 10, Transform3D(Basis.IDENTITY, c + Vector3(0, 0.14, 0)))
 	# entrance portico on the front wing (+z)
 	g.color("#e0dbcc", Geo.CONCRETE)
-	g.cbox(Vector3(0, Y0 + 0.2, 1.62), Vector3(0.5, 0.06, 0.16), 0.01)
+	g.cbox(Vector3(0, Y0 + 0.2, 1.62 * PS), Vector3(0.5 * PS, 0.06, 0.16), 0.01)
 	for x in [-0.2, -0.07, 0.07, 0.2]:
-		g.tube(Vector3(x, Y0, 1.66), Vector3(x, Y0 + 0.18, 1.66), 0.015, 6)
+		g.tube(Vector3(x * PS, Y0, 1.66 * PS), Vector3(x * PS, Y0 + 0.18, 1.66 * PS), 0.015, 6)
 	g.color("#ffffff", Geo.TEAM)
-	g.box(Vector3(0, Y0 + 0.25, 1.705), Vector3(0.46, 0.04, 0.01))
+	g.box(Vector3(0, Y0 + 0.25, 1.705 * PS), Vector3(0.46 * PS, 0.04, 0.01))
 	# parking + flags + comms mast on the roof
-	U()._flag(g, Vector3(-0.5, Y0, 1.82), 0.6)
-	U()._flag(g, Vector3(0.5, Y0, 1.82), 0.6)
+	U()._flag(g, Vector3(-0.5 * PS, Y0, 1.82 * PS), 0.5)
+	U()._flag(g, Vector3(0.5 * PS, Y0, 1.82 * PS), 0.5)
 	g.color(US_S, Geo.STEEL)
-	g.lattice(Vector3(0.75, Y0 + 0.61, -0.62), 0.5, 0.05, 4)
-	g.dish(Vector3(-0.8, Y0 + 0.64, -0.55), 0.1, 30.0, 0.4)
+	g.lattice(Vector3(0.75 * PS, Y0 + 0.61, -0.62 * PS), 0.5, 0.05, 4)
+	g.dish(Vector3(-0.8 * PS, Y0 + 0.64, -0.55 * PS), 0.08, 30.0, 0.4)
 	var lights: Array = []
 	for i in 5:
 		var a := TAU * i / 5.0 - PI * 0.5 + PI / 5.0
-		lights.append(Vector3(cos(a) * 1.72, Y0 + 0.47, sin(a) * 1.72))
-		lights.append(Vector3(cos(a) * 1.22, Y0 + 0.61, sin(a) * 1.22))
-	_roof_lights(g, lights, Vector3(0.75, Y0 + 1.13, -0.62))
+		lights.append(Vector3(cos(a) * 1.72 * PS, Y0 + 0.47, sin(a) * 1.72 * PS))
+		lights.append(Vector3(cos(a) * 1.22 * PS, Y0 + 0.61, sin(a) * 1.22 * PS))
+	_roof_lights(g, lights, Vector3(0.75 * PS, Y0 + 1.13, -0.62 * PS))
 
 # ================================================================== Supply Depot (warehouse)
 ## Grey corrugated warehouse with three roll-up bay doors over a raised loading dock (bumpers,
