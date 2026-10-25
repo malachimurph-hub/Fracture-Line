@@ -49,9 +49,15 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, -0.38)
 metadata/rotor_axis = "x"
 
 [node name="RotorMesh" type="MeshInstance3D" parent="Model/Rotor" unique_id=1619280386]
+instance_shader_parameters/bake_o = Vector4(-0.015, -0.04, -0.17, 61)
+instance_shader_parameters/bake_r = Vector4(0.50390625, 0.33984375, 0.087890625, 0.05859375)
+instance_shader_parameters/bake_s = Vector4(0.065, 0.08, 0.34, 1)
 mesh = SubResource("ArrayMesh_fqqji")
 
 [node name="Hull" type="MeshInstance3D" parent="Model" unique_id=448937577]
+instance_shader_parameters/bake_o = Vector4(-0.42999998, 0.17410521, -0.36999997, 61)
+instance_shader_parameters/bake_r = Vector4(0.50390625, 0.00390625, 0.4921875, 0.328125)
+instance_shader_parameters/bake_s = Vector4(0.85999995, 0.25178957, 0.9, 1)
 mesh = SubResource("ArrayMesh_e002b")
 metadata/moves = true
 

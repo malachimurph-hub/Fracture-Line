@@ -127,15 +127,24 @@ is_structure = true
 [node name="Model" type="Node3D" parent="." unique_id=234228612]
 
 [node name="Foundation" type="MeshInstance3D" parent="Model" unique_id=560936390]
+instance_shader_parameters/bake_o = Vector4(-0.98, -0.01, -0.98, 45)
+instance_shader_parameters/bake_r = Vector4(0.00390625, 0.37890625, 0.5390625, 0.359375)
+instance_shader_parameters/bake_s = Vector4(1.96, 0.12099999, 1.96, 1)
 mesh = SubResource("ArrayMesh_xf4sv")
 
 [node name="Hull" type="MeshInstance3D" parent="Model" unique_id=1853802210]
+instance_shader_parameters/bake_o = Vector4(-0.9725, 0.07, -1.004037, 45)
+instance_shader_parameters/bake_r = Vector4(0.00390625, 0.00390625, 0.55078125, 0.3671875)
+instance_shader_parameters/bake_s = Vector4(1.9803705, 0.2475, 1.9854214, 1)
 mesh = SubResource("ArrayMesh_l3uqm")
 
 [node name="TurretPivot" type="Node3D" parent="Model" unique_id=1887404157]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
 
 [node name="Turret" type="MeshInstance3D" parent="Model/TurretPivot" unique_id=421522074]
+instance_shader_parameters/bake_o = Vector4(-0.52, -0.020404832, -0.95649797, 45)
+instance_shader_parameters/bake_r = Vector4(0.5546875, 0.37890625, 0.43945313, 0.29296875)
+instance_shader_parameters/bake_s = Vector4(1.04, 0.878435, 2.4260368, 1)
 mesh = SubResource("ArrayMesh_7re4v")
 
 [node name="Scaffold" type="MeshInstance3D" parent="Model" unique_id=1408443855]

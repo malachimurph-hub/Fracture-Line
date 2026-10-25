@@ -5,6 +5,7 @@
 [ext_resource type="Texture2D" path="res://assets/textures/materials/stencils.png" id="3_pxrbe"]
 [ext_resource type="Texture2D" path="res://assets/textures/materials/weather.png" id="4_rbm61"]
 [ext_resource type="Texture2D" path="res://assets/textures/materials/detail_n.png" id="9_dn31"]
+[ext_resource type="CompressedTexture2DArray" path="res://assets/textures/bake/bake_atlas.png" id="14_bake"]
 
 [resource]
 render_priority = 0
@@ -14,3 +15,4 @@ shader_parameter/weather_tex = ExtResource("4_rbm61")
 shader_parameter/rust_tex = ExtResource("2_qpfb6")
 shader_parameter/stencil_tex = ExtResource("3_pxrbe")
 shader_parameter/stencil_amount = 0.6
+shader_parameter/bake_tex = ExtResource("14_bake")
