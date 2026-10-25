@@ -12,11 +12,16 @@ var combat: CombatTable
 var errors: PackedStringArray = []
 var power_order: Array[StringName] = []
 
-const UNIT_ORDER := [&"eu_crawler", &"eu_harvester", &"eu_grenadier", &"eu_lancer", &"eu_wolfhound", &"eu_boxer", &"eu_flakwerk", &"eu_leopold", &"eu_aegis", &"eu_salamander", &"eu_hearth", &"eu_spectre", &"eu_sentinel", &"eu_brennus", &"eu_thunderhead", &"eu_kestrel", &"eu_corvid", &"eu_field_engineer", &"eu_sturmtrupp"]
+const UNIT_ORDER := [&"eu_crawler", &"eu_harvester", &"eu_grenadier", &"eu_lancer", &"eu_wolfhound", &"eu_boxer", &"eu_flakwerk", &"eu_leopold", &"eu_salamander", &"eu_hearth", &"eu_spectre", &"eu_sentinel", &"eu_brennus", &"eu_thunderhead", &"eu_kestrel", &"eu_corvid", &"eu_field_engineer", &"eu_sturmtrupp"]
 const BUILDING_ORDER := [&"eu_hq", &"eu_reactor", &"eu_hub", &"eu_barracks", &"eu_motor_pool", &"eu_heavy_factory", &"eu_gun_bunker", &"eu_flak_tower", &"eu_minefield", &"eu_signals", &"eu_relay", &"eu_exchange", &"eu_airstrip", &"eu_sandbags", &"eu_barricade"]
 ## M2.9: Malachi's TPLA roster (notes 2026-10-22). Internal ids kept where a unit took over a slot:
 ## militia = Rifleman, rocket_cell = Rocket Man, rattler = Technical, scrapback = Striker (Karrar MBT),
 ## bus = BMP-2 transport, hailstorm = BHX-35 (35 mm AA), blight = Koksan, shrike = Fajr-5.
+## M3.2.2: units taken out of the game (Malachi: "Remove Germany shield truck"). Their defs,
+## models, voices and names stay so old saves and replays still load and play back the same:
+## the sim still accepts a queue order for them at their old producer (replays), nothing in the
+## UI, AI or Map Builder offers them, and units already on the field keep working.
+const RETIRED_UNITS := {&"eu_aegis": &"eu_heavy_factory"}
 const TPLA_UNIT_ORDER := [&"tpla_backhoe", &"tpla_pickup", &"tpla_militia", &"tpla_rocket_cell", &"tpla_marksman", &"tpla_insurgent", &"tpla_rattler", &"tpla_scrapback", &"tpla_bus", &"tpla_hailstorm", &"tpla_blight", &"tpla_shrike", &"tpla_mirage", &"tpla_mig29", &"tpla_f16"]
 const US_UNIT_ORDER := [&"us_dozer", &"us_supply_truck", &"us_grunt", &"us_javelin", &"us_jtac", &"us_sniper", &"us_lynx", &"us_bradley", &"us_halberd", &"us_picket", &"us_longreach", &"us_harrier", &"us_wraith", &"us_thunderlance", &"us_drone_operator", &"us_breacher"]
 const US_BUILDING_ORDER := [&"us_command", &"us_reactor", &"us_supply_center", &"us_barracks", &"us_garage", &"us_airfield", &"us_strategy", &"us_patriot", &"us_firebase", &"us_drop_zone", &"us_sandbags", &"us_barricade"]

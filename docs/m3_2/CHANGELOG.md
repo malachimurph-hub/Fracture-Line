@@ -280,3 +280,13 @@ the Zero Hour-style texture/model rebuild and the polish pass (40 degree camera)
 - Contains the boarding / garrison tap fix, "Unload n / cap" on transports, and the
   garrisonable houses above.
 - Uploaded to Google Drive (My Drive root), file id `1SXBNWdJTGMY_5Qyoaqgih973EzWtYKDp`.
+
+## M3.2.2 (unreleased, branch m322)
+
+- Germany's shield truck (Fuchs ECM Carrier, `eu_aegis`) is removed: no longer in the Heavy Factory
+  build list, the German roster / Map Builder palette, or the AI's unit weights; the AI's special
+  cases for it are gone. Balance CSV updated to match.
+- Old saves and replays: the def, model, voice set and names stay (hidden), `SAVE_VERSION` is
+  unchanged. A saved shield truck loads, keeps its 35% damage-reduction aura and can be selected;
+  a Heavy Factory queue order for it recorded in an old replay is still accepted by the sim
+  (`Content.RETIRED_UNITS`), so playback stays in sync. Nothing in the game issues that order.

@@ -324,8 +324,8 @@ static func _queue(w: SimWorld, pid: int, c: Dictionary) -> void:
 		return
 	var uid := StringName(c.get("def", ""))
 	var bd: BuildingDef = w.bdef(b)
-	if not bd.produces.has(String(uid)):
-		return
+	if not bd.produces.has(String(uid)) and Content.RETIRED_UNITS.get(uid, &"") != bd.id:
+		return   # (retired units: only old replays / saves still queue them)
 	var ud: UnitDef = Content.unit(uid)
 	if ud.tags.has("stub"):   # [STUB] aircraft: listed in the build tree, not producible yet
 		w.events.append({"t": "reject", "owner": pid, "reason": "REASON_STUB"})

@@ -19,7 +19,7 @@ func _ready() -> void:
 		await run_eu()
 	if p in ["de", "all"]:
 		await run_lineup("eu", [[&"eu_leopold", &"eu_brennus", &"eu_salamander", &"eu_boxer", &"eu_wolfhound", &"eu_flakwerk", &"eu_hearth"],
-			[&"eu_aegis", &"eu_spectre", &"eu_sentinel", &"eu_thunderhead", &"eu_kestrel", &"eu_corvid"]], "m30e_germany_lineup")
+			[&"eu_spectre", &"eu_sentinel", &"eu_thunderhead", &"eu_kestrel", &"eu_corvid"]], "m30e_germany_lineup")
 	if p in ["ir", "all"]:
 		await run_lineup("tpla", [[&"tpla_scrapback", &"tpla_bus", &"tpla_hailstorm", &"tpla_blight", &"tpla_shrike", &"tpla_rattler"],
 			[&"tpla_f16", &"tpla_mirage", &"tpla_mig29", &"tpla_pickup", &"tpla_backhoe"]], "m30e_iran_lineup")

@@ -1631,6 +1631,7 @@ const ROSTER_NEW_BUILDINGS := ["eu_flak_tower", "eu_signals", "eu_relay", "eu_ex
 
 func test_roster() -> void:
 	_roster_content()
+	_retired_units()
 	_roster_transport()
 	_roster_jammer()
 	_roster_mines()
@@ -1642,6 +1643,42 @@ func _roster_reveal(w: SimWorld) -> void:
 		var ex: PackedByteArray = w.fog.explored[p]
 		ex.fill(1)
 		w.fog.explored[p] = ex
+
+## M3.2.2: the German shield truck (eu_aegis) is out of the game, but old saves / replays work.
+func _retired_units() -> void:
+	var made := false
+	for bid in Content.buildings:
+		made = made or Content.building(bid).produces.has("eu_aegis")
+	_check(not made and not Content.faction(&"eu")["units"].has(&"eu_aegis"), "shield truck is in no build list, faction roster or Map Builder palette")
+	var used := false
+	for pid in Content.ai_personalities:
+		used = used or (Content.ai_personalities[pid] as AIPersonalityDef).unit_weights.has("eu_aegis")
+	_check(not used, "no AI personality builds the shield truck")
+	var r := MatchRunner.new()
+	r.record_replay = false
+	r.start(make_cfg("1v1", 5, [], ["eu", "tpla"]))
+	r.ais.clear()
+	var w := r.sim
+	var hq: SimEntity = null
+	for id in w.ids:
+		if w.ents[id].owner == 0 and w.ents[id].kind == SimEntity.Kind.BUILDING:
+			hq = w.ents[id]
+	# an old save with a shield truck in the field and one in a Heavy Factory queue
+	var ag := w.spawn_unit(&"eu_aegis", 0, null, FX.tile_center(hq.tile + Vector2i(6, 6)))
+	var buddy := w.spawn_unit(&"eu_leopold", 0, null, FX.tile_center(hq.tile + Vector2i(7, 6)))
+	var hf := w._place_building(Content.building(&"eu_heavy_factory"), 0, hq.tile + Vector2i(-10, 8), 0, true)
+	w.players[0].supply = 100000
+	r.issue({"p": 0, "t": "queue", "target": hf.id, "def": "eu_aegis", "n": 1})   # replays of old games
+	_ticks(r, 2)
+	_check(hf.queue.has(&"eu_aegis"), "the sim still accepts a recorded shield-truck order (old replays play back)")
+	var w2 := SimWorld.new()
+	w2.deserialize(w.serialize())
+	_check(w2.state_hash() == w.state_hash() and w2.get_ent(ag.id) != null and w2.get_ent(ag.id).def_id == &"eu_aegis", "a save with a shield truck loads identically")
+	_ticks(r, 40)
+	_check(buddy.aura_tick >= w.tick - 4, "a shield truck from an old save still covers nearby units")
+	r.issue({"p": 0, "t": "queue", "target": hq.id, "def": "eu_aegis", "n": 1})
+	_ticks(r, 2)
+	_check(not hq.queue.has(&"eu_aegis"), "it cannot be queued anywhere else")
 
 func _roster_content() -> void:
 	for id in ROSTER_NEW_UNITS:
