@@ -730,6 +730,12 @@ func _fill_types(units: Array) -> void:
 				if sim.ents[id].def_id == d:
 					only.append(id)
 			ctl.set_selection(only))
+		b.has_info = true   # M3.2: hold a type chip -> its info card
+		b.hold_info.connect(func(on: bool):
+			if on:
+				show_info(InfoCard.build("unit", d, sim, pid), b.get_global_rect())
+			else:
+				hide_info())
 		sel_types.add_child(b)
 
 ## How many chips of width w (3 dp gaps) fit in the selection panel, keeping `reserve` dp free
