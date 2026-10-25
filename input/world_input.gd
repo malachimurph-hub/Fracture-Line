@@ -317,6 +317,11 @@ func tap_select_or_order(p: Vector2) -> void:
 	if ctl.resume_site_at(p) != null:
 		ctl.smart_command(p)
 		return
+	# M3.2.1 fix: with infantry selected, tapping an own transport / barricade / garrisoned
+	# civilian building is an order to get in, not a selection change (it used to just select it)
+	if ctl.enter_target_at(p) != null:
+		ctl.smart_command(p)
+		return
 	var id := ctl.pick(p, true)
 	var e := ctl.sim.get_ent(id)
 	if e != null and ctl.is_own(e):

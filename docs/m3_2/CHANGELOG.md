@@ -248,3 +248,35 @@ the Zero Hour-style texture/model rebuild and the polish pass (40 degree camera)
   160). Decals now follow ground height.
 - **Preview:** `builds/m3_2/preview/m32_polish_before_after.png`, rendered with the real
   game camera.
+
+## M3.2.1 fix (branch m321): infantry could not get into transports or barricades by tapping
+- **Root cause:** with units selected, a tap on any OWN unit or structure was handled as
+  "select it" before the order path ran. So a squad tapped onto its own BTR, Bradley, Boxer or
+  Rust Bus (or its own barricade) just switched the selection to that target. This hit all four
+  factions. Neutral civilian blocks could still be garrisoned, but at the 40 degree camera a
+  tap on the walls or roof often missed the footprint, and a selected unit standing under the
+  finger hid the target.
+- **Fix:**
+  - With boardable infantry selected, a tap on an own transport, own barricade, or neutral /
+    own-held garrison building is an order (green marker). A tap on any other own unit still
+    selects it. Selected units under the finger are skipped. More troops can join a building
+    you already hold.
+  - Structures are picked by their 3D box (footprint x model height), not only the ground
+    point.
+  - Transports show "Unload n / cap" (the shared string said "Evacuate"). Held buildings show
+    "Evacuate n / cap".
+  - Half the village houses (21 on 4 maps) are now garrisonable neutral houses (4 infantry,
+    1100 HP) with the same look. The rest stay decorative.
+- **Test:** `tests/m321_board_test.tscn` (in the suite; rendered under xvfb). For US, Germany,
+  Iran and Russia it uses the real touch path to check transport boarding (5 infantry, and 1
+  adjacent), selecting a non-transport, barricade man/exit, and civilian block + house
+  garrison/evacuate: 72 checks.
+
+### M3.2.1 hotfix build (versionName 0.3.4, versionCode 18)
+- `RulesOfEngagement-M3.2.1.apk`, 90,705,014 bytes (86.5 MiB). SHA256
+  `153e1e34f51c974d97741aa199c11fc1bbb076d25a4a2fa61e728bb5bbecdac6`.
+- Package com.malachimurphy.fractureline, same debug key (certificate SHA-256
+  7e96c70a…ce54), so it installs over M3.2. `apksigner verify` passes (v2 and v3).
+- Contains the boarding / garrison tap fix, "Unload n / cap" on transports, and the
+  garrisonable houses above.
+- Uploaded to Google Drive (My Drive root), file id `1SXBNWdJTGMY_5Qyoaqgih973EzWtYKDp`.

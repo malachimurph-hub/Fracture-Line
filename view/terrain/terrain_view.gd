@@ -1,5 +1,6 @@
 class_name TerrainView
 extends Node3D
+static var shared_house_material: Material = null   ## M3.2.1: garrisonable house views
 ## Terrain v1 (M1.2, Zero Hour-style look): smooth-shaded chunk meshes with raised rocky
 ## outcrops/cliffs (only on impassable cliff tiles, so pathing is unchanged), a lowered
 ## riverbed with an animated water surface, CC0 ground textures blended by splat maps
@@ -69,6 +70,7 @@ func build(map: SimMap, tiles_path: String = "", env: Dictionary = {}) -> void:
 	prop_sway_material.set_shader_parameter("leaf_tex", load(TEX + "props/leaf_atlas.png"))
 	prop_material.set_shader_parameter("leaf_tex", load(TEX + "props/leaf_atlas.png"))
 	prop_detail_material = _prop_mat(0.0, 0.55, load(TEX + "materials/concrete.png"))
+	shared_house_material = prop_detail_material   # M3.2.1: garrisonable house views use it too
 	prop_tower_material = _prop_mat(0.0, 0.55, load(TEX + "materials/concrete.png"))
 	_house_cover(tiles_path)
 	heights = _corner_heights()
