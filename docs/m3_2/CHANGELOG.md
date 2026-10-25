@@ -185,3 +185,32 @@ M3.2 is a combined release. It starts with Russia; more items will be added befo
 
 ## M3.2: Russia unlocked
 - Russia (Malachi) is now selectable for players and AI in every lobby slot, listed in the Map Builder and resolved by the lobby. The "Coming soon" lock is kept for future factions (`"enabled": false` in `Content.FACTIONS`). `m30_lock_test` was rewritten to check that Russia is playable.
+
+## Item 14: texture and model rebuild (Zero Hour-style look; original art, style reference only)
+- **Per-asset baked surface textures** for every vehicle and building view of all 4 factions
+  (AO, curvature edge wear, panel seams/rivets, grime streaks, faction markings), stored in
+  one Texture2DArray atlas. Tools are in `tools/gfx_m32/tex14`.
+- **Secondary detail pass:**
+  - Vehicles: antennas, smoke launchers, bustle racks and stowage, Russian ERA bricks, tow
+    cables, jerrycans, fender boxes, track links, headlight guards.
+  - Buildings: window frames, roof clutter (AC units, vents, tanks), downpipes, ladders.
+  - LODs are rebuilt.
+- **Terrain:**
+  - Hand-painted filter on all 4 biomes; NRAO smoothed and halved.
+  - Large soft worn-dirt patches through the grass.
+  - Slow cloud shadows; warm, slightly desaturated grade.
+  - Clustered dark scrub bushes.
+  - Old scorch marks and track decals in the open.
+- **Civilian:**
+  - Four European house types (tiled roofs, tile courses, chimneys, dormers, half-timbering,
+    shutters, framed windows) and container stacks, placed in Harrow Junction's street blocks.
+    The ground under them is kept flat.
+  - Autumn oak colours in clusters.
+- **FX:**
+  - Persistent tread/tyre marks behind moving ground vehicles: one pooled MultiMesh, fading
+    over 80 s in the shader.
+  - Destroyed vehicles leave a scorch decal and a tall drifting smoke column (about 18-20 s,
+    max 16 at once).
+  - HDR muzzle flashes and fireballs for bloom.
+- **Preview:** `builds/m3_2/preview/m32_textures_before_after.png`. Render it with
+  `tests/m32_shots.tscn -- <dir> tex|texc`.

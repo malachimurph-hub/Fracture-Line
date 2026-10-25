@@ -24,8 +24,17 @@
   only prerequisite is the captured building work, others stay locked.
 - **One battle track for Russia, Germany and Iran each** (about 100-120 s, repeats). US has 4.
   The music was checked by level and spectrum only, not listened to on a phone.
-- **The graphics pass is a shader/grade/scatter/VFX pass, not new high-res textures or models.**
-  Zero Hour parity in texture detail would need a texture repaint.
+- **Item 14 textures are baked at 512 px per building and 256 px per unit**, in one 65-layer
+  ETC2 array (about 11 MB), plus procedural triplanar detail. Per-asset 2048 px textures for
+  every unit and building would not fit the 100 MB APK budget. Estimated APK size after item
+  14: about 80 MB (terrain NRAO halved, -29 MB; bake atlas and detail meshes, about +15 MB).
+  This is not measured, because no APK has been built.
+- **Aircraft cast soft round blob shadows**, not silhouette shadows like the reference shots.
+- **The gameplay camera keeps its 55 degree pitch.** The before/after preview uses 40 degrees
+  (a test-only hook) to match the reference framing.
+- **Village houses are placed only in Harrow Junction** (21 houses/container stacks in its
+  street-grid blocks). The other maps keep their existing props.
+- **Cloud shadows drift on the ground only.** Units and buildings are not darkened by them.
 - **Bridges are generated per tile from the map**, so jagged map bridge outlines show as
   stepped ends. The top-down RTS camera shows the deck more than the truss and piers.
 - **Drone operator drones use the helicopter layer.** Bomb drones follow normal attack orders.
