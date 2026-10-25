@@ -2,7 +2,7 @@
 """Writes locale/strings.csv (English). All UI text goes through translation keys."""
 import csv, os
 S = {
-"APP_TITLE": "RULES OF ENGAGEMENT",
+"APP_TITLE": "FRACTURE LINE: GLOBAL CONFLICT",
 "MENU_SUBTITLE": "Skirmish command — Germany",
 "MENU_BUILD": "Milestone %s · original game, not affiliated with any other RTS",
 "MENU_SKIRMISH": "Skirmish", "MENU_CONTINUE": "Continue suspended match", "MENU_SETTINGS": "Settings",

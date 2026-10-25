@@ -30,4 +30,4 @@ export GODOT_ANDROID_KEYSTORE_RELEASE_PATH=$(sed -n 's/^keystore=//p' "$SEC")
 export GODOT_ANDROID_KEYSTORE_RELEASE_USER=$(sed -n 's/^alias=//p' "$SEC")
 export GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD=$(sed -n 's/^store_password=//p' "$SEC")
 mkdir -p ../builds/play
-$G --headless --path . --export-release "Android Play (AAB)" ../builds/play/RulesOfEngagement.aab
+$G --headless --path . --export-release "Android Play (AAB)" ../builds/play/FractureLine.aab

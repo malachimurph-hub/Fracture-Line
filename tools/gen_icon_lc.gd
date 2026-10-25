@@ -1,5 +1,5 @@
 extends SceneTree
-## Rasterises the RULES OF ENGAGEMENT icon SVGs (written by tools/gen_icon_lc.py) with Godot's
+## Rasterises the Fracture Line: Global Conflict icon SVGs (written by tools/gen_icon_lc.py) with Godot's
 ## SVG renderer into the PNGs that export_presets.cfg uses for the Android launcher icons.
 ## The monochrome layer is drawn white-on-black and converted to white + alpha here.
 ## Optional user arg: a folder for extra 512/192/96/48 previews.

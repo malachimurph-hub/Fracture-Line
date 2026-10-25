@@ -290,3 +290,9 @@ the Zero Hour-style texture/model rebuild and the polish pass (40 degree camera)
   unchanged. A saved shield truck loads, keeps its 35% damage-reduction aura and can be selected;
   a Heavy Factory queue order for it recorded in an old replay is still accepted by the sim
   (`Content.RETIRED_UNITS`), so playback stays in sync. Nothing in the game issues that order.
+- **Retitled: "Fracture Line: Global Conflict"** ("Rules of Engagement" is a registered US/EU trademark
+  of another company for video games). New menu badge and boot splash (`ui/logo/fl_badge.png`,
+  `fl_splash.png`, from `tools/gen_icon_lc.py --logo-only`), `APP_TITLE`, credits, error screen,
+  window title. Android launcher label: **Fracture Line** (the full title would be cut off under the
+  icon). Package id, signing, `user://` folder and save format unchanged, so saves carry over.
+  Output files: `FractureLine-M3.2.2.apk`, `FractureLine.aab`. The app icon has no lettering.

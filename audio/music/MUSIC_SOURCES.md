@@ -1,6 +1,6 @@
 # Music sources and licences
 
-All music in this folder is ORIGINAL, composed and rendered for Rules of Engagement by the
+All music in this folder is ORIGINAL, composed and rendered for Fracture Line: Global Conflict by the
 project's own synthesis scripts (numpy additive/subtractive synthesis + tanh overdrive, no
 samples, no loops or recordings from anyone else). No CC0/CC-BY or paid/unlicensed material.
 Licence: project-owned original work (same terms as the rest of the game).
