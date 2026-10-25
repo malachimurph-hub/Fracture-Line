@@ -11,6 +11,6 @@ expansion = 3
 tech_rush = 2
 harass = 2
 opening = PackedStringArray("ecc_power", "ecc_depot", "ecc_barracks", "ecc_power", "ecc_factory", "ecc_bunker", "ecc_power", "ecc_depot", "ecc_aa_site")
-unit_weights = {"ecc_rifleman": 3, "ecc_machine_gunner": 2, "ecc_rpg": 3, "ecc_infiltrator": 1, "ecc_tigr": 2, "ecc_btr": 2, "ecc_typhoon": 1, "ecc_t90": 6, "ecc_zeus": 1, "ecc_msta": 1}
+unit_weights = {"ecc_rifleman": 3, "ecc_machine_gunner": 2, "ecc_rpg": 3, "ecc_infiltrator": 1, "ecc_tigr": 2, "ecc_btr": 2, "ecc_typhoon": 1, "ecc_t90": 6, "ecc_zeus": 1, "ecc_msta": 1, "ecc_ka52": 2, "ecc_su57": 1, "ecc_tu160": 1}
 wave_growth_pct = 40
 first_wave_value = 4000
