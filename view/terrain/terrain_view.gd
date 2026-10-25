@@ -80,6 +80,7 @@ func build(map: SimMap, tiles_path: String = "", env: Dictionary = {}) -> void:
 	_build_lane_markings()
 	_build_ground_decals()
 	_build_scatter(float(env.get("dry", 0.0)) > 0.5)
+	_build_bushes(float(env.get("dry", 0.0)) > 0.5)
 	_build_props(tiles_path)
 	var skirt := MeshInstance3D.new()
 	var pm := PlaneMesh.new()
@@ -858,13 +859,11 @@ func _build_scatter(dry: bool) -> void:
 		return
 	var tuft := _tuft_mesh(dry)
 	var peb := _pebble_mesh()
-	var bush := _bush_mesh(dry)
 	var mat := prop_material   # vertex colour + fog of war (alpha 1 = plain, no emission)
 	for cy in range(0, m.h, CHUNK):
 		for cx in range(0, m.w, CHUNK):
 			var tx: Array = []
 			var px: Array = []
-			var bx: Array = []
 			for y in range(cy, mini(cy + CHUNK, m.h)):
 				for x in range(cx, mini(cx + CHUNK, m.w)):
 					var tt := m.ttype(Vector2i(x, y))
@@ -879,22 +878,13 @@ func _build_scatter(dry: bool) -> void:
 						var r2 := _h(x * 17 + k * 3, y * 19 + k)
 						var sc := 0.7 + r1 * 0.7
 						tx.append(Transform3D(Basis(Vector3.UP, r2 * TAU).scaled(Vector3(sc, sc * (0.8 + r2 * 0.5), sc)), Vector3(x + r1, 0.0, y + r2)))
-					# M3.2 item 14: dense dark scrub / bush clusters (clumped by low-frequency noise)
-					var cn := _vn(x / 6.0 + 40.0, y / 6.0) * 0.8 + _h(x, y + 999) * 0.2
-					var cth := 0.62 if dry else 0.74
-					if cn > cth and not house_tiles.has(Vector2i(x, y)):
-						for k in int((1.0 + (cn - cth) * 5.0) * dens):
-							var b1 := _h(x * 41 + k * 3, y * 43 + k)
-							var b2 := _h(x * 47 + k, y * 53 + k * 7)
-							var bs := 0.75 + b1 * 0.7
-							bx.append(Transform3D(Basis(Vector3.UP, b2 * TAU).scaled(Vector3(bs, bs * (0.8 + b2 * 0.4), bs)), Vector3(x + b1, 0.0, y + b2)))
 					if tt == SimMap.T.ROUGH or h > 0.55:
 						for k in int((2.0 if tt == SimMap.T.ROUGH else 1.0) * dens):
 							var q1 := _h(x * 23 + k, y * 29 + k * 7)
 							var q2 := _h(x * 31 + k * 5, y * 37 + k)
 							var ps := 0.6 + q2 * 0.9
 							px.append(Transform3D(Basis(Vector3.UP, q1 * TAU).scaled(Vector3(ps, ps * 0.7, ps)), Vector3(x + q2, 0.0, y + q1)))
-			for pair in [[tx, tuft], [px, peb], [bx, bush]]:
+			for pair in [[tx, tuft], [px, peb]]:
 				var arr: Array = pair[0]
 				if arr.is_empty():
 					continue
@@ -936,19 +926,127 @@ func _tuft_mesh(dry: bool) -> Mesh:
 	st.generate_normals()
 	return st.commit()
 
-## M3.2 item 14: low dark scrub bush (a few overlapping blobs, darker underside = fake AO).
-func _bush_mesh(dry: bool) -> Mesh:
+## M3.2 polish: natural scrub. Bushes grow in clusters (a big one in the middle, smaller ones
+## around it, falling off with distance) plus a few loners; cluster density follows soft noise so
+## there are empty stretches and thickets. Three low-poly lobe meshes (small / medium / large),
+## soft smooth-shaded shapes, dark underside to light top, per-instance shade + hue jitter.
+func _build_bushes(dry: bool) -> void:
+	var dens := float(Settings.preset().get("scatter", 1.0))
+	if dens <= 0.0:
+		return
+	var meshes := [_bush_mesh(dry, 0), _bush_mesh(dry, 1), _bush_mesh(dry, 2)]
+	var shades := [Color("#d9dccb"), Color("#ffffff"), Color("#c8d0b0"), Color("#e8dcc0"), Color("#b9c2a6")]
+	var per_chunk := {}   # Vector2i chunk -> [Array, Array, Array] of [xf, col]
+	var ok := func(x: float, y: float) -> bool:
+		var t := Vector2i(int(x), int(y))
+		if not m.in_bounds(t) or house_tiles.has(t):
+			return false
+		var tt := m.ttype(t)
+		if tt != SimMap.T.GRASS and tt != SimMap.T.ROUGH and tt != SimMap.T.FOREST:
+			return false
+		return absf(heights[t.y * (m.w + 1) + t.x]) < 0.01 and absf(heights[(t.y + 1) * (m.w + 1) + t.x + 1]) < 0.01
+	var cell := 5 if dry else 7
+	var add := func(x: float, y: float, sz: float, r: float) -> void:
+		var v := 0 if sz < 0.8 else (1 if sz < 1.25 else 2)
+		var ck := Vector2i(int(x) / CHUNK, int(y) / CHUNK)
+		if not per_chunk.has(ck):
+			per_chunk[ck] = [[], [], []]
+		var sc: float = sz / [0.6, 1.0, 1.5][v]
+		var xf := Transform3D(Basis(Vector3.UP, r * TAU).scaled(Vector3(sc, sc * (0.85 + r * 0.3), sc)), Vector3(x, 0.0, y))
+		per_chunk[ck][v].append([xf, shades[int(r * 97.0) % shades.size()]])
+	for gy in range(0, m.h, cell):
+		for gx in range(0, m.w, cell):
+			var n := _vn(gx / 23.0 + 7.0, gy / 23.0) * 0.75 + _vn(gx / 7.0, gy / 7.0 + 3.0) * 0.25
+			var p := clampf((n - (0.42 if dry else 0.55)) * 2.6, 0.0, 1.0) * dens
+			if _h(gx * 3 + 5, gy * 7 + 1) > p:
+				# empty cell, but now and then a lone bush
+				if _h(gx + 13, gy + 17) < 0.12 * dens:
+					var lx := gx + _h(gx, gy + 1) * cell
+					var ly := gy + _h(gx + 1, gy) * cell
+					if ok.call(lx, ly):
+						add.call(lx, ly, 0.6 + _h(gx + 2, gy) * 0.5, _h(gx, gy + 2))
+				continue
+			var cx := gx + (0.2 + 0.6 * _h(gx + 31, gy)) * cell
+			var cy := gy + (0.2 + 0.6 * _h(gx, gy + 31)) * cell
+			var cnt := 2 + int(_h(gx + 7, gy + 9) * (6.0 if dry else 4.0) * (0.5 + p))
+			var spread := 0.7 + _h(gx + 3, gy + 3) * 1.3
+			for k in cnt:
+				var a := _h(gx * 5 + k, gy * 3 + k * 7) * TAU
+				var d := spread * sqrt(_h(gx + k * 11, gy + k * 13)) * (0.25 if k == 0 else 1.0)
+				var bx := cx + cos(a) * d
+				var by := cy + sin(a) * d
+				if not ok.call(bx, by):
+					continue
+				var big := 1.0 - d / (spread + 0.01)   # bigger bushes towards the middle
+				add.call(bx, by, 0.55 + big * 0.85 + _h(gx + k, gy - k) * 0.35, _h(gx - k, gy + k * 3))
+	for ck in per_chunk:
+		for v in 3:
+			var arr: Array = per_chunk[ck][v]
+			if arr.is_empty():
+				continue
+			var mm := MultiMesh.new()
+			mm.transform_format = MultiMesh.TRANSFORM_3D
+			mm.use_colors = true
+			mm.mesh = meshes[v]
+			mm.instance_count = arr.size()
+			for i in arr.size():
+				mm.set_instance_transform(i, arr[i][0])
+				mm.set_instance_color(i, arr[i][1])
+			var mmi := MultiMeshInstance3D.new()
+			mmi.multimesh = mm
+			mmi.material_override = prop_material
+			mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if v == 0 else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+			mmi.visibility_range_end = 74.0
+			mmi.visibility_range_end_margin = 10.0
+			mmi.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+			add_child(mmi)
+			scatter_count += arr.size()
+
+## One bush: 3-6 overlapping irregular lobes (jittered low-poly spheres, smooth normals), the
+## base sunk into the ground; vertex colour dark at the bottom, sunlit olive at the top.
+func _bush_mesh(dry: bool, size_class: int) -> Mesh:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var c0 := Color("#4f5a2c") if dry else Color("#4a7a2a")
-	var c1 := Color("#6a7838") if dry else Color("#64983a")
-	PropMeshes.sph(st, Vector3(0, 0.07, 0), Vector3(0.17, 0.1, 0.15), c0, 5)
-	for i in 5:
-		var a := TAU * i / 5.0 + 0.3
-		var r := 0.1 + 0.03 * float(i % 2)
-		PropMeshes.sph(st, Vector3(cos(a) * r, 0.05 + 0.03 * float(i % 3) * 0.5, sin(a) * r), Vector3(0.08, 0.06, 0.075), c1 if i % 2 == 0 else c1.darkened(0.15), 4)
-	st.generate_normals()
+	var lo := Color("#2f3a1c") if dry else Color("#24401a")
+	var hi := Color("#7d8a48") if dry else Color("#6f9c3c")
+	var r0: float = [0.13, 0.2, 0.29][size_class]
+	var nl: int = [3, 4, 6][size_class]
+	for l in nl:
+		var a := TAU * l / nl + 0.7 * size_class
+		var off := Vector3(cos(a), 0, sin(a)) * (r0 * 0.55 if l > 0 else 0.0)
+		var rr := r0 * (1.0 if l == 0 else 0.62 + 0.12 * float(l % 3))
+		_lobe(st, off + Vector3(0, rr * 0.45, 0), Vector3(rr, rr * 0.78, rr), lo, hi, l * 7 + size_class * 31)
+	st.index()
 	return st.commit()
+
+func _lobe(st: SurfaceTool, c: Vector3, r: Vector3, lo: Color, hi: Color, seed: int) -> void:
+	var rings := 4
+	var segs := 7
+	var pts: Array = []
+	for i in rings + 1:
+		var row: Array = []
+		var th := PI * float(i) / rings
+		for j in segs:
+			var ph := TAU * float(j) / segs + float(i % 2) * 0.45
+			var n := Vector3(sin(th) * cos(ph), cos(th), sin(th) * sin(ph))
+			var jit := 0.86 + 0.28 * _h(seed * 13 + i * 7, j * 11 + seed)
+			if i == 0 or i == rings:
+				jit = 1.0
+			var p := c + n * r * jit
+			p.y = maxf(p.y, -0.01)
+			row.append([p, n])
+		pts.append(row)
+	for i in rings:
+		for j in segs:
+			var q := [pts[i][j], pts[i][(j + 1) % segs], pts[i + 1][(j + 1) % segs], pts[i + 1][j]]
+			for tri in [[0, 2, 1], [0, 3, 2]]:
+				for k in tri:
+					var v: Array = q[k]
+					var nn: Vector3 = v[1]
+					var t := clampf(nn.y * 0.5 + 0.5, 0.0, 1.0)
+					st.set_color(lo.lerp(hi, t * t * (3.0 - 2.0 * t)))
+					st.set_normal(nn)
+					st.add_vertex(v[0])
 
 func _pebble_mesh() -> Mesh:
 	var st := SurfaceTool.new()

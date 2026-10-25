@@ -103,9 +103,8 @@ func run_tex(nm: String) -> void:
 		_unit(&"us_halberd", c + Vector2i(13 + (k % 2) * 2, 2 + (k / 2) * 2), FX.ANG / 8)
 	for k in 5:
 		_unit(&"us_grunt", c + Vector2i(4 + k, 13), FX.ANG / 8)
-	if "pitch_deg" in m.cam:
-		m.cam.pitch_deg = 40.0
-	_look(Vector2(c.x + 16, c.y + 8), 2)
+	_bld_o(&"eu_heavy_factory", c + Vector2i(14, 12), 0)
+	_look(Vector2(c.x + 16, c.y + 8), 2)   # real game camera (M3.2 polish: 40 deg default pitch)
 	await frames(90)
 	await shot(nm + "_town")
 	await run_combat(nm)
@@ -126,8 +125,10 @@ func run_combat(nm: String) -> void:
 	for i in range(0, all.size(), 2):   # each pair trades fire; the weak front pair dies early (wrecks)
 		all[i].orders = [{"o": "attack", "target": all[i + 1].id}]
 		all[i + 1].orders = [{"o": "attack", "target": all[i].id}]
-	if "pitch_deg" in m.cam:
-		m.cam.pitch_deg = 40.0
+	for k in 2:   # gunships overhead (aircraft ground shadows)
+		var heli := sim.spawn_unit(&"us_harrier", 0, null, FX.tile_center(b + Vector2i(-8 + k * 3, 3 + k * 3)))
+		heli.air_state = AirSys.FLYING
+		_ensure(heli)
 	await frames(200)
 	_look(Vector2(b.x, b.y + 5), 1)
 	for i in 3:   # three tanks are knocked out shortly before the shot (wrecks, fireballs, smoke)

@@ -126,7 +126,7 @@ func decal(p: Vector3, size: float, kind: int) -> void:
 	var i := _decal_next
 	_decal_next = (_decal_next + 1) % DECAL_CAP
 	var b := Basis(Vector3.UP, randf() * TAU).scaled(Vector3(size, 1, size))
-	decals.multimesh.set_instance_transform(i, Transform3D(b, Vector3(p.x, 0.035 + 0.002 * (i % 8), p.z)))
+	decals.multimesh.set_instance_transform(i, Transform3D(b, Vector3(p.x, maxf(p.y, 0.0) + 0.035 + 0.002 * (i % 8), p.z)))
 	decals.multimesh.set_instance_custom_data(i, Color(kind, randf(), 0.92, 0))
 	_decal_t[i] = 0.0
 
@@ -174,6 +174,12 @@ func smoke_puff(p: Vector3, strength: float, burning: bool) -> void:
 		fire.emit(p + Vector3(randf_range(-0.2, 0.2), 0.1, randf_range(-0.2, 0.2)), Vector3(0, 1.6, 0), 0.6, 0.25 + strength * 0.15, 0.05, Color(1.4, 0.55, 0.12), Color(0.6, 0.12, 0.02, 0.0), 1.0)
 		if randf() < 0.35:
 			spark_layer.emit(p + Vector3(0, 0.2, 0), Vector3(randf_range(-0.3, 0.3), randf_range(1.2, 2.2), randf_range(-0.3, 0.3)), 1.2, 0.03, 0.01, Color("#ffd27a"), Color(1.0, 0.4, 0.05, 0.0), 1.0)
+
+## M3.2: light grey chimney wisp drifting downwind.
+func stack_puff(p: Vector3) -> void:
+	if fx_mul < 1.0 and randf() > fx_mul:
+		return
+	smoke.emit(p, Vector3(0.25, 0.75, 0.08), 3.2, 0.16, 1.1, Color(0.6, 0.58, 0.55, 0.5), Color(0.72, 0.7, 0.67, 0.0))
 
 ## M3.2 item 14: destroyed vehicle — persistent scorch decal + a tall drifting smoke column that
 ## burns for `secs` (capped number of live columns keeps the pooled particle budget on mobile).
