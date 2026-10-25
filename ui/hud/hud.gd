@@ -707,15 +707,20 @@ func _unit_state(e: SimEntity) -> String:
 	var o: String = e.orders[0].get("o", "")
 	return tr("STATE_" + o.to_upper())
 
+var _types_key := ""
 func _fill_types(units: Array) -> void:
+	var counts := {}
+	for id in units:
+		var d0: StringName = sim.ents[id].def_id
+		counts[d0] = counts.get(d0, 0) + 1
+	var key := "%s|%.0f" % [counts, sel_panel.size.x]
+	if key == _types_key:   # M3.2: keep the chips alive between refreshes (press-and-hold info)
+		return
+	_types_key = key
 	for c in sel_types.get_children():
 		c.queue_free()
 	if units.is_empty():
 		return
-	var counts := {}
-	for id in units:
-		var d: StringName = sim.ents[id].def_id
-		counts[d] = counts.get(d, 0) + 1
 	var tmax := _chips_fit(59.0, _resume_reserve())
 	var listed := 0
 	for d in counts:
