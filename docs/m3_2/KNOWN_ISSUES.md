@@ -32,3 +32,11 @@
   There is no loiter AI for player-launched bomb drones.
 - **Previews were rendered with the compatibility renderer** under xvfb. The phone uses the
   Mobile renderer, so glow and shadow look may differ slightly.
+- **Stash test fails (median 13.9 min, target 15-19).** AI-vs-AI medium matches now end by
+  about 12-13 min, before most home stashes run dry. Before part 2 they lasted 17+ min.
+  US/EU still had 30-50k supply left at game over. Extrapolating the mining rate puts the
+  empty time at about 18-22 min, so the stashes are not draining faster: the matches are
+  just more decisive. Likely causes: capture units (they can capture HQs, as in ZH), AA that
+  now hits ground, and no unit cap. This is a balance call; the test was left unchanged.
+- **Russia's HUD in the UI test needs a test-only `Content.test_unlock_all` flag**, because
+  the lobby config turns the locked faction into EU. The game never sets that flag.
