@@ -127,9 +127,12 @@ func _ready() -> void:
 	# two fresh fireballs caught near their peak
 	fx.explosion(cw + Vector3(-1.5, 0, -3.0), 0.9)
 	fx.explosion(cw + Vector3(4.5, 0, 1.0), 0.75)
-	Engine.time_scale = 1.0
+	var t0 := Time.get_ticks_msec()
 	await frames(1)
-	Engine.time_scale = 0.02
+	var dt := maxf(0.05, (Time.get_ticks_msec() - t0) / 1000.0)
+	Engine.time_scale = 0.3 / dt    # the next (slow) frame advances the fireballs ~0.3 s
+	await frames(1)
+	Engine.time_scale = 0.01
 	await frames(1)
 	await RenderingServer.frame_post_draw
 	var img := get_viewport().get_texture().get_image()
