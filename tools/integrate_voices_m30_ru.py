@@ -39,6 +39,12 @@ SETS = {
           "under_fire": [T + "koksan/under_fire_1"], "created": [T + "koksan/select_1"], "veteran": [T + "koksan/attack_1"]},
  "zeus": {"select": [T + "bhx35/select_1"], "move": [T + "bhx35/move_1"], "attack": [T + "bhx35/attack_1", T + "bhx35/attack_3"],
           "under_fire": [T + "bhx35/under_fire_1", T + "bhx35/under_fire_2"], "created": [T + "bhx35/select_1"], "veteran": [T + "bhx35/attack_3"]},
+ "su57": {"select": [R + "su57/select_1"], "move": [R + "su57/move_1"], "attack": [R + "su57/attack_1"], "under_fire": [R + "su57/under_fire_1"],
+          "created": [R + "su57/select_1"], "veteran": [R + "su57/attack_1"]},   # M3.2 aircraft (Russian-accent renders)
+ "ka52": {"select": [R + "ka52/select_1"], "move": [R + "ka52/move_1"], "attack": [R + "ka52/attack_1"], "under_fire": [R + "ka52/under_fire_1"],
+          "created": [R + "ka52/select_1"], "veteran": [R + "ka52/attack_1"]},   # M3.2 aircraft (Russian-accent renders)
+ "tu160": {"select": [R + "tu160/select_1"], "move": [R + "tu160/move_1"], "attack": [R + "tu160/attack_1"], "under_fire": [R + "tu160/under_fire_1"],
+          "created": [R + "tu160/select_1"], "veteran": [R + "tu160/attack_1"]},   # M3.2 aircraft (Russian-accent renders)
 }
 
 def main():
