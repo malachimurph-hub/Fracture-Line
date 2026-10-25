@@ -74,7 +74,7 @@ func _draw() -> void:
 			_chevrons(sp + Vector2(-16, -12), e.vet)
 		if e.kind == SimEntity.Kind.BUILDING and e.built and not e.powered and e.team == world.local_team:
 			_bolt(sp + Vector2(0, -16))
-		if e.kind == SimEntity.Kind.NEUTRAL and e.owner >= 0 and Content.building(e.def_id).garrison_capacity > 0:
+		if ((e.kind == SimEntity.Kind.NEUTRAL and e.owner >= 0) or (e.kind == SimEntity.Kind.BUILDING and Content.btag(e.def_id, "barricade"))) and Content.building(e.def_id).garrison_capacity > 0:
 			var n := 0
 			for uid in sim.ids:
 				if sim.ents[uid].res_id == -e.id:

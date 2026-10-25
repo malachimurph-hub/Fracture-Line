@@ -370,14 +370,21 @@ func smart_command(screen: Vector2) -> void:
 			units = _minus(units, inf)
 			if units.is_empty():
 				return
+	elif t != null and t.owner == pid and t.kind == SimEntity.Kind.BUILDING and t.built and CommandSys.is_barricade(sim, t) and not _filter(units, "garrison").is_empty():
+		var gi2 := _filter(units, "garrison")   # M3.2: infantry man an own barricade
+		issue({"t": "garrison", "ids": gi2, "target": t.id, "q": q})
+		world.marker(t.pos, Color("#7dff8a"))
+		units = _minus(units, gi2)
+		if units.is_empty():
+			return
 	elif t != null and t.kind == SimEntity.Kind.BUILDING and not t.built:
-		var b := _filter(units, "builder")
+		var b := constructors(units, t.def_id)
 		if not b.is_empty():
 			issue({"t": "resume_build", "ids": b, "target": t.id, "q": q})
 			world.marker(t.pos, Color("#7dff8a"))
 			units = _minus(units, b)
-	elif t != null and t.owner == pid and t.kind == SimEntity.Kind.BUILDING and t.built and t.hp < t.max_hp and not _filter(units, "builder").is_empty():
-		var rb := _filter(units, "builder")   # M3.1: builders repair a damaged own structure
+	elif t != null and t.owner == pid and t.kind == SimEntity.Kind.BUILDING and t.built and t.hp < t.max_hp and not constructors(units).is_empty():
+		var rb := constructors(units)   # M3.1: builders repair a damaged own structure
 		issue({"t": "repair", "ids": rb, "target": t.id, "q": q})
 		world.marker(t.pos, Color("#7dff8a"))
 		units = _minus(units, rb)
@@ -402,6 +409,16 @@ func _nearest_resource(p: Vector2i) -> int:
 				bd = d
 				best = id
 	return best
+
+## M3.2: builders plus Field Engineers (who may only build barricades / minefields).
+func constructors(ids: Array, def_id: StringName = &"") -> Array:
+	var out: Array = []
+	var bd: BuildingDef = Content.building(def_id) if def_id != &"" else null
+	for id in ids:
+		var ud := Content.unit(sim.ents[id].def_id)
+		if SimWorld.can_construct(ud, bd) if bd != null else SimWorld.is_constructor(ud):
+			out.append(id)
+	return out
 
 func _filter(ids: Array, tag: String) -> Array:
 	var out: Array = []
@@ -472,7 +489,7 @@ func cancel_mode() -> void:
 
 # ---------------------------------------------------------------- placement
 func begin_place(def_id: StringName) -> void:
-	var builders := _filter(own_units_selected(), "builder")
+	var builders := constructors(own_units_selected(), def_id)
 	if builders.is_empty():
 		feedback.emit(tr("REASON_NO_BUILDER"))
 		return

@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"us_up_drones"
+faction = &"us"
+name_key = "UNIT_US_UP_DRONES"
+desc_key = "UNIT_US_UP_DRONES_DESC"
+cost = 1500
+build_time_ms = 30000
+pop = 0
+prereqs = PackedStringArray()
+tags = PackedStringArray("upgrade")
+max_hp = 1
+armor_type = &"infantry"
+weapons = PackedStringArray()
+speed_mtps = 0
+move_layer = &"foot"
+sight = 0
+radius_mt = 100
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 0
+role = &"upgrade"
+view_scene = "res://view/units/us/up_drones.tscn"
+stubs = PackedStringArray()
+loco = &""
+turn_dps = 0
+accel_ms = 0
+turret_dps = 0
+abilities = PackedStringArray()
+transport_capacity = 0
+detector = false
+air_slots = 0

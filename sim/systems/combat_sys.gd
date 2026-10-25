@@ -42,6 +42,8 @@ static func run(w: SimWorld) -> void:
 				e.hp = mini(e.max_hp, e.hp + maxi(1, e.max_hp / 100))
 		elif e.kind == SimEntity.Kind.BUILDING and e.built and not e.cds.is_empty():
 			_structure_fire(w, e)
+		elif e.kind == SimEntity.Kind.BUILDING and e.built and (w.tick + e.id) % 2 == 0 and w.bdef(e).garrison_capacity > 0 and w.bdef(e).tags.has("barricade"):
+			_garrison_fire(w, e)   # M3.2: troops manning a barricade fire from behind it
 		elif e.kind == SimEntity.Kind.NEUTRAL and e.owner >= 0 and (w.tick + e.id) % 2 == 0:
 			_garrison_fire(w, e)
 

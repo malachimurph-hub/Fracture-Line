@@ -48,6 +48,10 @@ static func run(w: SimWorld) -> void:
 		var uid: StringName = b.queue.pop_front()
 		b.q_paid.pop_front()
 		b.q_progress = 0
+		if ud.tags.has("upgrade"):   # M3.2: research completes instead of spawning a unit
+			p.upgrades[String(uid)] = true
+			w.events.append({"t": "upgrade", "owner": b.owner, "def": uid, "id": b.id})
+			continue
 		var u := w.spawn_unit(uid, b.owner, b)
 		p.pop += ud.pop
 		p.stats["built"] += 1

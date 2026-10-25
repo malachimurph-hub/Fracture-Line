@@ -654,6 +654,12 @@ func _refresh_selection_info() -> void:
 				lines.append(tr("HUD_BLD_POWER") % bd.power)
 			if bd.air_slots > 0:
 				lines.append(tr("HUD_AIR_SLOTS") % [AirSys.slots_used(sim, e), bd.air_slots])
+			if bd.garrison_capacity > 0 and bd.tags.has("barricade"):
+				var ng := 0
+				for uid3 in sim.ids:
+					if sim.ents[uid3].res_id == -e.id:
+						ng += 1
+				lines.append(tr("HUD_GARRISON") % [ng, bd.garrison_capacity])
 			if e.hold_reason != "":
 				lines.append(tr(e.hold_reason))
 			_fill_queue(e)
@@ -816,11 +822,14 @@ func _make_card() -> Array:
 		return out
 	var units := ctl.own_units_selected()
 	if e.kind == SimEntity.Kind.UNIT and not units.is_empty():
-		var builders := ctl._filter(units, "builder")
+		var builders := ctl.constructors(units)
+		var fe_only := ctl._filter(units, "builder").is_empty()   # M3.2: Field Engineers build barricades + minefields only
 		if not builders.is_empty() and builders.size() == units.size():
 			for bid in Content.building_order(sim.faction_of(pid)):
 				var bd: BuildingDef = Content.building(bid)
 				if not bd.buildable or bd.is_hq:
+					continue
+				if fe_only and not (bd.tags.has("barricade") or bd.tags.has("mine")):
 					continue
 				var why := sim.prereqs_met(pid, bd.prereqs)
 				var funds: bool = sim.players[pid].supply >= bd.cost
@@ -841,6 +850,16 @@ func _make_card() -> Array:
 						ctl.issue({"t": "harvest", "ids": hvb, "target": r})})
 			out.append({"text": tr("CMD_STOP"), "pin": true, "act": ctl.simple.bind("stop")})
 			return out
+		var ops := ctl._filter(units, "drone_operator")
+		if not ops.is_empty():   # M3.2: Drone Operator launches (one of each per operator, 60 s reload)
+			for kd in [["bomb", "CMD_BOMB_DRONE", Color("#ff6a4a")], ["scout", "CMD_SCOUT_DRONE", Color("#6fe3ff")]]:
+				var wait := 1 << 50
+				for oid in ops:
+					wait = mini(wait, sim.drone_wait(sim.ents[oid], kd[0]))
+				var busy := wait >= SimWorld.DRONE_BUSY / 2
+				out.append({"text": tr(kd[1]), "sub": tr("CMD_DRONE_READY") if wait == 0 else ("—" if busy else "%ds" % ceili(wait / 20.0)),
+					"disabled": wait > 0, "act": ctl.issue.bind({"t": "drone", "ids": ops, "kind": kd[0]}), "accent": kd[2],
+					"tip": tr("UNIT_US_BOMB_DRONE_DESC" if kd[0] == "bomb" else "UNIT_US_SCOUT_DRONE_DESC")})
 		out.append({"text": tr("CMD_AMOVE"), "act": ctl.begin_target.bind("amove"), "accent": Color("#ff9a2a"), "tip": tr("CMD_AMOVE_TIP")})
 		out.append({"text": tr("CMD_MOVE"), "act": ctl.begin_target.bind("move"), "accent": Color("#7dff8a")})
 		out.append({"text": tr("CMD_STOP"), "act": ctl.simple.bind("stop")})
@@ -868,6 +887,13 @@ func _make_card() -> Array:
 		out.append({"text": tr("CMD_RESUME_BUILD"), "act": resume_site.bind(e), "accent": Color("#7dff8a"), "tip": tr("CMD_RESUME_BUILD_TIP")})
 		out.append({"text": tr("CMD_CANCEL_BUILD"), "act": func(): ctl.issue({"t": "cancel_build", "target": e.id}), "tip": tr("CMD_CANCEL_BUILD_TIP")})
 		return out
+	if CommandSys.is_barricade(sim, e):   # M3.2: manned barricade -> troops step out
+		var nb := 0
+		for uid2 in sim.ids:
+			if sim.ents[uid2].res_id == -e.id:
+				nb += 1
+		out.append({"text": tr("CMD_EXIT_BARRICADE"), "sub": "%d / %d" % [nb, bd2.garrison_capacity], "disabled": nb == 0,
+			"act": func(): ctl.issue({"t": "unload", "ids": [e.id]}), "accent": Color("#ffd166")})
 	if TplaSys.is_tunnel(sim, e):
 		var inside := TplaSys.network_units(sim, pid).size()
 		out.append({"text": tr("HUD_EVACUATE"), "sub": "%d / %d" % [inside, TplaSys.network_capacity()], "disabled": inside == 0,
@@ -881,6 +907,14 @@ func _make_card() -> Array:
 		var prog := -1.0
 		if not e.queue.is_empty() and e.queue[0] == StringName(uid):
 			prog = float(e.q_progress) / float(maxi(1, FX.ms_to_ticks(udf.build_time_ms) * 2))
+		if udf.tags.has("upgrade"):   # M3.2: research (one-off)
+			var done: bool = sim.players[pid].upgrades.has(String(uid))
+			var queued := CommandSys.upgrade_queued(sim, pid, StringName(uid))
+			out.append({"text": tr(udf.name_key), "sub": tr("HUD_RESEARCHED") if done else "$%d" % udf.cost, "badge": "",
+				"act": ctl.queue_unit.bind(e, StringName(uid), 1), "alt": func(): ctl.dequeue(e, e.queue.rfind(StringName(uid))),
+				"disabled": done or queued or why2 != "" or e.queue.size() >= ProdSys.MAX_QUEUE, "progress": prog,
+				"tip": tr(udf.name_key + "_DESC"), "accent": Color("#6fe3ff")})
+			continue
 		out.append({"text": tr(udf.name_key), "sub": "$%d" % udf.cost, "badge": str(n) if n > 0 else "",
 			"act": ctl.queue_unit.bind(e, StringName(uid), 1), "alt": func(): ctl.dequeue(e, e.queue.rfind(StringName(uid))),
 			"disabled": why2 != "" or e.queue.size() >= ProdSys.MAX_QUEUE or udf.tags.has("stub"), "progress": prog, "stub": not udf.stubs.is_empty(),

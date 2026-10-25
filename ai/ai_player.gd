@@ -115,7 +115,7 @@ func combat_units() -> Array:
 	var out: Array = []
 	for u: SimEntity in my_ents(SimEntity.Kind.UNIT):
 		var d: UnitDef = w.udef(u)
-		if d.tags.has("builder") or d.tags.has("harvester") or u.res_id < 0:
+		if d.tags.has("builder") or d.tags.has("harvester") or d.tags.has("drone") or u.res_id < 0:
 			continue
 		out.append(u)
 	return out
@@ -552,6 +552,14 @@ func _pick_unit(bd: BuildingDef) -> StringName:
 		elif (ud.tags.has("detector") or ud.tags.has("jammer")) and _count_type(StringName(uid)) >= 1 + combat_units().size() / 12:
 			wgt = 0
 		elif ud.tags.has("artillery") and _count_type(StringName(uid)) >= 2 + combat_units().size() / 8:
+			wgt = 0
+		elif ud.tags.has("upgrade") and (me().upgrades.has(String(uid)) or CommandSys.upgrade_queued(w, pid, StringName(uid))):
+			wgt = 0   # M3.2 research: once
+		elif ud.tags.has("upgrade"):
+			wgt *= 3
+		elif ud.tags.has("field_engineer") and _count_type(StringName(uid)) >= 2:
+			wgt = 0
+		elif ud.tags.has("drone_operator") and _count_type(StringName(uid)) >= 1 + combat_units().size() / 10:
 			wgt = 0
 		if w.prereqs_met(pid, ud.prereqs) != "":
 			wgt = 0

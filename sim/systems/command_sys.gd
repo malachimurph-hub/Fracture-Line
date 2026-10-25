@@ -55,6 +55,11 @@ static func apply(w: SimWorld, c: Dictionary) -> void:
 				for u: SimEntity in _own_units(w, pid, c):
 					_push(u, {"o": "garrison", "target": b.id}, bool(c.get("q", false)))
 				return
+			if b != null and b.kind == SimEntity.Kind.BUILDING and b.owner == pid and b.built and is_barricade(w, b):
+				for u: SimEntity in _own_units(w, pid, c):   # M3.2: man an own barricade (max 3)
+					if w.udef(u).tags.has("garrison"):
+						_push(u, {"o": "garrison", "target": b.id}, bool(c.get("q", false)))
+				return
 			if b == null or b.kind != SimEntity.Kind.NEUTRAL or w.bdef(b).garrison_capacity <= 0:
 				return
 			if b.owner >= 0 and w.enemies(b.team, w.player_team(pid)):
@@ -79,18 +84,34 @@ static func apply(w: SimWorld, c: Dictionary) -> void:
 				if TplaSys.is_tunnel(w, b3) and b3.owner == pid and b3.built:
 					TplaSys.evacuate(w, b3)
 					continue
+				if b3 != null and b3.kind == SimEntity.Kind.BUILDING and b3.owner == pid and is_barricade(w, b3):
+					leave_barricade(w, b3)   # M3.2: troops step out, no stun
+					continue
 				if b3 != null and b3.kind == SimEntity.Kind.NEUTRAL and b3.owner == pid:
 					w._eject_garrison(b3)
 					b3.owner = -1
 					b3.team = -1
 		"place":
 			_place(w, pid, c)
+		"drone":   # M3.2: Drone Operator launches a bomb or scout drone (one of each per operator)
+			var kind := String(c.get("kind", "bomb"))
+			var did := &"us_bomb_drone" if kind == "bomb" else &"us_scout_drone"
+			for u: SimEntity in _own_units(w, pid, c):
+				if not w.udef(u).tags.has("drone_operator") or u.res_id < 0 or w.drone_wait(u, kind) > 0:
+					continue
+				var dr := w.spawn_unit(did, pid, null, u.pos)
+				dr.air_home = u.id
+				if kind == "bomb":
+					u.air_t = SimWorld.DRONE_BUSY
+				else:
+					u.aux_t = SimWorld.DRONE_BUSY
+				w.events.append({"t": "drone", "id": dr.id, "op": u.id, "owner": pid})
 		"resume_build":
 			var site := w.get_ent(int(c.get("target", 0)))
 			if site == null or site.owner != pid or site.built:
 				return
 			for u: SimEntity in _own_units(w, pid, c):
-				if w.udef(u).tags.has("builder"):
+				if SimWorld.can_construct(w.udef(u), w.bdef(site)):
 					_push(u, {"o": "build", "target": site.id}, bool(c.get("q", false)))
 					if w.udef(u).harvest_capacity > 0:
 						u.phase = -1
@@ -99,7 +120,7 @@ static func apply(w: SimWorld, c: Dictionary) -> void:
 			if rb == null or rb.owner != pid or rb.kind != SimEntity.Kind.BUILDING or not rb.built or rb.hp >= rb.max_hp:
 				return
 			for u: SimEntity in _own_units(w, pid, c):
-				if w.udef(u).tags.has("builder"):
+				if SimWorld.is_constructor(w.udef(u)):
 					_push(u, {"o": "repair", "target": rb.id, "acc": 0}, bool(c.get("q", false)))
 					if w.udef(u).harvest_capacity > 0:
 						u.phase = -1
@@ -236,13 +257,26 @@ static func formation_slots(w: SimWorld, center: Vector2i, n: int, vehicle: bool
 		out.append(center)
 	return out
 
+static func is_barricade(w: SimWorld, b: SimEntity) -> bool:
+	return w.bdef(b).garrison_capacity > 0 and w.bdef(b).tags.has("barricade")
+
+static func leave_barricade(w: SimWorld, b: SimEntity) -> void:
+	for id in w.ids:
+		var u: SimEntity = w.ents[id]
+		if u.alive and u.kind == SimEntity.Kind.UNIT and u.res_id == -b.id:
+			u.res_id = 0
+			u.pos = FX.tile_center(w.map.nearest_passable(FX.to_tile(b.pos) + Vector2i(0, b.fp.y), false))
+			u.orders.clear()
+			u.goal = MoveSys.NONE
+
 static func _place(w: SimWorld, pid: int, c: Dictionary) -> void:
 	var def_id := StringName(c.get("def", ""))
 	var t: Vector2i = c.get("tile", Vector2i.ZERO)
 	var builders: Array = []
 	var bids: Array = []
+	var pd: BuildingDef = Content.building(def_id)
 	for u: SimEntity in _own_units(w, pid, c):
-		if w.udef(u).tags.has("builder"):
+		if pd != null and SimWorld.can_construct(w.udef(u), pd):
 			builders.append(u)
 			bids.append(u.id)
 	if builders.is_empty():
@@ -261,6 +295,14 @@ static func _place(w: SimWorld, pid: int, c: Dictionary) -> void:
 		if w.udef(u).harvest_capacity > 0:
 			u.phase = -1   # a laborer sent to build stays a builder until told to harvest
 
+## M3.2: an upgrade already in some production queue of this player.
+static func upgrade_queued(w: SimWorld, pid: int, uid: StringName) -> bool:
+	for id in w.ids:
+		var b: SimEntity = w.ents[id]
+		if b.alive and b.owner == pid and b.kind == SimEntity.Kind.BUILDING and b.queue.has(uid):
+			return true
+	return false
+
 static func _queue(w: SimWorld, pid: int, c: Dictionary) -> void:
 	var b := w.get_ent(int(c.get("target", 0)))
 	if b == null or b.owner != pid or b.kind != SimEntity.Kind.BUILDING or not b.built:
@@ -276,7 +318,10 @@ static func _queue(w: SimWorld, pid: int, c: Dictionary) -> void:
 	if w.prereqs_met(pid, ud.prereqs) != "":
 		w.events.append({"t": "reject", "owner": pid, "reason": "REASON_PREREQ"})
 		return
-	var n: int = maxi(1, int(c.get("n", 1)))
+	if ud.tags.has("upgrade") and (w.players[pid].upgrades.has(String(uid)) or upgrade_queued(w, pid, uid)):
+		w.events.append({"t": "reject", "owner": pid, "reason": "REASON_RESEARCHED"})
+		return
+	var n: int = 1 if ud.tags.has("upgrade") else maxi(1, int(c.get("n", 1)))
 	for i in n:
 		if b.queue.size() >= ProdSys.MAX_QUEUE:
 			break

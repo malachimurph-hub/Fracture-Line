@@ -543,3 +543,25 @@ POWER_ECC_STRIKE_DESC,A heavy artillery barrage on the target area.
 POWER_ECC_REPAIR,Field Repair
 POWER_ECC_REPAIR_DESC,Vehicles and structures in the area regain half their health.
 AI_STEPPE,Steppe
+BLD_SANDBAGS,Sandbag Barricade
+BLD_SANDBAGS_DESC,"Cheap sandbag wall. Up to 3 infantry can man it: tap it with infantry selected. They are protected and fire from cover until it falls."
+BLD_BARRICADE,Concrete Barricade
+BLD_BARRICADE_DESC,"Heavy concrete barrier. Up to 3 infantry can man it and fire from cover; much tougher than sandbags."
+UNIT_EU_FIELD_ENGINEER,Field Engineer
+UNIT_EU_FIELD_ENGINEER_DESC,"Combat engineer with a rifle. Repairs nearby vehicles while standing still, repairs structures, lays anti-tank minefields and builds barricades."
+UNIT_US_DRONE_OPERATOR,Drone Operator
+UNIT_US_DRONE_OPERATOR_DESC,"Launches a bomb drone (one-way attack) and a scout drone (flying recon). Each drone comes back 60 s after it is used or lost. Needs Drone Warfare from the Strategic Center."
+UNIT_US_BOMB_DRONE,Bomb Drone
+UNIT_US_BOMB_DRONE_DESC,One-way attack drone. Flies to its target and detonates. Strong against vehicles.
+UNIT_US_SCOUT_DRONE,Scout Drone
+UNIT_US_SCOUT_DRONE_DESC,"Unarmed recon drone with a wide view. Flies over any terrain."
+UNIT_US_UP_DRONES,Drone Warfare
+UNIT_US_UP_DRONES_DESC,Research: unlocks the Drone Operator at the Barracks.
+REASON_RESEARCHED,Already researched
+CMD_BOMB_DRONE,Bomb Drone
+CMD_SCOUT_DRONE,Scout Drone
+CMD_DRONE_READY,Ready
+CMD_EXIT_BARRICADE,Exit
+HUD_RESEARCHED,Researched
+HUD_UPGRADE_DONE,Research complete: %s
+
