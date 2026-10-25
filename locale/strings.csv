@@ -141,7 +141,7 @@ CMD_GUARD,Guard
 CMD_SCATTER,Scatter
 CMD_HARVEST,Harvest
 CMD_LOAD,Load
-CMD_UNLOAD,Evacuate
+CMD_UNLOAD,Unload
 CMD_CANCEL_BUILD,"Cancel
 build"
 CMD_RESUME_BUILD,Resume build
@@ -244,6 +244,8 @@ BLD_EU_MOTOR_POOL,Motor Pool
 BLD_EU_HEAVY_FACTORY,Heavy Factory
 BLD_EU_GUN_BUNKER,Gun Bunker
 BLD_CIV_BLOCK,Civilian Block
+BLD_CIV_HOUSE,House
+BLD_CIV_HOUSE_DESC,"Civilian house. Up to 4 infantry can garrison it."
 BLD_PUMP,Veridite Pump
 SHORT_EU_CRAWLER,ENG
 SHORT_EU_HARVESTER,LOG

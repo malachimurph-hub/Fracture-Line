@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://view/buildings/neutral/house_view.gd" id="1_h"]
+
+[node name="View" type="Node3D"]
+script = ExtResource("1_h")
+selection_radius = 1.6
+bar_height = 2.2
+footprint = Vector2(3, 3)
+is_structure = true
+house_kind = "house_c"
+
+[node name="HealthBarAnchor" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)

@@ -86,7 +86,31 @@ func pick_all(screen: Vector2) -> Array:
 func _in_footprint(e: SimEntity, screen: Vector2) -> bool:
 	var g := cam.ground_point(screen)
 	var t0 := Vector2(e.tile)
-	return g.x >= t0.x - 0.25 and g.z >= t0.y - 0.25 and g.x <= t0.x + e.fp.x + 0.25 and g.z <= t0.y + e.fp.y + 0.25
+	if g.x >= t0.x - 0.25 and g.z >= t0.y - 0.25 and g.x <= t0.x + e.fp.x + 0.25 and g.z <= t0.y + e.fp.y + 0.25:
+		return true
+	# M3.2.1: at the 40 degree camera the walls and roof of a structure cover ground well behind
+	# its footprint, so a tap on the building itself missed. Also test the ray against the
+	# structure's box (footprint x model height).
+	var v: EntityView = world.views.get(e.id)
+	if v == null:
+		return false
+	var h := _pick_height(v)
+	var box := AABB(Vector3(t0.x - 0.15, v.position.y, t0.y - 0.15), Vector3(e.fp.x + 0.3, h, e.fp.y + 0.3))
+	return box.intersects_ray(cam.cam.project_ray_origin(screen), cam.cam.project_ray_normal(screen)) != null
+
+func _pick_height(v: EntityView) -> float:
+	if v.has_meta("pick_h"):
+		return float(v.get_meta("pick_h"))
+	var top := 0.4
+	if v.model != null:
+		var inv := v.global_transform.affine_inverse()
+		for mi in v.model.find_children("*", "MeshInstance3D", true, false):
+			var mm := mi as MeshInstance3D
+			if mm.mesh != null and mm.visible:
+				top = maxf(top, ((inv * mm.global_transform) * mm.get_aabb()).end.y)
+	top = minf(top * 0.85, 6.0)   # spires / antennas do not count fully
+	v.set_meta("pick_h", top)
+	return top
 
 ## Single best pick, preferring units over structures under the same finger and cycling
 ## through overlapping candidates on repeated taps at the same spot (GDD 6.4).
@@ -308,6 +332,38 @@ func resume_site_at(screen: Vector2) -> SimEntity:
 			return o
 	return null
 
+## M3.2.1: the thing the selected infantry can get into under the finger (own transport with
+## room, own built barricade, neutral / own-garrisoned civilian building), or null. Selected
+## units under the finger are skipped so a squad standing next to its APC does not hide it.
+func enter_target_at(screen: Vector2) -> SimEntity:
+	var units := own_units_selected()
+	if units.is_empty():
+		return null
+	var boarders: Array = []
+	for id in _filter(units, "infantry"):
+		if not Content.unit(sim.ents[id].def_id).tags.has("builder"):
+			boarders.append(id)
+	var garr := _filter(units, "garrison")
+	if boarders.is_empty() and garr.is_empty():
+		return null
+	for oid in pick_all(screen):
+		if units.has(oid):
+			continue
+		var o: SimEntity = sim.get_ent(oid)
+		if o == null or not o.alive:
+			continue
+		if o.kind == SimEntity.Kind.UNIT:
+			if o.owner == pid and not boarders.is_empty() and Content.unit(o.def_id).transport_capacity > 0:
+				return o
+			continue
+		if garr.is_empty():
+			continue
+		if o.kind == SimEntity.Kind.BUILDING and o.owner == pid and o.built and CommandSys.is_barricade(sim, o):
+			return o
+		if o.kind == SimEntity.Kind.NEUTRAL and Content.building(o.def_id).garrison_capacity > 0 and (o.owner < 0 or o.owner == pid):
+			return o
+	return null
+
 func smart_command(screen: Vector2) -> void:
 	var units := own_units_selected()
 	var g := cam.ground_point(screen)
@@ -319,6 +375,9 @@ func smart_command(screen: Vector2) -> void:
 		return
 	var tid := pick(screen)
 	var t := sim.get_ent(tid)
+	var et := enter_target_at(screen)   # M3.2.1: a transport / barricade / house beats a unit under the finger
+	if et != null:
+		t = et
 	var q := _queue_flag()
 	if t != null and t.owner == pid and t.kind == SimEntity.Kind.UNIT:
 		# a builder standing on its scaffold must not hide the site from a resume tap (ZH)
@@ -364,6 +423,13 @@ func smart_command(screen: Vector2) -> void:
 		elif t.team >= 0 and sim.enemies(t.team, sim.player_team(pid)):
 			issue({"t": "attack", "ids": units, "target": t.id, "q": q})
 			world.marker(t.pos, Color("#ff4a3d"))
+			return
+	elif t != null and t.owner == pid and t.kind == SimEntity.Kind.NEUTRAL and Content.building(t.def_id).garrison_capacity > 0 and not _filter(units, "garrison").is_empty():
+		var gi3 := _filter(units, "garrison")   # M3.2.1: more troops into a building we already hold
+		issue({"t": "garrison", "ids": gi3, "target": t.id, "q": q})
+		world.marker(t.pos, Color("#7dff8a"))
+		units = _minus(units, gi3)
+		if units.is_empty():
 			return
 	elif t != null and t.owner == pid and t.kind == SimEntity.Kind.UNIT and Content.unit(t.def_id).transport_capacity > 0 and not units.has(t.id):
 		# infantry tapped onto an own transport: board it (M2.4)

@@ -1020,7 +1020,12 @@ func _make_card() -> Array:
 				"act": func(): ctl.issue({"t": "unload", "ids": [e.id]}), "tip": tr("STUB_TRANSPORT"), "accent": Color("#ffd166")})
 		return out
 	if e.kind == SimEntity.Kind.NEUTRAL and e.owner == pid:
-		out.append({"text": tr("CMD_UNLOAD"), "act": func(): ctl.issue({"t": "unload", "ids": [e.id]})})
+		var ng := 0
+		for uid3 in sim.ids:
+			if sim.ents[uid3].res_id == -e.id:
+				ng += 1
+		out.append({"text": tr("HUD_EVACUATE"), "sub": "%d / %d" % [ng, Content.building(e.def_id).garrison_capacity],
+			"act": func(): ctl.issue({"t": "unload", "ids": [e.id]}), "accent": Color("#ffd166")})
 		return out
 	if e.kind != SimEntity.Kind.BUILDING:
 		return out

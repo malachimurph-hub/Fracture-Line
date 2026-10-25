@@ -66,7 +66,7 @@ func setup(map_def: MapDef, slots: Array, opts: Dictionary, p_seed: int) -> void
 	# neutrals
 	for n in map_def.neutrals:
 		var d: BuildingDef = Content.building(n["kind"])
-		var b := _place_building(d, -1, n["tile"], 0, true)
+		var b := _place_building(d, -1, n["tile"], int(n.get("rot", 0)), true)   # M3.2.1: houses face their street
 		b.kind = SimEntity.Kind.NEUTRAL
 	# start bases
 	for i in slots.size():
