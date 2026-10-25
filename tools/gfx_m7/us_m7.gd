@@ -54,6 +54,7 @@ static func build(only: Array) -> void:
 	jobs.merge(load("res://tools/gfx_m30/de_m30.gd").jobs(), true)   # M3.0 E: Germany roster
 	jobs.merge(load("res://tools/gfx_m30/ru_m30.gd").jobs(), true)   # M3.0 F: Russia roster
 	jobs.merge(load("res://tools/gfx_m32/ru_m32.gd").jobs(), true)   # M3.2: Russia buildings + aircraft
+	jobs.merge(load("res://tools/gfx_m32/new_m32.gd").jobs(), true)   # M3.2: barricades, drones, concrete M777 pad
 	for k in jobs:
 		if all or k in only:
 			jobs[k].call()

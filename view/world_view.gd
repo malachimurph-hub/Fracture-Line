@@ -92,7 +92,13 @@ func _air_view(id: int, e: SimEntity, ud: UnitDef, v: Node3D, p: Vector3, delta:
 	alt = move_toward(alt, want, delta * (3.0 if jet else 2.0))
 	air_alt[id] = alt
 	var spin := alt > 0.2 or not jet
-	for rn in [v.find_child("Rotor", true, false), v.find_child("TailRotor", true, false)]:
+	var rotors: Array = v.get_meta("_rotors", [])
+	if not v.has_meta("_rotors"):   # M3.2: quadcopters have Rotor, TailRotor, Rotor2, Rotor3
+		for rn0 in v.find_children("*Rotor*", "Node3D", true, false):
+			if not rn0 is MeshInstance3D:
+				rotors.append(rn0)
+		v.set_meta("_rotors", rotors)
+	for rn in rotors:
 		if rn is Node3D and spin:
 			if String(rn.get_meta("rotor_axis", "y")) == "x":
 				rn.rotate_object_local(Vector3.RIGHT, delta * 40.0)
