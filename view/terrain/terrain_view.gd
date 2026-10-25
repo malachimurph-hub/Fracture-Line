@@ -898,7 +898,8 @@ func _pebble_mesh() -> Mesh:
 
 ## M2: static ground decals scattered deterministically from the map: tire tracks along roads
 ## and around resource fields, cracks on asphalt / concrete, oil stains on roads and where
-## harvesters work, sand drifting onto roads, rubble at cliff feet. Flat tiles only.
+## harvesters work, sand drifting onto roads, rubble at cliff feet; M3.2: scorch marks and
+## vehicle tracks across open ground. Flat tiles only.
 func _build_ground_decals() -> void:
 	var xf: Array = []
 	var cust: Array = []
@@ -946,6 +947,10 @@ func _build_ground_decals() -> void:
 				size = 1.8; stretch = 1.3 if kind < 4 else 1.0
 			elif near.call(x, y, SimMap.T.CLIFF, 1) and r1 < 0.22:
 				kind = 12 + int(r2 * 4.0) % 4; size = 1.2 + r2 * 0.6
+			elif r1 > 0.985 and bc != "w":
+				kind = 10; size = 1.8 + r2 * 1.2                # M3.2: old shell scorch marks in the open
+			elif r1 > 0.965 and r1 <= 0.985:
+				kind = int(r2 * 4.0) % 4; size = 1.6; stretch = 1.8   # M3.2: vehicle tracks across open ground
 			if kind < 0:
 				continue
 			var b := Basis(Vector3.UP, rot).scaled(Vector3(size, 1.0, size * stretch))
