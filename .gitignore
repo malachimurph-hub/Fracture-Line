@@ -8,3 +8,4 @@ tests/out/
 !assets/**/*.import
 !audio/**/*.import
 __pycache__/
+android/
