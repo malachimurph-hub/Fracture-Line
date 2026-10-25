@@ -97,12 +97,15 @@ func _air_view(id: int, e: SimEntity, ud: UnitDef, v: Node3D, p: Vector3, delta:
 			if String(rn.get_meta("rotor_axis", "y")) == "x":
 				rn.rotate_object_local(Vector3.RIGHT, delta * 40.0)
 			else:
-				rn.rotate_object_local(Vector3.UP, delta * 28.0)
+				rn.rotate_object_local(Vector3.UP, delta * 28.0 * float(rn.get_meta("rotor_dir", 1.0)))   # M3.2: coaxial rotors counter-rotate
 	var sh: MeshInstance3D = air_shadows.get(id)
 	if sh == null:
 		sh = MeshInstance3D.new()
 		var q := QuadMesh.new()
 		q.size = Vector2(1.6, 1.6) if jet else Vector2(1.3, 1.3)
+		var sr = v.get("selection_radius")
+		if jet and sr != null and float(sr) > 1.25:   # M3.2: heavy bombers cast a bigger shadow
+			q.size = Vector2.ONE * 1.6 * float(sr) / 1.2
 		q.orientation = PlaneMesh.FACE_Y
 		sh.mesh = q
 		var m := StandardMaterial3D.new()

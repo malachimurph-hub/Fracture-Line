@@ -53,6 +53,7 @@ static func build(only: Array) -> void:
 	jobs.merge(load("res://tools/gfx_m30/eu_m30.gd").jobs(), true)   # M3.0 EU list
 	jobs.merge(load("res://tools/gfx_m30/de_m30.gd").jobs(), true)   # M3.0 E: Germany roster
 	jobs.merge(load("res://tools/gfx_m30/ru_m30.gd").jobs(), true)   # M3.0 F: Russia roster
+	jobs.merge(load("res://tools/gfx_m32/ru_m32.gd").jobs(), true)   # M3.2: Russia buildings + aircraft
 	for k in jobs:
 		if all or k in only:
 			jobs[k].call()
@@ -591,8 +592,8 @@ static func _airfield(g) -> void:
 ## edge lights; control tower on the back corner of the hangar roof.
 const BAY_Z := 0.0           # parking point (model z); AirSys.PARK_DZ mirrors this
 static func _airbase8(g, fac: String) -> void:
-	var main := US if fac == "us" else ("#a8915f" if fac == "tpla" else "#8a9378")   # M2.9: TPLA airfield
-	var dark := US_D if fac == "us" else ("#8a774d" if fac == "tpla" else "#6c7460")
+	var main := US if fac == "us" else ("#a8915f" if fac == "tpla" else ("#6f7a5a" if fac == "ecc" else "#8a9378"))   # M2.9: TPLA airfield   # M3.2: Russia
+	var dark := US_D if fac == "us" else ("#8a774d" if fac == "tpla" else ("#545c43" if fac == "ecc" else "#6c7460"))
 	var steel := US_S if fac == "us" else "#4a4e50"
 	var bw := 8.0 / 3.0
 	# apron

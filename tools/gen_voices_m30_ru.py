@@ -66,6 +66,16 @@ UNITS = {
    "select": ["Air defence ready.", "Radar is up."], "move": ["Relocating the guns."],
    "attack": ["Aircraft! Fire, fire!", "Shoot them down!"], "under_fire": ["We are hit! Keep the radar up!"],
    "created": ["Anti-aircraft gun ready."], "veteran": ["No aircraft escapes us."]}),
+ # M3.2 aircraft
+ "ecc_su57": ("su57", A("ganji", 0.5), {
+   "select": ["Fighter ready. Give me a target."], "move": ["Turning to heading."],
+   "attack": ["Missile launched! Target is mine!"], "under_fire": ["Missile on my tail! Breaking!"]}),
+ "ecc_ka52": ("ka52", A("amir", 0.5), {
+   "select": ["Gunship here. Where do we hunt?"], "move": ["Moving low and fast."],
+   "attack": ["Missiles away! Cannon firing!"], "under_fire": ["We are hit! Pulling back!"]}),
+ "ecc_tu160": ("tu160", A("reza", -3.0), {
+   "select": ["Bomber crew ready. Show us the target."], "move": ["Heavy bomber on course."],
+   "attack": ["Bomb doors open! Release!"], "under_fire": ["Flak everywhere! Hold her steady!"]}),
 }
 
 def render(job):
