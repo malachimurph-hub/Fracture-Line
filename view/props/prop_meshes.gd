@@ -7,7 +7,12 @@ static var _cache: Dictionary = {}
 ## M2.9 urban props: footprint in tiles of props that block the ground (tall buildings stand on
 ## impassable tiles in the map; the map builder stamps these as Cliff). Others are 1 x 1 decor.
 const FOOTPRINT := {"tower_glass": Vector2i(4, 4), "tower_apart": Vector2i(4, 4), "tower_office": Vector2i(4, 4),
-	"tower_slim": Vector2i(3, 3), "shops": Vector2i(4, 3)}
+	"tower_slim": Vector2i(3, 3), "shops": Vector2i(4, 3),
+	"house_a": Vector2i(3, 3), "house_b": Vector2i(3, 3), "house_c": Vector2i(3, 3), "house_d": Vector2i(3, 3),
+	"containers": Vector2i(3, 2)}
+## M3.2 item 14: European village houses (tiled gable roofs, chimneys, framed windows, half-timbering)
+## and a shipping-container stack. Blocking like the towers but not "urban" (no dark asphalt).
+const HOUSES := ["house_a", "house_b", "house_c", "house_d", "containers"]
 const URBAN := ["tower_glass", "tower_apart", "tower_office", "tower_slim", "shops", "car_red", "car_white", "car_blue",
 	"car_silver", "car_taxi", "car_van", "car_suv", "streetlight_double", "streetlight"]
 const CAR_COL := {"car_red": "#a3302a", "car_white": "#e2e0d8", "car_blue": "#2f5a8a", "car_silver": "#a7abae",
@@ -128,7 +133,7 @@ static func _tree(st: SurfaceTool, kind: String, v: int) -> void:
 	var bark := Color("#5c4a36").lightened(v * 0.04)
 	match kind:
 		"oak":
-			var hues := [Color("#5a7a34"), Color("#4b6b2c"), Color("#6a7f36")]
+			var hues := [Color("#5a7a34"), Color("#b5832c"), Color("#a24f2a")]   # M3.2: green, autumn gold, rust red
 			var leafc: Color = hues[v % 3]
 			var top := Vector3(rng.randf_range(-0.08, 0.08), 1.05 + v * 0.12, rng.randf_range(-0.08, 0.08))
 			branch(st, Vector3.ZERO, top, 0.13, 0.08, bark)
@@ -311,6 +316,97 @@ static func wedge(st: SurfaceTool, c: Vector3, s: Vector3, col: Color, rot_deg: 
 	p.left_to_right = 0.5
 	add_prim(st, p, Transform3D(Basis.from_euler(rot_deg * PI / 180.0), c), col)
 
+## M3.2 item 14: European house. Gable roof along x with tile courses and a ridge cap, gable-end
+## walls, stone plinth, framed windows with sills (+ shutters), a door, a chimney, optional
+## half-timbering and dormers. ~0.25 tile per metre: a 2.4 x 2.0 footprint is a 10 x 8 m house.
+static func _house(st: SurfaceTool, w: float, d: float, floors: int, wall: Color, roof: Color, timber: bool, shutters: Color, dormer: bool, seed_i: int) -> void:
+	var fh := 0.62
+	var h := floors * fh + 0.12
+	var dark := Color("#3b2e24")
+	box(st, Vector3(0, 0.06, 0), Vector3(w + 0.06, 0.12, d + 0.06), Color("#8d8578"))       # stone plinth
+	box(st, Vector3(0, 0.12 + (h - 0.12) * 0.5, 0), Vector3(w, h - 0.12, d), wall)
+	# windows + frames + sills on all four faces, door on the front (+z)
+	for face in 4:
+		var along_x := face < 2
+		var span := w if along_x else d
+		var sgn := 1.0 if face % 2 == 0 else -1.0
+		var off := (d if along_x else w) * 0.5
+		var n := maxi(2, int(span / 0.55))
+		for f in floors:
+			var y := 0.12 + f * fh + fh * 0.55
+			for k in n:
+				var a := -span * 0.5 + span * (k + 0.5) / n
+				if face == 0 and f == 0 and k == n / 2:
+					# door with frame and step
+					var dc := Vector3(a, 0.12 + 0.24, sgn * (off + 0.012))
+					box(st, dc, Vector3(0.24, 0.48, 0.02), Color("#5a3a24"))
+					box(st, dc + Vector3(0, 0.26, 0.004), Vector3(0.3, 0.05, 0.03), Color("#e8e2d4"))
+					box(st, Vector3(a, 0.06, sgn * (off + 0.08)), Vector3(0.34, 0.06, 0.14), Color("#9a9286"))
+					continue
+				var pos := Vector3(a, y, sgn * (off + 0.006)) if along_x else Vector3(sgn * (off + 0.006), y, a)
+				var gs := Vector3(0.2, 0.28, 0.012) if along_x else Vector3(0.012, 0.28, 0.2)
+				var fs := Vector3(0.26, 0.34, 0.02) if along_x else Vector3(0.02, 0.34, 0.26)
+				box(st, pos, fs, Color("#ece6d8"))                                            # frame
+				box(st, pos + (Vector3(0, 0, sgn * 0.006) if along_x else Vector3(sgn * 0.006, 0, 0)), gs, Color("#26303a"))   # glass
+				var mul := Vector3(0.015, 0.28, 0.016) if along_x else Vector3(0.016, 0.28, 0.015)
+				box(st, pos + (Vector3(0, 0, sgn * 0.009) if along_x else Vector3(sgn * 0.009, 0, 0)), mul, Color("#ece6d8"))
+				var sill := Vector3(0.3, 0.035, 0.06) if along_x else Vector3(0.06, 0.035, 0.3)
+				box(st, pos + Vector3(0, -0.18, 0) + (Vector3(0, 0, sgn * 0.02) if along_x else Vector3(sgn * 0.02, 0, 0)), sill, Color("#b5ad9e"))
+				if shutters.a > 0.0:
+					for sx in [-1.0, 1.0]:
+						var so := Vector3(sx * 0.18, 0, sgn * 0.01) if along_x else Vector3(sgn * 0.01, 0, sx * 0.18)
+						box(st, pos + so, Vector3(0.09, 0.32, 0.015) if along_x else Vector3(0.015, 0.32, 0.09), shutters)
+		if timber:
+			for f in floors + 1:
+				var yb := 0.12 + f * fh
+				var pc := Vector3(0, yb, sgn * (off + 0.008)) if along_x else Vector3(sgn * (off + 0.008), yb, 0)
+				box(st, pc, Vector3(span, 0.05, 0.015) if along_x else Vector3(0.015, 0.05, span), dark)
+			for k in n + 1:
+				var a2 := -span * 0.5 + span * k / n
+				var pc2 := Vector3(a2, 0.12 + (h - 0.12) * 0.5, sgn * (off + 0.008)) if along_x else Vector3(sgn * (off + 0.008), 0.12 + (h - 0.12) * 0.5, a2)
+				box(st, pc2, Vector3(0.05, h - 0.12, 0.015) if along_x else Vector3(0.015, h - 0.12, 0.05), dark)
+	# gable roof along x: gable-end walls, two slopes with tile courses, ridge cap
+	var pitch := 38.0
+	var rh := d * 0.5 * tan(deg_to_rad(pitch))
+	wedge(st, Vector3(0, h + rh * 0.5, 0), Vector3(d, rh, w), wall, Vector3(0, 90, 0))
+	var slope := d * 0.5 / cos(deg_to_rad(pitch)) + 0.12
+	for sz in [-1.0, 1.0]:
+		var mid := Vector3(0, h + rh * 0.5, sz * d * 0.25)
+		var rot := Vector3(sz * pitch, 0, 0)
+		box(st, mid + Vector3(0, 0.03, sz * 0.03), Vector3(w + 0.2, 0.05, slope), roof, rot)
+		var courses := int(slope / 0.09)
+		for c in courses:
+			var t := (float(c) + 0.5) / courses - 0.5
+			var q := Basis.from_euler(rot * PI / 180.0)
+			var pc := mid + Vector3(0, 0.03, sz * 0.03) + q * Vector3(0, 0.03, t * slope)
+			box(st, pc, Vector3(w + 0.2, 0.022, 0.05), roof.darkened(0.08 + 0.1 * float(c % 2)), rot)
+	box(st, Vector3(0, h + rh + 0.03, 0), Vector3(w + 0.22, 0.07, 0.1), roof.darkened(0.25))   # ridge
+	# chimney (+ cap) and optional dormers
+	var cx := w * (0.28 if seed_i % 2 == 0 else -0.3)
+	box(st, Vector3(cx, h + rh * 0.75, -d * 0.12), Vector3(0.18, rh * 0.9 + 0.3, 0.18), Color("#8a5a44"))
+	box(st, Vector3(cx, h + rh * 1.22 + 0.17, -d * 0.12), Vector3(0.24, 0.05, 0.24), Color("#5a4a40"))
+	if dormer:
+		for dx in [-w * 0.22, w * 0.22]:
+			var dcn := Vector3(dx, h + rh * 0.42, d * 0.22)
+			box(st, dcn, Vector3(0.3, 0.3, 0.3), wall)
+			box(st, dcn + Vector3(0, 0, 0.152), Vector3(0.16, 0.18, 0.01), Color("#26303a"))
+			wedge(st, dcn + Vector3(0, 0.22, 0), Vector3(0.36, 0.16, 0.34), roof.darkened(0.1))
+
+static func _containers(st: SurfaceTool, seed_i: int) -> void:
+	var cols := [Color("#9a3b2c"), Color("#2f5d7a"), Color("#c08a2e"), Color("#4f6b3a"), Color("#8a8a86"), Color("#6a3a5a")]
+	var k := 0
+	for row in 2:
+		for lvl in 2 - row % 2 + 1:
+			var c: Color = cols[(seed_i + k * 7) % cols.size()]
+			k += 1
+			var p := Vector3(-0.2 + row * 0.15, 0.17 + lvl * 0.34, -0.45 + row * 0.9)
+			box(st, p, Vector3(2.4, 0.33, 0.6), c)
+			for r in 16:   # corrugation ribs
+				box(st, p + Vector3(-1.1 + r * 0.147, 0, 0.302), Vector3(0.05, 0.3, 0.01), c.darkened(0.15))
+				box(st, p + Vector3(-1.1 + r * 0.147, 0, -0.302), Vector3(0.05, 0.3, 0.01), c.darkened(0.15))
+			box(st, p + Vector3(1.205, 0, 0), Vector3(0.01, 0.31, 0.56), c.darkened(0.25))   # doors
+			box(st, p + Vector3(1.212, 0, 0), Vector3(0.01, 0.31, 0.02), Color("#3a3a38"))
+
 static func make(kind: String) -> Mesh:
 	if _cache.has(kind):
 		return _cache[kind]
@@ -466,6 +562,16 @@ static func make(kind: String) -> Mesh:
 				box(st, Vector3(x2 + 0.25, 1.4, 1.52), Vector3(0.22, 0.14, 0.1), Color("#b7b7b0"))
 			box(st, Vector3(0, 2.13, 1.46), Vector3(4.0, 0.05, 0.08), Color("#6d6559"))   # parapet
 			_plinth(st, 3.9, 2.9)
+		"house_a":   # half-timbered two-storey, terracotta roof, green shutters
+			_house(st, 2.3, 1.8, 2, Color("#e8dcc0"), Color("#a5482e"), true, Color("#3f6b3a"), false, 1)
+		"house_b":   # three-storey town house, dark slate roof, dormers
+			_house(st, 2.4, 2.0, 3, Color("#d9c9a8"), Color("#4a4e55"), false, Color(0, 0, 0, 0), true, 2)
+		"house_c":   # ochre farmhouse, brown tile roof, red shutters
+			_house(st, 2.5, 1.9, 2, Color("#d6b47c"), Color("#7a3e26"), false, Color("#8a2e24"), false, 3)
+		"house_d":   # white-washed house, red roof, half-timbered, dormers
+			_house(st, 2.2, 1.9, 2, Color("#f0ece2"), Color("#b0502e"), true, Color(0, 0, 0, 0), true, 4)
+		"containers":
+			_containers(st, 1)
 		"car_red", "car_white", "car_blue", "car_silver", "car_taxi", "car_van", "car_suv":
 			_car(st, Color(CAR_COL[kind]), kind)
 		"streetlight_double":

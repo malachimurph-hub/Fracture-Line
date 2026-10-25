@@ -34,10 +34,10 @@ func g(key: String):
 ## M3.1 graphics presets: render scale, texture quality, MSAA, shadow map size, anisotropy.
 ## Ultra = 2048 px detail normals with a second octave, 16x anisotropic, 2x MSAA, 4096 shadows.
 const PRESETS := {
-	"ultra": {"render_scale": 0.8, "texture_quality": "high", "msaa": Viewport.MSAA_2X, "shadow": 4096, "aniso": Viewport.ANISOTROPY_16X, "tq": 2.0},
-	"high": {"render_scale": 0.75, "texture_quality": "high", "msaa": Viewport.MSAA_2X, "shadow": 2048, "aniso": Viewport.ANISOTROPY_8X, "tq": 1.0},
-	"medium": {"render_scale": 0.7, "texture_quality": "medium", "msaa": Viewport.MSAA_DISABLED, "shadow": 2048, "aniso": Viewport.ANISOTROPY_4X, "tq": 0.0},
-	"low": {"render_scale": 0.6, "texture_quality": "medium", "msaa": Viewport.MSAA_DISABLED, "shadow": 1024, "aniso": Viewport.ANISOTROPY_2X, "tq": 0.0},
+	"ultra": {"render_scale": 0.8, "texture_quality": "high", "msaa": Viewport.MSAA_2X, "shadow": 4096, "aniso": Viewport.ANISOTROPY_16X, "tq": 2.0, "glow": true, "scatter": 1.0},
+	"high": {"render_scale": 0.75, "texture_quality": "high", "msaa": Viewport.MSAA_2X, "shadow": 2048, "aniso": Viewport.ANISOTROPY_8X, "tq": 1.0, "glow": true, "scatter": 0.6},
+	"medium": {"render_scale": 0.7, "texture_quality": "medium", "msaa": Viewport.MSAA_DISABLED, "shadow": 2048, "aniso": Viewport.ANISOTROPY_4X, "tq": 0.0, "glow": false, "scatter": 0.3},
+	"low": {"render_scale": 0.6, "texture_quality": "medium", "msaa": Viewport.MSAA_DISABLED, "shadow": 1024, "aniso": Viewport.ANISOTROPY_2X, "tq": 0.0, "glow": false, "scatter": 0.0},
 }
 
 func preset() -> Dictionary:

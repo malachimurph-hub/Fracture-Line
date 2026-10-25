@@ -718,6 +718,39 @@
       "created",
       "veteran"
      ]
+    },
+    "ecc_su57": {
+     "folder": "su57",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ]
+    },
+    "ecc_ka52": {
+     "folder": "ka52",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ]
+    },
+    "ecc_tu160": {
+     "folder": "tu160",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ]
     }
    }
   }

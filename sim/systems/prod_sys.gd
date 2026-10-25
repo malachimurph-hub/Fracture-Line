@@ -1,4 +1,5 @@
 class_name ProdSys
+const MAX_QUEUE := 15   ## M3.2: production queue per building (was 9)
 ## Construction (builders must stand next to the site; interrupted builds stay as a scaffold until
 ## a builder resumes them; one builder works at a time, as in Zero Hour) and unit production.
 
@@ -47,6 +48,10 @@ static func run(w: SimWorld) -> void:
 		var uid: StringName = b.queue.pop_front()
 		b.q_paid.pop_front()
 		b.q_progress = 0
+		if ud.tags.has("upgrade"):   # M3.2: research completes instead of spawning a unit
+			p.upgrades[String(uid)] = true
+			w.events.append({"t": "upgrade", "owner": b.owner, "def": uid, "id": b.id})
+			continue
 		var u := w.spawn_unit(uid, b.owner, b)
 		p.pop += ud.pop
 		p.stats["built"] += 1
@@ -56,7 +61,7 @@ static func run(w: SimWorld) -> void:
 		else:
 			_after_spawn(w, b, u)
 		if b.repeat:
-			if p.supply >= ud.cost and b.queue.size() < 9:
+			if p.supply >= ud.cost and b.queue.size() < MAX_QUEUE:
 				p.supply -= ud.cost
 				b.queue.append(uid)
 				b.q_paid.append(ud.cost)

@@ -51,6 +51,8 @@ func build(map: SimMap, tiles_path: String = "", env: Dictionary = {}) -> void:
 	material.set_shader_parameter("t_nrao", load(env["nrao"]))
 	material.set_shader_parameter("dry_scrub", env["dry"])
 	material.set_shader_parameter("desert_tint", env["tint"])
+	material.set_shader_parameter("worn_amt", env.get("worn", 0.7))
+	material.set_shader_parameter("cloud_amt", env.get("clouds", 0.13))
 	material.set_shader_parameter("t_detail", load(TEX + "terrain/terrain_detail.png"))
 	material.set_shader_parameter("t_macro", load(TEX + "terrain/terrain_macro.png"))
 	_build_splats()
@@ -68,6 +70,7 @@ func build(map: SimMap, tiles_path: String = "", env: Dictionary = {}) -> void:
 	prop_material.set_shader_parameter("leaf_tex", load(TEX + "props/leaf_atlas.png"))
 	prop_detail_material = _prop_mat(0.0, 0.55, load(TEX + "materials/concrete.png"))
 	prop_tower_material = _prop_mat(0.0, 0.55, load(TEX + "materials/concrete.png"))
+	_house_cover(tiles_path)
 	heights = _corner_heights()
 	for cy in range(0, m.h, CHUNK):
 		for cx in range(0, m.w, CHUNK):
@@ -76,6 +79,8 @@ func build(map: SimMap, tiles_path: String = "", env: Dictionary = {}) -> void:
 	_build_bridges()
 	_build_lane_markings()
 	_build_ground_decals()
+	_build_scatter(float(env.get("dry", 0.0)) > 0.5)
+	_build_bushes(float(env.get("dry", 0.0)) > 0.5)
 	_build_props(tiles_path)
 	var skirt := MeshInstance3D.new()
 	var pm := PlaneMesh.new()
@@ -211,6 +216,33 @@ func _cliff_distance() -> PackedInt32Array:
 					q.append(n)
 	return dist
 
+## M3.2 item 14: tiles under village houses / container stacks are Cliff in the map (they block
+## like the towers) but the ground stays flat there instead of rising into a massif.
+var house_tiles := {}
+func _house_cover(tiles_path: String) -> void:
+	house_tiles.clear()
+	var items: Array = []
+	if not decor_override.is_empty():
+		items = decor_override
+	else:
+		var dp := tiles_path.replace(".txt", ".decor.txt")
+		if tiles_path == "" or not FileAccess.file_exists(dp):
+			return
+		for line in FileAccess.get_file_as_string(dp).split("\n", false):
+			var parts := line.split(" ", false)
+			if parts.size() >= 4 and String(parts[0]) in PropMeshes.HOUSES:
+				items.append([parts[0], float(parts[1]), float(parts[2]), int(parts[3])])
+	for d in items:
+		if not String(d[0]) in PropMeshes.HOUSES:
+			continue
+		var fp: Vector2i = PropMeshes.FOOTPRINT[String(d[0])]
+		if int(d[3]) % 2 == 1:
+			fp = Vector2i(fp.y, fp.x)
+		var o := Vector2i(roundi(float(d[1]) - fp.x * 0.5), roundi(float(d[2]) - fp.y * 0.5))
+		for yy in fp.y:
+			for xx in fp.x:
+				house_tiles[o + Vector2i(xx, yy)] = true
+
 func _corner_heights() -> PackedFloat32Array:
 	var cdist := _cliff_distance()
 	var hts := PackedFloat32Array()
@@ -229,7 +261,7 @@ func _corner_heights() -> PackedFloat32Array:
 					continue
 				cnt += 1
 				var tt := m.ttype(t)
-				if tt == SimMap.T.CLIFF:
+				if tt == SimMap.T.CLIFF and not house_tiles.has(t):
 					n_cliff += 1
 				elif tt == SimMap.T.WATER or tt == SimMap.T.BRIDGE or tt == SimMap.T.FORD:
 					n_wet += 1
@@ -447,25 +479,123 @@ func _build_water() -> void:
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(mi)
 
+## M3.2 real bridge design (Malachi: "they look like nothing"): per bridge tile, in a span
+## frame (u along the crossing, v across): asphalt deck on a concrete slab with lane lines,
+## raised curbs + steel railings on the water sides, a riveted steel through-truss (top chord,
+## verticals, X diagonals) along both outer edges, three steel girders under the deck, concrete
+## piers with caps and cut-waters every 3 tiles, abutments + wing walls + approach ramps where the
+## span meets land, and lamp posts. One static mesh (no per-frame cost).
 func _build_bridges() -> void:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var deck := Color("#9a958c")
-	var rail := Color("#6c6a66")
-	var pillar := Color("#837e75")
+	var asphalt := Color("#4a4b4d")
+	var slab := Color("#9a958c")
+	var curb := Color("#b9b4a8")
+	var steel := Color("#5c6b64")
+	var steel_d := Color("#46524c")
+	var rust := Color("#7a5a40")
+	var conc := Color("#8f8a80")
+	var conc_d := Color("#6f6b63")
+	var line := Color("#e9d9a2")
+	var is_b := func(t: Vector2i) -> bool: return m.in_bounds(t) and m.ttype(t) == SimMap.T.BRIDGE
+	var is_w := func(t: Vector2i) -> bool: return not m.in_bounds(t) or m.ttype(t) == SimMap.T.WATER
 	for y in m.h:
 		for x in m.w:
-			if m.ttype(Vector2i(x, y)) != SimMap.T.BRIDGE:
+			var t := Vector2i(x, y)
+			if not is_b.call(t):
 				continue
-			_box(st, Vector3(x + 0.5, 0.0, y + 0.5), Vector3(1.0, 0.16, 1.0), deck.darkened(0.04 * (x % 2)))
-			if m.ttype(Vector2i(x, y - 1)) != SimMap.T.BRIDGE:
-				_box(st, Vector3(x + 0.5, 0.2, y + 0.06), Vector3(1.0, 0.26, 0.12), rail)
-				if x % 2 == 0:
-					_box(st, Vector3(x + 0.5, -0.4, y + 0.3), Vector3(0.35, 0.7, 0.35), pillar)
-			if m.ttype(Vector2i(x, y + 1)) != SimMap.T.BRIDGE:
-				_box(st, Vector3(x + 0.5, 0.2, y + 0.94), Vector3(1.0, 0.26, 0.12), rail)
-				if x % 2 == 0:
-					_box(st, Vector3(x + 0.5, -0.4, y + 0.7), Vector3(0.35, 0.7, 0.35), pillar)
+			# span axis: water on the north / south sides -> the bridge runs along x
+			var along_x: bool = is_w.call(t + Vector2i(0, -1)) or is_w.call(t + Vector2i(0, 1)) or not (is_w.call(t + Vector2i(-1, 0)) or is_w.call(t + Vector2i(1, 0)))
+			var du := Vector2i(1, 0) if along_x else Vector2i(0, 1)
+			var dv := Vector2i(0, 1) if along_x else Vector2i(1, 0)
+			var k := x if along_x else y   # index along the span (piers / lamps rhythm)
+			var cen := Vector3(x + 0.5, 0.0, y + 0.5)
+			# local box: c = (u, y, v) offset, s = (su, sy, sv), tilt = rotation about the v axis
+			var bx := func(c: Vector3, sz: Vector3, col: Color, tilt := 0.0) -> void:
+				var wc := cen + (Vector3(c.x, c.y, c.z) if along_x else Vector3(c.z, c.y, c.x))
+				var ws := sz if along_x else Vector3(sz.z, sz.y, sz.x)
+				var rot := Vector3(0, 0, tilt) if along_x else Vector3(-tilt, 0, 0)
+				PropMeshes.box(st, wc, ws, col, rot)
+			# deck: slab + asphalt (top at y 0.08 where units drive)
+			bx.call(Vector3(0, -0.02, 0), Vector3(1.0, 0.12, 1.0), slab)
+			bx.call(Vector3(0, 0.06, 0), Vector3(1.0, 0.04, 1.0), asphalt.darkened(0.03 * (k % 2)))
+			bx.call(Vector3(0, 0.081, 0), Vector3(1.0, 0.002, 0.02), asphalt.lightened(0.08))   # expansion joint
+			# girders under the deck
+			for gv in [-0.32, 0.0, 0.32]:
+				bx.call(Vector3(0, -0.14, gv), Vector3(1.0, 0.12, 0.06), steel_d)
+				bx.call(Vector3(0, -0.2, gv), Vector3(1.0, 0.02, 0.14), steel_d)
+			# cross beam
+			bx.call(Vector3(-0.45, -0.12, 0), Vector3(0.05, 0.08, 0.9), steel_d)
+			for side in [-1, 1]:
+				var nb: Vector2i = t + dv * side
+				var vv: float = 0.5 * side
+				if is_w.call(nb):
+					# curb / footway, railing, through-truss
+					bx.call(Vector3(0, 0.1, vv - side * 0.08), Vector3(1.0, 0.04, 0.16), curb)
+					bx.call(Vector3(0, 0.087, vv - side * 0.17), Vector3(1.0, 0.004, 0.03), line.lightened(0.3))   # edge line
+					for pi in 4:
+						bx.call(Vector3(-0.375 + pi * 0.25, 0.19, vv - side * 0.02), Vector3(0.025, 0.16, 0.025), steel)
+					bx.call(Vector3(0, 0.27, vv - side * 0.02), Vector3(1.0, 0.025, 0.035), steel)
+					bx.call(Vector3(0, 0.19, vv - side * 0.02), Vector3(1.0, 0.015, 0.02), steel)
+					var tv: float = vv + side * 0.02
+					bx.call(Vector3(0, 0.66, tv), Vector3(1.0, 0.07, 0.07), steel)   # top chord
+					bx.call(Vector3(0, 0.1, tv), Vector3(1.0, 0.08, 0.08), steel)    # bottom chord
+					bx.call(Vector3(-0.5, 0.38, tv), Vector3(0.06, 0.6, 0.06), steel)  # vertical
+					for dg in [-1.0, 1.0]:   # X diagonals
+						bx.call(Vector3(0, 0.38, tv), Vector3(1.12, 0.045, 0.045), steel_d, dg * 29.0)
+					bx.call(Vector3(0, 0.38, tv), Vector3(0.1, 0.1, 0.075), rust)   # gusset plate
+					bx.call(Vector3(0, 0.7, tv - side * 0.12), Vector3(0.05, 0.04, 0.24), steel_d)   # top lateral strut
+					if k % 3 == 1:
+						bx.call(Vector3(0, 0.5, vv - side * 0.08), Vector3(0.03, 0.8, 0.03), steel_d)   # lamp post
+						bx.call(Vector3(0, 0.9, vv - side * 0.16), Vector3(0.16, 0.03, 0.05), Color("#ffe9a8"))
+			# piers every 3 tiles along the span
+			if k % 3 == 0:
+				bx.call(Vector3(0, -0.24, 0), Vector3(0.3, 0.06, 1.05), conc)   # pier cap
+				for pv in [-0.3, 0.3]:
+					bx.call(Vector3(0, -0.42, pv), Vector3(0.22, 0.34, 0.22), conc_d)
+				bx.call(Vector3(0, -0.5, 0), Vector3(0.24, 0.14, 0.9), conc_d)   # web wall at the waterline
+				for cw in [-1.0, 1.0]:   # cut-waters
+					bx.call(Vector3(0, -0.47, cw * 0.48), Vector3(0.17, 0.2, 0.17), conc, 0.0)
+			# span ends meeting land: abutment, wing walls, approach ramp
+			for end in [-1, 1]:
+				var nl: Vector2i = t + du * end
+				if not is_b.call(nl) and not is_w.call(nl):
+					var ue: float = 0.5 * end
+					bx.call(Vector3(ue - end * 0.06, -0.25, 0), Vector3(0.14, 0.62, 1.0), conc)   # abutment wall
+					bx.call(Vector3(ue + end * 0.25, 0.035, 0), Vector3(0.5, 0.05, 1.0), asphalt, -end * 8.0)   # ramp onto the road
+					bx.call(Vector3(ue, 0.13, 0), Vector3(0.06, 0.06, 1.0), curb)   # end curb (expansion)
+					for side2 in [-1, 1]:
+						if is_w.call(t + dv * side2):
+							bx.call(Vector3(ue + end * 0.2, 0.0, 0.52 * side2), Vector3(0.5, 0.3, 0.08), conc_d)   # wing wall
+							bx.call(Vector3(ue - end * 0.05, 0.38, 0.52 * side2), Vector3(0.12, 0.62, 0.12), conc)   # portal pylon
+			# centre line (dashed)
+			if k % 2 == 0:
+				var na := 0
+				var nbn := 0
+				while na < 8 and is_b.call(t - dv * (na + 1)):
+					na += 1
+				while nbn < 8 and is_b.call(t + dv * (nbn + 1)):
+					nbn += 1
+				if na == nbn:
+					bx.call(Vector3(0, 0.083, 0), Vector3(0.45, 0.003, 0.05), line)
+				elif na == nbn + 1:
+					bx.call(Vector3(0, 0.083, -0.5), Vector3(0.45, 0.003, 0.05), line)
+				elif na % 2 == 0 and na > 0 and nbn > 0:   # white lane dashes
+					bx.call(Vector3(0, 0.083, -0.5), Vector3(0.4, 0.003, 0.04), Color("#d9d6cc"))
+			if (k % 2 == 1) and is_b.call(t - dv) and is_b.call(t + dv):
+				var na2 := 0
+				var nb2 := 0
+				while na2 < 8 and is_b.call(t - dv * (na2 + 1)):
+					na2 += 1
+				while nb2 < 8 and is_b.call(t + dv * (nb2 + 1)):
+					nb2 += 1
+				if na2 == nb2 + 1 or na2 == nb2:
+					bx.call(Vector3(0, 0.083, -0.5 if na2 == nb2 + 1 else 0.0), Vector3(1.0, 0.003, 0.025), line.darkened(0.1))   # solid centre
+			if k % 3 == 0:   # expansion joint (steel finger plate) across the deck
+				bx.call(Vector3(-0.5, 0.082, 0), Vector3(0.05, 0.004, 1.0), Color("#3a3c3e"))
+			var hsh := (x * 73856093) ^ (y * 19349663)
+			if hsh % 7 == 0:   # asphalt patch / wear
+				bx.call(Vector3(((hsh >> 3) % 50) / 100.0 - 0.25, 0.0815, ((hsh >> 9) % 50) / 100.0 - 0.25), Vector3(0.3, 0.002, 0.22), asphalt.lightened(0.07))
 	var mi := MeshInstance3D.new()
 	mi.mesh = st.commit()
 	mi.material_override = prop_detail_material
@@ -628,7 +758,7 @@ func _build_props(tiles_path: String) -> void:
 					by_kind["rock"].append([x + 0.5, y + 0.5, 0])
 	var urban := false
 	for kind in by_kind:
-		urban = urban or (PropMeshes.FOOTPRINT.has(kind) and by_kind[kind].size() >= 8)
+		urban = urban or (PropMeshes.FOOTPRINT.has(kind) and not kind in PropMeshes.HOUSES and by_kind[kind].size() >= 8)
 	material.set_shader_parameter("asphalt_dark", 1.0 if urban else 0.0)
 	if urban:
 		_build_sidewalks()
@@ -639,6 +769,8 @@ func _build_props(tiles_path: String) -> void:
 		var mat := prop_material
 		if kind in ["palm", "scrub_tree", "pine", "pine_snow", "oak", "bush"]:
 			mat = prop_sway_material
+		elif kind in PropMeshes.HOUSES:
+			mat = prop_detail_material
 		elif PropMeshes.FOOTPRINT.has(kind):
 			mat = prop_tower_material
 			has_towers = true
@@ -651,6 +783,8 @@ func _build_props(tiles_path: String) -> void:
 		var chunks := {}
 		for it in by_kind[kind]:
 			var v := int(_h(int(it[0] * 3.0), int(it[1] * 5.0)) * nv) % nv
+			if kind == "oak":   # M3.2: autumn colours come in clusters (low-frequency choice)
+				v = int(_vn(it[0] / 7.0, it[1] / 7.0) * nv * 0.999) % nv
 			var ck := Vector3i(int(it[0]) >> 5, int(it[1]) >> 5, v)
 			if not chunks.has(ck):
 				chunks[ck] = []
@@ -715,9 +849,216 @@ static func minimap_color(tt: int) -> Color:
 	var c: Color = COLORS[tt]
 	return c.lightened(0.05)
 
+## M3.2 dense ground scatter (Zero Hour look): grass / dry-scrub tufts and pebbles on open
+## ground, deterministic per tile, one MultiMesh per 32 x 32 chunk (culled), no shadows. Density
+## follows the graphics preset ("scatter": Ultra 1.0 .. Low off).
+var scatter_count := 0
+func _build_scatter(dry: bool) -> void:
+	var dens := float(Settings.preset().get("scatter", 1.0))
+	if dens <= 0.0:
+		return
+	var tuft := _tuft_mesh(dry)
+	var peb := _pebble_mesh()
+	var mat := prop_material   # vertex colour + fog of war (alpha 1 = plain, no emission)
+	for cy in range(0, m.h, CHUNK):
+		for cx in range(0, m.w, CHUNK):
+			var tx: Array = []
+			var px: Array = []
+			for y in range(cy, mini(cy + CHUNK, m.h)):
+				for x in range(cx, mini(cx + CHUNK, m.w)):
+					var tt := m.ttype(Vector2i(x, y))
+					if tt != SimMap.T.GRASS and tt != SimMap.T.ROUGH and tt != SimMap.T.FOREST:
+						continue
+					if absf(heights[y * (m.w + 1) + x]) > 0.01 or absf(heights[(y + 1) * (m.w + 1) + x + 1]) > 0.01:
+						continue
+					var h := _h(x * 3 + 1, y * 7 + 2)
+					var n_t := int((1.6 if tt != SimMap.T.ROUGH else 0.8) * dens * (0.5 + h))
+					for k in n_t:
+						var r1 := _h(x * 11 + k, y * 13 + k * 5)
+						var r2 := _h(x * 17 + k * 3, y * 19 + k)
+						var sc := 0.7 + r1 * 0.7
+						tx.append(Transform3D(Basis(Vector3.UP, r2 * TAU).scaled(Vector3(sc, sc * (0.8 + r2 * 0.5), sc)), Vector3(x + r1, 0.0, y + r2)))
+					if tt == SimMap.T.ROUGH or h > 0.55:
+						for k in int((2.0 if tt == SimMap.T.ROUGH else 1.0) * dens):
+							var q1 := _h(x * 23 + k, y * 29 + k * 7)
+							var q2 := _h(x * 31 + k * 5, y * 37 + k)
+							var ps := 0.6 + q2 * 0.9
+							px.append(Transform3D(Basis(Vector3.UP, q1 * TAU).scaled(Vector3(ps, ps * 0.7, ps)), Vector3(x + q2, 0.0, y + q1)))
+			for pair in [[tx, tuft], [px, peb]]:
+				var arr: Array = pair[0]
+				if arr.is_empty():
+					continue
+				var mm := MultiMesh.new()
+				mm.transform_format = MultiMesh.TRANSFORM_3D
+				mm.mesh = pair[1]
+				mm.instance_count = arr.size()
+				for i in arr.size():
+					mm.set_instance_transform(i, arr[i])
+				var mmi := MultiMeshInstance3D.new()
+				mmi.multimesh = mm
+				mmi.material_override = mat
+				mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+				mmi.visibility_range_end = 74.0   # M3.2: 40 deg camera; fade out instead of a pop line
+				mmi.visibility_range_end_margin = 10.0
+				mmi.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+				add_child(mmi)
+				scatter_count += arr.size()
+
+## Tuft: 5 tapered blades leaning outward, darker at the root (vertex colour = fake AO).
+func _tuft_mesh(dry: bool) -> Mesh:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var tip := Color("#c9b46a") if dry else Color("#8fb34e")
+	var root := Color("#6e5c34") if dry else Color("#3f5a26")
+	for i in 5:
+		var a := TAU * i / 5.0 + 0.4
+		var d := Vector3(cos(a), 0, sin(a))
+		var sd := Vector3(-d.z, 0, d.x) * 0.012
+		var h := 0.07 + 0.03 * float(i % 3)
+		var top := d * 0.045 + Vector3(0, h, 0)
+		for vv in [[-sd, sd, top], [sd, -sd, top]]:   # both faces
+			st.set_color(root)
+			st.add_vertex(vv[0])
+			st.set_color(root)
+			st.add_vertex(vv[1])
+			st.set_color(tip)
+			st.add_vertex(vv[2])
+	st.generate_normals()
+	return st.commit()
+
+## M3.2 polish: natural scrub. Bushes grow in clusters (a big one in the middle, smaller ones
+## around it, falling off with distance) plus a few loners; cluster density follows soft noise so
+## there are empty stretches and thickets. Three low-poly lobe meshes (small / medium / large),
+## soft smooth-shaded shapes, dark underside to light top, per-instance shade + hue jitter.
+func _build_bushes(dry: bool) -> void:
+	var dens := float(Settings.preset().get("scatter", 1.0))
+	if dens <= 0.0:
+		return
+	var meshes := [_bush_mesh(dry, 0), _bush_mesh(dry, 1), _bush_mesh(dry, 2)]
+	var shades := [Color("#d9dccb"), Color("#ffffff"), Color("#c8d0b0"), Color("#e8dcc0"), Color("#b9c2a6")]
+	var per_chunk := {}   # Vector2i chunk -> [Array, Array, Array] of [xf, col]
+	var ok := func(x: float, y: float) -> bool:
+		var t := Vector2i(int(x), int(y))
+		if not m.in_bounds(t) or house_tiles.has(t):
+			return false
+		var tt := m.ttype(t)
+		if tt != SimMap.T.GRASS and tt != SimMap.T.ROUGH and tt != SimMap.T.FOREST:
+			return false
+		return absf(heights[t.y * (m.w + 1) + t.x]) < 0.01 and absf(heights[(t.y + 1) * (m.w + 1) + t.x + 1]) < 0.01
+	var cell := 5 if dry else 7
+	var add := func(x: float, y: float, sz: float, r: float) -> void:
+		var v := 0 if sz < 0.8 else (1 if sz < 1.25 else 2)
+		var ck := Vector2i(int(x) / CHUNK, int(y) / CHUNK)
+		if not per_chunk.has(ck):
+			per_chunk[ck] = [[], [], []]
+		var sc: float = sz / [0.6, 1.0, 1.5][v]
+		var xf := Transform3D(Basis(Vector3.UP, r * TAU).scaled(Vector3(sc, sc * (0.85 + r * 0.3), sc)), Vector3(x, 0.0, y))
+		per_chunk[ck][v].append([xf, shades[int(r * 97.0) % shades.size()]])
+	for gy in range(0, m.h, cell):
+		for gx in range(0, m.w, cell):
+			var n := _vn(gx / 23.0 + 7.0, gy / 23.0) * 0.75 + _vn(gx / 7.0, gy / 7.0 + 3.0) * 0.25
+			var p := clampf((n - (0.42 if dry else 0.55)) * 2.6, 0.0, 1.0) * dens
+			if _h(gx * 3 + 5, gy * 7 + 1) > p:
+				# empty cell, but now and then a lone bush
+				if _h(gx + 13, gy + 17) < 0.12 * dens:
+					var lx := gx + _h(gx, gy + 1) * cell
+					var ly := gy + _h(gx + 1, gy) * cell
+					if ok.call(lx, ly):
+						add.call(lx, ly, 0.6 + _h(gx + 2, gy) * 0.5, _h(gx, gy + 2))
+				continue
+			var cx := gx + (0.2 + 0.6 * _h(gx + 31, gy)) * cell
+			var cy := gy + (0.2 + 0.6 * _h(gx, gy + 31)) * cell
+			var cnt := 2 + int(_h(gx + 7, gy + 9) * (6.0 if dry else 4.0) * (0.5 + p))
+			var spread := 0.7 + _h(gx + 3, gy + 3) * 1.3
+			for k in cnt:
+				var a := _h(gx * 5 + k, gy * 3 + k * 7) * TAU
+				var d := spread * sqrt(_h(gx + k * 11, gy + k * 13)) * (0.25 if k == 0 else 1.0)
+				var bx := cx + cos(a) * d
+				var by := cy + sin(a) * d
+				if not ok.call(bx, by):
+					continue
+				var big := 1.0 - d / (spread + 0.01)   # bigger bushes towards the middle
+				add.call(bx, by, 0.55 + big * 0.85 + _h(gx + k, gy - k) * 0.35, _h(gx - k, gy + k * 3))
+	for ck in per_chunk:
+		for v in 3:
+			var arr: Array = per_chunk[ck][v]
+			if arr.is_empty():
+				continue
+			var mm := MultiMesh.new()
+			mm.transform_format = MultiMesh.TRANSFORM_3D
+			mm.use_colors = true
+			mm.mesh = meshes[v]
+			mm.instance_count = arr.size()
+			for i in arr.size():
+				mm.set_instance_transform(i, arr[i][0])
+				mm.set_instance_color(i, arr[i][1])
+			var mmi := MultiMeshInstance3D.new()
+			mmi.multimesh = mm
+			mmi.material_override = prop_material
+			mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if v == 0 else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+			mmi.visibility_range_end = 74.0
+			mmi.visibility_range_end_margin = 10.0
+			mmi.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+			add_child(mmi)
+			scatter_count += arr.size()
+
+## One bush: 3-6 overlapping irregular lobes (jittered low-poly spheres, smooth normals), the
+## base sunk into the ground; vertex colour dark at the bottom, sunlit olive at the top.
+func _bush_mesh(dry: bool, size_class: int) -> Mesh:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var lo := Color("#2f3a1c") if dry else Color("#24401a")
+	var hi := Color("#7d8a48") if dry else Color("#6f9c3c")
+	var r0: float = [0.13, 0.2, 0.29][size_class]
+	var nl: int = [3, 4, 6][size_class]
+	for l in nl:
+		var a := TAU * l / nl + 0.7 * size_class
+		var off := Vector3(cos(a), 0, sin(a)) * (r0 * 0.55 if l > 0 else 0.0)
+		var rr := r0 * (1.0 if l == 0 else 0.62 + 0.12 * float(l % 3))
+		_lobe(st, off + Vector3(0, rr * 0.45, 0), Vector3(rr, rr * 0.78, rr), lo, hi, l * 7 + size_class * 31)
+	st.index()
+	return st.commit()
+
+func _lobe(st: SurfaceTool, c: Vector3, r: Vector3, lo: Color, hi: Color, seed: int) -> void:
+	var rings := 4
+	var segs := 7
+	var pts: Array = []
+	for i in rings + 1:
+		var row: Array = []
+		var th := PI * float(i) / rings
+		for j in segs:
+			var ph := TAU * float(j) / segs + float(i % 2) * 0.45
+			var n := Vector3(sin(th) * cos(ph), cos(th), sin(th) * sin(ph))
+			var jit := 0.86 + 0.28 * _h(seed * 13 + i * 7, j * 11 + seed)
+			if i == 0 or i == rings:
+				jit = 1.0
+			var p := c + n * r * jit
+			p.y = maxf(p.y, -0.01)
+			row.append([p, n])
+		pts.append(row)
+	for i in rings:
+		for j in segs:
+			var q := [pts[i][j], pts[i][(j + 1) % segs], pts[i + 1][(j + 1) % segs], pts[i + 1][j]]
+			for tri in [[0, 2, 1], [0, 3, 2]]:
+				for k in tri:
+					var v: Array = q[k]
+					var nn: Vector3 = v[1]
+					var t := clampf(nn.y * 0.5 + 0.5, 0.0, 1.0)
+					st.set_color(lo.lerp(hi, t * t * (3.0 - 2.0 * t)))
+					st.set_normal(nn)
+					st.add_vertex(v[0])
+
+func _pebble_mesh() -> Mesh:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	PropMeshes.sph(st, Vector3(0, 0.008, 0), Vector3(0.03, 0.02, 0.025), Color("#8a8070"), 5)
+	PropMeshes.sph(st, Vector3(0.04, 0.006, 0.02), Vector3(0.018, 0.012, 0.016), Color("#6f675c"), 4)
+	return st.commit()
+
 ## M2: static ground decals scattered deterministically from the map: tire tracks along roads
 ## and around resource fields, cracks on asphalt / concrete, oil stains on roads and where
-## harvesters work, sand drifting onto roads, rubble at cliff feet. Flat tiles only.
+## harvesters work, sand drifting onto roads, rubble at cliff feet; M3.2: scorch marks and
+## vehicle tracks across open ground. Flat tiles only.
 func _build_ground_decals() -> void:
 	var xf: Array = []
 	var cust: Array = []
@@ -748,11 +1089,11 @@ func _build_ground_decals() -> void:
 			var stretch := 1.0
 			if t == SimMap.T.ROAD:
 				var horiz: bool = tt.call(x - 1, y) == SimMap.T.ROAD and tt.call(x + 1, y) == SimMap.T.ROAD
-				if r1 < 0.14:
+				if r1 < 0.06:
 					kind = int(r2 * 4.0) % 4                       # tire tracks along the road
 					rot = (PI * 0.5 if horiz else 0.0) + (r2 - 0.5) * 0.3
 					size = 1.5; stretch = 1.6
-				elif r1 < 0.24:
+				elif r1 < 0.18:
 					kind = 4 + int(r2 * 4.0) % 4                   # cracks
 				elif r1 < 0.28:
 					kind = 8 + int(r2 * 3.0) % 3; size = 1.3        # oil
@@ -765,6 +1106,10 @@ func _build_ground_decals() -> void:
 				size = 1.8; stretch = 1.3 if kind < 4 else 1.0
 			elif near.call(x, y, SimMap.T.CLIFF, 1) and r1 < 0.22:
 				kind = 12 + int(r2 * 4.0) % 4; size = 1.2 + r2 * 0.6
+			elif r1 > 0.994 and bc != "w":
+				kind = 10; size = 1.8 + r2 * 1.2                # M3.2: old shell scorch marks in the open
+			elif r1 > 0.978 and r1 <= 0.994:
+				kind = int(r2 * 4.0) % 4; size = 1.6; stretch = 1.8   # M3.2: vehicle tracks across open ground
 			if kind < 0:
 				continue
 			var b := Basis(Vector3.UP, rot).scaled(Vector3(size, 1.0, size * stretch))

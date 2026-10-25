@@ -4143,6 +4143,114 @@
 "text": "Shoot them down! Now!",
 "voice": "chatterbox/amir-1.5st/ar-v2",
 "note": "M3.0 F reused from tpla/bhx35/attack_3"
+},
+{
+"file": "audio/voice_ai/ecc/su57/select_1.ogg",
+"text": "Fighter ready. Give me a target.",
+"voice": "chatterbox/ganji+0.5st/ru",
+"note": "M3.0 F Russian-accent render"
+},
+{
+"file": "audio/voice_ai/ecc/su57/move_1.ogg",
+"text": "Turning to heading.",
+"voice": "chatterbox/ganji+0.5st/ru",
+"note": "M3.0 F Russian-accent render"
+},
+{
+"file": "audio/voice_ai/ecc/su57/attack_1.ogg",
+"text": "Missile launched! Target is mine!",
+"voice": "chatterbox/ganji+0.5st/ru",
+"note": "M3.0 F Russian-accent render"
+},
+{
+"file": "audio/voice_ai/ecc/su57/under_fire_1.ogg",
+"text": "Missile on my tail! Breaking!",
+"voice": "chatterbox/ganji+0.5st/ru",
+"note": "M3.0 F Russian-accent render"
+},
+{
+"file": "audio/voice_ai/ecc/su57/created_1.ogg",
+"text": "Fighter ready. Give me a target.",
+"voice": "chatterbox/ganji+0.5st/ru",
+"note": "M3.0 F Russian-accent render"
+},
+{
+"file": "audio/voice_ai/ecc/su57/veteran_1.ogg",
+"text": "Missile launched! Target is mine!",
+"voice": "chatterbox/ganji+0.5st/ru",
+"note": "M3.0 F Russian-accent render"
+},
+{
+"file": "audio/voice_ai/ecc/ka52/select_1.ogg",
+"text": "Gunship here. Where do we hunt?",
+"voice": "chatterbox/amir+0.5st/ru",
+"note": "M3.0 F Russian-accent render"
+},
+{
+"file": "audio/voice_ai/ecc/ka52/move_1.ogg",
+"text": "Moving low and fast.",
+"voice": "chatterbox/amir+0.5st/ru",
+"note": "M3.0 F Russian-accent render"
+},
+{
+"file": "audio/voice_ai/ecc/ka52/attack_1.ogg",
+"text": "Missiles away! Cannon firing!",
+"voice": "chatterbox/amir+0.5st/ru",
+"note": "M3.0 F Russian-accent render"
+},
+{
+"file": "audio/voice_ai/ecc/ka52/under_fire_1.ogg",
+"text": "We are hit! Pulling back!",
+"voice": "chatterbox/amir+0.5st/ru",
+"note": "M3.0 F Russian-accent render"
+},
+{
+"file": "audio/voice_ai/ecc/ka52/created_1.ogg",
+"text": "Gunship here. Where do we hunt?",
+"voice": "chatterbox/amir+0.5st/ru",
+"note": "M3.0 F Russian-accent render"
+},
+{
+"file": "audio/voice_ai/ecc/ka52/veteran_1.ogg",
+"text": "Missiles away! Cannon firing!",
+"voice": "chatterbox/amir+0.5st/ru",
+"note": "M3.0 F Russian-accent render"
+},
+{
+"file": "audio/voice_ai/ecc/tu160/select_1.ogg",
+"text": "Bomber crew ready. Show us the target.",
+"voice": "chatterbox/reza-3.0st/ru",
+"note": "M3.0 F Russian-accent render"
+},
+{
+"file": "audio/voice_ai/ecc/tu160/move_1.ogg",
+"text": "Heavy bomber on course.",
+"voice": "chatterbox/reza-3.0st/ru",
+"note": "M3.0 F Russian-accent render"
+},
+{
+"file": "audio/voice_ai/ecc/tu160/attack_1.ogg",
+"text": "Bomb doors open! Release!",
+"voice": "chatterbox/reza-3.0st/ru",
+"note": "M3.0 F Russian-accent render"
+},
+{
+"file": "audio/voice_ai/ecc/tu160/under_fire_1.ogg",
+"text": "Flak everywhere! Hold her steady!",
+"voice": "chatterbox/reza-3.0st/ru",
+"note": "M3.0 F Russian-accent render"
+},
+{
+"file": "audio/voice_ai/ecc/tu160/created_1.ogg",
+"text": "Bomber crew ready. Show us the target.",
+"voice": "chatterbox/reza-3.0st/ru",
+"note": "M3.0 F Russian-accent render"
+},
+{
+"file": "audio/voice_ai/ecc/tu160/veteran_1.ogg",
+"text": "Bomb doors open! Release!",
+"voice": "chatterbox/reza-3.0st/ru",
+"note": "M3.0 F Russian-accent render"
 }
 ]
 }

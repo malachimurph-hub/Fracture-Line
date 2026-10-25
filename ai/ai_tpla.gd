@@ -48,6 +48,8 @@ func think() -> void:
 		_scout()
 	if cfg["capture"]:
 		_capture()
+		if _every("t_breach", 50):
+			_breach()
 	if cfg["powers"]:
 		_powers()
 	if _every("t_air", 40):

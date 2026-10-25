@@ -23,6 +23,11 @@ var sources: Array = []    ## lingering smoke columns [pos, t_left, strength, ac
 var rust: Array = []       ## lingering rust (corrosive) clouds [pos, radius, t_left, acc]
 const RUST := Color("#9fbf3a")
 const DECAL_CAP := 160
+const TRACK_CAP := 1400   ## M3.2: persistent tread marks, one pooled MultiMesh draw
+var tracks: MultiMeshInstance3D
+var track_mat: ShaderMaterial
+var _track_next := 0
+var _now := 0.0
 const SMOKE := Color("#3d3833")
 const DUST := Color("#c2a77e")
 ## M2.7: the menu background battle tones explosions / smoke down so they never blanket the
@@ -82,24 +87,53 @@ func _ready() -> void:
 	decals.custom_aabb = AABB(Vector3(-50, -10, -50), Vector3(400, 40, 400))
 	add_child(decals)
 	_decal_t.resize(DECAL_CAP)
+	track_mat = ShaderMaterial.new()
+	track_mat.shader = load("res://view/vfx/track.gdshader")
+	track_mat.render_priority = -2
+	var tq := PlaneMesh.new()
+	tq.size = Vector2(1, 1)
+	var tm := MultiMesh.new()
+	tm.transform_format = MultiMesh.TRANSFORM_3D
+	tm.use_custom_data = true
+	tm.mesh = tq
+	tm.instance_count = TRACK_CAP
+	for i in TRACK_CAP:
+		tm.set_instance_transform(i, Transform3D(Basis().scaled(Vector3.ZERO), Vector3(0, -50, 0)))
+		tm.set_instance_custom_data(i, Color(-1000, 0, 0, 0))
+	tracks = MultiMeshInstance3D.new()
+	tracks.multimesh = tm
+	tracks.material_override = track_mat
+	tracks.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	tracks.custom_aabb = AABB(Vector3(-50, -10, -50), Vector3(400, 40, 400))
+	add_child(tracks)
 
 func set_fog(tex: Texture2D, map_size: Vector2) -> void:
 	decal_mat.set_shader_parameter("fog_tex", tex)
 	decal_mat.set_shader_parameter("map_size", map_size)
+	track_mat.set_shader_parameter("fog_tex", tex)
+	track_mat.set_shader_parameter("map_size", map_size)
+
+## M3.2: one tread-mark segment centred at p, heading yaw (radians, +Z forward), width w, length l.
+func track(p: Vector3, yaw: float, w: float, l: float, strength: float = 1.0) -> void:
+	var i := _track_next
+	_track_next = (_track_next + 1) % TRACK_CAP
+	var b := Basis(Vector3.UP, yaw).scaled(Vector3(w, 1, l))
+	tracks.multimesh.set_instance_transform(i, Transform3D(b, Vector3(p.x, p.y + 0.03, p.z)))
+	tracks.multimesh.set_instance_custom_data(i, Color(_now, randf(), strength, 0))
 
 ## kind: 0 scorch, 1 crater, 2 rubble
 func decal(p: Vector3, size: float, kind: int) -> void:
 	var i := _decal_next
 	_decal_next = (_decal_next + 1) % DECAL_CAP
 	var b := Basis(Vector3.UP, randf() * TAU).scaled(Vector3(size, 1, size))
-	decals.multimesh.set_instance_transform(i, Transform3D(b, Vector3(p.x, 0.035 + 0.002 * (i % 8), p.z)))
+	decals.multimesh.set_instance_transform(i, Transform3D(b, Vector3(p.x, maxf(p.y, 0.0) + 0.035 + 0.002 * (i % 8), p.z)))
 	decals.multimesh.set_instance_custom_data(i, Color(kind, randf(), 0.92, 0))
 	_decal_t[i] = 0.0
 
 func muzzle(p: Vector3, dir: Vector3, size: float) -> void:
 	var d := dir.normalized()
 	for k in 3:
-		fire.emit(p + d * (0.1 + k * 0.12) * size * 2.0, d * 1.5, 0.07, size * (0.9 - k * 0.2), size * 0.3, Color("#fff1b8"), Color(1.0, 0.55, 0.15, 0.0), 1.0)
+		fire.emit(p + d * (0.1 + k * 0.12) * size * 2.0, d * 1.5, 0.07, size * (0.9 - k * 0.2), size * 0.3, Color(2.2, 1.8, 1.1), Color(1.2, 0.5, 0.12, 0.0), 1.0)
 	smoke.emit(p + d * 0.2, d * 0.6 + Vector3(0, 0.4, 0), 0.6, size * 0.6, size * 1.6, Color(0.55, 0.52, 0.48, 0.45), Color(0.55, 0.52, 0.48, 0.0))
 
 func impact(p: Vector3, size: float, dusty: bool = true) -> void:
@@ -134,9 +168,27 @@ func smoke_puff(p: Vector3, strength: float, burning: bool) -> void:
 	if fx_mul < 1.0 and randf() > fx_mul:
 		return
 	var w := Vector3(0.35, 0, 0.12)   # light prevailing wind
-	smoke.emit(p + Vector3(randf_range(-0.25, 0.25), 0, randf_range(-0.25, 0.25)), Vector3(0, 1.1 + strength * 0.6, 0) + w, 2.6 + strength, 0.35 + strength * 0.25, 1.4 + strength, Color(0.16, 0.15, 0.14, 0.75), Color(0.35, 0.33, 0.31, 0.0))
+	smoke.emit(p + Vector3(randf_range(-0.25, 0.25), 0, randf_range(-0.25, 0.25)), Vector3(0, 1.1 + strength * 0.6, 0) + w, 3.4 + strength * 1.4, 0.35 + strength * 0.25, 1.4 + strength, Color(0.1, 0.095, 0.09, 0.85), Color(0.32, 0.3, 0.28, 0.0))
 	if burning:
-		fire.emit(p + Vector3(randf_range(-0.3, 0.3), 0.0, randf_range(-0.3, 0.3)), Vector3(0, 1.2, 0), 0.45, 0.35 + strength * 0.2, 0.1, Color("#ffb347"), Color(0.9, 0.25, 0.05, 0.0), 1.0)
+		fire.emit(p + Vector3(randf_range(-0.3, 0.3), 0.0, randf_range(-0.3, 0.3)), Vector3(0, 1.2, 0), 0.45, 0.35 + strength * 0.2, 0.1, Color(1.5, 0.8, 0.3), Color(0.9, 0.25, 0.05, 0.0), 1.0)
+		fire.emit(p + Vector3(randf_range(-0.2, 0.2), 0.1, randf_range(-0.2, 0.2)), Vector3(0, 1.6, 0), 0.6, 0.25 + strength * 0.15, 0.05, Color(1.4, 0.55, 0.12), Color(0.6, 0.12, 0.02, 0.0), 1.0)
+		if randf() < 0.35:
+			spark_layer.emit(p + Vector3(0, 0.2, 0), Vector3(randf_range(-0.3, 0.3), randf_range(1.2, 2.2), randf_range(-0.3, 0.3)), 1.2, 0.03, 0.01, Color("#ffd27a"), Color(1.0, 0.4, 0.05, 0.0), 1.0)
+
+## M3.2: light grey chimney wisp drifting downwind.
+func stack_puff(p: Vector3) -> void:
+	if fx_mul < 1.0 and randf() > fx_mul:
+		return
+	smoke.emit(p, Vector3(0.3, 0.8, 0.1), 3.6, 0.24, 1.5, Color(0.86, 0.84, 0.8, 0.55), Color(0.9, 0.88, 0.85, 0.0))
+
+## M3.2 item 14: destroyed vehicle — persistent scorch decal + a tall drifting smoke column that
+## burns for `secs` (capped number of live columns keeps the pooled particle budget on mobile).
+func wreck(p: Vector3, secs: float, strength: float) -> void:
+	decal(p, 0.9 + strength, 0)
+	if sources.size() >= 16:
+		sources.sort_custom(func(a, b): return a[1] > b[1])
+		sources.resize(15)
+	sources.append([p, secs * clampf(fx_mul, 0.4, 1.0), strength, 0.0])
 
 func building_destroyed(p: Vector3, fp: Vector2) -> void:
 	var r := maxf(fp.x, fp.y) * 0.5
@@ -202,7 +254,7 @@ func explosion(p: Vector3, size: float) -> void:
 	var sa := 0.85 * clampf(fx_mul * 1.2, 0.0, 1.0)
 	for k in nf:
 		var d := Vector3(randf_range(-1, 1), randf_range(0.3, 1.3), randf_range(-1, 1))
-		fire.emit(p + Vector3(0, 0.25, 0) + d * 0.15 * size, d * 2.2 * size, randf_range(0.25, 0.5), size * randf_range(0.35, 0.6), size * 0.9, Color("#fff0b0"), Color(0.85, 0.22, 0.04, 0.0), 1.0)
+		fire.emit(p + Vector3(0, 0.25, 0) + d * 0.15 * size, d * 2.2 * size, randf_range(0.25, 0.5), size * randf_range(0.35, 0.6), size * 0.9, Color(1.9, 1.45, 0.8), Color(0.85, 0.22, 0.04, 0.0), 1.0)
 	for k in int(nf * 0.7):
 		var d2 := Vector3(randf_range(-1, 1), randf_range(0.6, 1.6), randf_range(-1, 1))
 		smoke.emit(p + Vector3(0, 0.4, 0) + d2 * 0.2 * size, d2 * 1.0 * size, randf_range(1.6, 2.6) * fx_mul, size * 0.45, size * 1.7 * fx_mul, Color(0.2, 0.18, 0.16, sa), Color(0.42, 0.4, 0.37, 0.0))
@@ -211,6 +263,18 @@ func explosion(p: Vector3, size: float) -> void:
 	for k in int(6 * fx_mul):
 		var a := k * TAU / 6.0
 		smoke.emit(p + Vector3(cos(a), 0.1, sin(a)) * 0.3 * size, Vector3(cos(a), 0.15, sin(a)) * 2.0 * size, 1.0, size * 0.4, size * 1.1, Color(DUST, 0.6), Color(DUST, 0.0))
+	# M3.2 Zero Hour-style punch: white-hot core flash, hot inner fireball, spark spray, a
+	# rising black mushroom of oily smoke and (big blasts) a ground shock ring
+	flash(p + Vector3(0, 0.3, 0), Color(1.8, 1.5, 1.0), size * 1.1, 0.09)
+	for k in int(3 * fx_mul) + 1:
+		fire.emit(p + Vector3(randf_range(-0.1, 0.1), 0.35, randf_range(-0.1, 0.1)) * size, Vector3(0, 1.4, 0) * size, randf_range(0.45, 0.7), size * 0.5, size * 1.1, Color(1.6, 1.25, 0.7), Color(0.7, 0.16, 0.03, 0.0), 1.0)
+	for k in int(clampf(size * 8, 4, 16) * fx_mul):
+		var v := Vector3(randf_range(-1, 1), randf_range(0.6, 1.8), randf_range(-1, 1)) * 3.2 * sqrt(size)
+		spark_layer.emit(p + Vector3(0, 0.25, 0), v, randf_range(0.3, 0.7), 0.05, 0.015, Color("#fff4c8"), Color(1.0, 0.45, 0.08, 0.0), 1.0)
+	for k in int(3 * fx_mul):
+		smoke.emit(p + Vector3(randf_range(-0.15, 0.15), 0.6 + k * 0.25, randf_range(-0.15, 0.15)) * size, Vector3(0.2, 1.3 + k * 0.2, 0.06) * size, randf_range(2.4, 3.4), size * 0.5, size * 2.0, Color(0.09, 0.085, 0.08, sa), Color(0.3, 0.29, 0.27, 0.0))
+	if size >= 1.1:
+		ring(p + Vector3(0, 0.05, 0), size * 1.6, Color(1.0, 0.85, 0.6, 0.6), 0.35, false)
 	decal(p, size * 0.9, 1 if size >= 1.2 else 0)
 
 func scorch_old(p: Vector3, size: float) -> void:
@@ -232,6 +296,8 @@ func scorch(p: Vector3, size: float) -> void:
 	decal(p, size * 0.7, 0)
 
 func _process(delta: float) -> void:
+	_now += delta
+	track_mat.set_shader_parameter("now", _now)
 	# lingering smoke columns from destroyed buildings
 	var ks: Array = []
 	for src in sources:

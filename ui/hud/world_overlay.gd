@@ -72,9 +72,18 @@ func _draw() -> void:
 			_bar(sp, w, e)
 		if e.vet > 0 and e.kind == SimEntity.Kind.UNIT:
 			_chevrons(sp + Vector2(-16, -12), e.vet)
+		if e.kind == SimEntity.Kind.UNIT and not e.orders.is_empty() and String(e.orders[0].get("o", "")) == "capture" and int(e.orders[0].get("prog", 0)) > 0:
+			var ct := sim.get_ent(int(e.orders[0]["target"]))   # M3.2 capture progress (shown over the structure)
+			var need := float(OrderSys.CAPTURE_TICKS if ct != null and ct.kind == SimEntity.Kind.BUILDING else 100)
+			var k := clampf(float(e.orders[0]["prog"]) / need, 0.0, 1.0)
+			var cpos := sp + Vector2(-22, -20)
+			if ct != null and world.views.has(ct.id) and cam.cam.is_position_in_frustum((world.views[ct.id] as Node3D).position):
+				cpos = cam.cam.unproject_position((world.views[ct.id] as Node3D).position + Vector3(0, 1.2, 0)) + Vector2(-22, 0)
+			draw_rect(Rect2(cpos, Vector2(44, 6)), Color(0, 0, 0, 0.7), true)
+			draw_rect(Rect2(cpos + Vector2(1, 1), Vector2(42 * k, 4)), Color("#ffd166"), true)
 		if e.kind == SimEntity.Kind.BUILDING and e.built and not e.powered and e.team == world.local_team:
 			_bolt(sp + Vector2(0, -16))
-		if e.kind == SimEntity.Kind.NEUTRAL and e.owner >= 0 and Content.building(e.def_id).garrison_capacity > 0:
+		if ((e.kind == SimEntity.Kind.NEUTRAL and e.owner >= 0) or (e.kind == SimEntity.Kind.BUILDING and Content.btag(e.def_id, "barricade"))) and Content.building(e.def_id).garrison_capacity > 0:
 			var n := 0
 			for uid in sim.ids:
 				if sim.ents[uid].res_id == -e.id:

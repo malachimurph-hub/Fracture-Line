@@ -289,6 +289,8 @@ func test_themes() -> void:
 		# every command-card / selection caption fits in the faction font (US: "Marine Rifleman")
 		var chk := func(name: String, ok: bool, info = null): check(fac + " text fit: " + name, ok, info)
 		await HudTextCheck.exercise(m, StringName(fac), get_tree(), chk)
+		if fac == "us":
+			await HudTextCheck.hold_gesture(chk, get_tree(), m.hud.root)
 	check("four distinct faction looks", looks["eu"][0] != looks["tpla"][0] and looks["tpla"][0] != looks["us"][0] and looks["eu"][1] != looks["us"][1]
 		and looks["ecc"][1] != looks["eu"][1] and looks["ecc"][1] != looks["tpla"][1] and looks["ecc"][1] != looks["us"][1], looks)
 

@@ -1411,7 +1411,6 @@ rock_small 66.50 219.50 0
 rock_small 189.50 219.50 0
 scrub_tree 98.50 37.50 2
 scrub_tree 157.50 37.50 2
-scrub_tree 98.50 218.50 3
 scrub_tree 157.50 218.50 3
 rock_small 64.50 47.50 3
 rock_small 191.50 47.50 2
@@ -1613,3 +1612,12 @@ rock_small 52.50 124.50 0
 rock_small 203.50 124.50 0
 rock_small 52.50 131.50 0
 rock_small 203.50 131.50 0
+house_b 190.50 86.50 3
+house_c 109.50 220.50 2
+house_d 68.50 38.50 0
+house_a 99.50 211.50 0
+house_b 68.50 46.50 2
+house_c 115.50 211.50 0
+house_d 99.50 219.50 2
+house_a 77.50 46.50 2
+house_b 61.50 38.50 0

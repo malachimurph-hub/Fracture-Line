@@ -92,36 +92,222 @@ func _air_view(id: int, e: SimEntity, ud: UnitDef, v: Node3D, p: Vector3, delta:
 	alt = move_toward(alt, want, delta * (3.0 if jet else 2.0))
 	air_alt[id] = alt
 	var spin := alt > 0.2 or not jet
-	for rn in [v.find_child("Rotor", true, false), v.find_child("TailRotor", true, false)]:
+	var rotors: Array = v.get_meta("_rotors", [])
+	if not v.has_meta("_rotors"):   # M3.2: quadcopters have Rotor, TailRotor, Rotor2, Rotor3
+		for rn0 in v.find_children("*Rotor*", "Node3D", true, false):
+			if not rn0 is MeshInstance3D:
+				rotors.append(rn0)
+		v.set_meta("_rotors", rotors)
+	for rn in rotors:
 		if rn is Node3D and spin:
 			if String(rn.get_meta("rotor_axis", "y")) == "x":
 				rn.rotate_object_local(Vector3.RIGHT, delta * 40.0)
 			else:
-				rn.rotate_object_local(Vector3.UP, delta * 28.0)
+				rn.rotate_object_local(Vector3.UP, delta * 28.0 * float(rn.get_meta("rotor_dir", 1.0)))   # M3.2: coaxial rotors counter-rotate
 	var sh: MeshInstance3D = air_shadows.get(id)
 	if sh == null:
 		sh = MeshInstance3D.new()
+		# M3.2 polish: soft silhouette shadow (the aircraft's own outline, rasterised once per type)
+		var sil: Array = _air_silhouette(v, e.def_id)
 		var q := QuadMesh.new()
-		q.size = Vector2(1.6, 1.6) if jet else Vector2(1.3, 1.3)
+		q.size = Vector2.ONE * float(sil[1])
 		q.orientation = PlaneMesh.FACE_Y
 		sh.mesh = q
 		var m := StandardMaterial3D.new()
 		m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 		m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		m.albedo_color = Color(0, 0, 0, 0.35)
-		var img := Image.create_empty(32, 32, false, Image.FORMAT_RGBA8)
-		for y in 32:
-			for x in 32:
-				var r := Vector2(x - 15.5, y - 15.5).length() / 15.5
-				img.set_pixel(x, y, Color(1, 1, 1, clampf(1.0 - r, 0.0, 1.0)))
-		m.albedo_texture = ImageTexture.create_from_image(img)
+		m.albedo_color = Color(0, 0, 0, 0.42)
+		m.albedo_texture = sil[0]
 		sh.material_override = m
 		sh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(sh)
 		air_shadows[id] = sh
 	sh.visible = v.visible and alt > 0.2
 	sh.position = Vector3(p.x + alt * 0.25, p.y + 0.04, p.z + alt * 0.15)
+	sh.rotation.y = v.rotation.y
+	# higher = bigger and softer-looking (fainter)
+	var k := clampf(alt / 3.0, 0.0, 1.0)
+	sh.scale = Vector3.ONE * (1.0 + k * 0.15)
+	(sh.material_override as StandardMaterial3D).albedo_color.a = 0.46 - k * 0.14
 	return p + Vector3(0, alt, 0)
+
+## [texture, quad size]: top-down coverage of the view's meshes in its local frame (+Z forward),
+## blurred; spinning rotors become a faint disc. Cached per unit type.
+var _sil_cache := {}
+func _air_silhouette(v: Node3D, def_id: StringName) -> Array:
+	if _sil_cache.has(def_id):
+		return _sil_cache[def_id]
+	const N := 64
+	var tris := PackedVector2Array()
+	var discs: Array = []
+	var ext := 0.3
+	var inv := v.global_transform.affine_inverse()
+	var rotors: Array = v.get_meta("_rotors", [])
+	var mroot: Node = v.get_node_or_null("Model")
+	if mroot == null:
+		mroot = v
+	for mi in mroot.find_children("*", "MeshInstance3D", true, false):
+		var mm := mi as MeshInstance3D
+		if mm.mesh == null or not mm.visible:
+			continue
+		var in_rotor := false
+		for rn in rotors:
+			if rn == mm or (rn as Node).is_ancestor_of(mm):
+				in_rotor = true
+		var xf := inv * mm.global_transform
+		if in_rotor:
+			var bb := xf * mm.get_aabb()
+			var c := bb.get_center()
+			var r := maxf(bb.size.x, bb.size.z) * 0.5
+			if r > 0.15:
+				discs.append([Vector2(c.x, c.z), r])
+				ext = maxf(ext, maxf(absf(c.x), absf(c.z)) + r)
+			continue
+		for si in mm.mesh.get_surface_count():
+			var arr := mm.mesh.surface_get_arrays(si)
+			var vs: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
+			var ix: PackedInt32Array = arr[Mesh.ARRAY_INDEX] if arr[Mesh.ARRAY_INDEX] != null else PackedInt32Array()
+			var cnt := ix.size() if ix.size() > 0 else vs.size()
+			for t in range(0, cnt - 2, 3):
+				for k in 3:
+					var w := xf * vs[ix[t + k] if ix.size() > 0 else t + k]
+					tris.append(Vector2(w.x, w.z))
+					ext = maxf(ext, maxf(absf(w.x), absf(w.z)))
+	ext *= 1.12
+	var cov := PackedFloat32Array()
+	cov.resize(N * N)
+	var to_px := func(q: Vector2) -> Vector2: return (q / ext * 0.5 + Vector2(0.5, 0.5)) * N
+	for t in range(0, tris.size(), 3):
+		var a: Vector2 = to_px.call(tris[t])
+		var b: Vector2 = to_px.call(tris[t + 1])
+		var c: Vector2 = to_px.call(tris[t + 2])
+		var den := (b.y - c.y) * (a.x - c.x) + (c.x - b.x) * (a.y - c.y)
+		if absf(den) < 1e-6:
+			continue
+		for py in range(maxi(0, int(minf(a.y, minf(b.y, c.y)))), mini(N, int(maxf(a.y, maxf(b.y, c.y))) + 1)):
+			for px in range(maxi(0, int(minf(a.x, minf(b.x, c.x)))), mini(N, int(maxf(a.x, maxf(b.x, c.x))) + 1)):
+				var pp := Vector2(px + 0.5, py + 0.5)
+				var l1 := ((b.y - c.y) * (pp.x - c.x) + (c.x - b.x) * (pp.y - c.y)) / den
+				var l2 := ((c.y - a.y) * (pp.x - c.x) + (a.x - c.x) * (pp.y - c.y)) / den
+				if l1 >= -0.01 and l2 >= -0.01 and l1 + l2 <= 1.02:
+					cov[py * N + px] = 1.0
+	for d in discs:
+		var dc: Vector2 = to_px.call(d[0])
+		var dr: float = float(d[1]) / ext * 0.5 * N
+		for py in N:
+			for px in N:
+				var dd := Vector2(px + 0.5, py + 0.5).distance_to(dc)
+				if dd < dr:
+					cov[py * N + px] = maxf(cov[py * N + px], 0.3 * smoothstep(dr, dr * 0.7, dd))
+	var img := Image.create_empty(N, N, false, Image.FORMAT_RGBA8)
+	for py in N:
+		for px in N:
+			img.set_pixel(px, py, Color(1, 1, 1, cov[py * N + px]))
+	img.resize(24, 24, Image.INTERPOLATE_BILINEAR)   # soft edge
+	img.resize(64, 64, Image.INTERPOLATE_CUBIC)
+	var res := [ImageTexture.create_from_image(img), ext * 2.0]
+	_sil_cache[def_id] = res
+	return res
+
+## M3.2: chimney tops of industrial buildings (tall, thin mesh parts near the roof), cached per type.
+var _stack_cache := {}
+var _stack_bld := {}      ## id -> [world points, acc]
+var _stack_scan := 0.0
+## Chimney smoke: rescans built industrial buildings every 2 s, then puffs from the ones on
+## screen and visible (max 10 buildings per frame, ~3 puffs/s each).
+func _update_stacks(delta: float) -> void:
+	_stack_scan -= delta
+	if _stack_scan <= 0.0:
+		_stack_scan = 2.0
+		var nb := {}
+		for id in views:
+			var e: SimEntity = sim.ents.get(id)
+			if e == null or e.kind != SimEntity.Kind.BUILDING or not e.built or not e.alive:
+				continue
+			var v: EntityView = views[id]
+			if not v.is_inside_tree():
+				continue
+			var pts: Array = _stack_points(v, e.def_id)
+			if pts.is_empty():
+				continue
+			var wp: Array = []
+			for sp in pts:
+				wp.append(v.global_transform * (sp as Vector3))
+			nb[id] = [wp, _stack_bld[id][1] if _stack_bld.has(id) else randf() * 0.3]
+		_stack_bld = nb
+	var n := 0   # (buildings still draw as models at the far, icon zoom, so their chimneys smoke too)
+	for id in _stack_bld:
+		var it: Array = _stack_bld[id]
+		it[1] += delta
+		if it[1] < 0.32:
+			continue
+		it[1] = 0.0
+		var v: EntityView = views.get(id)
+		if v == null or not v.visible or not m_cam_sees(v.position):
+			continue
+		n += 1
+		if n > 10:
+			break
+		for wp in it[0]:
+			vfx.stack_puff(wp)
+
+const STACK_WORDS := ["factory", "reactor", "power", "plant", "refinery", "forge", "foundry", "chop_shop", "garage", "works", "mill"]
+func _stack_points(v: EntityView, def_id: StringName) -> Array:
+	if _stack_cache.has(def_id):
+		return _stack_cache[def_id]
+	var pts: Array = []
+	var ok := false
+	for w in STACK_WORDS:
+		ok = ok or String(def_id).contains(w)
+	if ok and v.model != null:
+		# building meshes are merged, so find chimneys as sharp local height peaks of the
+		# vertices on a coarse top-down grid (0.15-tile cells)
+		var inv := v.global_transform.affine_inverse()
+		const CS := 0.15
+		var hmax := {}
+		var top := 0.0
+		for mi in v.model.find_children("*", "MeshInstance3D", true, false):
+			var mm := mi as MeshInstance3D
+			if mm.mesh == null or not mm.is_visible_in_tree():
+				continue
+			var xf := inv * mm.global_transform
+			for si in mm.mesh.get_surface_count():
+				var vs: PackedVector3Array = mm.mesh.surface_get_arrays(si)[Mesh.ARRAY_VERTEX]
+				for vv in vs:
+					var w := xf * vv
+					var k := Vector2i(floori(w.x / CS), floori(w.z / CS))
+					if w.y > float(hmax.get(k, -1.0)):
+						hmax[k] = w.y
+					top = maxf(top, w.y)
+		var cands: Array = []
+		for k in hmax:
+			var hk: float = hmax[k]
+			if hk < 0.9 or hk < top * 0.6:
+				continue
+			var ring_hi := 0
+			var ring_n := 0
+			for d in [Vector2i(3, 0), Vector2i(-3, 0), Vector2i(0, 3), Vector2i(0, -3), Vector2i(2, 2), Vector2i(-2, 2), Vector2i(2, -2), Vector2i(-2, -2)]:
+				ring_n += 1
+				if float(hmax.get(k + d, 0.0)) > hk - 0.35:
+					ring_hi += 1
+			if ring_hi <= 1:
+				cands.append([hk, k])
+		cands.sort_custom(func(a, b): return a[0] > b[0])
+		for cd in cands:
+			if pts.size() >= 2:
+				break
+			var c := Vector3((cd[1].x + 0.5) * CS, float(cd[0]) + 0.05, (cd[1].y + 0.5) * CS)
+			var far := true
+			for q in pts:
+				far = far and Vector2(q.x - c.x, q.z - c.z).length() > 0.6
+			if far:
+				pts.append(c)
+	_stack_cache[def_id] = pts
+	return pts
+
+func m_cam_sees(p: Vector3) -> bool:
+	var c := get_viewport().get_camera_3d()
+	return c != null and c.is_position_in_frustum(p)
 
 func _world_pos(e: SimEntity) -> Vector3:
 	var p := FX.to_world(e.pos)
@@ -207,6 +393,10 @@ func on_tick(events: Array) -> void:
 				if _visible_pos(ev["pos"]):
 					vfx.salvage_fx(FX.to_world(ev["pos"]), Color("#ffd75e"))
 					AudioDirector.sfx("salvage", FX.to_world(ev["pos"]), -4.0)
+			"repair_fx":   # M3.2 Field Engineer fixing a vehicle: welding sparks
+				var rv := sim.get_ent(int(ev["id"]))
+				if rv != null and _visible_pos(rv.pos) and randf() < 0.5:
+					vfx.sparks(FX.to_world(rv.pos) + Vector3(0, 0.35, 0), Vector3(0, 0.4, 0), 4, 0.8)
 			"explode":
 				if _visible_pos(ev["pos"]):
 					vfx.big_blast(FX.to_world(ev["pos"]), float(ev["r"]) / FX.ONE)
@@ -382,7 +572,7 @@ func _on_death(ev: Dictionary) -> void:
 				vfx.impact(pos + Vector3(0, 0.2, 0), 0.4)
 			else:
 				vfx.explosion(pos, 0.9)
-				vfx.sources.append([pos, 5.0, 0.4, 0.0])   # burning wreck
+				vfx.wreck(pos, 18.0, 0.45)   # M3.2: scorch + tall burning-wreck smoke column
 		else:
 			vfx.building_destroyed(pos, v.footprint if v != null else Vector2(3, 3))
 			AudioDirector.sfx("collapse", pos)
@@ -495,7 +685,7 @@ func _update_crashes(delta: float) -> void:
 				v.rotation.z = 0.25
 				vfx.explosion(v.position, 1.4)
 				vfx.dust(v.position, 2.0, 0.9)
-				vfx.sources.append([v.position, 8.0, 0.5, 0.0])   # burning wreck
+				vfx.wreck(v.position, 20.0, 0.55)
 				AudioDirector.sfx("expl_large", v.position, 0.0)
 				if _burnt == null:
 					_burnt = StandardMaterial3D.new()
@@ -513,6 +703,7 @@ func _update_crashes(delta: float) -> void:
 
 ## Called every rendered frame.
 func frame(a: float, delta: float) -> void:
+	_update_stacks(delta)
 	alpha = a
 	_update_crashes(delta)
 	if terrain.has_towers:
@@ -567,6 +758,17 @@ func frame(a: float, delta: float) -> void:
 					acc = 0.0
 					vfx.dust(p - Vector3(sin(ny), 0, cos(ny)) * 0.5, 0.45, 0.45)
 				fx_acc[id] = acc
+			# M3.2: persistent tread / tyre marks behind ground vehicles (fade over ~80 s)
+			if ud.move_layer == &"vehicle" and not icon_mode:
+				var lt: Vector3 = v.get_meta("trackp", p)
+				var dd := Vector2(p.x - lt.x, p.z - lt.z).length()
+				if dd > 0.3:
+					if dd < 1.2:
+						var w := clampf(float(ud.radius_mt) / 1000.0 * 1.25, 0.3, 0.9)
+						vfx.track((p + lt) * 0.5, ny, w, dd + 0.04, 1.0 if w > 0.45 else 0.6)
+					v.set_meta("trackp", p)
+				elif not v.has_meta("trackp"):
+					v.set_meta("trackp", p)
 			if shield_domes.has(id):
 				var dome: MeshInstance3D = shield_domes[id]
 				dome.visible = not icon_mode

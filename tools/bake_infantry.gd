@@ -74,6 +74,23 @@ const SPECS := {
 		"colors": {"Character_Main": "#343734", "Pants": "#2c2e2c", "Grey": "team", "DarkGrey": "#1f2120", "Black": "#151615", "Skin": "#d2a681", "Grey2": "#3e413e", "Wood": "#3a3a3a", "LightGrey": "#6a6e6a"}},
 	"ecc_rifleman_placeholder": {"file": "Character_Hazmat.gltf", "weapon": "Shotgun", "keep": ["Character_Hazmat", "Character_Hazmat_Head"],
 		"colors": {"Hazmat_Main": "#5d6748", "DarkGrey": "#3a3f33", "Black": "#1e201c", "Grey": "team", "Grey2": "#55594c", "Wood": "#6b5236", "LightGrey": "#9aa08c"}},
+	# M3.2: US Drone Operator (radio + controller pack, headset) and German Field Engineer (tool pack, sapper bag)
+	"us_drone_operator": {"gun": "m4", "gear": [["plate_carrier", "#5f5a48", "#4f4b3d"], ["radio", "#3a3d36", "#7fd0ff"], ["pack", "#5a5446", "#4a4538"]], "head": ["headset", "", ""], "head_node": "Head", "file": "Character_Soldier.gltf", "weapon": "SMG", "keep": ["Body", "Head", "ShoulderPad.L", "ShoulderPad.R"],
+		"node_colors": {"Head": {"Black": "team"}},
+		"colors": {"Character_Main": "#6e6650", "Pants": "#5a5446", "Grey": "team", "DarkGrey": "#2f2e2a", "Black": "#1c1b18", "Skin": "#b98a64", "Grey2": "#4c4a42", "Wood": "#6b5236", "LightGrey": "#7fd0ff"}},
+	"eu_field_engineer": {"gun": "eu_rifle_gl", "gear": [["plate_carrier", "#4f5742", "#3d4433"], ["pack", "#5a5338", "#c8742a"], ["canteen", "#3d4433", ""]], "head": ["helmet_cover", "#4f5a3a", ""], "head_node": "Head", "file": "Character_Soldier.gltf", "weapon": "SMG", "keep": ["Body", "Head", "ShoulderPad.L", "ShoulderPad.R"],
+		"node_colors": {"Head": {"Black": "team"}},
+		"colors": {"Character_Main": "#58623f", "Pants": "#3f4632", "Grey": "team", "DarkGrey": "#30353a", "Black": "#1c1e20", "Skin": "#d2a681", "Grey2": "#5c6166", "Wood": "#6b5236", "LightGrey": "#d08a3a"}},
+	# M3.2 capture specialists: US Breacher (dark gear, breaching pack), Sturmtrupp, Russian Saboteur
+	"us_breacher": {"gear": [["plate_carrier", "#3e3d36", "#2f2e29"], ["pack", "#4a4639", "#3a372d"]], "head": ["helmet_cover", "#4a473c", ""], "head_node": "Head", "file": "Character_Soldier.gltf", "weapon": "Pistol", "keep": ["Body", "Head", "ShoulderPad.L", "ShoulderPad.R"],
+		"node_colors": {"Head": {"Black": "team"}},
+		"colors": {"Character_Main": "#5a5647", "Pants": "#4a4639", "Grey": "team", "DarkGrey": "#2f2e2a", "Black": "#1c1b18", "Skin": "#c79a76", "Grey2": "#4c4a42", "Wood": "#6b5236", "LightGrey": "#a59d8a"}},
+	"eu_sturmtrupp": {"gear": [["chest_rig", "#3d4433", "#30362a"], ["canteen", "#3d4433", ""]], "head": ["helmet_cover", "#3f4a33", ""], "head_node": "Head", "file": "Character_Soldier.gltf", "weapon": "Pistol", "keep": ["Body", "Head", "ShoulderPad.L", "ShoulderPad.R"],
+		"node_colors": {"Head": {"Black": "team"}},
+		"colors": {"Character_Main": "#4a5238", "Pants": "#3d4433", "Grey": "team", "DarkGrey": "#30353a", "Black": "#1c1e20", "Skin": "#d2a681", "Grey2": "#5c6166", "Wood": "#6b5236", "LightGrey": "#9aa0a5"}},
+	"ecc_saboteur": {"gear": [["chest_rig", "#3a3f30", "#2c3025"], ["pack", "#3a3f30", "#2c3025"]], "head": ["wrap", "#2e322a", "#22251f"], "head_node": "Head", "file": "Character_Soldier.gltf", "weapon": "Pistol", "keep": ["Body", "Head", "ShoulderPad.L", "ShoulderPad.R"],
+		"node_colors": {"Head": {"Black": "team"}},
+		"colors": {"Character_Main": "#43493a", "Pants": "#363b2e", "Grey": "team", "DarkGrey": "#25281f", "Black": "#151712", "Skin": "#c79a76", "Grey2": "#3e413e", "Wood": "#3a3a3a", "LightGrey": "#6a6e6a"}},
 }
 
 func _initialize() -> void:

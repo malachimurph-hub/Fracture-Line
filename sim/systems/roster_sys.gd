@@ -15,6 +15,29 @@ static func run(w: SimWorld) -> void:
 	_carry(w)
 	if w.tick % 20 == 11:
 		_heal_auras(w)
+	if w.tick % 10 == 3:
+		_field_repair(w)
+
+## M3.2 German Field Engineer: while not moving, repairs the most damaged own vehicle within
+## FIELD_REPAIR_R (2 % max hp per 0.5 s, free). Structures use the builder "repair" order.
+const FIELD_REPAIR_R := FX.ONE * 2
+static func _field_repair(w: SimWorld) -> void:
+	for id in w.ids:
+		var e: SimEntity = w.ents[id]
+		if not e.alive or e.kind != SimEntity.Kind.UNIT or e.res_id < 0 or e.moving or not w.udef(e).tags.has("field_engineer"):
+			continue
+		var best: SimEntity = null
+		var worst := 101
+		for u: SimEntity in w.units_in_radius(e.pos, FIELD_REPAIR_R + 400):
+			if u.owner != e.owner or u.res_id < 0 or not w.is_vehicle(u) or w.flying(u) or u.hp >= u.max_hp:
+				continue
+			var pct := u.hp * 100 / maxi(1, u.max_hp)
+			if pct < worst:
+				worst = pct
+				best = u
+		if best != null:
+			best.hp = mini(best.max_hp, best.hp + maxi(1, best.max_hp * 2 / 100))
+			w.events.append({"t": "repair_fx", "id": best.id, "by": e.id})
 
 # ------------------------------------------------------------------ transports
 static func capacity(w: SimWorld, t: SimEntity) -> int:

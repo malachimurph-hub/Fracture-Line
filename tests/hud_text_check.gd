@@ -142,6 +142,78 @@ static func _chk(m, tree: SceneTree, check: Callable, label: String) -> void:
 		await tree.process_frame
 	var probs: Array = problems(m.hud)
 	check.call("HUD text fits (%s)" % label, probs.is_empty(), probs.slice(0, 6) if not probs.is_empty() else null)
+	await _info_cards(m, tree, check, label)
+
+## M3.2: every build / train / research entry has a press-and-hold info card that is fully
+## translated, data-driven and fits on screen next to its button.
+static func _info_cards(m, tree: SceneTree, check: Callable, label: String) -> void:
+	var probs: Array = []
+	var n := 0
+	var screen: Rect2 = m.hud.root.get_global_rect().grow(0.5)
+	for i in mini(m.hud.card.size(), m.hud.grid_buttons.size()):
+		var c: Dictionary = m.hud.card[i]
+		if not c.has("info"):
+			continue
+		var inf: Array = c["info"]
+		var d: Dictionary = InfoCard.build(inf[0], StringName(inf[1]), m.runner.sim, m.local_pid)
+		if d.is_empty() or String(d.get("title", "")) == "":
+			probs.append("%s %s: empty card" % inf)
+			continue
+		for line in d["lines"]:
+			if "INFO_" in line or "_DESC" in line or RegEx.create_from_string("%[-+0-9.]*[sdfv]").search(line) != null:
+				probs.append("%s: untranslated '%s'" % [inf[1], line])
+		var dd: Variant = Content.building(StringName(inf[1])) if inf[0] == "building" else null
+		if dd != null:
+			var body := "\n".join(d["lines"])
+			if dd.passive_income > 0 and not ("/ min" in body):
+				probs.append("%s: income per minute missing" % inf[1])
+			if dd.power > 0 and not ("+%d" % dd.power in body):
+				probs.append("%s: power produced missing" % inf[1])
+			if not dd.weapons.is_empty() and not ("range" in body):
+				probs.append("%s: turret damage / range missing" % inf[1])
+		m.hud.show_info(d, (m.hud.grid_buttons[i] as Control).get_global_rect())
+		await tree.process_frame
+		var r: Rect2 = m.hud.info_panel.get_global_rect()
+		if not screen.encloses(r):
+			probs.append("%s info card off screen %s" % [inf[1], r])
+		n += 1
+	m.hud.hide_info()
+	check.call("info cards OK (%s, %d cards)" % [label, n], probs.is_empty(), probs.slice(0, 6) if not probs.is_empty() else null)
+
+## M3.2: press-and-hold on a (locked or ready) grid button shows the card and the release does
+## not build; a quick tap still fires.
+static func hold_gesture(check: Callable, tree: SceneTree, parent: Node) -> void:
+	var b := HudButton.new()
+	parent.add_child(b)
+	b.size = Vector2(80, 60)
+	b.has_info = true
+	var got := {"info": 0, "primary": 0}
+	b.hold_info.connect(func(on): if on: got["info"] += 1)
+	b.primary.connect(func(): got["primary"] += 1)
+	var old := WorldInput.test_clock_ms
+	WorldInput.test_clock_ms = 1000
+	for dis in [true, false]:
+		b.disabled = dis
+		var ev := InputEventMouseButton.new()
+		ev.button_index = MOUSE_BUTTON_LEFT
+		ev.pressed = true
+		if dis:
+			b._gui_input(ev)
+		else:
+			b._down_ms = HudButton._now()
+			b._fired = false
+			b.toggle_mode = true
+			b.button_pressed = true
+		WorldInput.test_clock_ms += 450
+		b._process(0.0)
+		if dis:
+			ev.pressed = false
+			b._gui_input(ev)
+		else:
+			b._on_pressed()
+	WorldInput.test_clock_ms = old
+	check.call("press-and-hold shows the info card (locked + ready) and the release does not build", got["info"] == 2 and got["primary"] == 0, got)
+	b.queue_free()
 
 static func _find(m, pid: int, def_id: StringName) -> SimEntity:
 	for id in m.runner.sim.ids:

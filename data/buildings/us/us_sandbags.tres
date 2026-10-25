@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="BuildingDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/building_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"us_sandbags"
+faction = &"us"
+name_key = "BLD_SANDBAGS"
+desc_key = "BLD_SANDBAGS_DESC"
+category = &"defense"
+cost = 100
+build_time_ms = 4000
+footprint = Vector2i(2, 1)
+max_hp = 700
+power = 0
+grid_radius = 0
+sight = 5
+prereqs = PackedStringArray()
+produces = PackedStringArray()
+is_hq = false
+is_refinery = false
+passive_income = 0
+free_unit = &""
+shield_pct = 0
+view_scene = "res://view/buildings/us/sandbags.tscn"
+stubs = PackedStringArray()
+weapons = PackedStringArray()
+needs_power_to_fire = false
+garrison_capacity = 3
+capturable = false
+capture_income = 0
+buildable = true
+tags = PackedStringArray("barricade", "no_hole")
+aux_radius = 0
+air_slots = 0

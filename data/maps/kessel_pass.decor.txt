@@ -3013,7 +3013,6 @@ rock_small 159.50 155.50 3
 rock_small 75.50 102.50 3
 rock_small 180.50 102.50 3
 rock_small 75.50 153.50 0
-rock_small 180.50 153.50 0
 pine_snow 5.50 103.50 1
 pine_snow 250.50 103.50 3
 pine_snow 5.50 152.50 2
@@ -3045,7 +3044,6 @@ rock_small 166.50 146.50 1
 pine_snow 73.50 110.50 0
 pine_snow 182.50 110.50 2
 pine_snow 73.50 145.50 2
-pine_snow 182.50 145.50 2
 rock_small 59.50 111.50 2
 rock_small 196.50 111.50 0
 rock_small 59.50 144.50 2
@@ -3070,3 +3068,10 @@ rock_small 67.50 121.50 3
 rock_small 188.50 121.50 2
 rock_small 67.50 134.50 3
 rock_small 188.50 134.50 2
+house_b 188.50 151.50 3
+house_c 42.50 109.50 1
+house_d 179.50 153.50 1
+house_a 182.50 144.50 0
+house_b 42.50 102.50 1
+house_c 45.50 117.50 2
+house_d 173.50 146.50 1

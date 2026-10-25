@@ -5,7 +5,7 @@ extends RefCounted
 
 const SAVE_VERSION := 2
 const CELL := 4096        ## spatial hash cell = 4 tiles
-const SUPPLY_CAP := 50000
+const SUPPLY_CAP := 2000000   # M3.2: Malachi raised the funds cap from $50k to $2M
 
 var tick: int = 0
 var rng := PCG32.new()
@@ -231,11 +231,31 @@ func player_team(pid: int) -> int:
 	return players[pid].team
 
 func has_completed(pid: int, def_id) -> bool:
+	if pid >= 0 and pid < players.size() and players[pid].upgrades.has(String(def_id)):
+		return true   # M3.2: researched upgrade (e.g. us_up_drones)
 	for id in ids:
 		var e: SimEntity = ents[id]
 		if e.alive and e.owner == pid and e.kind == SimEntity.Kind.BUILDING and e.built and e.def_id == StringName(def_id):
 			return true
 	return false
+
+## M3.2: may this unit construct this structure? Builders build anything; the German Field
+## Engineer (tag "field_engineer") builds barricades and minefields only.
+static func can_construct(ud: UnitDef, bd: BuildingDef) -> bool:
+	if ud.tags.has("builder"):
+		return true
+	return ud.tags.has("field_engineer") and (bd == null or bd.tags.has("barricade") or bd.tags.has("mine"))
+
+static func is_constructor(ud: UnitDef) -> bool:
+	return ud.tags.has("builder") or ud.tags.has("field_engineer")
+
+## M3.2 drones: ticks until the operator's drone of this kind can launch again (0 = ready).
+const DRONE_RELOAD_TICKS := 1200   ## 60 s at 20 ticks/s
+const DRONE_BUSY := 1 << 40
+
+func drone_wait(op: SimEntity, kind: String) -> int:
+	var t: int = op.air_t if kind == "bomb" else op.aux_t
+	return maxi(0, t - tick)
 
 func count_owned(pid: int, def_id, include_unbuilt: bool = true) -> int:
 	var n := 0
@@ -344,7 +364,7 @@ func _builder_regions(ids_in: Array) -> Dictionary:
 	var rs := {}
 	for id in ids_in:
 		var e: SimEntity = ents.get(int(id))
-		if e == null or not e.alive or e.kind != SimEntity.Kind.UNIT or not udef(e).tags.has("builder"):
+		if e == null or not e.alive or e.kind != SimEntity.Kind.UNIT or not is_constructor(udef(e)):
 			continue
 		var foot := udef(e).move_layer == &"foot"
 		var rg := map.region_near(FX.to_tile(e.pos), foot)
@@ -497,6 +517,13 @@ func _kill(e: SimEntity, attacker: SimEntity) -> void:
 		value = udef(e).cost
 		if e.owner >= 0:
 			players[e.owner].stats["lost"] += 1
+		if udef(e).tags.has("drone"):   # M3.2: the operator's slot reloads 60 s after the drone is gone
+			var op := get_ent(e.air_home)
+			if op != null and op.alive:
+				if udef(e).tags.has("suicide"):
+					op.air_t = tick + DRONE_RELOAD_TICKS
+				else:
+					op.aux_t = tick + DRONE_RELOAD_TICKS
 		if udef(e).transport_capacity > 0:
 			RosterSys.unload(self, e, 40)   # passengers bail out of the wreck, stunned 2 s
 		TplaSys.on_unit_death(self, e)

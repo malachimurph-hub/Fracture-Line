@@ -28,6 +28,15 @@ instance uniform float dirt_amt = 0.6;
 instance uniform float wheel_dist = 0.0;   // distance travelled (world units): wheels + tracks
 instance uniform float steer = 0.0;        // radians, wheels flagged as steering
 instance uniform float damage_amt = 0.0;   // 0 pristine .. 1 burnt-out
+// M3.2 item 14: per-asset baked surface texture (tools/gfx_m32/tex14): one Texture2DArray layer
+// holds 6 axis views of each mesh's local box. R = AO, G = signed curvature + panel seams,
+// B = grime (<= 0.75) / faction markings (> 0.8). Set per MeshInstance by the bake tool:
+// bake_o = (box origin xyz, layer), bake_s = (box size xyz, strength; 0 = not baked),
+// bake_r = rect of the mesh's 3 x 2 view grid in the layer (uv).
+uniform sampler2DArray bake_tex : hint_default_white, filter_linear_mipmap, repeat_disable;
+instance uniform vec4 bake_o = vec4(0.0);
+instance uniform vec4 bake_s = vec4(0.0);
+instance uniform vec4 bake_r = vec4(0.0);
 #ifdef REVEAL
 instance uniform float reveal_y = 10.0;    // construction: object-space height built so far
 instance uniform vec4 reveal_edge = vec4(1.6, 0.9, 0.35, 1.0);   // build-edge colour, a = strength
@@ -57,6 +66,23 @@ vec3 tri_n(vec3 p, vec3 n, float s, float k, float bias) {
 	ty = vec3(ty.xy + n.xz, abs(ty.z) * n.y);
 	tz = vec3(tz.xy + n.xy, abs(tz.z) * n.z);
 	return normalize(tx.zyx * w.x + ty.xzy * w.y + tz.xyz * w.z);
+}
+
+vec3 bake_view(int k, vec2 uv) {
+	vec2 tile = bake_r.zw / vec2(3.0, 2.0);
+	vec2 o = bake_r.xy + vec2(float(k % 3), float(k / 3)) * tile;
+	return texture(bake_tex, vec3(o + tile * (0.01 + clamp(uv, 0.0, 1.0) * 0.98), bake_o.w)).rgb;
+}
+// triplanar over the 6 baked views (each picked by the sign of the normal component)
+vec3 bake_sample(vec3 p, vec3 n) {
+	vec3 t = (p - bake_o.xyz) / bake_s.xyz;
+	vec3 w = pow(abs(n), vec3(4.0));
+	w /= (w.x + w.y + w.z + 1e-4);
+	vec3 r = vec3(0.0);
+	if (w.x > 0.02) r += w.x * bake_view(n.x > 0.0 ? 0 : 3, vec2(t.z, 1.0 - t.y));
+	if (w.y > 0.02) r += w.y * bake_view(n.y > 0.0 ? 1 : 4, vec2(t.x, 1.0 - t.z));
+	if (w.z > 0.02) r += w.z * bake_view(n.z > 0.0 ? 2 : 5, vec2(t.x, 1.0 - t.y));
+	return r / max(w.x * step(0.02, w.x) + w.y * step(0.02, w.y) + w.z * step(0.02, w.z), 1e-4);
 }
 
 vec3 srgb_to_linear(vec3 c) {
@@ -193,8 +219,11 @@ void fragment() {
 	}
 	vec3 col = base;
 	float side = 1.0 - abs(onrm.y);
+	bool baked = bake_s.w > 0.0 && cls != 2 && cls != 5 && cls != 7 && cls != 8 && cls != 15 && cls != 18 && cls != 19;
+	vec3 bk = baked ? bake_sample(opos, onrm) : vec3(1.0, 0.5, 0.0);
+	float proc = baked ? 0.45 : 1.0;   // procedural grime / dirt is toned down where the bake has it
 	col *= mix(1.0, wt.g, 0.42 * panel);   // M3.1: thin irregular seams, softer
-	float grime = (1.0 - wl.r) * (0.22 + 0.16 * side);
+	float grime = (1.0 - wl.r) * (0.22 + 0.16 * side) * proc;
 	col *= 1.0 - grime * dirt_amt;
 	if (hi && weather > 0.0) {
 		float chip = smoothstep(0.5, 0.8, max(wt.b, wl.b)) * wear_amt * weather;
@@ -211,8 +240,33 @@ void fragment() {
 	metal = mix(metal, 0.1, rmask);
 	float dirt = (1.0 - smoothstep(0.05, 0.4 + wl.r * 0.2, opos.y)) * dirt_amt * side;
 	dirt += dirt_amt * 0.18 * (1.0 - side) * smoothstep(0.4, 0.8, wl.r);
-	col = mix(col, vec3(0.5, 0.42, 0.31), clamp(dirt, 0.0, 1.0) * 0.7);
-	rough = mix(rough, 0.95, dirt);
+	col = mix(col, vec3(0.5, 0.42, 0.31), clamp(dirt * proc, 0.0, 1.0) * 0.7);
+	rough = mix(rough, 0.95, dirt * proc);
+	if (baked) {
+		float bs = bake_s.w;
+		float curv = bk.g * 2.0 - 1.0;
+		float mark = smoothstep(0.79, 0.86, bk.b);
+		float gr = clamp(bk.b / 0.75, 0.0, 1.0) * (1.0 - mark);
+		// faction marking: stencilled cream paint, chipped with the plate wear
+		float mchip = smoothstep(0.55, 0.85, max(wt.b, wl.b)) * wear_amt;
+		col = mix(col, vec3(0.74, 0.72, 0.64) * mix(0.85, 1.0, wt.r), mark * (1.0 - mchip) * 0.92 * bs * (1.0 - rmask));
+		// grime: mud / dust low down, darker soot-grime higher up
+		float hy = clamp((opos.y - bake_o.y) / bake_s.y, 0.0, 1.0);
+		vec3 gcol = mix(vec3(0.42, 0.35, 0.25), vec3(0.17, 0.15, 0.13), smoothstep(0.2, 0.7, hy));
+		col = mix(col, gcol, gr * (0.25 + 0.3 * dirt_amt) * bs);
+		rough = mix(rough, 0.95, gr * 0.6 * bs);
+		// convex edges: worn paint to bare metal on painted parts, lighter edges elsewhere
+		float edge = max(curv, 0.0);
+		if (weather > 0.0 && (cls == 0 || cls == 1 || cls == 20 || cls == 6 || cls == 17)) {
+			float ew = smoothstep(0.15, 0.6, edge) * (0.45 + 0.55 * wear_amt) * bs * (1.0 - damage_amt);
+			col = mix(col, vec3(0.52, 0.5, 0.47), ew * 0.55);
+			metal = mix(metal, 0.75, ew * 0.6);
+			rough = mix(rough, 0.4, ew * 0.6);
+		}
+		col *= 1.0 + 0.22 * edge * bs;
+		col *= 1.0 + 0.55 * min(curv, 0.0) * bs;      // creases + panel seams
+		col *= mix(1.0, bk.r, 0.9 * bs);               // baked AO
+	}
 	if (hi && stencil > 0.0) {
 		vec2 suv = (abs(onrm.x) > abs(onrm.z) ? opos.zy : opos.xy) * 0.75 + vec2(0.13, 0.6);
 		vec4 s = texture(stencil_tex, suv);
@@ -234,10 +288,15 @@ void fragment() {
 	col *= mix(0.62, 1.0, smoothstep(0.0, 0.14, opos.y));
 	// ---- M2.7b form readability (Zero Hour-like hard modelling at RTS range) ----
 	if (cls != 5 && cls != 15 && cls != 19) {
-		col *= mix(0.55, 1.0, smoothstep(-0.7, 0.15, onrm.y));      // dark undersides
-		col *= mix(0.86, 1.14, smoothstep(0.25, 0.9, onrm.y));     // sun-catching tops vs walls
+		col *= mix(0.48, 1.0, smoothstep(-0.7, 0.15, onrm.y));      // dark undersides
+		col *= mix(0.84, 1.2, smoothstep(0.25, 0.9, onrm.y));      // sun-catching tops vs walls
 		float rim = 1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0);
-		col *= 1.0 + 0.22 * rim * rim * rim;                        // silhouette lift
+		col *= 1.0 + 0.3 * rim * rim * rim;                         // silhouette lift
+		if (hi) {
+			// M3.2 hand-painted edge highlight on plate bevels (weather.png B ring), sun side
+			float bev = smoothstep(0.56, 0.7, wt.b) * (1.0 - smoothstep(0.74, 0.86, wt.b));
+			col *= 1.0 + bev * (0.16 + 0.14 * max(onrm.y, 0.0)) * (1.0 - damage_amt);
+		}
 	}
 	if (hi && cls != 2 && cls != 5 && cls != 15 && cls != 19) {
 		// M3.1 detail normals: plate seams / rivets / hatches where there are panels, fine grain

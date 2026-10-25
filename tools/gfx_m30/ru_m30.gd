@@ -8,7 +8,7 @@ extends RefCounted
 ##   Typhoon (typhoon)  - heavy 6x6 MRAP, armoured cab and troop module, remote gun
 ##   2S Msta (msta)     - 2S19-style tracked SPG, big box turret, 152 mm gun
 ##   Zeus (zeus)        - ZSU-23-4-style tracked AA, wide turret, quad 23 mm, radar dish
-## Stand-ins (pending Malachi's list): engineer (tracked engineering vehicle with blade and
+## Engineer and cargo truck (kept, polished in M3.2): engineer (tracked engineering vehicle with blade and
 ## crane), cargo_truck (6x6 bonneted cargo truck), and the buildings hq / power / depot /
 ## barracks / factory / bunker / aa_site.
 const K := preload("res://tools/gfx_m7/kit8.gd")
@@ -422,6 +422,16 @@ static func _engineer() -> void:
 	h.cbox(Vector3(-0.3, 0.76, 0.15), Vector3(0.05, 0.04, 0.05), 0.01)   # beacon
 	_team_stripe(h, 0.63, 0.42, -0.3, 0.8)
 	V4._antenna(h, Vector3(-0.35, 0.72, -0.15), 0.5)
+	# M3.2 polish: side tool boxes, spare track links on the glacis, rear beacon, tow cable
+	h.color(RU_D, Geo.PAINT)
+	for s in [-1.0, 1.0]:
+		h.cbox(Vector3(s * 0.5, 0.56, -0.55), Vector3(0.16, 0.1, 0.36), 0.01)
+	h.color(RU_S, Geo.STEEL)
+	for k in 4:
+		h.rcbox(Vector3(-0.3 + k * 0.2, 0.43, 0.8), Vector3(0.16, 0.025, 0.08), 0.004, Vector3(-14, 0, 0))
+	h.tube(Vector3(-0.45, 0.5, -0.85), Vector3(0.45, 0.5, -0.85), 0.018, 6)
+	h.color("#ff9a2a", Geo.LAMP)
+	h.cbox(Vector3(0.3, 0.76, -0.25), Vector3(0.05, 0.04, 0.05), 0.01)
 	U()._vfinish(root, model, h, mat, "engineer", [], 1.4, "ecc")
 
 # ------------------------------------------------------------------ Cargo Truck (stand-in, 6x6)
@@ -470,6 +480,15 @@ static func _cargo_truck() -> void:
 	for s in [-1.0, 1.0]:
 		h.box(Vector3(s * 0.43, 0.6, -0.45), Vector3(0.006, 0.04, 0.6))
 	V4._lamps(h, 0.24, 0.5, 1.0)
+	# M3.2 polish: spare wheel behind the cab, roof hatch, tool box, mud flaps
+	h.color(RU_S, Geo.STEEL)
+	h.tyre(Vector3(0.0, 0.62, 0.14), 0.15, 0.1, false, RU_S, 12)
+	h.color(RU_D, Geo.PAINT)
+	h.cbox(Vector3(0, 0.93, 0.36), Vector3(0.22, 0.03, 0.22), 0.008)
+	h.cbox(Vector3(0.32, 0.38, -0.2), Vector3(0.12, 0.12, 0.3), 0.01)
+	h.color("#1d1c1b", Geo.RUBBER)
+	for s in [-1.0, 1.0]:
+		h.box(Vector3(s * 0.4, 0.2, -0.86), Vector3(0.16, 0.14, 0.01))
 	U()._vfinish(root, model, h, mat, "cargo_truck", [], 1.3, "ecc")
 
 # ================================================================== buildings (stand-ins)

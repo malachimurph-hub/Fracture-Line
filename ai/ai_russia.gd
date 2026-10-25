@@ -1,19 +1,21 @@
 class_name AIRussia
 extends AIPlayer
 ## M3.0 F Russia skirmish AI. Same rules as every AI. Uses the power-economy build planner of
-## AIPlayer with Russian structures (roles); no tech centre, support or income structure yet
-## (stand-in base, pending Malachi's building list). Infiltrators are capped like US snipers.
+## AIPlayer with Russian structures (roles): Ministry of Defense (tech), Black Market (income),
+## Airfield jets fly sorties through the shared AIPlayer air layer (M3.2). Infiltrators are capped like US snipers.
 
 func roles() -> Dictionary:
 	return {"builder": &"ecc_engineer", "harvester": &"ecc_cargo_truck", "refinery": &"ecc_depot", "power": &"ecc_power",
 		"bunker": &"ecc_bunker", "barracks": &"ecc_barracks", "heavy": &"ecc_factory", "motor": &"ecc_factory",
-		"tech": &"", "support": &"", "aa_tower": &"ecc_aa_site", "income": &"",
+		"tech": &"ecc_ministry", "support": &"", "aa_tower": &"ecc_aa_site", "income": &"ecc_black_market",
 		"mine": &"", "pylon": &""}
 
 func faction() -> StringName:
 	return &"ecc"
 
 func _unit_allowed(ud: UnitDef) -> bool:
+	if ud.air_slots > 0:
+		return _air_slot_ok(ud)
 	# keep the pop for armour: the Barracks trains faster than the Vehicle Factory builds, so
 	# without a cap the army fills with infantry that melts against defences (M3.0 F test).
 	if ud.tags.has("infantry"):

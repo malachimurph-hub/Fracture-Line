@@ -115,7 +115,7 @@ func combat_units() -> Array:
 	var out: Array = []
 	for u: SimEntity in my_ents(SimEntity.Kind.UNIT):
 		var d: UnitDef = w.udef(u)
-		if d.tags.has("builder") or d.tags.has("harvester") or u.res_id < 0:
+		if d.tags.has("builder") or d.tags.has("harvester") or d.tags.has("drone") or u.res_id < 0:
 			continue
 		out.append(u)
 	return out
@@ -134,9 +134,11 @@ func think() -> void:
 		_scout()
 	if cfg["capture"]:
 		_capture()
+		if _every("t_breach", 50):
+			_breach()
 	if cfg["powers"]:
 		_powers()
-	if faction() == &"eu" and _every("t_air", 40):   # M3.0 E: German Tiger / fighters
+	if (faction() == &"eu" or faction() == &"ecc") and _every("t_air", 40):   # M3.0 E / M3.2: German, Russian jets
 		_air()
 
 # ------------------------------------------------------------------ threat detection
@@ -258,6 +260,10 @@ func _next_building() -> StringName:
 	if faction() == &"eu" and seconds() > (840 if difficulty == "hard" else 1020) and difficulty != "easy" \
 			and counts.get(R["tech"], 0) >= 1 and counts.get(&"eu_airstrip", 0) < 1 and p.supply > 2400:
 		return &"eu_airstrip"
+	# M3.2: Russia's Airfield (Su-57, Ka-52, Tu-160) once the Ministry of Defense is up
+	if faction() == &"ecc" and seconds() > (780 if difficulty == "hard" else 960) and difficulty != "easy" \
+			and counts.get(R["tech"], 0) >= 1 and counts.get(&"ecc_airfield", 0) < 1 and p.supply > 2400:
+		return &"ecc_airfield"
 	return &""
 
 ## Dynamic build pick for a role; "" when the faction lacks that structure.
@@ -497,14 +503,17 @@ func _production() -> void:
 			continue
 		var cost: int = Content.unit(pick).cost
 		if p.supply - cost >= reserve or p.supply > 6000:
-			if p.pop + Content.unit(pick).pop <= p.pop_cap:
+			if p.pop + Content.unit(pick).pop <= mini(p.pop_cap, AI_SOFT_POP):
 				cmd({"t": "queue", "target": b.id, "def": String(pick), "n": 1})
 
 var _cur_b: SimEntity = null   ## producer being filled by _production (for _unit_allowed)
+## M3.2: players have no unit cap any more; the AI keeps a soft internal limit (the old 60
+## pop cap plus headroom) so long games stay fast and waves still launch.
+const AI_SOFT_POP := 90
 
 ## Faction hook: may this unit be queued at _cur_b right now (e.g. US airfield slots)?
 func _unit_allowed(ud: UnitDef) -> bool:
-	if faction() == &"eu" and ud.air_slots > 0:   # M3.0 E: German Airfield parking slots
+	if (faction() == &"eu" or faction() == &"ecc") and ud.air_slots > 0:   # German / Russian Airfield parking slots
 		return _air_slot_ok(ud)
 	return true
 
@@ -545,6 +554,16 @@ func _pick_unit(bd: BuildingDef) -> StringName:
 		elif (ud.tags.has("detector") or ud.tags.has("jammer")) and _count_type(StringName(uid)) >= 1 + combat_units().size() / 12:
 			wgt = 0
 		elif ud.tags.has("artillery") and _count_type(StringName(uid)) >= 2 + combat_units().size() / 8:
+			wgt = 0
+		elif ud.tags.has("upgrade") and (me().upgrades.has(String(uid)) or CommandSys.upgrade_queued(w, pid, StringName(uid))):
+			wgt = 0   # M3.2 research: once
+		elif ud.tags.has("upgrade"):
+			wgt *= 3
+		elif ud.tags.has("capturer") and not ud.tags.has("scout") and (seconds() < 240 or _count_type(StringName(uid)) >= 1):
+			wgt = 0   # M3.2: one capture specialist at a time, after the opening
+		elif ud.tags.has("field_engineer") and _count_type(StringName(uid)) >= 2:
+			wgt = 0
+		elif ud.tags.has("drone_operator") and _count_type(StringName(uid)) >= 1 + combat_units().size() / 10:
 			wgt = 0
 		if w.prereqs_met(pid, ud.prereqs) != "":
 			wgt = 0
@@ -686,7 +705,7 @@ func _army() -> void:
 	# ZH-style pressure: at (near) the unit cap there is nothing to wait for - attack with
 	# what we have instead of idling at staging (prevents late-game stalemates).
 	var pl := me()
-	if pl.pop >= pl.pop_cap - 6:
+	if pl.pop >= mini(pl.pop_cap, AI_SOFT_POP) - 6:
 		need = mini(need, maxi(3000, army_value(staged)))
 	# Late-game pressure (ZH games end; turtling to a 40-minute draw is not ZH pacing):
 	# from 16 min the wave threshold ramps down so armies keep colliding and bases fall.
@@ -839,7 +858,7 @@ func _victims() -> void:
 ## Units the wave logic must not touch (raid squads, salvage runs, tunnel guards...).
 func _reserved_ids() -> Dictionary:
 	var out := {}
-	if faction() == &"eu":   # M3.0 E: jets fly their own sorties (see _air)
+	if faction() == &"eu" or faction() == &"ecc":   # jets fly their own sorties (see _air)
 		for u: SimEntity in my_ents(SimEntity.Kind.UNIT):
 			if w.udef(u).tags.has("jet"):
 				out[u.id] = true
@@ -1021,6 +1040,26 @@ func _scout_points() -> Array:
 			pts.append(sp + (base_pos() - sp) / 4)   # stop short of the base
 	pts.append(map_center())
 	return pts
+
+# ------------------------------------------------------------------ M3.2 enemy-structure capture
+## An idle capture specialist goes for the nearest visible enemy structure that is lightly guarded
+## (no enemy strength within 6 tiles); otherwise it waits at home.
+func _breach() -> void:
+	var team := me().team
+	for u: SimEntity in my_ents(SimEntity.Kind.UNIT):
+		if not w.udef(u).tags.has("capturer") or u.id == int(bb["scout"]) or u.res_id < 0 or not u.orders.is_empty():
+			continue
+		var best: SimEntity = null
+		var bd := 1 << 60
+		for id in w.ids:
+			var e: SimEntity = w.ents[id]
+			if e.alive and e.kind == SimEntity.Kind.BUILDING and CommandSys.can_capture_building(w, pid, e) and w.fog.is_visible_ent(w, team, e):
+				var d := FX.dist2(u.pos, e.pos)
+				if d < bd and _enemy_strength_near(FX.to_tile(e.pos), 6) == 0:
+					bd = d
+					best = e
+		if best != null:
+			cmd({"t": "capture", "ids": [u.id], "target": best.id})
 
 # ------------------------------------------------------------------ neutral capture
 func _capture() -> void:

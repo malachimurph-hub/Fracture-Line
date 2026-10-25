@@ -2,7 +2,7 @@ extends Node
 ## M3.1 main-menu key art, rendered offline from the real in-game models, terrain, VFX and sky:
 ##   xvfb-run -a -s "-screen 0 4700x2200x24" godot --path . --resolution 1170x540 \
 ##     --rendering-method gl_compatibility res://tests/m31_keyart.tscn -- <out.png> [W H]
-## A US / Germany / Iran three-way clash: tanks, the M109A7, IFVs, infantry, a gunship, artillery
+## M3.2: Russia joins (four-way clash). A US / Germany / Iran / Russia clash: tanks, the M109A7, IFVs, infantry, a gunship, artillery
 ## blasts and smoke. Simulates at a small window, then grows the window to W x H for the capture.
 var m: Node
 var sim: SimWorld
@@ -24,8 +24,8 @@ func _ready() -> void:
 	cfg["map"] = "harrow_junction"
 	for i in 4:
 		cfg["slots"][i]["kind"] = "closed"
-	var facs := ["us", "eu", "tpla"]
-	for i in 3:
+	var facs := ["us", "eu", "tpla", "ecc"]
+	for i in 4:
 		cfg["slots"][i]["kind"] = "human" if i == 0 else "ai"
 		cfg["slots"][i]["faction"] = facs[i]
 		cfg["slots"][i]["team"] = i
@@ -50,8 +50,10 @@ func _ready() -> void:
 		[&"eu_grenadier", 3, 2], [&"eu_grenadier", 4, 4], [&"eu_lancer", 5, 5], [&"eu_grenadier", 2, 1]]
 	var tp := [[&"tpla_scrapback", 0, -6], [&"tpla_rattler", 3, -8], [&"tpla_pickup", -3, -7], [&"tpla_hailstorm", 1, -10],
 		[&"tpla_militia", -1, -4], [&"tpla_militia", 1, -4], [&"tpla_rocket_cell", 2, -5], [&"tpla_militia", -2, -5]]
-	var groups := [[0, us], [1, eu], [2, tp]]
-	var ids := [[], [], []]
+	var ru := [[&"ecc_t90", -1, 9], [&"ecc_t90", 3, 10], [&"ecc_btr", 1, 7], [&"ecc_rifleman", -2, 6],
+		[&"ecc_rifleman", 0, 6], [&"ecc_rifleman", 2, 5], [&"ecc_t90", 5, 12]]
+	var groups := [[0, us], [1, eu], [2, tp], [3, ru]]
+	var ids := [[], [], [], []]
 	for g in groups:
 		for row in g[1]:
 			var def: StringName = row[0]
@@ -72,7 +74,7 @@ func _ready() -> void:
 	_ensure(heli)
 	ids[0].append(heli.id)
 	# everyone attack-moves into the middle
-	for p in 3:
+	for p in 4:
 		m.runner.issue({"p": p, "t": "amove", "ids": ids[p], "pos": FX.tile_center(ctr)})
 	for n in m.find_children("*", "CanvasLayer", true, false):
 		(n as CanvasLayer).visible = false

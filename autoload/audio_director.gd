@@ -36,6 +36,17 @@ const MUSIC := {"menu": "res://audio/music/menu_breach_point.ogg", "battle": "re
 ## M2.9: in-match rock shuffle (original synthesized tracks, tools/gen_music_m29.py + gen_music.py)
 const BATTLE_PLAYLIST := ["res://audio/music/battle_iron_convoy.ogg", "res://audio/music/battle_dust_devils.ogg",
 	"res://audio/music/battle_last_light.ogg", "res://audio/music/battle_steel_rain.ogg"]
+## M3.2: battle music follows the local player's faction (tools/gen_music_m32.py): US rock,
+## Russia hard-bass techno, Germany Berlin club techno, Iran war drums + Persian instruments.
+## Unknown factions fall back to BATTLE_PLAYLIST. Menu stays rock (Breach Point).
+const FACTION_PLAYLISTS := {
+	&"us": ["res://audio/music/battle_us_liberty_steel.ogg", "res://audio/music/battle_iron_convoy.ogg",
+		"res://audio/music/battle_dust_devils.ogg", "res://audio/music/battle_last_light.ogg"],
+	&"ecc": ["res://audio/music/battle_ru_red_bounce.ogg"],
+	&"eu": ["res://audio/music/battle_de_tiefgarage.ogg"],
+	&"tpla": ["res://audio/music/battle_ir_zagros.ogg"],
+}
+var battle_faction: StringName = &""
 var _shuffle: Array = []
 var _last_battle := ""
 const AMBIENT := {"wind": "res://audio/ambient/desert_wind.ogg", "river": "res://audio/ambient/river.ogg"}
@@ -199,6 +210,7 @@ func play_music(track: String) -> void:
 		return
 	music_track = track
 	if track == "battle":
+		_shuffle.clear()
 		_next_battle_track()
 		return
 	var s := stream(MUSIC.get(track, ""))
@@ -209,10 +221,13 @@ func play_music(track: String) -> void:
 	_music.volume_db = -4.0
 	_music.play()
 
+func battle_playlist() -> Array:
+	return FACTION_PLAYLISTS.get(battle_faction, BATTLE_PLAYLIST)
+
 ## Shuffle without repeats: each pass plays every battle track once, never the same one twice in a row.
 func _next_battle_track() -> void:
 	if _shuffle.is_empty():
-		_shuffle = BATTLE_PLAYLIST.duplicate()
+		_shuffle = battle_playlist().duplicate()
 		_shuffle.shuffle()
 		if _shuffle.size() > 1 and _shuffle[0] == _last_battle:
 			_shuffle.push_back(_shuffle.pop_front())
