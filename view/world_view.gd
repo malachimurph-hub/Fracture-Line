@@ -235,9 +235,7 @@ func _update_stacks(delta: float) -> void:
 				wp.append(v.global_transform * (sp as Vector3))
 			nb[id] = [wp, _stack_bld[id][1] if _stack_bld.has(id) else randf() * 0.3]
 		_stack_bld = nb
-	if icon_mode:
-		return
-	var n := 0
+	var n := 0   # (buildings still draw as models at the far, icon zoom, so their chimneys smoke too)
 	for id in _stack_bld:
 		var it: Array = _stack_bld[id]
 		it[1] += delta
@@ -252,6 +250,7 @@ func _update_stacks(delta: float) -> void:
 			break
 		for wp in it[0]:
 			vfx.stack_puff(wp)
+
 const STACK_WORDS := ["factory", "reactor", "power", "plant", "refinery", "forge", "foundry", "chop_shop", "garage", "works", "mill"]
 func _stack_points(v: EntityView, def_id: StringName) -> Array:
 	if _stack_cache.has(def_id):
