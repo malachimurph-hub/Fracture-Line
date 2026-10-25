@@ -15,6 +15,8 @@ func _ready() -> void:
 		await run_gfx(nm)
 	elif p == "new":
 		await run_new(nm)
+	elif p == "tex":
+		await run_tex(nm)
 	get_tree().quit(0)
 
 func run_gfx(nm: String) -> void:
@@ -82,4 +84,26 @@ func run_new(nm: String) -> void:
 	_unit(&"eu_sturmtrupp", eu_at + Vector2i(4, -2), 0, 1)
 	_look(Vector2(land.x + 0.5, land.y - 1.0), 1)
 	await frames(90)
+	await shot(nm)
+
+## M3.2 item 14: texture/model rebuild before/after, closest RTS zoom: HQ + factory per faction,
+## tanks, IFVs and infantry of all four factions on the arid map (terrain fills the gaps).
+func run_tex(nm: String) -> void:
+	await _start("ochre_wells", ["us", "ecc"], false)
+	var c := Vector2i(40, 40)
+	_bld(&"us_command", c)
+	_bld(&"us_garage", c + Vector2i(6, 0))
+	_bld_o(&"ecc_factory", c + Vector2i(12, 0), 1)
+	_bld_o(&"eu_heavy_factory", c + Vector2i(-1, 10), 1)
+	_bld_o(&"tpla_chop_shop", c + Vector2i(17, 7), 1)
+	var rows := [[&"us_halberd", &"us_bradley", &"us_halberd"], [&"ecc_t90", &"ecc_btr", &"ecc_t90"],
+		[&"eu_leopold", &"eu_boxer", &"eu_leopold"], [&"tpla_scrapback", &"tpla_bus", &"tpla_rattler"]]
+	var inf := [&"us_grunt", &"ecc_rifleman", &"eu_grenadier", &"tpla_militia"]
+	for r in rows.size():
+		for k in 3:
+			_unit(rows[r][k], c + Vector2i(4 + k * 3, 6 + r * 3), FX.ANG / 8, 0 if r == 0 else 1)
+		for k in 3:
+			_unit(inf[r], c + Vector2i(13 + k, 6 + r * 3), FX.ANG / 8, 0 if r == 0 else 1)
+	_look(Vector2(c.x + 9, c.y + 8), 1)
+	await frames(60)
 	await shot(nm)
