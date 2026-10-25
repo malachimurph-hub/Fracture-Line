@@ -17,6 +17,8 @@ func _ready() -> void:
 		await run_new(nm)
 	elif p == "tex":
 		await run_tex(nm)
+	elif p == "text":
+		await run_tex(nm, false)
 	elif p == "texc":
 		await run_combat(nm)
 	get_tree().quit(0)
@@ -90,7 +92,7 @@ func run_new(nm: String) -> void:
 
 ## M3.2 item 14: texture/model rebuild before/after, closest RTS zoom: HQ + factory per faction,
 ## tanks, IFVs and infantry of all four factions on the arid map (terrain fills the gaps).
-func run_tex(nm: String) -> void:
+func run_tex(nm: String, combat := true) -> void:
 	## M3.2 item 14 before/after: (1) temperate base beside the village at a high oblique camera
 	## like the art-direction shots, (2) a desert tank battle (live sim: fire, wrecks, smoke, tracks)
 	await _start("harrow_junction", ["us", "ecc"], false)
@@ -107,7 +109,8 @@ func run_tex(nm: String) -> void:
 	_look(Vector2(c.x + 16, c.y + 8), 2)   # real game camera (M3.2 polish: 40 deg default pitch)
 	await frames(90)
 	await shot(nm + "_town")
-	await run_combat(nm)
+	if combat:
+		await run_combat(nm)
 
 func run_combat(nm: String) -> void:
 	await _start("ochre_wells", ["us", "ecc"], false)

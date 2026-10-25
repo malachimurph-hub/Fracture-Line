@@ -179,7 +179,7 @@ func smoke_puff(p: Vector3, strength: float, burning: bool) -> void:
 func stack_puff(p: Vector3) -> void:
 	if fx_mul < 1.0 and randf() > fx_mul:
 		return
-	smoke.emit(p, Vector3(0.25, 0.75, 0.08), 3.2, 0.16, 1.1, Color(0.6, 0.58, 0.55, 0.5), Color(0.72, 0.7, 0.67, 0.0))
+	smoke.emit(p, Vector3(0.3, 0.8, 0.1), 3.6, 0.24, 1.5, Color(0.4, 0.385, 0.36, 0.75), Color(0.62, 0.6, 0.57, 0.0))
 
 ## M3.2 item 14: destroyed vehicle — persistent scorch decal + a tall drifting smoke column that
 ## burns for `secs` (capped number of live columns keeps the pooled particle budget on mobile).

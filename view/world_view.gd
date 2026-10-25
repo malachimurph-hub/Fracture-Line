@@ -211,7 +211,47 @@ func _air_silhouette(v: Node3D, def_id: StringName) -> Array:
 
 ## M3.2: chimney tops of industrial buildings (tall, thin mesh parts near the roof), cached per type.
 var _stack_cache := {}
-var _stacks_this_frame := 0
+var _stack_bld := {}      ## id -> [world points, acc]
+var _stack_scan := 0.0
+## Chimney smoke: rescans built industrial buildings every 2 s, then puffs from the ones on
+## screen and visible (max 10 buildings per frame, ~3 puffs/s each).
+func _update_stacks(delta: float) -> void:
+	_stack_scan -= delta
+	if _stack_scan <= 0.0:
+		_stack_scan = 2.0
+		var nb := {}
+		for id in views:
+			var e: SimEntity = sim.ents.get(id)
+			if e == null or e.kind != SimEntity.Kind.BUILDING or not e.built or not e.alive:
+				continue
+			var v: EntityView = views[id]
+			if not v.is_inside_tree():
+				continue
+			var pts: Array = _stack_points(v, e.def_id)
+			if pts.is_empty():
+				continue
+			var wp: Array = []
+			for sp in pts:
+				wp.append(v.global_transform * (sp as Vector3))
+			nb[id] = [wp, _stack_bld[id][1] if _stack_bld.has(id) else randf() * 0.3]
+		_stack_bld = nb
+	if icon_mode:
+		return
+	var n := 0
+	for id in _stack_bld:
+		var it: Array = _stack_bld[id]
+		it[1] += delta
+		if it[1] < 0.32:
+			continue
+		it[1] = 0.0
+		var v: EntityView = views.get(id)
+		if v == null or not v.visible or not m_cam_sees(v.position):
+			continue
+		n += 1
+		if n > 10:
+			break
+		for wp in it[0]:
+			vfx.stack_puff(wp)
 const STACK_WORDS := ["factory", "reactor", "power", "plant", "refinery", "forge", "foundry", "chop_shop", "garage", "works", "mill"]
 func _stack_points(v: EntityView, def_id: StringName) -> Array:
 	if _stack_cache.has(def_id):
@@ -221,21 +261,48 @@ func _stack_points(v: EntityView, def_id: StringName) -> Array:
 	for w in STACK_WORDS:
 		ok = ok or String(def_id).contains(w)
 	if ok and v.model != null:
+		# building meshes are merged, so find chimneys as sharp local height peaks of the
+		# vertices on a coarse top-down grid (0.15-tile cells)
 		var inv := v.global_transform.affine_inverse()
-		var cands: Array = []
+		const CS := 0.15
+		var hmax := {}
 		var top := 0.0
 		for mi in v.model.find_children("*", "MeshInstance3D", true, false):
-			var bb: AABB = (inv * (mi as MeshInstance3D).global_transform) * (mi as MeshInstance3D).get_aabb()
-			top = maxf(top, bb.end.y)
-			var wdt := maxf(bb.size.x, bb.size.z)
-			if bb.size.y > wdt * 1.8 and wdt < 0.9 and bb.end.y > 0.8:
-				cands.append(bb)
-		cands.sort_custom(func(a, b): return a.end.y > b.end.y)
-		for bb in cands:
-			if pts.size() >= 2 or (bb as AABB).end.y < top * 0.7:
+			var mm := mi as MeshInstance3D
+			if mm.mesh == null or not mm.is_visible_in_tree():
+				continue
+			var xf := inv * mm.global_transform
+			for si in mm.mesh.get_surface_count():
+				var vs: PackedVector3Array = mm.mesh.surface_get_arrays(si)[Mesh.ARRAY_VERTEX]
+				for vv in vs:
+					var w := xf * vv
+					var k := Vector2i(floori(w.x / CS), floori(w.z / CS))
+					if w.y > float(hmax.get(k, -1.0)):
+						hmax[k] = w.y
+					top = maxf(top, w.y)
+		var cands: Array = []
+		for k in hmax:
+			var hk: float = hmax[k]
+			if hk < 0.9 or hk < top * 0.6:
+				continue
+			var ring_hi := 0
+			var ring_n := 0
+			for d in [Vector2i(3, 0), Vector2i(-3, 0), Vector2i(0, 3), Vector2i(0, -3), Vector2i(2, 2), Vector2i(-2, 2), Vector2i(2, -2), Vector2i(-2, -2)]:
+				ring_n += 1
+				if float(hmax.get(k + d, 0.0)) > hk - 0.35:
+					ring_hi += 1
+			if ring_hi <= 1:
+				cands.append([hk, k])
+		cands.sort_custom(func(a, b): return a[0] > b[0])
+		for cd in cands:
+			if pts.size() >= 2:
 				break
-			var c: Vector3 = (bb as AABB).get_center()
-			pts.append(Vector3(c.x, (bb as AABB).end.y + 0.05, c.z))
+			var c := Vector3((cd[1].x + 0.5) * CS, float(cd[0]) + 0.05, (cd[1].y + 0.5) * CS)
+			var far := true
+			for q in pts:
+				far = far and Vector2(q.x - c.x, q.z - c.z).length() > 0.6
+			if far:
+				pts.append(c)
 	_stack_cache[def_id] = pts
 	return pts
 
@@ -637,7 +704,7 @@ func _update_crashes(delta: float) -> void:
 
 ## Called every rendered frame.
 func frame(a: float, delta: float) -> void:
-	_stacks_this_frame = 0
+	_update_stacks(delta)
 	alpha = a
 	_update_crashes(delta)
 	if terrain.has_towers:
@@ -743,13 +810,6 @@ func frame(a: float, delta: float) -> void:
 					elif not e.built and hpk < 0.5 and acc2 > 0.6:
 						acc2 = 0.0   # a site that took real fire: a thin smoke wisp, never flames
 						vfx.smoke_puff(v.position + Vector3(randf_range(-0.4, 0.4), v.bar_height * 0.4, randf_range(-0.4, 0.4)), 0.15, false)
-					elif e.built and acc2 > 0.5 and _stacks_this_frame < 10:
-						acc2 = 0.0   # M3.2: industrial chimneys smoke (factories, power plants)
-						var stk: Array = _stack_points(v, e.def_id)
-						if not stk.is_empty() and m_cam_sees(v.position):
-							_stacks_this_frame += 1
-							for sp in stk:
-								vfx.stack_puff(v.global_transform * (sp as Vector3))
 					fx_acc[id] = acc2
 				if v.turret != null:
 					# M2.8: defence turrets traverse smoothly onto (and follow) their target, and
