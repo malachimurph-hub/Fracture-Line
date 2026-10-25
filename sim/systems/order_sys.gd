@@ -97,6 +97,8 @@ static func _engage(w: SimWorld, u: SimEntity, t: SimEntity) -> void:
 		var dest := t.pos
 		if t.kind != SimEntity.Kind.UNIT and not w.is_air(u):
 			dest = FX.tile_center(w.map.nearest_passable(FX.to_tile(t.pos), w.is_vehicle(u)))
+		elif AirSys.spreads(w, u):
+			dest = AirSys.attack_slot(w, u, t, rng)   # M3.2.2: each helicopter its own spot in range
 		if u.goal == NONE or FX.dist2(u.goal, dest) > (TILE * 2) * (TILE * 2):
 			_goto(u, dest)
 

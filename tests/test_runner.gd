@@ -90,6 +90,8 @@ func _ready() -> void:
 			view_cost()
 		"turret":
 			test_turret()
+		"airspread":
+			test_airspread()
 		"stash":
 			test_stash(args[1] if args.size() > 1 else "")
 		"map_builder":
@@ -2280,6 +2282,116 @@ func _m25_sniper_jtac() -> void:
 # ================================================================== M2.8
 ## M2.8 #9: every armed ground unit and every armed structure turns toward and hits a target
 ## placed behind it (stationary, then circling), from an attack order and from idle auto-acquire.
+## M3.2.2: a big group of helicopters given one order fans out instead of stacking in one ball.
+func _air_min_gap(units: Array) -> Array:
+	var best := 1 << 40
+	var stacked := 0
+	for i in units.size():
+		for j in range(i + 1, units.size()):
+			var d := FX.dist(units[i].pos, units[j].pos)
+			best = mini(best, d)
+			if d < FX.ONE / 2:
+				stacked += 1
+	return [best, stacked]
+
+func _air_group(w: SimWorld, def: StringName, owner: int, c: Vector2i, n: int) -> Array:
+	var out: Array = []
+	for k in n:
+		var u := w.spawn_unit(def, owner, null, FX.tile_center(c + Vector2i(k % 4, k / 4)))
+		u.pos = FX.tile_center(c + Vector2i(k % 4, k / 4))   # packed tight, one tile apart
+		out.append(u)
+	return out
+
+func _air_move_run(seed: int) -> Array:
+	var r := _us_runner(seed)
+	var w := r.sim
+	var c := _zh_open(w, 7)
+	var helis := _air_group(w, &"us_harrier", 0, c + Vector2i(-24, -6), 40)
+	var ids: Array = []
+	for u in helis:
+		ids.append(u.id)
+	var dest := FX.tile_center(c + Vector2i(4, 0))
+	r.issue({"p": 0, "t": "move", "ids": ids, "pos": dest})
+	_ticks(r, 900)
+	var far := 0
+	for u: SimEntity in helis:
+		if FX.dist(u.pos, dest) > FX.ONE * 9:
+			far += 1
+	return [r, helis, dest, far]
+
+func test_airspread() -> void:
+	var a := _air_move_run(77)
+	var w: SimWorld = a[0].sim
+	var helis: Array = a[1]
+	var g := _air_min_gap(helis)
+	var arrived := 0
+	for u: SimEntity in helis:
+		arrived += 1 if u.orders.is_empty() else 0
+		if not u.orders.is_empty():
+			print("  still moving: id %d dist %d spd %d goal %s order %s" % [u.id, FX.dist(u.pos, u.orders[0]["pos"]), u.spd, u.goal, u.orders[0]])
+	print("move: min gap %.2f tiles, %d stacked pairs, %d of 40 finished the move, %d further than 9 tiles" % [g[0] / float(FX.ONE), g[1], arrived, a[3]])
+	_check(g[0] >= FX.ONE * 12 / 10 and g[1] == 0, "40 helicopters moved to one point keep >= 1.2 tiles apart, none stacked (min %.2f)" % (g[0] / float(FX.ONE)))
+	_check(arrived == 40 and a[3] == 0, "they all finish the move in a loose group around the point (%d done, %d far)" % [arrived, a[3]])
+	# deterministic: the same run twice gives the same state
+	var b := _air_move_run(77)
+	_check(a[0].sim.state_hash() == b[0].sim.state_hash(), "air spreading is deterministic (same state hash twice)")
+	# attack: they spread around the target inside weapon range
+	var r: MatchRunner = a[0]
+	var tgt := w.spawn_unit(&"eu_leopold", 1, null, FX.tile_center(FX.to_tile(a[2]) + Vector2i(14, 0)))
+	tgt.max_hp = 100000000
+	tgt.hp = tgt.max_hp
+	tgt.orders = [{"o": "guard", "pos": tgt.pos}]
+	var ids: Array = []
+	for u in helis:
+		ids.append(u.id)
+	r.issue({"p": 0, "t": "attack", "ids": ids, "target": tgt.id})
+	_ticks(r, 500)
+	var inr := 0
+	var firing := 0
+	var sx := 0
+	var sy := 0
+	for u: SimEntity in helis:
+		if w.edge_dist(u, tgt) <= OrderSys.max_range(w, u, tgt) + FX.ONE / 2:
+			inr += 1
+		if u.target == tgt.id:
+			firing += 1
+		sx += u.pos.x - tgt.pos.x
+		sy += u.pos.y - tgt.pos.y
+	var ga := _air_min_gap(helis)
+	print("attack: min gap %.2f tiles, %d stacked, %d in range, %d on target" % [ga[0] / float(FX.ONE), ga[1], inr, firing])
+	_check(ga[0] >= FX.ONE and ga[1] == 0, "attacking helicopters stay >= 1 tile apart, none stacked (min %.2f)" % (ga[0] / float(FX.ONE)))
+	_check(inr >= 38 and firing == 40, "and (nearly) all of them sit in weapon range on the target (%d in range)" % inr)
+	# mixed group: tanks keep the ground formation, helicopters the air one
+	var tanks: Array = []
+	var mixed: Array = []
+	var c2 := FX.to_tile(a[2]) + Vector2i(-10, 8)
+	for k in 6:
+		var t := w.spawn_unit(&"us_halberd", 0, null, FX.tile_center(c2 + Vector2i(k * 2, 0)))
+		tanks.append(t)
+		mixed.append(t.id)
+	for k in 10:
+		mixed.append(helis[k].id)
+	r.issue({"p": 0, "t": "move", "ids": mixed, "pos": FX.tile_center(c2 + Vector2i(0, -6))})
+	_ticks(r, 2)
+	var ok := true
+	for t: SimEntity in tanks:
+		ok = ok and not t.orders.is_empty() and w.map.passable(FX.to_tile(t.orders[0]["pos"]), true)
+	_check(ok, "mixed group: ground units still get passable tile slots")
+	# cost: 400 airborne helicopters in one area, separation pass only
+	var r4 := _us_runner(78)
+	var w4 := r4.sim
+	var c4 := _zh_open(w4, 7)
+	for k in 400:
+		var u := w4.spawn_unit(&"us_harrier", k % 2, null, FX.tile_center(c4))
+		u.pos = FX.tile_center(c4) + Vector2i((k % 20) * 900 - 9000, (k / 20) * 900 - 9000)
+	w4.rebuild_spatial()
+	var t0 := Time.get_ticks_usec()
+	for i in 20:
+		AirSys.separate(w4)
+	var ms := (Time.get_ticks_usec() - t0) / 20000.0
+	print("separation pass, 400 helicopters packed 0.9 tile apart: %.2f ms per tick (box)" % ms)
+	_check(ms < 25.0, "separation for 400 aircraft is cheap (%.2f ms per tick on the box)" % ms)
+
 func test_turret() -> void:
 	var stuck: Array = []
 	var n := 0

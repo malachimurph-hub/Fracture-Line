@@ -430,6 +430,10 @@ static func fly(w: SimWorld, u: SimEntity, d: UnitDef) -> void:
 			MoveSys._arrive(u)
 			u.dir = FX.dir_of(u.face)
 			return
+		if dist <= FX.ONE * 6 / 10 and u.spd <= maxs / 2 and spreads(w, u):
+			MoveSys._arrive(u)   # M3.2.2: close enough (separation nudged it off the exact slot)
+			u.dir = FX.dir_of(u.face)
+			return
 	u.dir = FX.dir_of(u.face)
 	_step(w, u, u.spd)
 
@@ -439,6 +443,109 @@ static func _step(w: SimWorld, u: SimEntity, spd: int) -> void:
 	np.x = clampi(np.x, FX.HALF, w.map.w * FX.ONE - FX.HALF)
 	np.y = clampi(np.y, FX.HALF, w.map.h * FX.ONE - FX.HALF)
 	MoveSys._set_pos(u, np)
+
+# ------------------------------------------------------------------ M3.2.2 air spreading
+## A big group of helicopters given one order used to stack into one ball over the same point.
+## Now: (1) group moves give every aircraft its own slot of a loose sunflower formation
+## (air_slots, ~AIR_SLOT apart, no terrain limits); (2) on attack each hovering aircraft heads
+## for its own point around the target inside weapon range (attack_slot, angle from its id),
+## so the group fans out along the range ring; (3) a gentle separation push keeps hovering
+## aircraft from overlapping (separate: spatial-grid neighbours only, integer maths, ids order,
+## so it stays deterministic and cheap). Jets (runway / taxi / landing / rearm, circling) and
+## suicide drones are left out of (2) and (3); jets only get their own move slot.
+const AIR_SLOT := FX.ONE * 20 / 10     ## formation spacing (heli radius 0.65 tile -> ~0.5 tile gap)
+const AIR_GAP := FX.ONE * 3 / 10       ## separation: keep radius + radius + this apart
+const AIR_PUSH := 40                   ## max separation step per tick (fx; ~0.8 tile/s)
+const GOLDEN := 391                    ## golden angle in FX.ANG units (1024 * 0.381966)
+
+static func air_slots(w: SimWorld, center: Vector2i, n: int) -> Array:
+	var out: Array = []
+	for i in n:
+		var p := center
+		if i > 0:
+			# Vogel spiral: r = c * sqrt(i), angle = i * golden angle -> even spacing ~AIR_SLOT
+			var r := AIR_SLOT * 56 / 100 * FX.isqrt(i * FX.ONE * FX.ONE) / FX.ONE
+			var dv := FX.dir_of((i * GOLDEN) % FX.ANG)
+			p = center + Vector2i(dv.x * r / FX.ONE, dv.y * r / FX.ONE)
+		p.x = clampi(p.x, FX.HALF, w.map.w * FX.ONE - FX.HALF)
+		p.y = clampi(p.y, FX.HALF, w.map.h * FX.ONE - FX.HALF)
+		out.append(p)
+	return out
+
+## hovering aircraft that take part in attack spreading / separation
+static var _spread_def := {}   ## def id -> bool (static content data, safe to cache)
+static func spreads(w: SimWorld, u: SimEntity) -> bool:
+	if u.air_state != FLYING or u.kind != SimEntity.Kind.UNIT:
+		return false
+	var v = _spread_def.get(u.def_id)
+	if v == null:
+		var d: UnitDef = Content.unit(u.def_id)
+		v = d.move_layer == &"air" and not d.tags.has("jet") and not d.tags.has("suicide")
+		_spread_def[u.def_id] = v
+	return v
+
+## a fixed spot for this unit around the target, at ~60-85 % of weapon range (angle and depth from
+## its id, so a group spreads all round and in depth, and the spot does not wobble while it flies)
+static func attack_slot(w: SimWorld, u: SimEntity, t: SimEntity, rng: int) -> Vector2i:
+	var dv := FX.dir_of((u.id * GOLDEN) % FX.ANG)
+	var r := rng * (60 + (u.id * 7) % 26) / 100
+	var p := t.pos + Vector2i(dv.x * r / FX.ONE, dv.y * r / FX.ONE)
+	p.x = clampi(p.x, FX.HALF, w.map.w * FX.ONE - FX.HALF)
+	p.y = clampi(p.y, FX.HALF, w.map.h * FX.ONE - FX.HALF)
+	return p
+
+static func separate(w: SimWorld) -> void:
+	# own 2-tile bucket grid of just the hovering aircraft (built in ids order -> deterministic)
+	const CELL := FX.ONE * 2
+	var list: Array = []
+	var grid := {}
+	for id in w.ids:
+		var u: SimEntity = w.ents[id]
+		if not u.alive or u.res_id < 0 or not spreads(w, u):
+			continue
+		list.append(u)
+		var k: int = (u.pos.y / CELL) * 4096 + u.pos.x / CELL
+		if grid.has(k):
+			grid[k].append(u)
+		else:
+			grid[k] = [u]
+	if list.size() < 2:
+		return
+	for u: SimEntity in list:
+		var push := Vector2i.ZERO
+		var cx: int = u.pos.x / CELL
+		var cy: int = u.pos.y / CELL
+		for yy in range(cy - 1, cy + 2):
+			for xx in range(cx - 1, cx + 2):
+				var arr = grid.get(yy * 4096 + xx)
+				if arr == null:
+					continue
+				for n: SimEntity in arr:
+					if n == u:
+						continue
+					var minr := u.radius + n.radius + AIR_GAP
+					var dx := u.pos.x - n.pos.x
+					var dy := u.pos.y - n.pos.y
+					if absi(dx) >= minr or absi(dy) >= minr:
+						continue
+					var d2 := dx * dx + dy * dy
+					if d2 >= minr * minr:
+						continue
+					var dd := FX.isqrt(d2)
+					if dd == 0:   # exactly stacked: split along a direction from the id pair
+						var sv := FX.dir_of(((u.id * 131 + n.id * 17) % FX.ANG) if u.id > n.id else ((n.id * 131 + u.id * 17) % FX.ANG + FX.ANG / 2) % FX.ANG)
+						dx = sv.x
+						dy = sv.y
+						dd = FX.ONE
+					var ov := minr - dd
+					push += Vector2i(dx * ov / dd, dy * ov / dd) / 2
+		if push != Vector2i.ZERO:
+			push.x = clampi(push.x, -AIR_PUSH, AIR_PUSH)
+			push.y = clampi(push.y, -AIR_PUSH, AIR_PUSH)
+			var np := u.pos + push
+			np.x = clampi(np.x, FX.HALF, w.map.w * FX.ONE - FX.HALF)
+			np.y = clampi(np.y, FX.HALF, w.map.h * FX.ONE - FX.HALF)
+			MoveSys._set_pos(u, np)   # (grid buckets keep the start-of-pass cell: fine for a nudge)
 
 # ------------------------------------------------------------------ JTAC
 static func _jtac_call(w: SimWorld, j: SimEntity) -> void:

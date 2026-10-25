@@ -199,13 +199,24 @@ static func _unit_orders(w: SimWorld, pid: int, c: Dictionary, t: String) -> voi
 		return
 	var pos: Vector2i = c["pos"]
 	var center_tile := FX.to_tile(pos)
-	var slots := formation_slots(w, center_tile, units.size(), w.is_vehicle(units[0]))
-	# assign slots in a stable way: sort units by distance to target
-	units.sort_custom(func(a, b): return FX.dist2(a.pos, pos) < FX.dist2(b.pos, pos) if FX.dist2(a.pos, pos) != FX.dist2(b.pos, pos) else a.id < b.id)
+	# M3.2.2: aircraft get their own loose formation in the air (no terrain), ground units the
+	# tile formation; both sorted the same stable way (distance to the target, then id)
+	var air: Array = []
+	var ground: Array = []
+	for u: SimEntity in units:
+		(air if w.is_air(u) else ground).append(u)
+	var by_dist := func(a, b): return FX.dist2(a.pos, pos) < FX.dist2(b.pos, pos) if FX.dist2(a.pos, pos) != FX.dist2(b.pos, pos) else a.id < b.id
+	ground.sort_custom(by_dist)
+	air.sort_custom(by_dist)
+	var slots := formation_slots(w, center_tile, ground.size(), w.is_vehicle(ground[0])) if not ground.is_empty() else []
+	var aslots := AirSys.air_slots(w, pos, air.size())
+	units = ground + air
 	var caps := group_speed(w, units)
 	for i in units.size():
 		var u: SimEntity = units[i]
-		var dest := pos if units.size() == 1 else FX.tile_center(slots[i])
+		var dest := pos
+		if units.size() > 1:
+			dest = FX.tile_center(slots[i]) if i < ground.size() else aslots[i - ground.size()]
 		# harvesters ordered to move simply move
 		var o := {"o": t, "pos": dest}
 		if caps.has(u.id):
