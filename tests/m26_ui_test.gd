@@ -92,6 +92,7 @@ func drag(a: Vector2, b: Vector2, steps: int = 8) -> void:
 	await frames(3)
 
 func _start(fac: String, enemy: String = "tpla") -> void:
+	Content.test_unlock_all = fac == "ecc" or enemy == "ecc"   # Russia is locked in the lobby; the UI test still covers its HUD
 	if m != null:
 		m.queue_free()
 		await frames(2)

@@ -48,9 +48,12 @@ const FACTIONS := {
 }
 
 ## M3.0: false for a faction that is shown as "Coming soon" (locked, never picked by players, AI or random).
+## Tests only: lets the UI test drive a locked faction's HUD. Never set by the game.
+var test_unlock_all := false
+
 func faction_enabled(f) -> bool:
 	var k := StringName(f)
-	return FACTIONS.has(k) and bool(FACTIONS[k].get("enabled", true))
+	return FACTIONS.has(k) and (test_unlock_all or bool(FACTIONS[k].get("enabled", true)))
 
 func playable_factions() -> Array:
 	return FACTIONS.keys().filter(func(k): return faction_enabled(k))

@@ -160,7 +160,7 @@ static func _info_cards(m, tree: SceneTree, check: Callable, label: String) -> v
 			probs.append("%s %s: empty card" % inf)
 			continue
 		for line in d["lines"]:
-			if "INFO_" in line or "_DESC" in line or "%" in line:
+			if "INFO_" in line or "_DESC" in line or RegEx.create_from_string("%[-+0-9.]*[sdfv]").search(line) != null:
 				probs.append("%s: untranslated '%s'" % [inf[1], line])
 		var dd: Variant = Content.building(StringName(inf[1])) if inf[0] == "building" else null
 		if dd != null:
