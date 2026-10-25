@@ -52,7 +52,7 @@ func build(map: SimMap, tiles_path: String = "", env: Dictionary = {}) -> void:
 	material.set_shader_parameter("dry_scrub", env["dry"])
 	material.set_shader_parameter("desert_tint", env["tint"])
 	material.set_shader_parameter("worn_amt", env.get("worn", 0.7))
-	material.set_shader_parameter("cloud_amt", env.get("clouds", 0.2))
+	material.set_shader_parameter("cloud_amt", env.get("clouds", 0.13))
 	material.set_shader_parameter("t_detail", load(TEX + "terrain/terrain_detail.png"))
 	material.set_shader_parameter("t_macro", load(TEX + "terrain/terrain_macro.png"))
 	_build_splats()
@@ -882,7 +882,7 @@ func _build_scatter(dry: bool) -> void:
 					# M3.2 item 14: dense dark scrub / bush clusters (clumped by low-frequency noise)
 					var cn := _vn(x / 6.0 + 40.0, y / 6.0) * 0.8 + _h(x, y + 999) * 0.2
 					if cn > 0.62 and not house_tiles.has(Vector2i(x, y)):
-						for k in int((1.0 + (cn - 0.62) * 8.0) * dens):
+						for k in int((1.0 + (cn - 0.62) * 5.0) * dens):
 							var b1 := _h(x * 41 + k * 3, y * 43 + k)
 							var b2 := _h(x * 47 + k, y * 53 + k * 7)
 							var bs := 0.75 + b1 * 0.7
@@ -937,11 +937,13 @@ func _tuft_mesh(dry: bool) -> Mesh:
 func _bush_mesh(dry: bool) -> Mesh:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var c0 := Color("#3a3a22") if dry else Color("#2f4220")
-	var c1 := Color("#4a4628") if dry else Color("#3c5426")
-	PropMeshes.sph(st, Vector3(0, 0.05, 0), Vector3(0.11, 0.07, 0.1), c0, 5)
-	PropMeshes.sph(st, Vector3(0.07, 0.04, 0.05), Vector3(0.07, 0.05, 0.07), c1, 4)
-	PropMeshes.sph(st, Vector3(-0.06, 0.035, -0.04), Vector3(0.065, 0.045, 0.06), c1.darkened(0.1), 4)
+	var c0 := Color("#3b4524") if dry else Color("#2e4a1e")
+	var c1 := Color("#56632f") if dry else Color("#45682a")
+	PropMeshes.sph(st, Vector3(0, 0.07, 0), Vector3(0.17, 0.1, 0.15), c0, 5)
+	for i in 5:
+		var a := TAU * i / 5.0 + 0.3
+		var r := 0.1 + 0.03 * float(i % 2)
+		PropMeshes.sph(st, Vector3(cos(a) * r, 0.05 + 0.03 * float(i % 3) * 0.5, sin(a) * r), Vector3(0.08, 0.06, 0.075), c1 if i % 2 == 0 else c1.darkened(0.15), 4)
 	st.generate_normals()
 	return st.commit()
 
@@ -986,11 +988,11 @@ func _build_ground_decals() -> void:
 			var stretch := 1.0
 			if t == SimMap.T.ROAD:
 				var horiz: bool = tt.call(x - 1, y) == SimMap.T.ROAD and tt.call(x + 1, y) == SimMap.T.ROAD
-				if r1 < 0.14:
+				if r1 < 0.06:
 					kind = int(r2 * 4.0) % 4                       # tire tracks along the road
 					rot = (PI * 0.5 if horiz else 0.0) + (r2 - 0.5) * 0.3
 					size = 1.5; stretch = 1.6
-				elif r1 < 0.24:
+				elif r1 < 0.18:
 					kind = 4 + int(r2 * 4.0) % 4                   # cracks
 				elif r1 < 0.28:
 					kind = 8 + int(r2 * 3.0) % 3; size = 1.3        # oil
@@ -1003,9 +1005,9 @@ func _build_ground_decals() -> void:
 				size = 1.8; stretch = 1.3 if kind < 4 else 1.0
 			elif near.call(x, y, SimMap.T.CLIFF, 1) and r1 < 0.22:
 				kind = 12 + int(r2 * 4.0) % 4; size = 1.2 + r2 * 0.6
-			elif r1 > 0.985 and bc != "w":
+			elif r1 > 0.994 and bc != "w":
 				kind = 10; size = 1.8 + r2 * 1.2                # M3.2: old shell scorch marks in the open
-			elif r1 > 0.965 and r1 <= 0.985:
+			elif r1 > 0.978 and r1 <= 0.994:
 				kind = int(r2 * 4.0) % 4; size = 1.6; stretch = 1.8   # M3.2: vehicle tracks across open ground
 			if kind < 0:
 				continue
