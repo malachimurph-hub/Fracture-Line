@@ -271,3 +271,12 @@ the Zero Hour-style texture/model rebuild and the polish pass (40 degree camera)
   Iran and Russia it uses the real touch path to check transport boarding (5 infantry, and 1
   adjacent), selecting a non-transport, barricade man/exit, and civilian block + house
   garrison/evacuate: 72 checks.
+
+### M3.2.1 hotfix build (versionName 0.3.4, versionCode 18)
+- `RulesOfEngagement-M3.2.1.apk`, 90,705,014 bytes (86.5 MiB). SHA256
+  `153e1e34f51c974d97741aa199c11fc1bbb076d25a4a2fa61e728bb5bbecdac6`.
+- Package com.malachimurphy.fractureline, same debug key (certificate SHA-256
+  7e96c70a…ce54), so it installs over M3.2. `apksigner verify` passes (v2 and v3).
+- Contains the boarding / garrison tap fix, "Unload n / cap" on transports, and the
+  garrisonable houses above.
+- Uploaded to Google Drive (My Drive root), file id `1SXBNWdJTGMY_5Qyoaqgih973EzWtYKDp`.
