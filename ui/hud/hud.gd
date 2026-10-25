@@ -62,6 +62,14 @@ var place_reason: Label
 var place_confirm: PlaceConfirm    ## M2.6: ✓ / ✗ floating above the ghost
 var target_bar: HBoxContainer
 var target_lbl: Label
+var info_panel: PanelContainer
+var info_title: Label
+var info_body: Label
+var info_shown: Dictionary = {}     ## last card (title / lines) for the UI test
+var _hold := {"on": false, "t0": 0, "pos": Vector2.ZERO, "shown": false}
+var _info_hide_ms := -100000
+var _tray_info: Array = []          ## [[Control, power id], ...] for press-and-hold
+const INFO_W := 380.0
 var tray: PanelContainer
 var tray_list: VBoxContainer
 var pause_menu: Control
@@ -154,6 +162,7 @@ func _build() -> void:
 		b.add_theme_font_size_override("font_size", 11)
 		b.primary.connect(_on_grid.bind(i, false))
 		b.secondary.connect(_on_grid.bind(i, true))
+		b.hold_info.connect(_on_grid_info.bind(i, b))
 		grid.add_child(b)
 		grid_buttons.append(b)
 	# resources panel
@@ -292,6 +301,22 @@ func _build() -> void:
 	tray.add_child(tray_list)
 	root.add_child(tray)
 	blockers.append(tray)
+	# M3.2 press-and-hold info card
+	info_panel = PanelContainer.new()
+	info_panel.visible = false
+	info_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	info_panel.add_theme_stylebox_override("panel", _info_style())
+	var iv := VBoxContainer.new()
+	iv.add_theme_constant_override("separation", 2)
+	iv.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	info_title = UiTheme.label("", 15, UiTheme.GOLD)
+	info_body = UiTheme.label("", 12)
+	info_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	info_body.custom_minimum_size = Vector2(INFO_W - 20, 0)
+	iv.add_child(info_title)
+	iv.add_child(info_body)
+	info_panel.add_child(iv)
+	root.add_child(info_panel)
 	paused_lbl = UiTheme.label(tr("HUD_PAUSED"), 22, Color("#ffd166"))
 	paused_lbl.visible = false
 	paused_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -467,6 +492,7 @@ func blocks(p: Vector2) -> bool:
 func _process(delta: float) -> void:
 	if sim == null:
 		return
+	_hold_tick()
 	_refresh_t -= delta
 	if _refresh_t <= 0.0:
 		_refresh_t = 0.2
@@ -781,6 +807,7 @@ func _refresh_card() -> void:
 			b.progress = c.get("progress", -1.0)
 			b.accent = c.get("accent", Color(0, 0, 0, 0))
 			b.tooltip_text = c.get("tip", "")
+			b.has_info = c.has("info")
 			b.modulate = Color(1, 1, 1, 1) if not b.disabled else Color(1, 1, 1, 0.75)
 		else:
 			b.visible = true
@@ -791,8 +818,112 @@ func _refresh_card() -> void:
 			b.progress = -1.0
 			b.accent = Color(0, 0, 0, 0)
 			b.disabled = true
+			b.has_info = false
 			b.modulate = Color(1, 1, 1, 0.25)
 		b.queue_redraw()
+
+## M3.2: data-driven info card (InfoCard) for a build / train / research / power entry.
+func _on_grid_info(on: bool, i: int, b: HudButton) -> void:
+	if not on:
+		hide_info()
+		return
+	if i < card.size() and card[i].has("info"):
+		var inf: Array = card[i]["info"]
+		show_info(InfoCard.build(inf[0], StringName(inf[1]), sim, pid), b.get_global_rect())
+
+func show_info(d: Dictionary, anchor: Rect2) -> void:
+	if d.is_empty():
+		return
+	info_shown = d
+	info_title.text = d["title"]
+	info_body.text = "\n".join(d["lines"])
+	info_panel.size = Vector2(INFO_W, 0)
+	info_panel.reset_size()
+	info_panel.visible = true
+	var vs := root.get_viewport_rect().size
+	var sz := info_panel.get_combined_minimum_size()
+	sz.x = INFO_W
+	info_panel.size = sz
+	var x := clampf(anchor.get_center().x - sz.x * 0.5, 8.0, vs.x - sz.x - 8.0)
+	var y := anchor.position.y - sz.y - 10.0
+	if y < 8.0:
+		y = minf(anchor.end.y + 10.0, vs.y - sz.y - 8.0)
+	info_panel.position = Vector2(x, maxf(8.0, y))
+
+func hide_info() -> void:
+	if info_panel.visible:
+		_info_hide_ms = HudButton._now()
+	info_panel.visible = false
+
+func _info_style() -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.04, 0.05, 0.06, 0.94)
+	sb.border_color = UiTheme.GOLD
+	sb.set_border_width_all(1)
+	sb.set_corner_radius_all(6)
+	sb.content_margin_left = 10
+	sb.content_margin_right = 10
+	sb.content_margin_top = 7
+	sb.content_margin_bottom = 8
+	return sb
+
+## Info card for the portrait (first selected entity) or a General-tray row under `p`.
+func _info_at(p: Vector2) -> Array:
+	if sel_panel.visible and sel_portrait.get_global_rect().has_point(p) and not ctl.selection.is_empty():
+		var e := sim.get_ent(int(ctl.selection[0]))
+		if e != null:
+			if e.kind == SimEntity.Kind.UNIT:
+				return [InfoCard.build("unit", e.def_id, sim, pid), sel_portrait.get_global_rect()]
+			if e.kind == SimEntity.Kind.BUILDING or e.kind == SimEntity.Kind.NEUTRAL:
+				return [InfoCard.build("building", e.def_id, sim, pid), sel_portrait.get_global_rect()]
+	if tray.visible:
+		for ti in _tray_info:
+			var c: Control = ti[0]
+			if is_instance_valid(c) and c.get_global_rect().has_point(p):
+				return [InfoCard.build("power", StringName(ti[1]), sim, pid), c.get_global_rect()]
+	return []
+
+## Press-and-hold outside the command grid (portrait, tray rows). Grid buttons use HudButton.
+func _input(ev: InputEvent) -> void:
+	var down := false
+	var up := false
+	var pos := Vector2.ZERO
+	if ev is InputEventScreenTouch and ev.index == 0:
+		down = ev.pressed
+		up = not ev.pressed
+		pos = ev.position
+	elif ev is InputEventMouseButton and ev.button_index == MOUSE_BUTTON_LEFT and not DisplayServer.is_touchscreen_available():
+		down = ev.pressed
+		up = not ev.pressed
+		pos = ev.position
+	elif (ev is InputEventScreenDrag and ev.index == 0) or ev is InputEventMouseMotion:
+		if _hold["on"] and not _hold["shown"] and ev.position.distance_to(_hold["pos"]) > 14.0:
+			_hold["on"] = false
+		return
+	else:
+		return
+	if down:
+		_hold = {"on": true, "t0": HudButton._now(), "pos": pos, "shown": false}
+	elif up:
+		var was: bool = _hold["shown"]
+		_hold["on"] = false
+		_hold["shown"] = false
+		if was:
+			hide_info()
+
+func _hold_tick() -> void:
+	if not _hold["on"] or _hold["shown"] or HudButton._now() - int(_hold["t0"]) < HudButton.HOLD_INFO_MS:
+		return
+	var r := _info_at(_hold["pos"])
+	if r.is_empty():
+		_hold["on"] = false
+		return
+	_hold["shown"] = true
+	show_info(r[0], r[1])
+
+## Tray / portrait taps right after a hold card closes are swallowed (release != buy).
+func info_just_closed() -> bool:
+	return HudButton._now() - _info_hide_ms < 250
 
 func _on_grid(i: int, alt: bool) -> void:
 	if i >= card.size():
@@ -836,7 +967,7 @@ func _make_card() -> Array:
 				out.append({"text": tr(bd.name_key), "sub": "$%d" % bd.cost,
 					"act": ctl.begin_place.bind(bid), "disabled": why != "" or not funds,
 					"tip": tr(bd.name_key) + (" — " + tr("HUD_NEEDS") % _prereq_names(bd.prereqs) if why != "" else (" — " + tr("REASON_FUNDS") if not funds else "")),
-					"accent": UiTheme.GOLD})
+					"accent": UiTheme.GOLD, "info": ["building", String(bid)]})
 			var hvb := ctl._filter(units, "harvester")
 			var tail := 2 if not hvb.is_empty() else 1
 			# M2.4: more structures than slots -> the card pages (see _refresh_card); the
@@ -859,7 +990,7 @@ func _make_card() -> Array:
 				var busy := wait >= SimWorld.DRONE_BUSY / 2
 				out.append({"text": tr(kd[1]), "sub": tr("CMD_DRONE_READY") if wait == 0 else ("—" if busy else "%ds" % ceili(wait / 20.0)),
 					"disabled": wait > 0, "act": ctl.issue.bind({"t": "drone", "ids": ops, "kind": kd[0]}), "accent": kd[2],
-					"tip": tr("UNIT_US_BOMB_DRONE_DESC" if kd[0] == "bomb" else "UNIT_US_SCOUT_DRONE_DESC")})
+					"tip": tr("UNIT_US_BOMB_DRONE_DESC" if kd[0] == "bomb" else "UNIT_US_SCOUT_DRONE_DESC"), "info": ["unit", "us_bomb_drone" if kd[0] == "bomb" else "us_scout_drone"]})
 		out.append({"text": tr("CMD_AMOVE"), "act": ctl.begin_target.bind("amove"), "accent": Color("#ff9a2a"), "tip": tr("CMD_AMOVE_TIP")})
 		out.append({"text": tr("CMD_MOVE"), "act": ctl.begin_target.bind("move"), "accent": Color("#7dff8a")})
 		out.append({"text": tr("CMD_STOP"), "act": ctl.simple.bind("stop")})
@@ -913,12 +1044,12 @@ func _make_card() -> Array:
 			out.append({"text": tr(udf.name_key), "sub": tr("HUD_RESEARCHED") if done else "$%d" % udf.cost, "badge": "",
 				"act": ctl.queue_unit.bind(e, StringName(uid), 1), "alt": func(): ctl.dequeue(e, e.queue.rfind(StringName(uid))),
 				"disabled": done or queued or why2 != "" or e.queue.size() >= ProdSys.MAX_QUEUE, "progress": prog,
-				"tip": tr(udf.name_key + "_DESC"), "accent": Color("#6fe3ff")})
+				"tip": tr(udf.name_key + "_DESC"), "accent": Color("#6fe3ff"), "info": ["unit", String(uid)]})
 			continue
 		out.append({"text": tr(udf.name_key), "sub": "$%d" % udf.cost, "badge": str(n) if n > 0 else "",
 			"act": ctl.queue_unit.bind(e, StringName(uid), 1), "alt": func(): ctl.dequeue(e, e.queue.rfind(StringName(uid))),
 			"disabled": why2 != "" or e.queue.size() >= ProdSys.MAX_QUEUE or udf.tags.has("stub"), "progress": prog, "stub": not udf.stubs.is_empty(),
-			"tip": tr(udf.name_key) + ("  [" + tr("HUD_LONGPRESS_CANCEL") + "]"), "accent": UiTheme.GOLD})
+			"tip": tr(udf.name_key) + ("  [" + tr("HUD_LONGPRESS_CANCEL") + "]"), "accent": UiTheme.GOLD, "info": ["unit", String(uid)]})
 	if not bd2.produces.is_empty():
 		while out.size() < 5:
 			out.append({"text": "", "disabled": true})
@@ -1043,6 +1174,7 @@ func toggle_tray() -> void:
 func _fill_tray() -> void:
 	for c in tray_list.get_children():
 		c.queue_free()
+	_tray_info.clear()
 	var p: SimPlayer = sim.players[pid]
 	var nx: int = SimPlayer.RANK_XP[p.rank + 1] if p.rank + 1 < SimPlayer.RANK_XP.size() else -1
 	tray_list.add_child(UiTheme.label(tr("TRAY_TITLE") % [p.rank, p.points, ("%d/%d" % [p.xp, nx]) if nx > 0 else str(p.xp)], 12, UiTheme.GOLD))
@@ -1057,6 +1189,8 @@ func _fill_tray() -> void:
 		row.add_child(l)
 		var b := UiTheme.button("", Vector2(110, 48))
 		b.add_theme_font_size_override("font_size", 11)
+		_tray_info.append([l, String(id)])
+		_tray_info.append([b, String(id)])
 		var owned := p.powers.has(String(id))
 		if d.stub:
 			b.text = tr("TRAY_COMING")
@@ -1065,7 +1199,11 @@ func _fill_tray() -> void:
 			var why := PowersSys.can_buy(sim, pid, id)
 			b.text = tr("TRAY_BUY") % [d.rank_required, d.point_cost]
 			b.disabled = why != ""
-			b.pressed.connect(func(): ctl.issue({"t": "buy_power", "def": String(id)}); _refresh_t = 0.0)
+			b.pressed.connect(func():
+				if info_just_closed():
+					return
+				ctl.issue({"t": "buy_power", "def": String(id)})
+				_refresh_t = 0.0)
 		else:
 			var r := PowersSys.ready_in(sim, pid, id)
 			if r > 0:
@@ -1074,6 +1212,8 @@ func _fill_tray() -> void:
 			else:
 				b.text = tr("TRAY_FIRE")
 				b.pressed.connect(func():
+					if info_just_closed():
+						return
 					tray.visible = false
 					if d.radius > 0:
 						ctl.begin_target("power:" + String(id))

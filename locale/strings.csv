@@ -118,7 +118,7 @@ HUD_BLD_POWER,Power %+d
 HUD_GARRISON,Garrison %d / %d
 HUD_PUMP_INCOME,+$%d / s when captured
 HUD_TAP_CANCEL,Tap to cancel
-HUD_LONGPRESS_CANCEL,long-press / right-click: cancel one
+HUD_LONGPRESS_CANCEL,"hold: info · tap queue chip / right-click: cancel one"
 HUD_NEEDS,needs %s
 STATE_IDLE,Idle
 STATE_MOVE,Moving
@@ -571,3 +571,51 @@ UNIT_EU_STURMTRUPP,Sturmtrupp
 UNIT_EU_STURMTRUPP_DESC,"Assault squad with sidearms. Tap an enemy or neutral structure to capture it (6 s next to it; moving or dying cancels)."
 UNIT_ECC_SABOTEUR,Saboteur
 UNIT_ECC_SABOTEUR_DESC,"Covert specialist. Tap an enemy or neutral structure to capture it (6 s next to it; moving or dying cancels)."
+INFO_COST_TIME,$%d · %s
+INFO_RESEARCH,Research · $%d · %s
+INFO_POP,pop %d
+INFO_SIZE,%dx%d
+INFO_HP,HP %d
+INFO_UNIT_STATS,"HP %d · %s · speed %.1f · sight %d"
+INFO_WEAPON,"Weapon: %d dmg · range %.1f · every %.2fs · %s"
+INFO_SPLASH," · splash"
+INFO_GROUND,ground
+INFO_AIR,air
+INFO_GOOD_VS,Good vs: %s
+INFO_WEAK_VS,Weak vs: %s
+INFO_UNARMED,unarmed
+INFO_TRANSPORT,Carries %d infantry
+INFO_DETECTOR,Detects stealth
+INFO_REQUIRES,Requires: %s
+INFO_POWER_GEN,Power: +%d
+INFO_POWER_USE,Power use: %d
+INFO_INCOME,"Income: $%d / min (up to 4 count)"
+INFO_INCOME_CAPTURED,Income when captured: $%d / min
+INFO_REFINERY,Harvesters unload here
+INFO_PRODUCES,Trains: %s
+INFO_UNLOCKS,Unlocks: %s
+INFO_GARRISON,Holds %d infantry
+INFO_AIR_SLOTS,Parks %d aircraft
+INFO_FREE_UNIT,Comes with: %s
+INFO_POWER_RANK,Rank %d · %d point(s)
+INFO_COOLDOWN,Cooldown %ds
+INFO_RADIUS,radius %d
+INFO_DURATION,lasts %s
+INFO_ARMOR_INFANTRY,infantry
+INFO_ARMOR_LIGHT,light vehicles
+INFO_ARMOR_HEAVY,heavy armor
+INFO_ARMOR_STRUCTURE,structures
+INFO_ARMOR_AIR,aircraft
+INFO_DMG_SMALL_ARMS,small arms
+INFO_DMG_EXPLOSIVE,explosives
+INFO_DMG_ANTI_TANK,anti-tank
+INFO_DMG_AUTOCANNON,autocannons
+INFO_DMG_CANNON,tank guns
+INFO_DMG_FLAK,flak
+INFO_DMG_QUAD,quad guns
+INFO_DMG_DEMOLITION,demolition
+INFO_DMG_CORROSIVE,corrosive
+INFO_DMG_HMG,heavy MGs
+INFO_DMG_FLAME,flame
+INFO_DMG_SNIPER,snipers
+INFO_DMG_AA_MISSILE,AA missiles

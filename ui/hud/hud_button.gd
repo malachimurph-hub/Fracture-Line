@@ -8,6 +8,13 @@ extends Button
 ## fit_ok / fit_size report the result so the UI test can assert nothing is clipped.
 signal primary
 signal secondary
+## M3.2: press-and-hold info card (true = show at HOLD_INFO_MS, false = finger released)
+signal hold_info(on: bool)
+
+const HOLD_INFO_MS := 400
+var has_info := false
+var _info_on := false
+var _dis_hold := false
 
 const MIN_FONT := 9
 const MAX_LINES := 2
@@ -50,11 +57,29 @@ func _ready() -> void:
 		label_text = text
 	text = ""
 	button_down.connect(func(): _down_ms = _now(); _fired = false)
-	button_up.connect(func(): _down_ms = -1)
+	button_up.connect(func():
+		_down_ms = -1
+		if _info_on:
+			_info_on = false
+			hold_info.emit(false))
 	pressed.connect(_on_pressed)
 	resized.connect(func(): _fit_key = ""; queue_redraw())
 
 func _gui_input(ev: InputEvent) -> void:
+	# M3.2: a locked (disabled) entry still opens its info card on press-and-hold
+	if disabled and has_info and ev is InputEventMouseButton and ev.button_index == MOUSE_BUTTON_LEFT:
+		if ev.pressed:
+			_down_ms = _now()
+			_fired = false
+			_dis_hold = true
+		else:
+			_down_ms = -1
+			_dis_hold = false
+			if _info_on:
+				_info_on = false
+				hold_info.emit(false)
+		accept_event()
+		return
 	if ev is InputEventMouseButton and ev.button_index == MOUSE_BUTTON_RIGHT:
 		if ev.pressed and not disabled:
 			secondary.emit()
@@ -73,6 +98,13 @@ static func _now() -> int:
 	return WorldInput.test_clock_ms if WorldInput.test_clock_ms >= 0 else Time.get_ticks_msec()
 
 func _process(_d: float) -> void:
+	if has_info and _down_ms >= 0 and not _fired and (is_pressed() or _dis_hold) and _now() - _down_ms > HOLD_INFO_MS:
+		_fired = true   # the release must not build / train
+		_info_on = true
+		if Settings.g("haptics"):
+			Input.vibrate_handheld(10)
+		hold_info.emit(true)
+		return
 	if _down_ms >= 0 and not _fired and is_pressed() and _now() - _down_ms > 500:
 		_fired = true
 		AudioDirector.ui("select")
