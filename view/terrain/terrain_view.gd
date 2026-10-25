@@ -447,25 +447,123 @@ func _build_water() -> void:
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(mi)
 
+## M3.2 real bridge design (Malachi: "they look like nothing"): per bridge tile, in a span
+## frame (u along the crossing, v across): asphalt deck on a concrete slab with lane lines,
+## raised curbs + steel railings on the water sides, a riveted steel through-truss (top chord,
+## verticals, X diagonals) along both outer edges, three steel girders under the deck, concrete
+## piers with caps and cut-waters every 3 tiles, abutments + wing walls + approach ramps where the
+## span meets land, and lamp posts. One static mesh (no per-frame cost).
 func _build_bridges() -> void:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var deck := Color("#9a958c")
-	var rail := Color("#6c6a66")
-	var pillar := Color("#837e75")
+	var asphalt := Color("#4a4b4d")
+	var slab := Color("#9a958c")
+	var curb := Color("#b9b4a8")
+	var steel := Color("#5c6b64")
+	var steel_d := Color("#46524c")
+	var rust := Color("#7a5a40")
+	var conc := Color("#8f8a80")
+	var conc_d := Color("#6f6b63")
+	var line := Color("#e9d9a2")
+	var is_b := func(t: Vector2i) -> bool: return m.in_bounds(t) and m.ttype(t) == SimMap.T.BRIDGE
+	var is_w := func(t: Vector2i) -> bool: return not m.in_bounds(t) or m.ttype(t) == SimMap.T.WATER
 	for y in m.h:
 		for x in m.w:
-			if m.ttype(Vector2i(x, y)) != SimMap.T.BRIDGE:
+			var t := Vector2i(x, y)
+			if not is_b.call(t):
 				continue
-			_box(st, Vector3(x + 0.5, 0.0, y + 0.5), Vector3(1.0, 0.16, 1.0), deck.darkened(0.04 * (x % 2)))
-			if m.ttype(Vector2i(x, y - 1)) != SimMap.T.BRIDGE:
-				_box(st, Vector3(x + 0.5, 0.2, y + 0.06), Vector3(1.0, 0.26, 0.12), rail)
-				if x % 2 == 0:
-					_box(st, Vector3(x + 0.5, -0.4, y + 0.3), Vector3(0.35, 0.7, 0.35), pillar)
-			if m.ttype(Vector2i(x, y + 1)) != SimMap.T.BRIDGE:
-				_box(st, Vector3(x + 0.5, 0.2, y + 0.94), Vector3(1.0, 0.26, 0.12), rail)
-				if x % 2 == 0:
-					_box(st, Vector3(x + 0.5, -0.4, y + 0.7), Vector3(0.35, 0.7, 0.35), pillar)
+			# span axis: water on the north / south sides -> the bridge runs along x
+			var along_x: bool = is_w.call(t + Vector2i(0, -1)) or is_w.call(t + Vector2i(0, 1)) or not (is_w.call(t + Vector2i(-1, 0)) or is_w.call(t + Vector2i(1, 0)))
+			var du := Vector2i(1, 0) if along_x else Vector2i(0, 1)
+			var dv := Vector2i(0, 1) if along_x else Vector2i(1, 0)
+			var k := x if along_x else y   # index along the span (piers / lamps rhythm)
+			var cen := Vector3(x + 0.5, 0.0, y + 0.5)
+			# local box: c = (u, y, v) offset, s = (su, sy, sv), tilt = rotation about the v axis
+			var bx := func(c: Vector3, sz: Vector3, col: Color, tilt := 0.0) -> void:
+				var wc := cen + (Vector3(c.x, c.y, c.z) if along_x else Vector3(c.z, c.y, c.x))
+				var ws := sz if along_x else Vector3(sz.z, sz.y, sz.x)
+				var rot := Vector3(0, 0, tilt) if along_x else Vector3(-tilt, 0, 0)
+				PropMeshes.box(st, wc, ws, col, rot)
+			# deck: slab + asphalt (top at y 0.08 where units drive)
+			bx.call(Vector3(0, -0.02, 0), Vector3(1.0, 0.12, 1.0), slab)
+			bx.call(Vector3(0, 0.06, 0), Vector3(1.0, 0.04, 1.0), asphalt.darkened(0.03 * (k % 2)))
+			bx.call(Vector3(0, 0.081, 0), Vector3(1.0, 0.002, 0.02), asphalt.lightened(0.08))   # expansion joint
+			# girders under the deck
+			for gv in [-0.32, 0.0, 0.32]:
+				bx.call(Vector3(0, -0.14, gv), Vector3(1.0, 0.12, 0.06), steel_d)
+				bx.call(Vector3(0, -0.2, gv), Vector3(1.0, 0.02, 0.14), steel_d)
+			# cross beam
+			bx.call(Vector3(-0.45, -0.12, 0), Vector3(0.05, 0.08, 0.9), steel_d)
+			for side in [-1, 1]:
+				var nb: Vector2i = t + dv * side
+				var vv: float = 0.5 * side
+				if is_w.call(nb):
+					# curb / footway, railing, through-truss
+					bx.call(Vector3(0, 0.1, vv - side * 0.08), Vector3(1.0, 0.04, 0.16), curb)
+					bx.call(Vector3(0, 0.087, vv - side * 0.17), Vector3(1.0, 0.004, 0.03), line.lightened(0.3))   # edge line
+					for pi in 4:
+						bx.call(Vector3(-0.375 + pi * 0.25, 0.19, vv - side * 0.02), Vector3(0.025, 0.16, 0.025), steel)
+					bx.call(Vector3(0, 0.27, vv - side * 0.02), Vector3(1.0, 0.025, 0.035), steel)
+					bx.call(Vector3(0, 0.19, vv - side * 0.02), Vector3(1.0, 0.015, 0.02), steel)
+					var tv: float = vv + side * 0.02
+					bx.call(Vector3(0, 0.66, tv), Vector3(1.0, 0.07, 0.07), steel)   # top chord
+					bx.call(Vector3(0, 0.1, tv), Vector3(1.0, 0.08, 0.08), steel)    # bottom chord
+					bx.call(Vector3(-0.5, 0.38, tv), Vector3(0.06, 0.6, 0.06), steel)  # vertical
+					for dg in [-1.0, 1.0]:   # X diagonals
+						bx.call(Vector3(0, 0.38, tv), Vector3(1.12, 0.045, 0.045), steel_d, dg * 29.0)
+					bx.call(Vector3(0, 0.38, tv), Vector3(0.1, 0.1, 0.075), rust)   # gusset plate
+					bx.call(Vector3(0, 0.7, tv - side * 0.12), Vector3(0.05, 0.04, 0.24), steel_d)   # top lateral strut
+					if k % 3 == 1:
+						bx.call(Vector3(0, 0.5, vv - side * 0.08), Vector3(0.03, 0.8, 0.03), steel_d)   # lamp post
+						bx.call(Vector3(0, 0.9, vv - side * 0.16), Vector3(0.16, 0.03, 0.05), Color("#ffe9a8"))
+			# piers every 3 tiles along the span
+			if k % 3 == 0:
+				bx.call(Vector3(0, -0.24, 0), Vector3(0.3, 0.06, 1.05), conc)   # pier cap
+				for pv in [-0.3, 0.3]:
+					bx.call(Vector3(0, -0.42, pv), Vector3(0.22, 0.34, 0.22), conc_d)
+				bx.call(Vector3(0, -0.5, 0), Vector3(0.24, 0.14, 0.9), conc_d)   # web wall at the waterline
+				for cw in [-1.0, 1.0]:   # cut-waters
+					bx.call(Vector3(0, -0.47, cw * 0.48), Vector3(0.17, 0.2, 0.17), conc, 0.0)
+			# span ends meeting land: abutment, wing walls, approach ramp
+			for end in [-1, 1]:
+				var nl: Vector2i = t + du * end
+				if not is_b.call(nl) and not is_w.call(nl):
+					var ue: float = 0.5 * end
+					bx.call(Vector3(ue - end * 0.06, -0.25, 0), Vector3(0.14, 0.62, 1.0), conc)   # abutment wall
+					bx.call(Vector3(ue + end * 0.25, 0.035, 0), Vector3(0.5, 0.05, 1.0), asphalt, -end * 8.0)   # ramp onto the road
+					bx.call(Vector3(ue, 0.13, 0), Vector3(0.06, 0.06, 1.0), curb)   # end curb (expansion)
+					for side2 in [-1, 1]:
+						if is_w.call(t + dv * side2):
+							bx.call(Vector3(ue + end * 0.2, 0.0, 0.52 * side2), Vector3(0.5, 0.3, 0.08), conc_d)   # wing wall
+							bx.call(Vector3(ue - end * 0.05, 0.38, 0.52 * side2), Vector3(0.12, 0.62, 0.12), conc)   # portal pylon
+			# centre line (dashed)
+			if k % 2 == 0:
+				var na := 0
+				var nbn := 0
+				while na < 8 and is_b.call(t - dv * (na + 1)):
+					na += 1
+				while nbn < 8 and is_b.call(t + dv * (nbn + 1)):
+					nbn += 1
+				if na == nbn:
+					bx.call(Vector3(0, 0.083, 0), Vector3(0.45, 0.003, 0.05), line)
+				elif na == nbn + 1:
+					bx.call(Vector3(0, 0.083, -0.5), Vector3(0.45, 0.003, 0.05), line)
+				elif na % 2 == 0 and na > 0 and nbn > 0:   # white lane dashes
+					bx.call(Vector3(0, 0.083, -0.5), Vector3(0.4, 0.003, 0.04), Color("#d9d6cc"))
+			if (k % 2 == 1) and is_b.call(t - dv) and is_b.call(t + dv):
+				var na2 := 0
+				var nb2 := 0
+				while na2 < 8 and is_b.call(t - dv * (na2 + 1)):
+					na2 += 1
+				while nb2 < 8 and is_b.call(t + dv * (nb2 + 1)):
+					nb2 += 1
+				if na2 == nb2 + 1 or na2 == nb2:
+					bx.call(Vector3(0, 0.083, -0.5 if na2 == nb2 + 1 else 0.0), Vector3(1.0, 0.003, 0.025), line.darkened(0.1))   # solid centre
+			if k % 3 == 0:   # expansion joint (steel finger plate) across the deck
+				bx.call(Vector3(-0.5, 0.082, 0), Vector3(0.05, 0.004, 1.0), Color("#3a3c3e"))
+			var hsh := (x * 73856093) ^ (y * 19349663)
+			if hsh % 7 == 0:   # asphalt patch / wear
+				bx.call(Vector3(((hsh >> 3) % 50) / 100.0 - 0.25, 0.0815, ((hsh >> 9) % 50) / 100.0 - 0.25), Vector3(0.3, 0.002, 0.22), asphalt.lightened(0.07))
 	var mi := MeshInstance3D.new()
 	mi.mesh = st.commit()
 	mi.material_override = prop_detail_material
