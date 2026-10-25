@@ -18,3 +18,8 @@
   37 dp top-strip buttons). It is not part of the release suite.
 - **Key-art rendering**: the key art was rendered with the desktop compatibility renderer under
   xvfb, so lighting differs slightly from the Mobile renderer on the phone.
+- **The 2048 px weathering and detail-normal textures ship as lossy WebP** (quality 0.75 / 0.85),
+  not GPU-compressed. That keeps the APK under 100 MiB, but they take about 40 MB of GPU memory
+  uncompressed.
+- **The main-menu key-art open-time check in `m26_ui_test` was not run** for this build. The
+  suite passed, but that UI test is outside it.
