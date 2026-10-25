@@ -5,7 +5,7 @@ extends RefCounted
 
 const SAVE_VERSION := 2
 const CELL := 4096        ## spatial hash cell = 4 tiles
-const SUPPLY_CAP := 50000
+const SUPPLY_CAP := 2000000   # M3.2: Malachi raised the funds cap from $50k to $2M
 
 var tick: int = 0
 var rng := PCG32.new()

@@ -278,7 +278,7 @@ static func _queue(w: SimWorld, pid: int, c: Dictionary) -> void:
 		return
 	var n: int = maxi(1, int(c.get("n", 1)))
 	for i in n:
-		if b.queue.size() >= 9:
+		if b.queue.size() >= ProdSys.MAX_QUEUE:
 			break
 		if w.players[pid].supply < ud.cost:
 			w.events.append({"t": "reject", "owner": pid, "reason": "REASON_FUNDS"})

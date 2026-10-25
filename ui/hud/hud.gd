@@ -522,17 +522,17 @@ func _refresh() -> void:
 		build_btn.disabled = true
 	else:
 		var p: SimPlayer = sim.players[pid]
-		money_lbl.text = "$%d" % p.supply
+		money_lbl.text = _money(p.supply)
 		var needs_power: bool = Content.faction(p.faction)["power"]
 		power_bar.visible = needs_power
 		if needs_power:
 			power_bar.max_value = maxi(1, maxi(p.power_prod, p.power_used))
 			power_bar.value = p.power_used
 			power_bar.modulate = Color("#ff5a4a") if p.low_power else Color("#6fe3ff")
-			power_lbl.text = tr("HUD_POWER") % [p.power_used, p.power_prod] + (" " + tr("HUD_LOW_POWER") if p.low_power else "") + "  " + tr("HUD_POP") % [p.pop, p.pop_cap]
+			power_lbl.text = tr("HUD_POWER") % [p.power_used, p.power_prod] + (" " + tr("HUD_LOW_POWER") if p.low_power else "") + "  " + tr("HUD_POP1") % p.pop
 		else:
 			# one line (M2.1 smaller bar): TPLA shows no power bar, so only the population
-			power_lbl.text = tr("HUD_POP") % [p.pop, p.pop_cap]
+			power_lbl.text = tr("HUD_POP1") % p.pop
 		power_lbl.add_theme_color_override("font_color", Color("#ff7a6a") if p.low_power else UiTheme.TEXT)
 		var next: int = SimPlayer.RANK_XP[p.rank + 1] if p.rank + 1 < SimPlayer.RANK_XP.size() else -1
 		rank_lbl.text = tr("HUD_RANK") % p.rank + ("  XP %d/%d" % [p.xp, next] if next > 0 else "  XP %d" % p.xp)
@@ -883,7 +883,7 @@ func _make_card() -> Array:
 			prog = float(e.q_progress) / float(maxi(1, FX.ms_to_ticks(udf.build_time_ms) * 2))
 		out.append({"text": tr(udf.name_key), "sub": "$%d" % udf.cost, "badge": str(n) if n > 0 else "",
 			"act": ctl.queue_unit.bind(e, StringName(uid), 1), "alt": func(): ctl.dequeue(e, e.queue.rfind(StringName(uid))),
-			"disabled": why2 != "" or e.queue.size() >= 9 or udf.tags.has("stub"), "progress": prog, "stub": not udf.stubs.is_empty(),
+			"disabled": why2 != "" or e.queue.size() >= ProdSys.MAX_QUEUE or udf.tags.has("stub"), "progress": prog, "stub": not udf.stubs.is_empty(),
 			"tip": tr(udf.name_key) + ("  [" + tr("HUD_LONGPRESS_CANCEL") + "]"), "accent": UiTheme.GOLD})
 	if not bd2.produces.is_empty():
 		while out.size() < 5:
@@ -897,6 +897,17 @@ func _make_card() -> Array:
 const TYPE_MAX := 3
 const QUEUE_MAX := 4
 const QUEUE_CHIP := Vector2(59, 44)
+
+## M3.2: "$2,000,000" with thousands separators; the font steps down for 7-digit amounts.
+func _money(v: int) -> String:
+	var d := str(absi(v))
+	var out := ""
+	while d.length() > 3:
+		out = "," + d.substr(d.length() - 3) + out
+		d = d.substr(0, d.length() - 3)
+	var t := ("-$" if v < 0 else "$") + d + out
+	money_lbl.add_theme_font_size_override("font_size", 17 if t.length() <= 8 else 14)
+	return t
 
 func _hud_btn(caption: String, sz: Vector2) -> HudButton:
 	var b := HudButton.new()

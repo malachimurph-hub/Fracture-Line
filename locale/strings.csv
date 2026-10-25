@@ -102,6 +102,7 @@ HUD_OBSERVER,Observer
 HUD_POWER,Pwr %d/%d
 HUD_LOW_POWER,LOW
 HUD_POP,Pop %d/%d
+HUD_POP1,Pop %d
 HUD_RANK,Rank %d
 HUD_GROUP_SET,Group %d set
 HUD_GROUP_HINT,Empty group — long-press (Ctrl+1–5) to assign

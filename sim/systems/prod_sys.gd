@@ -1,4 +1,5 @@
 class_name ProdSys
+const MAX_QUEUE := 15   ## M3.2: production queue per building (was 9)
 ## Construction (builders must stand next to the site; interrupted builds stay as a scaffold until
 ## a builder resumes them; one builder works at a time, as in Zero Hour) and unit production.
 
@@ -56,7 +57,7 @@ static func run(w: SimWorld) -> void:
 		else:
 			_after_spawn(w, b, u)
 		if b.repeat:
-			if p.supply >= ud.cost and b.queue.size() < 9:
+			if p.supply >= ud.cost and b.queue.size() < MAX_QUEUE:
 				p.supply -= ud.cost
 				b.queue.append(uid)
 				b.q_paid.append(ud.cost)

@@ -501,10 +501,13 @@ func _production() -> void:
 			continue
 		var cost: int = Content.unit(pick).cost
 		if p.supply - cost >= reserve or p.supply > 6000:
-			if p.pop + Content.unit(pick).pop <= p.pop_cap:
+			if p.pop + Content.unit(pick).pop <= mini(p.pop_cap, AI_SOFT_POP):
 				cmd({"t": "queue", "target": b.id, "def": String(pick), "n": 1})
 
 var _cur_b: SimEntity = null   ## producer being filled by _production (for _unit_allowed)
+## M3.2: players have no unit cap any more; the AI keeps a soft internal limit (the old 60
+## pop cap plus headroom) so long games stay fast and waves still launch.
+const AI_SOFT_POP := 90
 
 ## Faction hook: may this unit be queued at _cur_b right now (e.g. US airfield slots)?
 func _unit_allowed(ud: UnitDef) -> bool:
@@ -690,7 +693,7 @@ func _army() -> void:
 	# ZH-style pressure: at (near) the unit cap there is nothing to wait for - attack with
 	# what we have instead of idling at staging (prevents late-game stalemates).
 	var pl := me()
-	if pl.pop >= pl.pop_cap - 6:
+	if pl.pop >= mini(pl.pop_cap, AI_SOFT_POP) - 6:
 		need = mini(need, maxi(3000, army_value(staged)))
 	# Late-game pressure (ZH games end; turtling to a 40-minute draw is not ZH pacing):
 	# from 16 min the wave threshold ramps down so armies keep colliding and bases fall.

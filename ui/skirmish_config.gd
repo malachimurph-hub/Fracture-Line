@@ -3,7 +3,7 @@ class_name SkirmishConfig
 ## with team 1-4, color, faction and start position (or random). resolve() turns a lobby
 ## into a MatchRunner cfg; validate() returns "" or a localization key explaining the error.
 
-const MONEY := [5000, 10000, 20000, 50000]
+const MONEY := [5000, 10000, 20000, 50000, 100000, 500000, 1000000, 2000000]   # M3.2: up to the $2M funds cap
 const DIFFS := ["easy", "medium", "hard"]
 
 static func default_setup() -> Dictionary:
