@@ -30,7 +30,5 @@
   stepped ends. The top-down RTS camera shows the deck more than the truss and piers.
 - **Drone operator drones use the helicopter layer.** Bomb drones follow normal attack orders.
   There is no loiter AI for player-launched bomb drones.
-- **Field Engineer vehicle repair has no visual effect yet.** A `repair_fx` event is emitted
-  but not drawn.
 - **Previews were rendered with the compatibility renderer** under xvfb. The phone uses the
   Mobile renderer, so glow and shadow look may differ slightly.

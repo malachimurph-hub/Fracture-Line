@@ -216,6 +216,10 @@ func on_tick(events: Array) -> void:
 				if _visible_pos(ev["pos"]):
 					vfx.salvage_fx(FX.to_world(ev["pos"]), Color("#ffd75e"))
 					AudioDirector.sfx("salvage", FX.to_world(ev["pos"]), -4.0)
+			"repair_fx":   # M3.2 Field Engineer fixing a vehicle: welding sparks
+				var rv := sim.get_ent(int(ev["id"]))
+				if rv != null and _visible_pos(rv.pos) and randf() < 0.5:
+					vfx.sparks(FX.to_world(rv.pos) + Vector3(0, 0.35, 0), Vector3(0, 0.4, 0), 4, 0.8)
 			"explode":
 				if _visible_pos(ev["pos"]):
 					vfx.big_blast(FX.to_world(ev["pos"]), float(ev["r"]) / FX.ONE)

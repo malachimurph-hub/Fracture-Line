@@ -90,7 +90,7 @@ M3.2 is a combined release. It starts with Russia; more items will be added befo
 ## 5. Germany Field Engineer
 - `eu_field_engineer` (Barracks, $450, rifle). It builds barricades and AT minefields only, and
   repairs structures (the builder repair order). While standing still it also repairs the most
-  damaged own vehicle within 2 tiles (2% max HP per 0.5 s, free).
+  damaged own vehicle within 2 tiles (2% max HP per 0.5 s, free), with welding sparks.
 
 ## 6. Barricades
 - **Sandbag Barricade** ($100, 700 HP) and **Concrete Barricade** ($250, 1600 HP) for all four
