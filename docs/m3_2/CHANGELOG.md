@@ -214,3 +214,26 @@ M3.2 is a combined release. It starts with Russia; more items will be added befo
   - HDR muzzle flashes and fireballs for bloom.
 - **Preview:** `builds/m3_2/preview/m32_textures_before_after.png`. Render it with
   `tests/m32_shots.tscn -- <dir> tex|texc`.
+
+## Polish after item 14 (Malachi picked the lower camera)
+- **Camera:** game camera pitch is 40 degrees (was 55). Shadow distance is 82 m, and scatter
+  fades out instead of popping.
+- **City ground:**
+  - City blocks are now lawns and yards with sidewalk rings (Harrow Junction, Riverside
+    Metro; dry yards in Crescent City).
+  - European houses added to Riverside Metro's blocks.
+  - Roadside hamlets added on Varno Crossing (9 houses) and Kessel Pass (7). Houses keep
+    flat ground, block movement, and stay away from spawns and resources.
+  - Tool: `tools/gfx_m32/tex14/city14.py`.
+- **Scrub:** natural bush clusters, in 3 low-poly sizes with soft irregular lobes. Each
+  cluster has a big bush in the middle, smaller ones around it, and the odd loner. Shade
+  varies per bush, bushes fade out with distance, and the larger ones cast shadows.
+- **Aircraft shadows:** each aircraft type's top-down silhouette is drawn once, blurred and
+  cached. Helicopter rotors show as a faint disc. The shadow turns with the aircraft and
+  fades with altitude.
+- **Chimney smoke:** light grey wisps from factories and power plants, at most 10 buildings
+  smoking per frame.
+- **Scorch marks:** fresh scorch where shells hit the ground, sharing the decal pool (cap
+  160). Decals now follow ground height.
+- **Preview:** `builds/m3_2/preview/m32_polish_before_after.png`, rendered with the real
+  game camera.

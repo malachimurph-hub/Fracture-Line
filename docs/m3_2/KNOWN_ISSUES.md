@@ -29,11 +29,16 @@
   every unit and building would not fit the 100 MB APK budget. Estimated APK size after item
   14: about 80 MB (terrain NRAO halved, -29 MB; bake atlas and detail meshes, about +15 MB).
   This is not measured, because no APK has been built.
-- **Aircraft cast soft round blob shadows**, not silhouette shadows like the reference shots.
-- **The gameplay camera keeps its 55 degree pitch.** The before/after preview uses 40 degrees
-  (a test-only hook) to match the reference framing.
-- **Village houses are placed only in Harrow Junction** (21 houses/container stacks in its
-  street-grid blocks). The other maps keep their existing props.
+- **Camera pitch is now 40 degrees (was 55).** At the far zoom, the top of the screen shows
+  about 73 m of ground. Shadows are drawn to 82 m and scatter fades out at 64-74 m.
+  Fog was left as it was.
+- **Some maps have no village houses.** Ochre Wells (arid) and Crescent City (desert) get
+  none, because European houses don't fit there. Crescent City gets dry yards and sidewalks
+  instead.
+- **Chimney positions are guessed from the building mesh** (sharp height peaks on the roof).
+  A building with a tall antenna may smoke from the antenna.
+- **Pre-existing touch-test failure:** "HUD buttons >= 44 dp" fails on 6 control-group
+  buttons at 37 px. It already failed in the M3.1 run (Oct 24). Not changed here.
 - **Cloud shadows drift on the ground only.** Units and buildings are not darkened by them.
 - **Bridges are generated per tile from the map**, so jagged map bridge outlines show as
   stepped ends. The top-down RTS camera shows the deck more than the truss and piers.
