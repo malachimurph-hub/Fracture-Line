@@ -98,7 +98,7 @@ func _build_scene() -> void:
 	sun.shadow_blur = 0.4   # M3.2: crisper, darker ZH-style shadows
 	sun.shadow_opacity = 1.0
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
-	sun.directional_shadow_max_distance = 70.0
+	sun.directional_shadow_max_distance = 82.0   # M3.2: 40 deg camera sees ~73 m to the top edge at far zoom
 	sun.directional_shadow_split_1 = 0.35
 	add_child(sun)
 	world = WorldView.new()

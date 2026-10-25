@@ -908,7 +908,9 @@ func _build_scatter(dry: bool) -> void:
 				mmi.multimesh = mm
 				mmi.material_override = mat
 				mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-				mmi.visibility_range_end = 60.0
+				mmi.visibility_range_end = 74.0   # M3.2: 40 deg camera; fade out instead of a pop line
+				mmi.visibility_range_end_margin = 10.0
+				mmi.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
 				add_child(mmi)
 				scatter_count += arr.size()
 

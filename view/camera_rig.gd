@@ -1,16 +1,16 @@
 class_name CameraRig
 extends Node3D
-## Tilted RTS camera (fixed ~55 deg pitch, Generals-like). Three soft zoom levels
+## Tilted RTS camera (fixed ~40 deg pitch since M3.2, lower oblique like the art-direction shots). Three soft zoom levels
 ## (close / default / far tactical), pan with inertia, clamped to the map.
 ## M3.1: full 360 yaw (two-finger twist, Q/E keys); reset_north() eases back to north-up.
 ## Ground picking, panning and the minimap frame all go through ray casts, so they follow yaw.
 
 signal zoom_level_changed(level: int)
-const PITCH_DEG := 55.0
+const PITCH_DEG := 40.0   ## M3.2: was 55
 const FOV := 32.0
 ## camera distance per zoom level (close, default, far)
 const LEVELS := [16.0, 27.0, 46.0]
-var pitch_deg := PITCH_DEG   ## M3.2: preview shots may lower it to match art-direction framing
+var pitch_deg := PITCH_DEG   ## tools/tests may override (before/after renders)
 
 var cam: Camera3D
 var focus := Vector3(20, 0, 20)
