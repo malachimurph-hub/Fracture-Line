@@ -18,6 +18,8 @@ uniform vec2 map_size = vec2(128.0, 128.0);
 uniform sampler2D shore_tex : hint_default_black, filter_linear, repeat_disable; // M2.8 wet field (R)
 uniform float dry_scrub = 1.0;    // M2.5 env: desert sun-dried scrub on the grass layer (0 = lush / snow)
 uniform float asphalt_dark = 0.0; // M2.9 city maps: dark asphalt roads (any env)
+uniform float cloud_amt = 0.2;    // M3.2 item 14: large soft drifting cloud shadows on the ground
+uniform float worn_amt = 0.7;     // M3.2 item 14: large soft worn-dirt patches through the grass
 uniform float desert_tint = 1.0;  // M2.5 env: warm desert per-layer tints (0 = neutral)
 varying vec3 wpos;
 varying vec3 wnrm;
@@ -138,6 +140,15 @@ void fragment() {
 			col = mix(col, g, cap * 0.7);
 		}
 	}
+	// M3.2 item 14: big soft worn / bare-dirt patches through the grass (painterly, no tiling)
+	if (w[2] > 0.05 && worn_amt > 0.0) {
+		float wn = vnoise(p * 0.05 + 17.0) * 0.7 + vnoise(p * 0.19 + 3.0) * 0.3;
+		float wp = smoothstep(0.52, 0.72, wn) * w[2] * worn_amt;
+		if (wp > 0.01) {
+			vec3 dt = texture(t_albedo, vec3(p * sc[1], 1.0), bias).rgb * mix(vec3(1.0), tint[1], desert_tint);
+			col = mix(col, dt, wp);
+		}
+	}
 	// macro variation (baked, ~64 m period) against visible tiling
 	// M2.9: seamless macro map at two unrelated scales / rotations (no 64 m repeat lines)
 	vec3 mac = mix(texture(t_macro, p / 64.0, bias).rgb, texture(t_macro, ROT2 * p / 173.0 + 0.31, bias).rgb, 0.5);
@@ -153,6 +164,14 @@ void fragment() {
 	float pn2 = vnoise(p * 0.6 + 9.1);
 	col *= mix(0.9, 1.07, pn2);                                        // mid-scale mottling
 	col *= mix(1.0, 0.8, smoothstep(0.8, 0.45, wnrm.y));
+	// M3.2 item 14: warm, slightly desaturated grade + slow drifting cloud shadows
+	float lum1 = dot(col, vec3(0.3, 0.59, 0.11));
+	col = mix(vec3(lum1), col, 0.9) * vec3(1.03, 1.0, 0.95);
+	if (cloud_amt > 0.0) {
+		vec2 cp = p + TIME * vec2(0.22, 0.12);
+		float cn = vnoise(cp * 0.028) * 0.72 + vnoise(cp * 0.085 + 7.0) * 0.28;
+		col *= 1.0 - smoothstep(0.5, 0.72, cn) * cloud_amt;
+	}
 	vec3 n_t = vec3(0.0, 0.0, 1.0);
 	float rough = 0.92 - b.r * 0.12;
 	float ao = 1.0;

@@ -51,6 +51,8 @@ func build(map: SimMap, tiles_path: String = "", env: Dictionary = {}) -> void:
 	material.set_shader_parameter("t_nrao", load(env["nrao"]))
 	material.set_shader_parameter("dry_scrub", env["dry"])
 	material.set_shader_parameter("desert_tint", env["tint"])
+	material.set_shader_parameter("worn_amt", env.get("worn", 0.7))
+	material.set_shader_parameter("cloud_amt", env.get("clouds", 0.2))
 	material.set_shader_parameter("t_detail", load(TEX + "terrain/terrain_detail.png"))
 	material.set_shader_parameter("t_macro", load(TEX + "terrain/terrain_macro.png"))
 	_build_splats()
@@ -68,6 +70,7 @@ func build(map: SimMap, tiles_path: String = "", env: Dictionary = {}) -> void:
 	prop_material.set_shader_parameter("leaf_tex", load(TEX + "props/leaf_atlas.png"))
 	prop_detail_material = _prop_mat(0.0, 0.55, load(TEX + "materials/concrete.png"))
 	prop_tower_material = _prop_mat(0.0, 0.55, load(TEX + "materials/concrete.png"))
+	_house_cover(tiles_path)
 	heights = _corner_heights()
 	for cy in range(0, m.h, CHUNK):
 		for cx in range(0, m.w, CHUNK):
@@ -212,6 +215,33 @@ func _cliff_distance() -> PackedInt32Array:
 					q.append(n)
 	return dist
 
+## M3.2 item 14: tiles under village houses / container stacks are Cliff in the map (they block
+## like the towers) but the ground stays flat there instead of rising into a massif.
+var house_tiles := {}
+func _house_cover(tiles_path: String) -> void:
+	house_tiles.clear()
+	var items: Array = []
+	if not decor_override.is_empty():
+		items = decor_override
+	else:
+		var dp := tiles_path.replace(".txt", ".decor.txt")
+		if tiles_path == "" or not FileAccess.file_exists(dp):
+			return
+		for line in FileAccess.get_file_as_string(dp).split("\n", false):
+			var parts := line.split(" ", false)
+			if parts.size() >= 4 and String(parts[0]) in PropMeshes.HOUSES:
+				items.append([parts[0], float(parts[1]), float(parts[2]), int(parts[3])])
+	for d in items:
+		if not String(d[0]) in PropMeshes.HOUSES:
+			continue
+		var fp: Vector2i = PropMeshes.FOOTPRINT[String(d[0])]
+		if int(d[3]) % 2 == 1:
+			fp = Vector2i(fp.y, fp.x)
+		var o := Vector2i(roundi(float(d[1]) - fp.x * 0.5), roundi(float(d[2]) - fp.y * 0.5))
+		for yy in fp.y:
+			for xx in fp.x:
+				house_tiles[o + Vector2i(xx, yy)] = true
+
 func _corner_heights() -> PackedFloat32Array:
 	var cdist := _cliff_distance()
 	var hts := PackedFloat32Array()
@@ -230,7 +260,7 @@ func _corner_heights() -> PackedFloat32Array:
 					continue
 				cnt += 1
 				var tt := m.ttype(t)
-				if tt == SimMap.T.CLIFF:
+				if tt == SimMap.T.CLIFF and not house_tiles.has(t):
 					n_cliff += 1
 				elif tt == SimMap.T.WATER or tt == SimMap.T.BRIDGE or tt == SimMap.T.FORD:
 					n_wet += 1
@@ -727,7 +757,7 @@ func _build_props(tiles_path: String) -> void:
 					by_kind["rock"].append([x + 0.5, y + 0.5, 0])
 	var urban := false
 	for kind in by_kind:
-		urban = urban or (PropMeshes.FOOTPRINT.has(kind) and by_kind[kind].size() >= 8)
+		urban = urban or (PropMeshes.FOOTPRINT.has(kind) and not kind in PropMeshes.HOUSES and by_kind[kind].size() >= 8)
 	material.set_shader_parameter("asphalt_dark", 1.0 if urban else 0.0)
 	if urban:
 		_build_sidewalks()
@@ -738,6 +768,8 @@ func _build_props(tiles_path: String) -> void:
 		var mat := prop_material
 		if kind in ["palm", "scrub_tree", "pine", "pine_snow", "oak", "bush"]:
 			mat = prop_sway_material
+		elif kind in PropMeshes.HOUSES:
+			mat = prop_detail_material
 		elif PropMeshes.FOOTPRINT.has(kind):
 			mat = prop_tower_material
 			has_towers = true
@@ -750,6 +782,8 @@ func _build_props(tiles_path: String) -> void:
 		var chunks := {}
 		for it in by_kind[kind]:
 			var v := int(_h(int(it[0] * 3.0), int(it[1] * 5.0)) * nv) % nv
+			if kind == "oak":   # M3.2: autumn colours come in clusters (low-frequency choice)
+				v = int(_vn(it[0] / 7.0, it[1] / 7.0) * nv * 0.999) % nv
 			var ck := Vector3i(int(it[0]) >> 5, int(it[1]) >> 5, v)
 			if not chunks.has(ck):
 				chunks[ck] = []
@@ -824,11 +858,13 @@ func _build_scatter(dry: bool) -> void:
 		return
 	var tuft := _tuft_mesh(dry)
 	var peb := _pebble_mesh()
+	var bush := _bush_mesh(dry)
 	var mat := prop_material   # vertex colour + fog of war (alpha 1 = plain, no emission)
 	for cy in range(0, m.h, CHUNK):
 		for cx in range(0, m.w, CHUNK):
 			var tx: Array = []
 			var px: Array = []
+			var bx: Array = []
 			for y in range(cy, mini(cy + CHUNK, m.h)):
 				for x in range(cx, mini(cx + CHUNK, m.w)):
 					var tt := m.ttype(Vector2i(x, y))
@@ -843,13 +879,21 @@ func _build_scatter(dry: bool) -> void:
 						var r2 := _h(x * 17 + k * 3, y * 19 + k)
 						var sc := 0.7 + r1 * 0.7
 						tx.append(Transform3D(Basis(Vector3.UP, r2 * TAU).scaled(Vector3(sc, sc * (0.8 + r2 * 0.5), sc)), Vector3(x + r1, 0.0, y + r2)))
+					# M3.2 item 14: dense dark scrub / bush clusters (clumped by low-frequency noise)
+					var cn := _vn(x / 6.0 + 40.0, y / 6.0) * 0.8 + _h(x, y + 999) * 0.2
+					if cn > 0.62 and not house_tiles.has(Vector2i(x, y)):
+						for k in int((1.0 + (cn - 0.62) * 8.0) * dens):
+							var b1 := _h(x * 41 + k * 3, y * 43 + k)
+							var b2 := _h(x * 47 + k, y * 53 + k * 7)
+							var bs := 0.75 + b1 * 0.7
+							bx.append(Transform3D(Basis(Vector3.UP, b2 * TAU).scaled(Vector3(bs, bs * (0.8 + b2 * 0.4), bs)), Vector3(x + b1, 0.0, y + b2)))
 					if tt == SimMap.T.ROUGH or h > 0.55:
 						for k in int((2.0 if tt == SimMap.T.ROUGH else 1.0) * dens):
 							var q1 := _h(x * 23 + k, y * 29 + k * 7)
 							var q2 := _h(x * 31 + k * 5, y * 37 + k)
 							var ps := 0.6 + q2 * 0.9
 							px.append(Transform3D(Basis(Vector3.UP, q1 * TAU).scaled(Vector3(ps, ps * 0.7, ps)), Vector3(x + q2, 0.0, y + q1)))
-			for pair in [[tx, tuft], [px, peb]]:
+			for pair in [[tx, tuft], [px, peb], [bx, bush]]:
 				var arr: Array = pair[0]
 				if arr.is_empty():
 					continue
@@ -886,6 +930,18 @@ func _tuft_mesh(dry: bool) -> Mesh:
 			st.add_vertex(vv[1])
 			st.set_color(tip)
 			st.add_vertex(vv[2])
+	st.generate_normals()
+	return st.commit()
+
+## M3.2 item 14: low dark scrub bush (a few overlapping blobs, darker underside = fake AO).
+func _bush_mesh(dry: bool) -> Mesh:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var c0 := Color("#3a3a22") if dry else Color("#2f4220")
+	var c1 := Color("#4a4628") if dry else Color("#3c5426")
+	PropMeshes.sph(st, Vector3(0, 0.05, 0), Vector3(0.11, 0.07, 0.1), c0, 5)
+	PropMeshes.sph(st, Vector3(0.07, 0.04, 0.05), Vector3(0.07, 0.05, 0.07), c1, 4)
+	PropMeshes.sph(st, Vector3(-0.06, 0.035, -0.04), Vector3(0.065, 0.045, 0.06), c1.darkened(0.1), 4)
 	st.generate_normals()
 	return st.commit()
 

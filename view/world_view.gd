@@ -395,7 +395,7 @@ func _on_death(ev: Dictionary) -> void:
 				vfx.impact(pos + Vector3(0, 0.2, 0), 0.4)
 			else:
 				vfx.explosion(pos, 0.9)
-				vfx.sources.append([pos, 5.0, 0.4, 0.0])   # burning wreck
+				vfx.wreck(pos, 18.0, 0.45)   # M3.2: scorch + tall burning-wreck smoke column
 		else:
 			vfx.building_destroyed(pos, v.footprint if v != null else Vector2(3, 3))
 			AudioDirector.sfx("collapse", pos)
@@ -508,7 +508,7 @@ func _update_crashes(delta: float) -> void:
 				v.rotation.z = 0.25
 				vfx.explosion(v.position, 1.4)
 				vfx.dust(v.position, 2.0, 0.9)
-				vfx.sources.append([v.position, 8.0, 0.5, 0.0])   # burning wreck
+				vfx.wreck(v.position, 20.0, 0.55)
 				AudioDirector.sfx("expl_large", v.position, 0.0)
 				if _burnt == null:
 					_burnt = StandardMaterial3D.new()
@@ -580,6 +580,17 @@ func frame(a: float, delta: float) -> void:
 					acc = 0.0
 					vfx.dust(p - Vector3(sin(ny), 0, cos(ny)) * 0.5, 0.45, 0.45)
 				fx_acc[id] = acc
+			# M3.2: persistent tread / tyre marks behind ground vehicles (fade over ~80 s)
+			if ud.move_layer == &"vehicle" and not icon_mode:
+				var lt: Vector3 = v.get_meta("trackp", p)
+				var dd := Vector2(p.x - lt.x, p.z - lt.z).length()
+				if dd > 0.3:
+					if dd < 1.2:
+						var w := clampf(float(ud.radius_mt) / 1000.0 * 1.25, 0.3, 0.9)
+						vfx.track((p + lt) * 0.5, ny, w, dd + 0.04, 1.0 if w > 0.45 else 0.6)
+					v.set_meta("trackp", p)
+				elif not v.has_meta("trackp"):
+					v.set_meta("trackp", p)
 			if shield_domes.has(id):
 				var dome: MeshInstance3D = shield_domes[id]
 				dome.visible = not icon_mode
