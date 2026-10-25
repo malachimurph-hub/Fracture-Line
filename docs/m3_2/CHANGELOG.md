@@ -1,6 +1,15 @@
-# M3.2 changelog (branch m32, in progress; Russia still locked as "Coming soon")
+# Rules of Engagement — M3.2 (versionName 0.3.3, versionCode 17)
 
-M3.2 is a combined release. It starts with Russia; more items will be added before release.
+M3.2 is a combined release: Russia (now unlocked and playable), the item 1-14 fixes and features,
+the Zero Hour-style texture/model rebuild and the polish pass (40 degree camera).
+
+## Build
+- APK: `RulesOfEngagement-M3.2.apk`, 90,695,901 bytes (86.5 MiB, under the 100 MB limit).
+  arm64-v8a, ETC2/ASTC textures.
+- SHA256: `61b52598d9a64e54c2099e2865f001e7b115696fd37de0e5ca357bc18585bafd`
+- Package com.malachimurphy.fractureline, same debug key as M3.1 (certificate SHA-256
+  7e96c70a…ce54). versionName 0.3.3, versionCode 17, so it installs over M3.1.
+- `apksigner verify` passes (v2 and v3 schemes).
 
 ## Russia: buildings (Malachi's list, all models original and procedural)
 - **Kremlin (HQ)**: red-brick walls with swallowtail merlons, towers with green tent spires and
