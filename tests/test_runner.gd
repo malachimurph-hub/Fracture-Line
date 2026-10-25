@@ -589,6 +589,18 @@ func test_audio() -> void:
 	for t in ad.BATTLE_PLAYLIST:
 		pl_ok = pl_ok and ad.stream(t) is AudioStreamOggVorbis
 	_check(pl_ok, "M2.9 battle shuffle playlist (%d tracks) loads" % ad.BATTLE_PLAYLIST.size())
+	var fac_ok := true
+	var seen := {}
+	for fac in [&"us", &"ecc", &"eu", &"tpla"]:
+		var pl: Array = ad.FACTION_PLAYLISTS[fac]
+		fac_ok = fac_ok and not pl.is_empty() and not seen.has(pl[0])
+		seen[pl[0]] = true
+		for t in pl:
+			fac_ok = fac_ok and ResourceLoader.exists(t) and load(t) is AudioStreamOggVorbis
+	ad.battle_faction = &"ecc"
+	fac_ok = fac_ok and ad.battle_playlist()[0].contains("ru_red_bounce")
+	ad.battle_faction = &""
+	_check(fac_ok, "M3.2 faction battle music: US rock / Russia hard bass / Germany club / Iran war drums load")
 	var missing: Array = []
 	var units := 0
 	for fac in ad.manifest["factions"]:

@@ -16,3 +16,15 @@ Licence: project-owned original work (same terms as the rest of the game).
 The M1 menu track "Dust Over Varno" was retired in M2.9 (still reproducible with tools/gen_music.py).
 Regenerate: `python3 tools/gen_music_m29.py [breach|convoy|devils|last]` (needs numpy + ffmpeg).
 In-match playback: autoload/audio_director.gd BATTLE_PLAYLIST, shuffled without repeats.
+
+## M3.2 faction battle music (tools/gen_music_m32.py)
+
+| File | Title | Faction | Style |
+|---|---|---|---|
+| battle_us_liberty_steel.ogg | Liberty Steel | US (+ the M2.9 rock shuffle) | military rock, E minor, 144 bpm, marching-snare intro |
+| battle_ru_red_bounce.ogg | Red Bounce | Russia | hard-bass techno, B (harmonic) minor, 152 bpm |
+| battle_de_tiefgarage.ogg | Tiefgarage | Germany | Berlin club techno, A minor, 130 bpm, rumble kick, dub stabs, acid line |
+| battle_ir_zagros.ogg | Zagros | Iran | cinematic war drums: daf, tombak, booms; santur tremolo + tar-like plucks, Shur-style mode |
+
+Battle music follows the local player's faction (AudioDirector.FACTION_PLAYLISTS); the menu stays rock.
+Regenerate: `python3 tools/gen_music_m32.py [us ru de ir] [--sample OUTDIR]`.

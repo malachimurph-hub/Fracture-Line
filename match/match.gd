@@ -144,6 +144,7 @@ func _build_scene() -> void:
 	cam.set_level(1)
 	AudioDirector.world_root = world
 	AudioDirector.announcer_faction = String(runner.sim.faction_of(focus_pid))
+	AudioDirector.battle_faction = runner.sim.faction_of(focus_pid)   # M3.2 faction music
 	AudioDirector.play_music("battle")
 	AudioDirector.play_ambient("wind")
 	if runner.sim.tick < 10:
