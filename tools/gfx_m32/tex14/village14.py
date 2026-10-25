@@ -6,7 +6,7 @@ biome under them pavement. Idempotent (skips if houses are already in the decor)
 Run: python3 village14.py <repo_root>"""
 import sys, collections
 root = sys.argv[1]
-M = root + "/data/maps/harrow_junction"
+M = root + "/data/maps/" + (sys.argv[2] if len(sys.argv) > 2 else "harrow_junction")
 g = [list(l.rstrip("\n")) for l in open(M + ".txt")]
 bio = [list(l.rstrip("\n")) for l in open(M + ".biome.txt")]
 dec = open(M + ".decor.txt").read().splitlines()
