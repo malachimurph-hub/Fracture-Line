@@ -2365,10 +2365,8 @@ func test_stash(maps_arg: String) -> void:
 					if e2.kind == SimEntity.Kind.RESOURCE and FX.dist(e2.pos, hq.pos) < FX.ONE * 20:
 						home[e2.id] = p.id
 			var left := {0: 0, 1: 0}
-			var start_amt := {0: 0, 1: 0}
 			for rid in home:
 				left[home[rid]] += 1
-				start_amt[home[rid]] += w.get_ent(rid).amount
 			var done := {}
 			var harv := {0: 0, 1: 0}
 			var cap := 20 * 60 * 26
@@ -2399,13 +2397,8 @@ func test_stash(maps_arg: String) -> void:
 					for rid in home:
 						if home[rid] == pid and w.get_ent(rid) != null:
 							rem += w.get_ent(rid).amount
-					# M3.2: the match ended (game over) before this player's stashes ran dry, so
-					# extrapolate the empty time from the mining rate so far (censored sample).
-					var tm := float(w.tick) / 1200.0
-					var used: int = int(start_amt[pid]) - rem
-					var est: float = tm * float(start_amt[pid]) / float(used) if used > 0 else 99.0
-					print("STASH %s P%d %s: %d left after %.1f min (est. empty at %.1f min)" % [mid, pid, pair[pid], rem, tm, est])
-					times.append(maxf(tm, est))
+					print("STASH %s P%d %s: %d left after %.1f min" % [mid, pid, pair[pid], rem, float(w.tick) / 1200.0])
+					times.append(float(w.tick) / 1200.0 + 1.0)
 	times.sort()
 	var med: float = times[times.size() / 2] if not times.is_empty() else 0.0
 	print("STASH median %.1f min over %d players: %s" % [med, times.size(), times])
