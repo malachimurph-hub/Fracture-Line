@@ -293,18 +293,20 @@ static func _depot(g) -> void:
 	g.color("#1d1e1d", Geo.RUBBER)
 	for x in [-0.9, -0.3, 0.3, 0.9]:
 		g.box(Vector3(x, Y0 + 0.09, 0.96), Vector3(0.1, 0.08, 0.03))   # dock bumpers
-	_slab(g, Vector3(-0.2, Y0, -0.75), Vector3(2.3, 0.72, 1.3))
-	_bgrid(g, Vector3(-0.2, Y0 + 0.5, -0.095), 2.0, 0.2, 8, 1, 0.0, 41)
-	g.rollup(Vector3(-0.75, Y0 + 0.27, -0.09), 0.5, 0.22)
-	g.rollup(Vector3(0.35, Y0 + 0.27, -0.09), 0.5, 0.22)
-	# cantilever: thick slab pushed out over the dock on two raking concrete legs
-	_slab(g, Vector3(0, Y0 + 0.8, -0.1), Vector3(2.9, 0.16, 2.2), BC_L)
+	_slab(g, Vector3(-0.2, Y0, -0.75), Vector3(2.3, 1.0, 1.3))
+	_bgrid(g, Vector3(-0.2, Y0 + 0.8, -0.095), 2.0, 0.26, 9, 1, 0.0, 41)
+	g.rollup(Vector3(-0.75, Y0 + 0.27, -0.09), 0.5, 0.3)
+	g.rollup(Vector3(0.35, Y0 + 0.27, -0.09), 0.5, 0.3)
+	g.color(BC_L, Geo.CONCRETE)
+	g.box(Vector3(-0.2, Y0 + 1.02, -0.75), Vector3(2.34, 0.04, 1.34))
+	# cantilever: thick slab pushed out from the face over the dock, on two raking concrete legs
+	_slab(g, Vector3(-0.1, Y0 + 0.58, 0.3), Vector3(2.7, 0.14, 1.0), BC_L)
 	g.color(BC, Geo.CONCRETE)
-	for x in [-1.2, 1.2]:
-		g.prism_x([Vector2(-1.0, 0.0), Vector2(-0.6, 0.0), Vector2(0.2, 0.8), Vector2(-1.15, 0.8)], x - 0.08, x + 0.08)
+	for x in [-1.3, 1.1]:
+		g.prism_x([Vector2(-0.2, 0.0), Vector2(0.05, 0.0), Vector2(0.5, 0.58), Vector2(-0.2, 0.58)], x - 0.07, x + 0.07)
 	g.color(BC_X, Geo.CONCRETE)
 	for k in 6:   # beam ends showing on the slab edge
-		g.box(Vector3(-1.25 + k * 0.5, Y0 + 0.86, 1.005), Vector3(0.12, 0.1, 0.012))
+		g.box(Vector3(-1.35 + k * 0.5, Y0 + 0.65, 0.805), Vector3(0.12, 0.1, 0.012))
 	# stair / lift tower and water tank
 	_slab(g, Vector3(1.2, Y0, -1.0), Vector3(0.45, 1.05, 0.45))
 	g.color("#2b2d2c", Geo.DARK)
@@ -318,8 +320,8 @@ static func _depot(g) -> void:
 	for k in 3:
 		g.cyl(0.07, 0.07, 0.2, 10, Transform3D(Basis.IDENTITY, Vector3(0.5 + k * 0.16, Y0 + 0.16, 0.5)))   # fuel drums
 	g.color("#ffffff", Geo.TEAM)
-	g.box(Vector3(0, Y0 + 0.88, 1.008), Vector3(0.6, 0.06, 0.006))
-	R._star(g, Vector3(-1.0, Y0 + 0.88, 1.004), 0.06)
+	g.box(Vector3(0, Y0 + 0.65, 0.808), Vector3(0.6, 0.06, 0.006))
+	R._star(g, Vector3(-0.2, Y0 + 0.86, -0.088), 0.07)
 
 # ================================================================== Barracks (brutalist slab block)
 static func _barracks(g) -> void:
@@ -620,8 +622,6 @@ static func _kornet_nest(g) -> void:
 	V4._antenna(g, Vector3(0.5, Y0 + 0.12, -0.22), 0.4)
 	g.color("#ffffff", Geo.TEAM)
 	g.box(Vector3(0, Y0 + 0.2, 0.79), Vector3(0.3, 0.04, 0.01))
-	g.color(RU, Geo.CANVAS)   # camouflage net over the back half
-	g.prism_x([Vector2(-0.75, 0.0), Vector2(-0.1, 0.0), Vector2(-0.3, 0.04)], -0.6, 0.6, Transform3D(Basis.IDENTITY, Vector3(0, Y0 + 0.36, 0)))
 
 static func _kornet_launcher(t, x: float) -> void:
 	# tripod
@@ -647,8 +647,10 @@ static func _kornet_launcher(t, x: float) -> void:
 	t.tube(Vector3(x, 0.48, 0.42), Vector3(x, 0.48, 0.43), 0.035, 10)
 
 static func _kornet_turret(t) -> void:
-	_kornet_launcher(t, -0.25)
-	_kornet_launcher(t, 0.25)
+	t.xf = Transform3D(Basis.IDENTITY.scaled(Vector3.ONE * 1.35), Vector3.ZERO)
+	_kornet_launcher(t, -0.22)
+	_kornet_launcher(t, 0.22)
+	t.xf = Transform3D.IDENTITY
 
 # ================================================================== ZAK-30 Citadel (AA)
 static func _zak_base(g) -> void:
