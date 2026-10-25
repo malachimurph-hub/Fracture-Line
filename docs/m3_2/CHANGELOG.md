@@ -10,6 +10,8 @@ the Zero Hour-style texture/model rebuild and the polish pass (40 degree camera)
 - Package com.malachimurphy.fractureline, same debug key as M3.1 (certificate SHA-256
   7e96c70a…ce54). versionName 0.3.3, versionCode 17, so it installs over M3.1.
 - `apksigner verify` passes (v2 and v3 schemes).
+- Merged into master as 8a1c108 ("Merge m32: M3.2 release").
+- Uploaded to Google Drive (My Drive root), file id `1TURF3aMytSSqQPIiBAXzqGviX4APiJm7`.
 
 ## Russia: buildings (Malachi's list, all models original and procedural)
 - **Kremlin (HQ)**: red-brick walls with swallowtail merlons, towers with green tent spires and
