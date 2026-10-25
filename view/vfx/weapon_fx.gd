@@ -30,6 +30,8 @@ const CLASSES := {
 	# M3.2 Russia
 	&"ecc_r77": "missile", &"ecc_kab": "mortar", &"ecc_vikhr": "missile", &"ecc_2a42": "autocannon",
 	&"ecc_kornet": "missile", &"ecc_zak30": "quad",
+	# M3.2 part 2: AA ground modes, capture-unit sidearm
+	&"eu_gatling_gnd": "quad", &"tpla_wasp_gnd": "missile", &"us_patriot_gnd": "mg", &"ecc_zak30_gnd": "quad", &"sidearm": "rifle",
 }
 const BY_KIND := {"tracer": "rifle", "tracer_heavy": "mg", "shell": "cannon", "missile": "missile",
 	"rocket": "rocket", "rocket_salvo": "salvo", "tracer_quad": "quad", "flak": "flak", "grenade": "grenade",
