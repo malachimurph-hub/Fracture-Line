@@ -145,6 +145,14 @@ void fragment() {
 	col *= mix(0.84, 1.1, mac.r);
 	col *= mix(mix(vec3(1.0), vec3(1.04, 0.99, 0.92), desert_tint), mix(vec3(1.0), vec3(0.95, 0.99, 1.04), desert_tint), mac.g * 0.6);
 	col = mix(col, col * mix(vec3(1.0), vec3(1.08, 1.0, 0.86), desert_tint), (mac.b - 0.5) * 0.35 * (a.r + a.g));
+	// M3.2 Zero Hour look: richer colour, painterly warm / cool patches, darker steep slopes
+	float lum0 = dot(col, vec3(0.3, 0.59, 0.11));
+	col = max(vec3(0.0), mix(vec3(lum0), col, mix(1.14, 0.96, desert_tint * 0.0 + dry_scrub * 0.6)));
+	float pn = vnoise(p * 0.09 + 3.7);
+	col *= mix(vec3(0.92, 0.95, 1.0), vec3(1.05, 1.0, 0.94), pn);   // painterly cool / warm patches
+	float pn2 = vnoise(p * 0.6 + 9.1);
+	col *= mix(0.9, 1.07, pn2);                                        // mid-scale mottling
+	col *= mix(1.0, 0.8, smoothstep(0.8, 0.45, wnrm.y));
 	vec3 n_t = vec3(0.0, 0.0, 1.0);
 	float rough = 0.92 - b.r * 0.12;
 	float ao = 1.0;
@@ -152,6 +160,7 @@ void fragment() {
 		n_t = vec3((nr.rg * 2.0 - 1.0) * 0.8, 0.0);
 		rough = mix(rough, nr.b, 0.85);
 		ao = mix(1.0, nr.a, 0.7);
+		col *= mix(0.72, 1.0, nr.a);   // M3.2: cavity / crevice darkening baked into the albedo
 		// detail layer: fades in near the camera
 		float dist = length(wpos - CAMERA_POSITION_WORLD);
 		float df = smoothstep(42.0, 16.0, dist);

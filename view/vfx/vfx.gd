@@ -134,9 +134,12 @@ func smoke_puff(p: Vector3, strength: float, burning: bool) -> void:
 	if fx_mul < 1.0 and randf() > fx_mul:
 		return
 	var w := Vector3(0.35, 0, 0.12)   # light prevailing wind
-	smoke.emit(p + Vector3(randf_range(-0.25, 0.25), 0, randf_range(-0.25, 0.25)), Vector3(0, 1.1 + strength * 0.6, 0) + w, 2.6 + strength, 0.35 + strength * 0.25, 1.4 + strength, Color(0.16, 0.15, 0.14, 0.75), Color(0.35, 0.33, 0.31, 0.0))
+	smoke.emit(p + Vector3(randf_range(-0.25, 0.25), 0, randf_range(-0.25, 0.25)), Vector3(0, 1.1 + strength * 0.6, 0) + w, 2.6 + strength, 0.35 + strength * 0.25, 1.4 + strength, Color(0.1, 0.095, 0.09, 0.85), Color(0.32, 0.3, 0.28, 0.0))
 	if burning:
-		fire.emit(p + Vector3(randf_range(-0.3, 0.3), 0.0, randf_range(-0.3, 0.3)), Vector3(0, 1.2, 0), 0.45, 0.35 + strength * 0.2, 0.1, Color("#ffb347"), Color(0.9, 0.25, 0.05, 0.0), 1.0)
+		fire.emit(p + Vector3(randf_range(-0.3, 0.3), 0.0, randf_range(-0.3, 0.3)), Vector3(0, 1.2, 0), 0.45, 0.35 + strength * 0.2, 0.1, Color(1.5, 0.8, 0.3), Color(0.9, 0.25, 0.05, 0.0), 1.0)
+		fire.emit(p + Vector3(randf_range(-0.2, 0.2), 0.1, randf_range(-0.2, 0.2)), Vector3(0, 1.6, 0), 0.6, 0.25 + strength * 0.15, 0.05, Color(1.4, 0.55, 0.12), Color(0.6, 0.12, 0.02, 0.0), 1.0)
+		if randf() < 0.35:
+			spark_layer.emit(p + Vector3(0, 0.2, 0), Vector3(randf_range(-0.3, 0.3), randf_range(1.2, 2.2), randf_range(-0.3, 0.3)), 1.2, 0.03, 0.01, Color("#ffd27a"), Color(1.0, 0.4, 0.05, 0.0), 1.0)
 
 func building_destroyed(p: Vector3, fp: Vector2) -> void:
 	var r := maxf(fp.x, fp.y) * 0.5
@@ -211,6 +214,18 @@ func explosion(p: Vector3, size: float) -> void:
 	for k in int(6 * fx_mul):
 		var a := k * TAU / 6.0
 		smoke.emit(p + Vector3(cos(a), 0.1, sin(a)) * 0.3 * size, Vector3(cos(a), 0.15, sin(a)) * 2.0 * size, 1.0, size * 0.4, size * 1.1, Color(DUST, 0.6), Color(DUST, 0.0))
+	# M3.2 Zero Hour-style punch: white-hot core flash, hot inner fireball, spark spray, a
+	# rising black mushroom of oily smoke and (big blasts) a ground shock ring
+	flash(p + Vector3(0, 0.3, 0), Color(1.8, 1.5, 1.0), size * 1.1, 0.09)
+	for k in int(3 * fx_mul) + 1:
+		fire.emit(p + Vector3(randf_range(-0.1, 0.1), 0.35, randf_range(-0.1, 0.1)) * size, Vector3(0, 1.4, 0) * size, randf_range(0.45, 0.7), size * 0.5, size * 1.1, Color(1.6, 1.25, 0.7), Color(0.7, 0.16, 0.03, 0.0), 1.0)
+	for k in int(clampf(size * 8, 4, 16) * fx_mul):
+		var v := Vector3(randf_range(-1, 1), randf_range(0.6, 1.8), randf_range(-1, 1)) * 3.2 * sqrt(size)
+		spark_layer.emit(p + Vector3(0, 0.25, 0), v, randf_range(0.3, 0.7), 0.05, 0.015, Color("#fff4c8"), Color(1.0, 0.45, 0.08, 0.0), 1.0)
+	for k in int(3 * fx_mul):
+		smoke.emit(p + Vector3(randf_range(-0.15, 0.15), 0.6 + k * 0.25, randf_range(-0.15, 0.15)) * size, Vector3(0.2, 1.3 + k * 0.2, 0.06) * size, randf_range(2.4, 3.4), size * 0.5, size * 2.0, Color(0.09, 0.085, 0.08, sa), Color(0.3, 0.29, 0.27, 0.0))
+	if size >= 1.1:
+		ring(p + Vector3(0, 0.05, 0), size * 1.6, Color(1.0, 0.85, 0.6, 0.6), 0.35, false)
 	decal(p, size * 0.9, 1 if size >= 1.2 else 0)
 
 func scorch_old(p: Vector3, size: float) -> void:

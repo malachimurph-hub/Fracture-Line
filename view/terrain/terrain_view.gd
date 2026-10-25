@@ -76,6 +76,7 @@ func build(map: SimMap, tiles_path: String = "", env: Dictionary = {}) -> void:
 	_build_bridges()
 	_build_lane_markings()
 	_build_ground_decals()
+	_build_scatter(float(env.get("dry", 0.0)) > 0.5)
 	_build_props(tiles_path)
 	var skirt := MeshInstance3D.new()
 	var pm := PlaneMesh.new()
@@ -812,6 +813,88 @@ func update_fog(fog: SimFog, team: int) -> void:
 static func minimap_color(tt: int) -> Color:
 	var c: Color = COLORS[tt]
 	return c.lightened(0.05)
+
+## M3.2 dense ground scatter (Zero Hour look): grass / dry-scrub tufts and pebbles on open
+## ground, deterministic per tile, one MultiMesh per 32 x 32 chunk (culled), no shadows. Density
+## follows the graphics preset ("scatter": Ultra 1.0 .. Low off).
+var scatter_count := 0
+func _build_scatter(dry: bool) -> void:
+	var dens := float(Settings.preset().get("scatter", 1.0))
+	if dens <= 0.0:
+		return
+	var tuft := _tuft_mesh(dry)
+	var peb := _pebble_mesh()
+	var mat := prop_material   # vertex colour + fog of war (alpha 1 = plain, no emission)
+	for cy in range(0, m.h, CHUNK):
+		for cx in range(0, m.w, CHUNK):
+			var tx: Array = []
+			var px: Array = []
+			for y in range(cy, mini(cy + CHUNK, m.h)):
+				for x in range(cx, mini(cx + CHUNK, m.w)):
+					var tt := m.ttype(Vector2i(x, y))
+					if tt != SimMap.T.GRASS and tt != SimMap.T.ROUGH and tt != SimMap.T.FOREST:
+						continue
+					if absf(heights[y * (m.w + 1) + x]) > 0.01 or absf(heights[(y + 1) * (m.w + 1) + x + 1]) > 0.01:
+						continue
+					var h := _h(x * 3 + 1, y * 7 + 2)
+					var n_t := int((1.6 if tt != SimMap.T.ROUGH else 0.8) * dens * (0.5 + h))
+					for k in n_t:
+						var r1 := _h(x * 11 + k, y * 13 + k * 5)
+						var r2 := _h(x * 17 + k * 3, y * 19 + k)
+						var sc := 0.7 + r1 * 0.7
+						tx.append(Transform3D(Basis(Vector3.UP, r2 * TAU).scaled(Vector3(sc, sc * (0.8 + r2 * 0.5), sc)), Vector3(x + r1, 0.0, y + r2)))
+					if tt == SimMap.T.ROUGH or h > 0.55:
+						for k in int((2.0 if tt == SimMap.T.ROUGH else 1.0) * dens):
+							var q1 := _h(x * 23 + k, y * 29 + k * 7)
+							var q2 := _h(x * 31 + k * 5, y * 37 + k)
+							var ps := 0.6 + q2 * 0.9
+							px.append(Transform3D(Basis(Vector3.UP, q1 * TAU).scaled(Vector3(ps, ps * 0.7, ps)), Vector3(x + q2, 0.0, y + q1)))
+			for pair in [[tx, tuft], [px, peb]]:
+				var arr: Array = pair[0]
+				if arr.is_empty():
+					continue
+				var mm := MultiMesh.new()
+				mm.transform_format = MultiMesh.TRANSFORM_3D
+				mm.mesh = pair[1]
+				mm.instance_count = arr.size()
+				for i in arr.size():
+					mm.set_instance_transform(i, arr[i])
+				var mmi := MultiMeshInstance3D.new()
+				mmi.multimesh = mm
+				mmi.material_override = mat
+				mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+				mmi.visibility_range_end = 60.0
+				add_child(mmi)
+				scatter_count += arr.size()
+
+## Tuft: 5 tapered blades leaning outward, darker at the root (vertex colour = fake AO).
+func _tuft_mesh(dry: bool) -> Mesh:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var tip := Color("#c9b46a") if dry else Color("#8fb34e")
+	var root := Color("#6e5c34") if dry else Color("#3f5a26")
+	for i in 5:
+		var a := TAU * i / 5.0 + 0.4
+		var d := Vector3(cos(a), 0, sin(a))
+		var sd := Vector3(-d.z, 0, d.x) * 0.012
+		var h := 0.07 + 0.03 * float(i % 3)
+		var top := d * 0.045 + Vector3(0, h, 0)
+		for vv in [[-sd, sd, top], [sd, -sd, top]]:   # both faces
+			st.set_color(root)
+			st.add_vertex(vv[0])
+			st.set_color(root)
+			st.add_vertex(vv[1])
+			st.set_color(tip)
+			st.add_vertex(vv[2])
+	st.generate_normals()
+	return st.commit()
+
+func _pebble_mesh() -> Mesh:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	PropMeshes.sph(st, Vector3(0, 0.008, 0), Vector3(0.03, 0.02, 0.025), Color("#8a8070"), 5)
+	PropMeshes.sph(st, Vector3(0.04, 0.006, 0.02), Vector3(0.018, 0.012, 0.016), Color("#6f675c"), 4)
+	return st.commit()
 
 ## M2: static ground decals scattered deterministically from the map: tire tracks along roads
 ## and around resource fields, cracks on asphalt / concrete, oil stains on roads and where

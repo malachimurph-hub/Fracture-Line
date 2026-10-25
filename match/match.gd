@@ -78,6 +78,14 @@ func _build_scene() -> void:
 	e.adjustment_saturation = menv["saturation"]
 	e.adjustment_contrast = menv["contrast"]
 	e.adjustment_brightness = 1.0
+	e.tonemap_white = 6.0
+	# M3.2: subtle bloom on muzzle flashes, fire, lamps and sun-hot highlights (Ultra / High)
+	e.glow_enabled = bool(Settings.preset().get("glow", false))
+	e.glow_intensity = 0.55
+	e.glow_strength = 0.9
+	e.glow_bloom = 0.03
+	e.glow_hdr_threshold = 1.05
+	e.glow_blend_mode = Environment.GLOW_BLEND_MODE_SOFTLIGHT
 	env.environment = e
 	add_child(env)
 	var sun := DirectionalLight3D.new()
@@ -87,7 +95,8 @@ func _build_scene() -> void:
 	sun.shadow_enabled = true
 	sun.shadow_bias = 0.04
 	sun.shadow_normal_bias = 1.2
-	sun.shadow_blur = 0.6
+	sun.shadow_blur = 0.4   # M3.2: crisper, darker ZH-style shadows
+	sun.shadow_opacity = 1.0
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
 	sun.directional_shadow_max_distance = 70.0
 	sun.directional_shadow_split_1 = 0.35

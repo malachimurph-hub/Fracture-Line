@@ -234,10 +234,15 @@ void fragment() {
 	col *= mix(0.62, 1.0, smoothstep(0.0, 0.14, opos.y));
 	// ---- M2.7b form readability (Zero Hour-like hard modelling at RTS range) ----
 	if (cls != 5 && cls != 15 && cls != 19) {
-		col *= mix(0.55, 1.0, smoothstep(-0.7, 0.15, onrm.y));      // dark undersides
-		col *= mix(0.86, 1.14, smoothstep(0.25, 0.9, onrm.y));     // sun-catching tops vs walls
+		col *= mix(0.48, 1.0, smoothstep(-0.7, 0.15, onrm.y));      // dark undersides
+		col *= mix(0.84, 1.2, smoothstep(0.25, 0.9, onrm.y));      // sun-catching tops vs walls
 		float rim = 1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0);
-		col *= 1.0 + 0.22 * rim * rim * rim;                        // silhouette lift
+		col *= 1.0 + 0.3 * rim * rim * rim;                         // silhouette lift
+		if (hi) {
+			// M3.2 hand-painted edge highlight on plate bevels (weather.png B ring), sun side
+			float bev = smoothstep(0.56, 0.7, wt.b) * (1.0 - smoothstep(0.74, 0.86, wt.b));
+			col *= 1.0 + bev * (0.16 + 0.14 * max(onrm.y, 0.0)) * (1.0 - damage_amt);
+		}
 	}
 	if (hi && cls != 2 && cls != 5 && cls != 15 && cls != 19) {
 		// M3.1 detail normals: plate seams / rivets / hatches where there are panels, fine grain
