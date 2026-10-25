@@ -67,3 +67,10 @@ ecc_152mm,175,15000,4000,6500,explosive,1600,0,1,shell,0,1500,attack,0,0,12,1200
 ecc_zu23,14,7000,0,200,quad,0,1,1,tracer_quad,0,0,attack,12,1800,12,0,0
 ecc_bunker_gun,40,8000,0,900,autocannon,0,0,1,tracer_heavy,0,0,attack,0,0,12,0,0
 ecc_sam,45,10000,0,600,aa_missile,0,1,0,missile,0,300,attack,4,4000,30,0,0
+ecc_r77,110,9000,0,700,aa_missile,0,1,0,missile,0,0,attack,4,8000,30,0,0
+ecc_kab,110,3000,0,500,explosive,900,0,1,missile,0,0,attack,1,8000,45,0,0
+ecc_vikhr,72,7500,0,750,anti_tank,0,0,1,missile,0,300,attack,4,11000,20,0,0
+ecc_2a42,13,6000,0,250,autocannon,0,0,1,tracer_heavy,0,0,attack,20,3500,12,0,300
+ecc_tu160_bombs,240,1400,0,350,demolition,2600,0,1,bomb,0,0,attack,4,52000,90,300,0
+ecc_kornet,95,8500,0,2400,anti_tank,0,0,1,missile,0,300,attack,2,3000,20,0,0
+ecc_zak30,14,8000,0,120,quad,0,1,0,tracer_quad,0,0,attack,24,2600,12,0,0

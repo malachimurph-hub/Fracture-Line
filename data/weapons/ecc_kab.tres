@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="WeaponDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/weapon_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"ecc_kab"
+damage = 110
+range_mt = 3000
+min_range_mt = 0
+cooldown_ms = 500
+damage_type = &"explosive"
+splash_mt = 900
+targets_air = false
+targets_ground = true
+vfx = &"missile"
+min_tier = 0
+pre_attack_ms = 0
+pre_attack_type = &"attack"
+clip_size = 1
+reload_ms = 8000
+aim_deg = 45
+scatter_mt = 0
+scatter_inf_mt = 0

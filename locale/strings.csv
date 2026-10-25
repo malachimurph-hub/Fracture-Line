@@ -507,20 +507,32 @@ UNIT_ECC_MSTA,2S Msta
 UNIT_ECC_MSTA_DESC,"2S19 Msta-S tracked 152 mm self-propelled howitzer. Long range, cannot fire up close. Needs a Supply Depot."
 UNIT_ECC_ZEUS,Zeus
 UNIT_ECC_ZEUS_DESC,ZSU-23-4 tracked anti-aircraft gun with four 23 mm cannons. Also hits ground targets.
-BLD_ECC_HQ,Headquarters
-BLD_ECC_HQ_DESC,Russian headquarters. Builds Engineer Vehicles.
-BLD_ECC_POWER,Power Station
-BLD_ECC_POWER_DESC,Diesel power station. Supplies power to the base.
+UNIT_ECC_SU57,Su-57
+UNIT_ECC_SU57_DESC,"Stealth fighter: R-77 missiles against aircraft, guided bombs against ground targets. Uses 2 airfield slots."
+UNIT_ECC_KA52,Ka-52
+UNIT_ECC_KA52_DESC,"Coaxial-rotor attack helicopter with Vikhr anti-tank missiles and a 30 mm cannon. Stays over the battle, no parking slot needed."
+UNIT_ECC_TU160,Tu-160
+UNIT_ECC_TU160_DESC,"Huge, slow swing-wing bomber: a four-bomb carpet run, then it lands and rearms (52 s). Uses 4 airfield slots. Needs a Ministry of Defense."
+BLD_ECC_HQ,Kremlin
+BLD_ECC_HQ_DESC,"Russian headquarters: red-brick walls, towers and palace. Engineer Vehicles roll out of its vehicle bay."
+BLD_ECC_POWER,Gas Processing Plant
+BLD_ECC_POWER_DESC,"Natural gas processing plant with columns, spherical tanks and a flare stack. Supplies power to the base."
 BLD_ECC_DEPOT,Supply Depot
-BLD_ECC_DEPOT_DESC,Supply drop-off point. Comes with a Cargo Truck and builds more.
+BLD_ECC_DEPOT_DESC,Concrete supply drop-off point. Comes with a Cargo Truck and builds more.
 BLD_ECC_BARRACKS,Barracks
 BLD_ECC_BARRACKS_DESC,"Trains Riflemen, Machine Gunners, RPG Men and Infiltrators."
 BLD_ECC_FACTORY,Vehicle Factory
 BLD_ECC_FACTORY_DESC,"Builds Tiger-M, BTR, Typhoon, T-90M, Zeus, 2S Msta and Engineer Vehicles."
-BLD_ECC_BUNKER,Defence Bunker
-BLD_ECC_BUNKER_DESC,Concrete bunker with a 30 mm cannon. Defends against ground units. Needs power.
-BLD_ECC_AA_SITE,Air Defence Site
-BLD_ECC_AA_SITE_DESC,Short-range surface-to-air missile launcher. Defends against aircraft. Needs power.
+BLD_ECC_BUNKER,Kornet Nest
+BLD_ECC_BUNKER_DESC,"Sandbag ring with two 9M133 Kornet anti-tank missile launchers. Defends against ground vehicles. Needs power."
+BLD_ECC_AA_SITE,ZAK-30 Citadel
+BLD_ECC_AA_SITE_DESC,"Twin 30 mm rotary anti-aircraft turret. Shreds aircraft, cannot hit ground targets. Needs power."
+BLD_ECC_AIRFIELD,Airfield
+BLD_ECC_AIRFIELD_DESC,"Builds Su-57, Ka-52 and Tu-160. 6 parking slots: bomber 4, fighter 2, helicopter 0. Jets land here to rearm."
+BLD_ECC_MINISTRY,Ministry of Defense
+BLD_ECC_MINISTRY_DESC,"Tech centre: unlocks the Tu-160 bomber and the Black Market."
+BLD_ECC_BLACK_MARKET,Black Market
+BLD_ECC_BLACK_MARKET_DESC,Warehouse trading post that brings in steady passive income.
 POWER_ECC_RECON,Recon Drone
 POWER_ECC_RECON_DESC,A drone reveals a 14-tile area for 20 s.
 POWER_ECC_LOGISTICS,Supply Convoy

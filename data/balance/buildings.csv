@@ -41,5 +41,8 @@ ecc_power,BLD_ECC_POWER,base,800,10000,3,3,1000,10,0,6,,,0,0,0,,0,,0,0,0,0,1,,,0
 ecc_depot,BLD_ECC_DEPOT,base,1500,15000,3,3,1500,-2,0,6,ecc_power,ecc_cargo_truck,0,1,0,ecc_cargo_truck,0,,0,0,0,0,1,,,0,0
 ecc_barracks,BLD_ECC_BARRACKS,production,600,10000,3,3,1200,-3,0,6,ecc_power,ecc_rifleman|ecc_machine_gunner|ecc_rpg|ecc_infiltrator,0,0,0,,0,,0,0,0,0,1,,,0,0
 ecc_factory,BLD_ECC_FACTORY,production,1600,16000,4,4,1900,-4,0,6,ecc_barracks,ecc_tigr|ecc_btr|ecc_typhoon|ecc_t90|ecc_zeus|ecc_msta|ecc_engineer,0,0,0,,0,,0,0,0,0,1,,,0,0
-ecc_bunker,BLD_ECC_BUNKER,defense,1000,12000,2,2,1400,-3,0,9,ecc_barracks,,0,0,0,,0,ecc_bunker_gun,1,0,0,0,1,,,0,0
-ecc_aa_site,BLD_ECC_AA_SITE,defense,1000,12000,2,2,1200,-3,0,10,ecc_barracks,,0,0,0,,0,ecc_sam,1,0,0,0,1,,,0,0
+ecc_bunker,BLD_ECC_BUNKER,defense,1000,12000,2,2,1400,-3,0,9,ecc_barracks,,0,0,0,,0,ecc_kornet,1,0,0,0,1,,,0,0
+ecc_aa_site,BLD_ECC_AA_SITE,defense,1000,12000,2,2,1200,-3,0,10,ecc_barracks,,0,0,0,,0,ecc_zak30,1,0,0,0,1,,,0,0
+ecc_airfield,BLD_ECC_AIRFIELD,production,1800,16000,8,8,1800,-4,0,7,ecc_factory,ecc_su57|ecc_ka52|ecc_tu160,0,0,0,,0,,0,0,0,0,1,,airfield,0,6
+ecc_ministry,BLD_ECC_MINISTRY,tech,2000,16000,4,4,1500,-3,0,8,ecc_factory,,0,0,0,,0,,0,0,0,0,1,,,0,0
+ecc_black_market,BLD_ECC_BLACK_MARKET,tech,2500,20000,3,3,1000,-2,0,6,ecc_ministry,,0,0,4,,0,,0,0,0,0,1,,,0,0

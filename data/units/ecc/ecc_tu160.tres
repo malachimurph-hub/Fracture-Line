@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"ecc_tu160"
+faction = &"ecc"
+name_key = "UNIT_ECC_TU160"
+desc_key = "UNIT_ECC_TU160_DESC"
+cost = 2800
+build_time_ms = 22000
+pop = 4
+prereqs = PackedStringArray("ecc_ministry")
+tags = PackedStringArray("air", "jet", "bomber")
+max_hp = 1050
+armor_type = &"air"
+weapons = PackedStringArray("ecc_tu160_bombs")
+speed_mtps = 4300
+move_layer = &"air"
+sight = 10
+radius_mt = 850
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 0
+role = &"air_strike"
+view_scene = "res://view/units/ecc/tu160.tscn"
+stubs = PackedStringArray()
+loco = &"jet"
+turn_dps = 95
+accel_ms = 1800
+turret_dps = 0
+abilities = PackedStringArray()
+transport_capacity = 0
+detector = false
+air_slots = 4

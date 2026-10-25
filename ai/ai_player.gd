@@ -136,7 +136,7 @@ func think() -> void:
 		_capture()
 	if cfg["powers"]:
 		_powers()
-	if faction() == &"eu" and _every("t_air", 40):   # M3.0 E: German Tiger / fighters
+	if (faction() == &"eu" or faction() == &"ecc") and _every("t_air", 40):   # M3.0 E / M3.2: German, Russian jets
 		_air()
 
 # ------------------------------------------------------------------ threat detection
@@ -258,6 +258,10 @@ func _next_building() -> StringName:
 	if faction() == &"eu" and seconds() > (840 if difficulty == "hard" else 1020) and difficulty != "easy" \
 			and counts.get(R["tech"], 0) >= 1 and counts.get(&"eu_airstrip", 0) < 1 and p.supply > 2400:
 		return &"eu_airstrip"
+	# M3.2: Russia's Airfield (Su-57, Ka-52, Tu-160) once the Ministry of Defense is up
+	if faction() == &"ecc" and seconds() > (780 if difficulty == "hard" else 960) and difficulty != "easy" \
+			and counts.get(R["tech"], 0) >= 1 and counts.get(&"ecc_airfield", 0) < 1 and p.supply > 2400:
+		return &"ecc_airfield"
 	return &""
 
 ## Dynamic build pick for a role; "" when the faction lacks that structure.
@@ -504,7 +508,7 @@ var _cur_b: SimEntity = null   ## producer being filled by _production (for _uni
 
 ## Faction hook: may this unit be queued at _cur_b right now (e.g. US airfield slots)?
 func _unit_allowed(ud: UnitDef) -> bool:
-	if faction() == &"eu" and ud.air_slots > 0:   # M3.0 E: German Airfield parking slots
+	if (faction() == &"eu" or faction() == &"ecc") and ud.air_slots > 0:   # German / Russian Airfield parking slots
 		return _air_slot_ok(ud)
 	return true
 
@@ -839,7 +843,7 @@ func _victims() -> void:
 ## Units the wave logic must not touch (raid squads, salvage runs, tunnel guards...).
 func _reserved_ids() -> Dictionary:
 	var out := {}
-	if faction() == &"eu":   # M3.0 E: jets fly their own sorties (see _air)
+	if faction() == &"eu" or faction() == &"ecc":   # jets fly their own sorties (see _air)
 		for u: SimEntity in my_ents(SimEntity.Kind.UNIT):
 			if w.udef(u).tags.has("jet"):
 				out[u.id] = true

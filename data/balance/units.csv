@@ -57,3 +57,6 @@ ecc_typhoon,UNIT_ECC_TYPHOON,1100,12000,2,,vehicle|transport,1000,light,ecc_kord
 ecc_t90,UNIT_ECC_T90,1100,12000,3,,vehicle|tank,970,heavy,ecc_125mm,1750,vehicle,8,600,0,0,0,tank,,,0,0,80,0,0,0
 ecc_msta,UNIT_ECC_MSTA,1400,15000,3,ecc_depot,vehicle|artillery,480,light,ecc_152mm,1350,vehicle,10,620,0,0,0,artillery,,,0,0,40,0,0,0
 ecc_zeus,UNIT_ECC_ZEUS,800,9000,2,,vehicle|aa,540,light,ecc_zu23,2000,vehicle,9,540,0,0,0,anti_air,,,0,0,170,0,0,0
+ecc_su57,UNIT_ECC_SU57,1500,13000,3,,air|jet|fighter|aa,540,air,ecc_r77|ecc_kab,5800,air,11,650,0,0,0,air_strike,,jet,160,1200,0,0,0,2
+ecc_ka52,UNIT_ECC_KA52,1600,15000,3,,air|helicopter,560,air,ecc_vikhr|ecc_2a42,3200,air,10,650,0,0,0,air_strike,,heli,190,900,180,0,0,0
+ecc_tu160,UNIT_ECC_TU160,2800,22000,4,ecc_ministry,air|jet|bomber,1050,air,ecc_tu160_bombs,4300,air,10,850,0,0,0,air_strike,,jet,95,1800,0,0,0,4

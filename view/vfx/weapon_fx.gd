@@ -27,6 +27,9 @@ const CLASSES := {
 	&"ecc_ak74": "rifle", &"ecc_ak12": "rifle", &"ecc_pkm": "mg", &"ecc_kord": "mg", &"ecc_kord_rws": "mg",
 	&"ecc_btr_30mm": "autocannon", &"ecc_bunker_gun": "autocannon", &"ecc_125mm": "cannon", &"ecc_152mm": "artillery",
 	&"ecc_rpg7": "rocket", &"ecc_grenade": "grenade", &"ecc_zu23": "quad", &"ecc_sam": "missile",
+	# M3.2 Russia
+	&"ecc_r77": "missile", &"ecc_kab": "mortar", &"ecc_vikhr": "missile", &"ecc_2a42": "autocannon",
+	&"ecc_kornet": "missile", &"ecc_zak30": "quad",
 }
 const BY_KIND := {"tracer": "rifle", "tracer_heavy": "mg", "shell": "cannon", "missile": "missile",
 	"rocket": "rocket", "rocket_salvo": "salvo", "tracer_quad": "quad", "flak": "flak", "grenade": "grenade",
