@@ -38,5 +38,3 @@
   empty time at about 18-22 min, so the stashes are not draining faster: the matches are
   just more decisive. Likely causes: capture units (they can capture HQs, as in ZH), AA that
   now hits ground, and no unit cap. This is a balance call; the test was left unchanged.
-- **Russia's HUD in the UI test needs a test-only `Content.test_unlock_all` flag**, because
-  the lobby config turns the locked faction into EU. The game never sets that flag.

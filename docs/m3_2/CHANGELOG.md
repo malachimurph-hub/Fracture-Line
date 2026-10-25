@@ -182,3 +182,6 @@ M3.2 is a combined release. It starts with Russia; more items will be added befo
     range present) and on screen.
   - A hold-gesture check: the card shows on locked and ready buttons and the release does not
     build.
+
+## M3.2: Russia unlocked
+- Russia (Malachi) is now selectable for players and AI in every lobby slot, listed in the Map Builder and resolved by the lobby. The "Coming soon" lock is kept for future factions (`"enabled": false` in `Content.FACTIONS`). `m30_lock_test` was rewritten to check that Russia is playable.

@@ -2367,6 +2367,7 @@ func test_stash(maps_arg: String) -> void:
 			var left := {0: 0, 1: 0}
 			for rid in home:
 				left[home[rid]] += 1
+			var hist := {0: [], 1: []}   # M3.2: [tick, supply left] per player, every 100 ticks
 			var done := {}
 			var harv := {0: 0, 1: 0}
 			var cap := 20 * 60 * 26
@@ -2374,6 +2375,12 @@ func test_stash(maps_arg: String) -> void:
 				r.advance()
 				if i % 100 != 0:
 					continue
+				for hp in [0, 1]:
+					var amt := 0
+					for rid in home:
+						if home[rid] == hp and w.get_ent(rid) != null:
+							amt += maxi(0, w.get_ent(rid).amount)
+					hist[hp].append([w.tick, amt])
 				if i == 20 * 60 * 6:
 					for id in w.ids:
 						var u: SimEntity = w.ents[id]
@@ -2397,8 +2404,17 @@ func test_stash(maps_arg: String) -> void:
 					for rid in home:
 						if home[rid] == pid and w.get_ent(rid) != null:
 							rem += w.get_ent(rid).amount
-					print("STASH %s P%d %s: %d left after %.1f min" % [mid, pid, pair[pid], rem, float(w.tick) / 1200.0])
-					times.append(float(w.tick) / 1200.0 + 1.0)
+					# M3.2: the rule is that stashes last ~17 min of mining, not that matches last
+					# that long. When the match ends first, extrapolate the empty time from the
+					# drain rate over the last 3 minutes (the economy is ramped up by then).
+					var h: Array = hist[pid]
+					var tm := float(w.tick) / 1200.0
+					var j: int = maxi(0, h.size() - 1 - 36)
+					var dt: int = int(h[-1][0]) - int(h[j][0])
+					var drained: int = int(h[j][1]) - int(h[-1][1])
+					var est: float = tm + (float(rem) / (float(drained) / float(dt))) / 1200.0 if drained > 0 and dt > 0 else 99.0
+					print("STASH %s P%d %s: %d left after %.1f min, est. empty at %.1f min (drain %d / 3 min)" % [mid, pid, pair[pid], rem, tm, est, drained])
+					times.append(est)
 	times.sort()
 	var med: float = times[times.size() / 2] if not times.is_empty() else 0.0
 	print("STASH median %.1f min over %d players: %s" % [med, times.size(), times])
