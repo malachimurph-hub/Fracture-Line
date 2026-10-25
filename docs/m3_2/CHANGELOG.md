@@ -54,3 +54,131 @@ M3.2 is a combined release. It starts with Russia; more items will be added befo
 - `tools/gfx_m32/ru_m32.gd`: generators, merged after `ru_m30` in `us_m7.jobs()`.
   `_airbase8` gained an `ecc` palette.
 - `tests/m32_preview.tscn -- buildings|air out.png`: preview renders.
+
+---
+
+# M3.2 part 2: Malachi's new items (same combined release, no APK)
+
+## 1. M777A2 emplacement
+- The Firebase pad is now ringed by concrete Jersey barriers (gap on the ammo side) on a gravel
+  pad, instead of sandbags (`tools/gfx_m32/new_m32.gd` `us_firebase`).
+
+## 2. AA turrets shoot ground too
+- Each AA structure keeps its air weapon (now air-only) and gains a weaker ground-only weapon,
+  so AA is never a better ground defence than the AT bunkers:
+  Patriot `us_patriot_gnd` (9 dmg hmg, 7 tiles), Flak Tower `eu_gatling_gnd` (7 quad),
+  Wasp Nest `tpla_wasp_gnd` (14 AT, clip 3), ZAK-30 `ecc_zak30_gnd` (7 quad, clip 24).
+  Test: air DPS > ground DPS for all four.
+
+## 3. US Drone Operator
+- New research **Drone Warfare** (`us_up_drones`, $1500, 30 s) at the Strategic Center. Upgrades
+  are unit defs tagged `upgrade`: they are researched once and stored in `SimPlayer.upgrades`
+  (saved). `prereqs_met` honours them.
+- **Drone Operator** (`us_drone_operator`, Barracks, $600, needs Drone Warfare). The command
+  card has **Bomb Drone** and **Scout Drone** buttons. Each spawns a selectable, controllable
+  drone at the operator. A drone that is used or lost comes back after 60 s; the button shows
+  the countdown.
+  - Bomb drone: fixed-wing loitering munition, 260 AT dmg + splash, one-way (suicide).
+  - Scout drone: unarmed quadcopter with 16-tile sight.
+- The AI (US) researches Drone Warfare, keeps about 1 operator per 10 combat units, launches
+  bomb drones when enemies are near, and sends them at the closest visible vehicle.
+
+## 4. Funds cap $2,000,000
+- `SUPPLY_CAP` is 2,000,000. Start money options now include $100k, $500k, $1M and $2M.
+- The HUD shows money with thousands separators, and the font steps down for 7 digits.
+
+## 5. Germany Field Engineer
+- `eu_field_engineer` (Barracks, $450, rifle). It builds barricades and AT minefields only, and
+  repairs structures (the builder repair order). While standing still it also repairs the most
+  damaged own vehicle within 2 tiles (2% max HP per 0.5 s, free).
+
+## 6. Barricades
+- **Sandbag Barricade** ($100, 700 HP) and **Concrete Barricade** ($250, 1600 HP) for all four
+  factions, 2x1. Builders and Field Engineers can build them.
+- Select infantry and tap an own barricade to man it (max 3). Manned troops are protected and
+  fire from cover with the garrison range bonus. The barricade card has an Exit button with a
+  count, and the world overlay shows n/3. When the barricade is destroyed, the troops are
+  ejected.
+
+## 7 and 8. No unit cap, queue 15
+- The pop cap is effectively removed (1,000,000; old saves are raised on load). The AI keeps a
+  soft limit of 90 for performance.
+- Production queues hold 15 per building.
+
+## 9. Bridges
+- Real bridge model, built per tile in a span frame:
+  - Asphalt deck on a concrete slab, with a dashed centre line, white lane dashes, expansion
+    joints and patches.
+  - Curbs and edge lines, steel railings and a riveted through-truss (chords, verticals, X
+    diagonals, gussets, lateral struts) on the water sides.
+  - Three girders and cross-beams under the deck.
+  - Concrete piers with caps and cut-waters every 3 tiles.
+  - Abutments, wing walls, portal pylons and approach ramps where the span meets land.
+  - Lamp posts.
+
+## 10. Graphics: "Zero Hour look" pass
+- **Grade:** cooler, darker ambient (warm sun vs blue shadows), much less haze, higher contrast,
+  and saturation tuned per biome. Crisper, darker sun shadows.
+- **Glow:** soft-light bloom on Ultra and High (off on Medium and Low).
+- **Terrain shader:** painterly warm/cool patches and mid-scale mottling, cavity AO from the
+  NRAO maps baked into the albedo, and darker steep slopes.
+- **Model shader:** hand-painted bevel edge highlights (sun side), stronger form shading (darker
+  undersides, brighter tops) and a stronger rim lift.
+- **Ground scatter:** dense grass/scrub tufts and pebbles (MultiMesh per chunk, fog-aware, no
+  shadows). Density follows the preset: Ultra 1.0, High 0.6, Medium 0.3, Low off.
+- **Explosions:** white-hot core flash, inner fireball, spark spray, a black mushroom smoke
+  column and a shock ring on big blasts. Burning wrecks get denser smoke, hotter flames and
+  embers.
+- Ultra stays the default. No new textures were added, so the APK size impact is about zero.
+- Before/after: `builds/m3_2/preview/m32_gfx_before_after.png`.
+
+## 11. Faction battle music
+- `tools/gen_music_m32.py`: four new original numpy-synthesised tracks:
+  - US: "Liberty Steel" (military rock). It joins the 3 existing rock tracks.
+  - Russia: "Red Bounce" (hard-bass techno).
+  - Germany: "Tiefgarage" (Berlin club techno).
+  - Iran: "Zagros" (daf, tombak, war booms, santur tremolo and tar-like plucks in a Shur-style
+    mode with a koron 2nd).
+- Battle music follows the local player's faction. The menu stays rock (Breach Point).
+- About +5.3 MB OGG.
+- Samples: `builds/m3_2/preview/m32_music_{us,russia,germany,iran}.ogg`.
+
+## 12. Capture specialists (ZH-style)
+- US **Breacher**, Germany **Sturmtrupp** and Russia **Saboteur** are new: Barracks, $350,
+  120 HP, sidearm. The existing Iranian **Insurgent** gains the ability.
+- Select one and tap an enemy (or neutral) structure. It walks up and captures in 6 s, shown by
+  a gold progress bar over the structure. Moving away or dying cancels the capture.
+  Minefields, walls and traps can't be captured.
+- On capture, ownership transfers: the queue is dropped and garrisons are ejected. The
+  captor keeps the original faction's build list (Zero Hour style), and the unit survives.
+- The AI trains one specialist after 4 minutes and sends it at lightly guarded visible
+  enemy structures.
+
+## 13. Press-and-hold info cards
+- Holding any build, train, research or drone button for 0.4 s, or a selection type chip, the
+  portrait, or a General-tray power row, shows a compact card. It works on locked buttons too.
+  Releasing hides it, and the release never builds. A normal tap still builds.
+- The card shows:
+  - Name, cost and build time, plus pop and size.
+  - The one-line description.
+  - HP, armour, speed and sight.
+  - Each weapon's damage, range, rate and air/ground targets.
+  - Good vs / weak vs, derived from the combat table.
+  - Missing prerequisites.
+  - For buildings: power +/-, income per minute, what it trains and unlocks, garrison, air
+    slots and free unit.
+  - For powers: rank, cost, cooldown, radius and duration.
+- Every number comes from the defs (`ui/hud/info_card.gd`).
+- Queue cancel is now a right-click or a queue-chip tap, because long-press shows the card.
+
+## Tests
+- `roster` gains `_roster_m32`: queue 15 and $2M cap, AA ground vs air DPS, Field Engineer build
+  rules, capture (cancel by moving, success in about 6 s, captured camp trains its original
+  units), barricade max 3 and exit, research once and unlock, drone launch, and the 60 s
+  replenish.
+- `audio`: faction playlists load and are distinct.
+- UI text test (`HudTextCheck`):
+  - Every info card on every faction card is translated, data-driven (income, power, turret
+    range present) and on screen.
+  - A hold-gesture check: the card shows on locked and ready buttons and the release does not
+    build.
