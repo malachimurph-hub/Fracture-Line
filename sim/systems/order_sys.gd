@@ -181,10 +181,21 @@ static func _think(w: SimWorld, u: SimEntity) -> void:
 			if c == null or c.owner == u.owner:
 				_pop(u)
 				return
+			if c.kind == SimEntity.Kind.BUILDING and not CommandSys.can_capture_building(w, u.owner, c):
+				_pop(u)
+				return
 			if w.dist_to_building(u.pos, c) <= u.radius + TILE:
 				u.goal = NONE
+				u.moving = false
 				o["prog"] = int(o.get("prog", 0)) + 1
-				if o["prog"] >= 100:   # 5 s
+				var need := CAPTURE_TICKS if c.kind == SimEntity.Kind.BUILDING else 100   # 6 s structures, 5 s neutral
+				if o["prog"] >= need:
+					if c.kind == SimEntity.Kind.BUILDING:
+						w._eject_garrison(c)   # defenders / tunnel occupants spill out; captured queue is dropped
+						c.queue.clear()
+						c.q_progress = 0
+						c.q_paid.clear()
+						c.repeat = false
 					c.owner = u.owner
 					c.team = u.team
 					w.events.append({"t": "captured", "id": c.id, "owner": u.owner})
@@ -196,6 +207,8 @@ static func _think(w: SimWorld, u: SimEntity) -> void:
 					_pop(u)
 				else:
 					_goto(u, cp)
+
+const CAPTURE_TICKS := 120
 
 ## M3.1 building repair (Zero Hour dozer style): next to the structure, each builder restores
 ## REPAIR_TICKS-th of its max HP per tick (a full repair takes ~30 s for one builder) and pays as

@@ -79,3 +79,4 @@ tpla_wasp_gnd,14,6500,0,500,anti_tank,0,0,1,missile,0,0,attack,3,4000,20,0,0
 us_patriot_gnd,9,7000,0,300,hmg,0,0,1,tracer_heavy,0,0,attack,0,0,12,0,0
 ecc_zak30_gnd,7,7000,0,120,quad,0,0,1,tracer_quad,0,0,attack,24,2600,12,0,0
 us_drone_bomb,260,600,0,500,anti_tank,900,0,1,bomb,0,0,attack,0,0,180,0,0
+sidearm,7,4000,0,900,small_arms,0,0,1,tracer,0,0,attack,0,0,12,0,0

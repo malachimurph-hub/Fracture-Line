@@ -466,7 +466,7 @@ UNIT_TPLA_ROCKET_CELL_DESC,IRGC soldier with an RPG-7. Strong against vehicles.
 UNIT_TPLA_MARKSMAN,Marksman
 UNIT_TPLA_MARKSMAN_DESC,Army marksman with a Nakhjir sniper rifle. Hidden from the enemy unless shooting (nearby units and detectors still see him). Needs a Defence Workshop.
 UNIT_TPLA_INSURGENT,Basij Scout
-UNIT_TPLA_INSURGENT_DESC,"Unarmed Basij volunteer in civilian clothes who blends in with the population: always hidden, wide sight. Gives vision outside the base."
+UNIT_TPLA_INSURGENT_DESC,"Unarmed Basij volunteer in civilian clothes who blends in with the population: always hidden, wide sight. Tap an enemy or neutral structure to capture it (6 s next to it)."
 UNIT_TPLA_RATTLER_DESC,Light military 4x4 jeep with a 12.7 mm DShK heavy machine gun. Fast raider; hits ground and air.
 UNIT_TPLA_SCRAPBACK_DESC,Karrar main battle tank with a 125 mm gun.
 UNIT_TPLA_HAILSTORM_DESC,Tracked 35 mm anti-aircraft gun vehicle with a search radar and a counter-drone laser.
@@ -565,3 +565,9 @@ CMD_EXIT_BARRICADE,Exit
 HUD_RESEARCHED,Researched
 HUD_UPGRADE_DONE,Research complete: %s
 
+UNIT_US_BREACHER,Breacher
+UNIT_US_BREACHER_DESC,"Lightly armed specialist. Tap an enemy or neutral structure to capture it (6 s next to it; moving or dying cancels). Captured buildings keep their original build lists."
+UNIT_EU_STURMTRUPP,Sturmtrupp
+UNIT_EU_STURMTRUPP_DESC,"Assault squad with sidearms. Tap an enemy or neutral structure to capture it (6 s next to it; moving or dying cancels)."
+UNIT_ECC_SABOTEUR,Saboteur
+UNIT_ECC_SABOTEUR_DESC,"Covert specialist. Tap an enemy or neutral structure to capture it (6 s next to it; moving or dying cancels)."

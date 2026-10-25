@@ -300,7 +300,7 @@ func _queue_flag() -> bool:
 ## The own unfinished (resume) or damaged (M3.1 repair) structure under the finger, when
 ## builders are selected: the tap orders them to it instead of selecting it (ZH).
 func resume_site_at(screen: Vector2) -> SimEntity:
-	if _filter(own_units_selected(), "builder").is_empty():
+	if constructors(own_units_selected()).is_empty():
 		return null
 	for oid in pick_all(screen):
 		var o: SimEntity = sim.get_ent(oid)
@@ -325,6 +325,13 @@ func smart_command(screen: Vector2) -> void:
 		var rs := resume_site_at(screen)
 		if rs != null:
 			t = rs
+	if t != null and t.owner != pid and t.kind == SimEntity.Kind.BUILDING and CommandSys.can_capture_building(sim, pid, t) and not _filter(units, "capturer").is_empty():
+		var cp := _filter(units, "capturer")   # M3.2: Breacher / Sturmtrupp / Insurgent / Saboteur take the structure
+		issue({"t": "capture", "ids": cp, "target": t.id, "q": q})
+		world.marker(t.pos, Color("#ffd166"))
+		units = _minus(units, cp)
+		if units.is_empty():
+			return
 	if t != null and t.owner != pid:
 		if t.kind == SimEntity.Kind.RESOURCE:
 			var hv := _filter(units, "harvester")

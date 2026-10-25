@@ -81,6 +81,16 @@ const SPECS := {
 	"eu_field_engineer": {"gun": "eu_rifle_gl", "gear": [["plate_carrier", "#4f5742", "#3d4433"], ["pack", "#5a5338", "#c8742a"], ["canteen", "#3d4433", ""]], "head": ["helmet_cover", "#4f5a3a", ""], "head_node": "Head", "file": "Character_Soldier.gltf", "weapon": "SMG", "keep": ["Body", "Head", "ShoulderPad.L", "ShoulderPad.R"],
 		"node_colors": {"Head": {"Black": "team"}},
 		"colors": {"Character_Main": "#58623f", "Pants": "#3f4632", "Grey": "team", "DarkGrey": "#30353a", "Black": "#1c1e20", "Skin": "#d2a681", "Grey2": "#5c6166", "Wood": "#6b5236", "LightGrey": "#d08a3a"}},
+	# M3.2 capture specialists: US Breacher (dark gear, breaching pack), Sturmtrupp, Russian Saboteur
+	"us_breacher": {"gear": [["plate_carrier", "#3e3d36", "#2f2e29"], ["pack", "#4a4639", "#3a372d"]], "head": ["helmet_cover", "#4a473c", ""], "head_node": "Head", "file": "Character_Soldier.gltf", "weapon": "Pistol", "keep": ["Body", "Head", "ShoulderPad.L", "ShoulderPad.R"],
+		"node_colors": {"Head": {"Black": "team"}},
+		"colors": {"Character_Main": "#5a5647", "Pants": "#4a4639", "Grey": "team", "DarkGrey": "#2f2e2a", "Black": "#1c1b18", "Skin": "#c79a76", "Grey2": "#4c4a42", "Wood": "#6b5236", "LightGrey": "#a59d8a"}},
+	"eu_sturmtrupp": {"gear": [["chest_rig", "#3d4433", "#30362a"], ["canteen", "#3d4433", ""]], "head": ["helmet_cover", "#3f4a33", ""], "head_node": "Head", "file": "Character_Soldier.gltf", "weapon": "Pistol", "keep": ["Body", "Head", "ShoulderPad.L", "ShoulderPad.R"],
+		"node_colors": {"Head": {"Black": "team"}},
+		"colors": {"Character_Main": "#4a5238", "Pants": "#3d4433", "Grey": "team", "DarkGrey": "#30353a", "Black": "#1c1e20", "Skin": "#d2a681", "Grey2": "#5c6166", "Wood": "#6b5236", "LightGrey": "#9aa0a5"}},
+	"ecc_saboteur": {"gear": [["chest_rig", "#3a3f30", "#2c3025"], ["pack", "#3a3f30", "#2c3025"]], "head": ["wrap", "#2e322a", "#22251f"], "head_node": "Head", "file": "Character_Soldier.gltf", "weapon": "Pistol", "keep": ["Body", "Head", "ShoulderPad.L", "ShoulderPad.R"],
+		"node_colors": {"Head": {"Black": "team"}},
+		"colors": {"Character_Main": "#43493a", "Pants": "#363b2e", "Grey": "team", "DarkGrey": "#25281f", "Black": "#151712", "Skin": "#c79a76", "Grey2": "#3e413e", "Wood": "#3a3a3a", "LightGrey": "#6a6e6a"}},
 }
 
 func _initialize() -> void:

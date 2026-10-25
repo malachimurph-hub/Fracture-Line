@@ -69,6 +69,11 @@ static func apply(w: SimWorld, c: Dictionary) -> void:
 					_push(u, {"o": "garrison", "target": b.id}, bool(c.get("q", false)))
 		"capture":
 			var b2 := w.get_ent(int(c.get("target", 0)))
+			if b2 != null and can_capture_building(w, pid, b2):   # M3.2: ZH-style capture of enemy structures
+				for u: SimEntity in _own_units(w, pid, c):
+					if w.udef(u).tags.has("capturer"):
+						_push(u, {"o": "capture", "target": b2.id}, bool(c.get("q", false)))
+				return
 			if b2 == null or b2.kind != SimEntity.Kind.NEUTRAL or not w.bdef(b2).capturable:
 				return
 			for u: SimEntity in _own_units(w, pid, c):
@@ -256,6 +261,16 @@ static func formation_slots(w: SimWorld, center: Vector2i, n: int, vehicle: bool
 	while out.size() < n:
 		out.append(center)
 	return out
+
+## M3.2: a capturer (Breacher / Sturmtrupp / Insurgent / Saboteur) may take any finished enemy
+## structure except minefields and walls; neutral structures (garrison houses, pumps) too.
+static func can_capture_building(w: SimWorld, pid: int, b: SimEntity) -> bool:
+	if b == null or not b.alive or b.kind != SimEntity.Kind.BUILDING or not b.built or b.owner == pid:
+		return false
+	var bd := w.bdef(b)
+	if bd.tags.has("mine") or bd.tags.has("wall") or bd.tags.has("trap"):
+		return false
+	return b.owner < 0 or w.enemies(w.player_team(pid), b.team)
 
 static func is_barricade(w: SimWorld, b: SimEntity) -> bool:
 	return w.bdef(b).garrison_capacity > 0 and w.bdef(b).tags.has("barricade")

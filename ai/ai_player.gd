@@ -134,6 +134,8 @@ func think() -> void:
 		_scout()
 	if cfg["capture"]:
 		_capture()
+		if _every("t_breach", 50):
+			_breach()
 	if cfg["powers"]:
 		_powers()
 	if (faction() == &"eu" or faction() == &"ecc") and _every("t_air", 40):   # M3.0 E / M3.2: German, Russian jets
@@ -557,6 +559,8 @@ func _pick_unit(bd: BuildingDef) -> StringName:
 			wgt = 0   # M3.2 research: once
 		elif ud.tags.has("upgrade"):
 			wgt *= 3
+		elif ud.tags.has("capturer") and not ud.tags.has("scout") and (seconds() < 240 or _count_type(StringName(uid)) >= 1):
+			wgt = 0   # M3.2: one capture specialist at a time, after the opening
 		elif ud.tags.has("field_engineer") and _count_type(StringName(uid)) >= 2:
 			wgt = 0
 		elif ud.tags.has("drone_operator") and _count_type(StringName(uid)) >= 1 + combat_units().size() / 10:
@@ -1036,6 +1040,26 @@ func _scout_points() -> Array:
 			pts.append(sp + (base_pos() - sp) / 4)   # stop short of the base
 	pts.append(map_center())
 	return pts
+
+# ------------------------------------------------------------------ M3.2 enemy-structure capture
+## An idle capture specialist goes for the nearest visible enemy structure that is lightly guarded
+## (no enemy strength within 6 tiles); otherwise it waits at home.
+func _breach() -> void:
+	var team := me().team
+	for u: SimEntity in my_ents(SimEntity.Kind.UNIT):
+		if not w.udef(u).tags.has("capturer") or u.id == int(bb["scout"]) or u.res_id < 0 or not u.orders.is_empty():
+			continue
+		var best: SimEntity = null
+		var bd := 1 << 60
+		for id in w.ids:
+			var e: SimEntity = w.ents[id]
+			if e.alive and e.kind == SimEntity.Kind.BUILDING and CommandSys.can_capture_building(w, pid, e) and w.fog.is_visible_ent(w, team, e):
+				var d := FX.dist2(u.pos, e.pos)
+				if d < bd and _enemy_strength_near(FX.to_tile(e.pos), 6) == 0:
+					bd = d
+					best = e
+		if best != null:
+			cmd({"t": "capture", "ids": [u.id], "target": best.id})
 
 # ------------------------------------------------------------------ neutral capture
 func _capture() -> void:

@@ -2,7 +2,7 @@ id,name_key,category,cost,build_time_ms,footprint_w,footprint_h,max_hp,power,gri
 eu_hq,BLD_EU_HQ,base,2500,45000,4,4,5000,5,8,10,,eu_crawler,1,0,0,,25,,0,0,0,0,1,,,0,0
 eu_reactor,BLD_EU_REACTOR,base,800,10000,3,3,1000,10,7,6,,,0,0,0,,25,,0,0,0,0,1,,,0,0
 eu_hub,BLD_EU_HUB,base,1500,15000,3,3,1500,-2,0,6,eu_reactor,eu_harvester,0,1,3,eu_harvester,25,,0,0,0,0,1,,,0,0
-eu_barracks,BLD_EU_BARRACKS,production,600,10000,3,3,1200,-3,0,6,eu_reactor,eu_grenadier|eu_lancer|eu_field_engineer,0,0,0,,25,,0,0,0,0,1,,,0,0
+eu_barracks,BLD_EU_BARRACKS,production,600,10000,3,3,1200,-3,0,6,eu_reactor,eu_grenadier|eu_lancer|eu_field_engineer|eu_sturmtrupp,0,0,0,,25,,0,0,0,0,1,,,0,0
 eu_motor_pool,BLD_EU_MOTOR_POOL,production,1500,15000,4,4,1800,-4,0,6,eu_barracks,eu_wolfhound|eu_boxer|eu_flakwerk|eu_salamander|eu_hearth|eu_spectre|eu_sentinel,0,0,0,,25,,0,0,0,0,1,,,0,0
 eu_heavy_factory,BLD_EU_HEAVY_FACTORY,production,2000,20000,4,4,2200,-5,0,6,eu_motor_pool,eu_leopold|eu_aegis|eu_brennus|eu_thunderhead,0,0,0,,25,,0,0,0,0,1,,,0,0
 eu_gun_bunker,BLD_EU_GUN_BUNKER,defense,1000,12000,2,2,1400,-3,0,9,eu_barracks,,0,0,0,,25,eu_bunker_cannon,1,0,0,0,1,,,0,0
@@ -29,7 +29,7 @@ tpla_airfield,BLD_TPLA_AIRFIELD,production,1800,16000,8,8,1800,0,0,7,tpla_chop_s
 us_command,BLD_US_COMMAND,base,2500,45000,4,4,5000,5,0,10,,us_dozer,1,0,0,,0,,0,0,0,0,1,,,0,0
 us_reactor,BLD_US_REACTOR,base,800,10000,3,3,1000,10,0,6,,,0,0,0,,0,,0,0,0,0,1,,,0,0
 us_supply_center,BLD_US_SUPPLY_CENTER,base,1500,15000,3,3,1500,-2,0,6,us_reactor,us_supply_truck,0,1,0,us_supply_truck,0,,0,0,0,0,1,,,0,0
-us_barracks,BLD_US_BARRACKS,production,600,10000,3,3,1200,-3,0,6,us_reactor,us_grunt|us_javelin|us_jtac|us_sniper|us_drone_operator,0,0,0,,0,,0,0,0,0,1,,,0,0
+us_barracks,BLD_US_BARRACKS,production,600,10000,3,3,1200,-3,0,6,us_reactor,us_grunt|us_javelin|us_jtac|us_sniper|us_drone_operator|us_breacher,0,0,0,,0,,0,0,0,0,1,,,0,0
 us_garage,BLD_US_GARAGE,production,1600,16000,4,4,1900,-4,0,6,us_barracks,us_lynx|us_bradley|us_halberd|us_picket|us_longreach|us_dozer,0,0,0,,0,,0,0,0,0,1,,,0,0
 us_airfield,BLD_US_AIRFIELD,production,1800,16000,8,8,1800,-4,0,7,us_garage,us_wraith|us_harrier|us_thunderlance,0,0,0,,0,,0,0,0,0,1,,airfield,0,6
 us_strategy,BLD_US_STRATEGY,tech,2000,16000,4,4,1500,-3,0,8,us_garage,us_up_drones,0,0,0,,0,,0,0,0,0,1,,,0,0
@@ -39,7 +39,7 @@ us_drop_zone,BLD_US_DROP_ZONE,tech,2500,20000,3,3,1000,-2,0,6,us_strategy,,0,0,4
 ecc_hq,BLD_ECC_HQ,base,2500,45000,4,4,5000,5,0,10,,ecc_engineer,1,0,0,,0,,0,0,0,0,1,,,0,0
 ecc_power,BLD_ECC_POWER,base,800,10000,3,3,1000,10,0,6,,,0,0,0,,0,,0,0,0,0,1,,,0,0
 ecc_depot,BLD_ECC_DEPOT,base,1500,15000,3,3,1500,-2,0,6,ecc_power,ecc_cargo_truck,0,1,0,ecc_cargo_truck,0,,0,0,0,0,1,,,0,0
-ecc_barracks,BLD_ECC_BARRACKS,production,600,10000,3,3,1200,-3,0,6,ecc_power,ecc_rifleman|ecc_machine_gunner|ecc_rpg|ecc_infiltrator,0,0,0,,0,,0,0,0,0,1,,,0,0
+ecc_barracks,BLD_ECC_BARRACKS,production,600,10000,3,3,1200,-3,0,6,ecc_power,ecc_rifleman|ecc_machine_gunner|ecc_rpg|ecc_infiltrator|ecc_saboteur,0,0,0,,0,,0,0,0,0,1,,,0,0
 ecc_factory,BLD_ECC_FACTORY,production,1600,16000,4,4,1900,-4,0,6,ecc_barracks,ecc_tigr|ecc_btr|ecc_typhoon|ecc_t90|ecc_zeus|ecc_msta|ecc_engineer,0,0,0,,0,,0,0,0,0,1,,,0,0
 ecc_bunker,BLD_ECC_BUNKER,defense,1000,12000,2,2,1400,-3,0,9,ecc_barracks,,0,0,0,,0,ecc_kornet,1,0,0,0,1,,,0,0
 ecc_aa_site,BLD_ECC_AA_SITE,defense,1000,12000,2,2,1200,-3,0,10,ecc_barracks,,0,0,0,,0,ecc_zak30|ecc_zak30_gnd,1,0,0,0,1,,,0,0

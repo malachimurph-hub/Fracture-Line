@@ -1623,6 +1623,7 @@ func test_roster() -> void:
 	_roster_jammer()
 	_roster_mines()
 	_roster_heal_stub_prod()
+	_roster_m32()
 
 func _roster_reveal(w: SimWorld) -> void:
 	for p in w.players.size():
@@ -2390,3 +2391,92 @@ func test_stash(maps_arg: String) -> void:
 	var med: float = times[times.size() / 2] if not times.is_empty() else 0.0
 	print("STASH median %.1f min over %d players: %s" % [med, times.size(), times])
 	_check(med >= 15.0 and med <= 19.0, "home supply stashes last ~17 min with the AI opening economy (median %.1f min)" % med)
+
+## M3.2 new items: capture specialists, barricades, Drone Operator + research, Field Engineer,
+## AA ground fire, queue 15 / no unit cap / $2M funds.
+func _roster_m32() -> void:
+	_check(ProdSys.MAX_QUEUE == 15 and SimWorld.SUPPLY_CAP == 2000000, "production queue 15, funds cap $2,000,000")
+	for aa in [&"us_patriot", &"eu_flak_tower", &"tpla_wasp_nest", &"ecc_aa_site"]:
+		var air_dps := 0.0
+		var gnd_dps := 0.0
+		for wid in Content.building(aa).weapons:
+			var wd: WeaponDef = Content.weapon(wid)
+			if wd.targets_air:
+				air_dps += float(wd.damage) / wd.cooldown_ms
+			if wd.targets_ground:
+				gnd_dps += float(wd.damage) / wd.cooldown_ms
+		_check(gnd_dps > 0.0 and air_dps > gnd_dps, "%s shoots ground too but stays better vs air (%.3f air / %.3f ground)" % [aa, air_dps, gnd_dps])
+	var fe := Content.unit(&"eu_field_engineer")
+	_check(SimWorld.can_construct(fe, Content.building(&"eu_sandbags")) and SimWorld.can_construct(fe, Content.building(&"eu_minefield")) and not SimWorld.can_construct(fe, Content.building(&"eu_heavy_factory")), "Field Engineer builds barricades + minefields only")
+	# --- capture (Germany Sturmtrupp vs a TPLA camp)
+	var r := _zh_runner(61)
+	var w := r.sim
+	var c := _zh_open(w, 7)
+	_roster_reveal(w)
+	var camp := w._place_building(Content.building(&"tpla_camp"), 1, c + Vector2i(-1, 3), 0, true)
+	var st := w.spawn_unit(&"eu_sturmtrupp", 0, null, FX.tile_center(c))
+	st.pos = FX.tile_center(c)
+	r.issue({"p": 0, "t": "capture", "ids": [st.id], "target": camp.id})
+	_ticks(r, 60)
+	r.issue({"p": 0, "t": "move", "ids": [st.id], "pos": FX.tile_center(c + Vector2i(0, -5))})
+	_ticks(r, 120)
+	_check(camp.owner == 1, "moving away cancels the capture")
+	r.issue({"p": 0, "t": "capture", "ids": [st.id], "target": camp.id})
+	_ticks(r, 260)
+	_check(camp.owner == 0 and camp.team == w.player_team(0) and st.alive, "Sturmtrupp captures an enemy structure in ~6 s and survives (owner %d)" % camp.owner)
+	w.players[0].supply = 5000
+	r.issue({"p": 0, "t": "queue", "target": camp.id, "def": "tpla_militia"})
+	_ticks(r, 2)
+	_check(not camp.queue.is_empty(), "captured structure trains the original faction's units")
+	# --- barricade: max 3, exit
+	var bar := w._place_building(Content.building(&"eu_barricade"), 0, c + Vector2i(3, -3), 0, true)
+	var inf: Array = []
+	for k in 4:
+		var g := w.spawn_unit(&"eu_grenadier", 0, null, FX.tile_center(c + Vector2i(k + 1, -1)))
+		g.pos = FX.tile_center(c + Vector2i(k + 1, -1))
+		inf.append(g.id)
+	r.issue({"p": 0, "t": "garrison", "ids": inf, "target": bar.id})
+	_ticks(r, 200)
+	var inside := 0
+	for id in inf:
+		if w.ents[id].res_id == -bar.id:
+			inside += 1
+	_check(inside == 3, "infantry man a concrete barricade, max 3 (%d inside)" % inside)
+	r.issue({"p": 0, "t": "unload", "ids": [bar.id]})
+	_ticks(r, 2)
+	inside = 0
+	for id in inf:
+		if w.ents[id].res_id == -bar.id:
+			inside += 1
+	_check(inside == 0, "barricade troops exit")
+	# --- US research + Drone Operator
+	var r2 := MatchRunner.new()
+	r2.record_replay = false
+	r2.start(make_cfg("1v1", 63, [], ["us", "tpla"]))
+	r2.ais.clear()
+	var w2 := r2.sim
+	var c2 := _zh_open(w2, 7)
+	_check(w2.prereqs_met(0, Content.unit(&"us_drone_operator").prereqs) != "", "Drone Operator locked before Drone Warfare research")
+	var sc := w2._place_building(Content.building(&"us_strategy"), 0, c2 + Vector2i(-6, -2), 0, true)
+	w2.players[0].supply = 20000
+	r2.issue({"p": 0, "t": "queue", "target": sc.id, "def": "us_up_drones", "n": 3})
+	_ticks(r2, 2)
+	_check(sc.queue.size() == 1, "research queues once")
+	_ticks(r2, 1400)
+	_check(w2.players[0].upgrades.has("us_up_drones") and w2.prereqs_met(0, Content.unit(&"us_drone_operator").prereqs) == "", "Strategic Center research unlocks the Drone Operator")
+	var op := w2.spawn_unit(&"us_drone_operator", 0, null, FX.tile_center(c2))
+	op.pos = FX.tile_center(c2)
+	r2.issue({"p": 0, "t": "drone", "ids": [op.id], "kind": "bomb"})
+	r2.issue({"p": 0, "t": "drone", "ids": [op.id], "kind": "scout"})
+	_ticks(r2, 4)
+	var drones: Array = []
+	for id in w2.ids:
+		var e: SimEntity = w2.ents[id]
+		if e.alive and e.kind == SimEntity.Kind.UNIT and Content.unit(e.def_id).tags.has("drone") and e.air_home == op.id:
+			drones.append(e)
+	_check(drones.size() == 2 and w2.drone_wait(op, "bomb") > 0, "operator launches a bomb drone and a scout drone (%d)" % drones.size())
+	for d: SimEntity in drones:
+		w2._kill(d, null)
+	_ticks(r2, 2)
+	var wt := w2.drone_wait(op, "scout")
+	_check(wt > 1100 and wt <= 1200, "a lost drone comes back after 60 s (%d ticks)" % wt)
