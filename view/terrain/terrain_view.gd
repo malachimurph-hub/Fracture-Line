@@ -881,8 +881,9 @@ func _build_scatter(dry: bool) -> void:
 						tx.append(Transform3D(Basis(Vector3.UP, r2 * TAU).scaled(Vector3(sc, sc * (0.8 + r2 * 0.5), sc)), Vector3(x + r1, 0.0, y + r2)))
 					# M3.2 item 14: dense dark scrub / bush clusters (clumped by low-frequency noise)
 					var cn := _vn(x / 6.0 + 40.0, y / 6.0) * 0.8 + _h(x, y + 999) * 0.2
-					if cn > 0.62 and not house_tiles.has(Vector2i(x, y)):
-						for k in int((1.0 + (cn - 0.62) * 5.0) * dens):
+					var cth := 0.62 if dry else 0.74
+					if cn > cth and not house_tiles.has(Vector2i(x, y)):
+						for k in int((1.0 + (cn - cth) * 5.0) * dens):
 							var b1 := _h(x * 41 + k * 3, y * 43 + k)
 							var b2 := _h(x * 47 + k, y * 53 + k * 7)
 							var bs := 0.75 + b1 * 0.7
@@ -937,8 +938,8 @@ func _tuft_mesh(dry: bool) -> Mesh:
 func _bush_mesh(dry: bool) -> Mesh:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var c0 := Color("#3b4524") if dry else Color("#2e4a1e")
-	var c1 := Color("#56632f") if dry else Color("#45682a")
+	var c0 := Color("#4f5a2c") if dry else Color("#4a7a2a")
+	var c1 := Color("#6a7838") if dry else Color("#64983a")
 	PropMeshes.sph(st, Vector3(0, 0.07, 0), Vector3(0.17, 0.1, 0.15), c0, 5)
 	for i in 5:
 		var a := TAU * i / 5.0 + 0.3
