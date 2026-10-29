@@ -35,7 +35,31 @@ var heights: PackedFloat32Array
 var ground_decal_count := 0
 
 var decor_override: Array = []   ## M2.9: props placed in the map builder (MapDef.decor)
+## M3.3 Phase 5: the World Builder draws placed props itself (so they can be picked and moved);
+## the terrain still uses decor_override for rock cover, but does not build their meshes.
+var skip_decor_meshes := false
+var chunk_nodes := {}            ## Vector2i(cx, cy) -> MeshInstance3D (partial rebuilds)
+var chunk_rebuilds := 0
 var _tree_kind := "scrub_tree"   ## M2.8: forest prop for maps without a decor layer (map builder)
+var _dry := false
+var _biome_derived := false
+var _raw_heights: PackedFloat32Array   ## corner heights before the bank smoothing (partial updates)
+var _ia: Image                          ## splat sources kept for partial updates (World Builder)
+var _ib: Image
+var _blurred: Image
+var _sa: Image
+var _tex_a: ImageTexture
+var _tex_b: ImageTexture
+var tile_updates := 0
+var cache_shore := true
+var last_update_ms := 0
+
+## Run a builder and tag the nodes it adds, so a partial update can replace them.
+func _part(part: String, fn: Callable) -> void:
+	var n0 := get_child_count()
+	fn.call()
+	for i in range(n0, get_child_count()):
+		get_child(i).set_meta("tv_part", part)
 
 func build(map: SimMap, tiles_path: String = "", env: Dictionary = {}) -> void:
 	m = map
@@ -79,13 +103,14 @@ func build(map: SimMap, tiles_path: String = "", env: Dictionary = {}) -> void:
 	for cy in range(0, m.h, CHUNK):
 		for cx in range(0, m.w, CHUNK):
 			_build_chunk(cx, cy)
-	_build_water()
-	_build_bridges()
-	_build_lane_markings()
-	_build_ground_decals()
-	_build_scatter(float(env.get("dry", 0.0)) > 0.5)
-	_build_bushes(float(env.get("dry", 0.0)) > 0.5)
-	_build_props(tiles_path)
+	_dry = float(env.get("dry", 0.0)) > 0.5
+	_part("water", _build_water)
+	_part("bridges", _build_bridges)
+	_part("lanes", _build_lane_markings)
+	_part("decals", _build_ground_decals)
+	_part("scatter", _build_scatter.bind(_dry))
+	_part("bushes", _build_bushes.bind(_dry))
+	_part("props", _build_props.bind(tiles_path))
 	var skirt := MeshInstance3D.new()
 	var pm := PlaneMesh.new()
 	pm.size = Vector2(m.w + 120, m.h + 120)
@@ -117,18 +142,22 @@ func _load_biome(tiles_path: String) -> void:
 			var line := f.get_line()
 			if line.length() >= m.w:
 				biome.append(line)
-	if biome.size() < m.h:   # fallback: derive from sim tiles
+	_biome_derived = biome.size() < m.h
+	if _biome_derived:   # fallback: derive from sim tiles
 		biome.clear()
 		for y in m.h:
 			var row := ""
 			for x in m.w:
-				match m.ttype(Vector2i(x, y)):
-					SimMap.T.ROAD: row += "a"
-					SimMap.T.ROUGH: row += "d"
-					SimMap.T.WATER, SimMap.T.FORD, SimMap.T.BRIDGE: row += "w"
-					SimMap.T.CLIFF: row += "r"
-					_: row += "g"
+				row += _biome_of(x, y)
 			biome.append(row)
+
+func _biome_of(x: int, y: int) -> String:
+	match m.ttype(Vector2i(x, y)):
+		SimMap.T.ROAD: return "a"
+		SimMap.T.ROUGH: return "d"
+		SimMap.T.WATER, SimMap.T.FORD, SimMap.T.BRIDGE: return "w"
+		SimMap.T.CLIFF: return "r"
+	return "g"
 
 func biome_at(x: int, y: int) -> String:
 	if y < 0 or y >= biome.size() or x < 0 or x >= m.w:
@@ -182,8 +211,14 @@ func _build_splats() -> void:
 	for y in m.h:
 		for x in m.w:
 			sa.set_pixel(x, y, src.get_pixel(x, y).lerp(soft.get_pixel(x, y), 0.35))
-	material.set_shader_parameter("splat_a", ImageTexture.create_from_image(sa))
-	material.set_shader_parameter("splat_b", ImageTexture.create_from_image(ib))
+	_ia = ia
+	_ib = ib
+	_blurred = src
+	_sa = sa
+	_tex_a = ImageTexture.create_from_image(sa)
+	_tex_b = ImageTexture.create_from_image(ib)
+	material.set_shader_parameter("splat_a", _tex_a)
+	material.set_shader_parameter("splat_b", _tex_b)
 
 func _h(x: int, y: int) -> float:
 	var v := ((x * 73856093) ^ (y * 19349663) ^ 0x2545F491) & 0xffff
@@ -210,12 +245,15 @@ func _vn(fx: float, fy: float) -> float:
 	return lerpf(lerpf(_h(ix, iy), _h(ix + 1, iy), tx), lerpf(_h(ix, iy + 1), _h(ix + 1, iy + 1), tx), ty)
 
 ## Chebyshev distance (tiles) from each cliff tile to the nearest non-cliff tile; 0 off-cliff.
-func _cliff_distance() -> PackedInt32Array:
+func _cliff_distance(win := Rect2i()) -> PackedInt32Array:
 	var dist := PackedInt32Array()
 	dist.resize(m.w * m.h)
 	var q: Array[Vector2i] = []
-	for y in m.h:
-		for x in m.w:
+	if win.size == Vector2i.ZERO:
+		win = Rect2i(0, 0, m.w, m.h)
+	win = win.intersection(Rect2i(0, 0, m.w, m.h))
+	for y in range(win.position.y, win.end.y):
+		for x in range(win.position.x, win.end.x):
 			if m.ttype(Vector2i(x, y)) == SimMap.T.CLIFF:
 				dist[y * m.w + x] = 1 << 20
 			else:
@@ -229,7 +267,7 @@ func _cliff_distance() -> PackedInt32Array:
 		for dy in range(-1, 2):
 			for dx in range(-1, 2):
 				var n := c + Vector2i(dx, dy)
-				if m.in_bounds(n) and dist[n.y * m.w + n.x] > dc + 1:
+				if win.has_point(n) and dist[n.y * m.w + n.x] > dc + 1:
 					dist[n.y * m.w + n.x] = dc + 1
 					q.append(n)
 	return dist
@@ -262,11 +300,17 @@ func _house_cover(tiles_path: String) -> void:
 				house_tiles[o + Vector2i(xx, yy)] = true
 
 func _corner_heights() -> PackedFloat32Array:
-	var cdist := _cliff_distance()
-	var hts := PackedFloat32Array()
-	hts.resize((m.w + 1) * (m.h + 1))
-	for y in m.h + 1:
-		for x in m.w + 1:
+	_raw_heights = PackedFloat32Array()
+	_raw_heights.resize((m.w + 1) * (m.h + 1))
+	var all := Rect2i(0, 0, m.w + 1, m.h + 1)
+	_raw_corners(all, _cliff_distance())
+	return _smooth_corners(all, _raw_heights.duplicate())
+
+## corner heights (before smoothing) for the corners in cr, into _raw_heights
+func _raw_corners(cr: Rect2i, cdist: PackedInt32Array) -> void:
+	cr = cr.intersection(Rect2i(0, 0, m.w + 1, m.h + 1))
+	for y in range(cr.position.y, cr.end.y):
+		for x in range(cr.position.x, cr.end.x):
 			var n_cliff := 0
 			var n_wet := 0
 			var lo := 0.0
@@ -300,14 +344,19 @@ func _corner_heights() -> PackedFloat32Array:
 				v = lo
 			elif n_wet > 0:
 				v = lo * 0.35                                          # sloping bank
-			hts[y * (m.w + 1) + x] = v
-	# M2.8: relax bank corners (wet/dry mix) toward their neighbours so shores slope instead of stepping
-	var sm := hts.duplicate()
-	for y in range(1, m.h):
-		for x in range(1, m.w):
+			_raw_heights[y * (m.w + 1) + x] = v
+
+## M2.8: relax bank corners (wet/dry mix) toward their neighbours so shores slope instead of
+## stepping: _raw_heights -> sm for the corners in cr.
+func _smooth_corners(cr: Rect2i, sm: PackedFloat32Array) -> PackedFloat32Array:
+	var hts := _raw_heights
+	cr = cr.intersection(Rect2i(0, 0, m.w + 1, m.h + 1))
+	for y in range(cr.position.y, cr.end.y):
+		for x in range(cr.position.x, cr.end.x):
 			var k := y * (m.w + 1) + x
 			var v0 := hts[k]
-			if v0 >= 0.0 or v0 <= -0.5:
+			sm[k] = v0
+			if x < 1 or y < 1 or x >= m.w or y >= m.h or v0 >= 0.0 or v0 <= -0.5:
 				continue
 			var acc := 0.0
 			var n := 0
@@ -345,6 +394,185 @@ func _build_chunk(cx: int, cy: int) -> void:
 	mi.material_override = material
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON   # outcrops shade the ground
 	add_child(mi)
+	if chunk_nodes.has(Vector2i(cx, cy)):
+		(chunk_nodes[Vector2i(cx, cy)] as Node).queue_free()
+		chunk_rebuilds += 1
+	chunk_nodes[Vector2i(cx, cy)] = mi
+
+## M3.3 Phase 5 (World Builder): the sim map's corner heights changed inside `corners`
+## (corner rect): rebuild just the ground chunks that touch it. Returns how many.
+func rebuild_ground(corners: Rect2i) -> int:
+	var n := 0
+	var c0 := Vector2i(maxi(0, corners.position.x - 1) / CHUNK, maxi(0, corners.position.y - 1) / CHUNK)
+	var c1 := Vector2i(mini(m.w - 1, corners.end.x) / CHUNK, mini(m.h - 1, corners.end.y) / CHUNK)
+	for cy in range(c0.y, c1.y + 1):
+		for cx in range(c0.x, c1.x + 1):
+			_build_chunk(cx * CHUNK, cy * CHUNK)
+			n += 1
+	return n
+
+## ... and lift the trees, rocks, grass and cars standing there by the change (old_elev = the
+## sim map's elev before the stroke).
+func reseat_props(corners: Rect2i, old_elev: PackedInt32Array) -> void:
+	var r := Rect2(corners.position, corners.size).grow(1.0)
+	for c in get_children():
+		if not (c is MultiMeshInstance3D):
+			continue
+		var mm := (c as MultiMeshInstance3D).multimesh
+		if mm == null:
+			continue
+		for i in mm.instance_count:
+			var xf := mm.get_instance_transform(i)
+			if not r.has_point(Vector2(xf.origin.x, xf.origin.z)):
+				continue
+			xf.origin.y += m.height_at(xf.origin.x, xf.origin.z) - _height_from(old_elev, xf.origin.x, xf.origin.z)
+			mm.set_instance_transform(i, xf)
+
+func _height_from(e: PackedInt32Array, x: float, z: float) -> float:
+	if e.size() != (m.w + 1) * (m.h + 1):
+		return 0.0
+	var fx := clampf(x, 0.0, float(m.w) - 0.001)
+	var fz := clampf(z, 0.0, float(m.h) - 0.001)
+	var ix := int(fx)
+	var iz := int(fz)
+	var k := iz * (m.w + 1) + ix
+	var a := lerpf(float(e[k]), float(e[k + 1]), fx - ix)
+	var b := lerpf(float(e[k + m.w + 1]), float(e[k + m.w + 2]), fx - ix)
+	return lerpf(a, b, fz - iz) * 0.001
+
+## M3.3 Phase 5 (World Builder): the tiles inside `tr` (tile rect) were repainted. Update only
+## what they touch: the derived ground types, the corner heights (cliffs, banks) and the ground
+## chunks around them, the splat maps, grass / bushes / decals in those chunks, and - when the
+## change needs it - the water, bridges, lane lines and the trees / rocks. `kinds` says which tile
+## kinds changed (keys "wet", "bridge", "road", "props"). Returns the corner rect rebuilt.
+func update_tiles(tr: Rect2i, kinds: Dictionary) -> Rect2i:
+	var t0 := Time.get_ticks_msec()
+	var full := Rect2i(0, 0, m.w, m.h)
+	tr = tr.intersection(full)
+	if tr.size == Vector2i.ZERO:
+		return Rect2i()
+	# 1) ground types
+	if _biome_derived:
+		for y in range(tr.position.y, tr.end.y):
+			var mid := ""
+			for x in range(tr.position.x, tr.end.x):
+				mid += _biome_of(x, y)
+			biome[y] = biome[y].left(tr.position.x) + mid + biome[y].substr(tr.end.x)
+	# 2) corner heights: a cliff's rise looks up to 4 tiles into the massif, the bank smoothing
+	# one more corner; the cliff distance is exact inside a window 6 tiles wider than that
+	var raw_r := Rect2i(tr.position - Vector2i(6, 6), tr.size + Vector2i(13, 13))
+	var win := raw_r.grow(7)
+	_raw_corners(raw_r, _cliff_distance(win))
+	var sm_r := raw_r.grow(1).intersection(Rect2i(0, 0, m.w + 1, m.h + 1))
+	heights = _smooth_corners(sm_r, heights)
+	rebuild_ground(sm_r)
+	# 3) splat maps
+	_update_splats(tr)
+	# 4) chunked decor (grass, pebbles, bushes, decals) in the chunks around the change
+	var only := {}
+	for cy in range(maxi(0, sm_r.position.y - 1) / CHUNK, mini(m.h - 1, sm_r.end.y) / CHUNK + 1):
+		for cx in range(maxi(0, sm_r.position.x - 1) / CHUNK, mini(m.w - 1, sm_r.end.x) / CHUNK + 1):
+			only[Vector2i(cx, cy)] = true
+	for c in get_children():
+		if String(c.get_meta("tv_part", "")) in ["scatter", "bushes", "decals"] and only.has(c.get_meta("tv_chunk", Vector2i(-1, -1))):
+			_drop(c)
+	_part("decals", _build_ground_decals.bind(only))
+	_part("scatter", _build_scatter.bind(_dry, only))
+	_part("bushes", _build_bushes.bind(_dry, only))
+	# 5) whole-map layers, only when their tiles changed
+	if kinds.get("wet", false):
+		if _shore_img != null and _shore_img.get_width() == m.w * SHORE_PX and _shore_img.get_height() == m.h * SHORE_PX:
+			_update_shore(tr)
+			_rebuild_part("water", _build_water.bind(false))
+		else:
+			_rebuild_part("water", _build_water)
+	if kinds.get("wet", false) or kinds.get("bridge", false):
+		_rebuild_part("bridges", _build_bridges)
+	if kinds.get("road", false):
+		_rebuild_part("lanes", _build_lane_markings)
+	if kinds.get("props", false) or kinds.get("wet", false):
+		_cars.clear()
+		_rebuild_part("props", _build_props.bind(""))
+	_clear_sets = _clear_sets.filter(func(cs: Array) -> bool: return is_instance_valid(cs[0]) and not (cs[0] as Node).is_queued_for_deletion())
+	tile_updates += 1
+	last_update_ms = Time.get_ticks_msec() - t0
+	return sm_r
+
+## the ground type in the splat map at a tile (tests): the BIOME_B / BIOME_A key it shows
+func splat_at(x: int, y: int) -> String:
+	if _ib == null:
+		return ""
+	for k in BIOME_B:
+		if _ib.get_pixel(x, y).is_equal_approx(BIOME_B[k]):
+			return k
+	for k in BIOME_A:
+		if _ia.get_pixel(x, y).is_equal_approx(BIOME_A[k]):
+			return k
+	return "?"
+
+func has_part(part: String) -> bool:
+	for c in get_children():
+		if String(c.get_meta("tv_part", "")) == part and not c.is_queued_for_deletion():
+			return true
+	return false
+
+func _drop(c: Node) -> void:
+	remove_child(c)
+	c.queue_free()
+
+func _rebuild_part(part: String, fn: Callable) -> void:
+	for c in get_children():
+		if String(c.get_meta("tv_part", "")) == part:
+			_drop(c)
+	_part(part, fn)
+
+## splat maps for the tiles in tr: the raw ground types, the two 3x3 blur passes (they reach
+## 2 px) and the wide soft blend (an image resize, fast) composited over the area they reach
+func _update_splats(tr: Rect2i) -> void:
+	if _ia == null or _ia.get_width() != m.w:
+		return
+	for y in range(tr.position.y, tr.end.y):
+		for x in range(tr.position.x, tr.end.x):
+			var b := biome_at(x, y)
+			_ia.set_pixel(x, y, BIOME_A.get(b, Color(0, 0, 0, 0)))
+			_ib.set_pixel(x, y, BIOME_B.get(b, Color(0, 0, 0, 0)))
+	var full := Rect2i(0, 0, m.w, m.h)
+	var br := tr.grow(2).intersection(full)        # pixels whose blur changed
+	var wr := br.grow(2).intersection(full)        # what the blur reads
+	var src := _ia.get_region(wr)
+	for pass_i in 2:
+		var dst := src.duplicate() as Image
+		var ww := src.get_width()
+		var wh := src.get_height()
+		for y in wh:
+			for x in ww:
+				# only pixels that map to real map pixels are exact; window edges clamp like the map edge
+				var acc := Color(0, 0, 0, 0)
+				var n := 0.0
+				for dy in range(-1, 2):
+					for dx in range(-1, 2):
+						var gx := clampi(wr.position.x + x + dx, 0, m.w - 1) - wr.position.x
+						var gy := clampi(wr.position.y + y + dy, 0, m.h - 1) - wr.position.y
+						if gx < 0 or gy < 0 or gx >= ww or gy >= wh:
+							gx = clampi(gx, 0, ww - 1)
+							gy = clampi(gy, 0, wh - 1)
+						var wgt := 2.0 if dx == 0 and dy == 0 else 1.0
+						acc += src.get_pixel(gx, gy) * wgt
+						n += wgt
+				dst.set_pixel(x, y, acc / n)
+		src = dst
+	for y in range(br.position.y, br.end.y):
+		for x in range(br.position.x, br.end.x):
+			_blurred.set_pixel(x, y, src.get_pixel(x - wr.position.x, y - wr.position.y))
+	var soft := _ia.duplicate() as Image
+	soft.resize(maxi(4, m.w / 4), maxi(4, m.h / 4), Image.INTERPOLATE_BILINEAR)
+	soft.resize(m.w, m.h, Image.INTERPOLATE_CUBIC)
+	var cr := tr.grow(10).intersection(full)        # the soft blend reaches ~2 quarter-res px
+	for y in range(cr.position.y, cr.end.y):
+		for x in range(cr.position.x, cr.end.x):
+			_sa.set_pixel(x, y, _blurred.get_pixel(x, y).lerp(soft.get_pixel(x, y), 0.35))
+	_tex_a.update(_sa)
+	_tex_b.update(_ib)
 
 ## M2.8 water: one flat surface per 32-tile chunk that has water, shaped by a smooth shoreline
 ## field (wet mask at 4 px per tile, blurred) instead of per-tile quads, so banks curve instead of
@@ -365,6 +593,9 @@ func _build_shore_field() -> void:
 	var key := _shore_key()
 	if _shore_mem.has(key):
 		shore_texture = _shore_mem[key]
+		if not cache_shore:   # edits write into the field: use a copy, not the shared texture
+			_shore_img = shore_texture.get_image()
+			shore_texture = ImageTexture.create_from_image(_shore_img)
 		return
 	var cache_path := "user://cache/shore_%s.png" % key
 	if FileAccess.file_exists(cache_path):
@@ -373,7 +604,10 @@ func _build_shore_field() -> void:
 			if cimg.get_format() != Image.FORMAT_RG8:
 				cimg.convert(Image.FORMAT_RG8)
 			shore_texture = ImageTexture.create_from_image(cimg)
-			_shore_mem[key] = shore_texture
+			if cache_shore:
+				_shore_mem[key] = shore_texture
+			else:
+				_shore_img = cimg
 			return
 	# wet-tile box, grown by a margin past the blur reach (3 passes x 3 px)
 	var tx0 := m.w
@@ -423,9 +657,47 @@ func _build_shore_field() -> void:
 				data[row + x * 2 + 1] = int(clampf(b[srow + x] * 255.0, 0.0, 255.0))
 	var img := Image.create_from_data(W, H, false, Image.FORMAT_RG8, data)
 	shore_texture = ImageTexture.create_from_image(img)
+	_shore_img = img if not cache_shore else null
+	if not cache_shore:   # World Builder edits: every stroke is a new layout, keep no copies
+		return
 	_shore_mem[key] = shore_texture
 	DirAccess.make_dir_recursive_absolute("user://cache")
 	img.save_png(cache_path)
+
+## M3.3 Phase 5 (World Builder): recompute the wet field around repainted tiles only. The blur
+## reaches 9 px (< 3 tiles): the window is 6 tiles wider than the change, written back 3 wider.
+var _shore_img: Image = null
+func _update_shore(tr: Rect2i) -> void:
+	var full := Rect2i(0, 0, m.w, m.h)
+	var wt := tr.grow(6).intersection(full)
+	var out_r := tr.grow(3).intersection(full)
+	var sw := wt.size.x * SHORE_PX
+	var sh := wt.size.y * SHORE_PX
+	var a := PackedFloat32Array()
+	var b := PackedFloat32Array()
+	a.resize(sw * sh)
+	b.resize(sw * sh)
+	for y in range(wt.position.y, wt.end.y):
+		for x in range(wt.position.x, wt.end.x):
+			var tt := m.ttype(Vector2i(x, y))
+			var wet := 1.0 if (tt == SimMap.T.WATER or tt == SimMap.T.BRIDGE or tt == SimMap.T.FORD) else 0.0
+			if wet == 0.0:
+				continue
+			var deep := 1.0 if (tt == SimMap.T.WATER or tt == SimMap.T.BRIDGE) else 0.0
+			for py in SHORE_PX:
+				var k0 := ((y - wt.position.y) * SHORE_PX + py) * sw + (x - wt.position.x) * SHORE_PX
+				for px in SHORE_PX:
+					a[k0 + px] = wet
+					b[k0 + px] = deep
+	for pass_i in 3:
+		a = _blur(a, sw, sh, 3)
+		b = _blur(b, sw, sh, 3)
+	for y in range(out_r.position.y * SHORE_PX, out_r.end.y * SHORE_PX):
+		var sy := y - wt.position.y * SHORE_PX
+		for x in range(out_r.position.x * SHORE_PX, out_r.end.x * SHORE_PX):
+			var si := sy * sw + x - wt.position.x * SHORE_PX
+			_shore_img.set_pixel(x, y, Color(clampf(a[si], 0.0, 1.0), clampf(b[si], 0.0, 1.0), 0.0))
+	shore_texture.update(_shore_img)
 
 ## Hash of the water layout (wet / deep per tile) and size; any map edit gives a new key.
 func _shore_key() -> String:
@@ -463,7 +735,7 @@ static func _blur(src: PackedFloat32Array, W: int, H: int, r: int) -> PackedFloa
 			acc2 += tmp[mini(y + r + 1, H - 1) * W + x] - tmp[maxi(y - r, 0) * W + x]
 	return out
 
-func _build_water() -> void:
+func _build_water(field := true) -> void:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var any := false
@@ -488,7 +760,8 @@ func _build_water() -> void:
 				st.add_vertex(Vector3(cs[k].x, -0.14, cs[k].y))
 	if not any:
 		return
-	_build_shore_field()
+	if field or shore_texture == null:
+		_build_shore_field()
 	water_material.set_shader_parameter("shore_tex", shore_texture)
 	material.set_shader_parameter("shore_tex", shore_texture)
 	var mi := MeshInstance3D.new()
@@ -733,6 +1006,8 @@ func _build_props(tiles_path: String) -> void:
 	if not decor_override.is_empty():
 		# M2.9: map-builder maps carry their placed props in MapDef.decor ([kind, x, y, rot])
 		for d in decor_override:
+			if skip_decor_meshes:
+				break
 			if not by_kind.has(String(d[0])):
 				by_kind[String(d[0])] = []
 			by_kind[String(d[0])].append([float(d[1]), float(d[2]), int(d[3])])
@@ -986,7 +1261,7 @@ static func minimap_color(tt: int) -> Color:
 ## ground, deterministic per tile, one MultiMesh per 32 x 32 chunk (culled), no shadows. Density
 ## follows the graphics preset ("scatter": Ultra 1.0 .. Low off).
 var scatter_count := 0
-func _build_scatter(dry: bool) -> void:
+func _build_scatter(dry: bool, only := {}) -> void:
 	var dens := float(Settings.preset().get("scatter", 1.0))
 	if dens <= 0.0:
 		return
@@ -995,6 +1270,8 @@ func _build_scatter(dry: bool) -> void:
 	var mat := prop_material   # vertex colour + fog of war (alpha 1 = plain, no emission)
 	for cy in range(0, m.h, CHUNK):
 		for cx in range(0, m.w, CHUNK):
+			if not only.is_empty() and not only.has(Vector2i(cx / CHUNK, cy / CHUNK)):
+				continue
 			var tx: Array = []
 			var px: Array = []
 			for y in range(cy, mini(cy + CHUNK, m.h)):
@@ -1010,13 +1287,13 @@ func _build_scatter(dry: bool) -> void:
 						var r1 := _h(x * 11 + k, y * 13 + k * 5)
 						var r2 := _h(x * 17 + k * 3, y * 19 + k)
 						var sc := 0.7 + r1 * 0.7
-						tx.append(Transform3D(Basis(Vector3.UP, r2 * TAU).scaled(Vector3(sc, sc * (0.8 + r2 * 0.5), sc)), Vector3(x + r1, 0.0, y + r2)))
+						tx.append(Transform3D(Basis(Vector3.UP, r2 * TAU).scaled(Vector3(sc, sc * (0.8 + r2 * 0.5), sc)), Vector3(x + r1, m.height_at(x + r1, y + r2), y + r2)))
 					if tt == SimMap.T.ROUGH or h > 0.55:
 						for k in int((2.0 if tt == SimMap.T.ROUGH else 1.0) * dens):
 							var q1 := _h(x * 23 + k, y * 29 + k * 7)
 							var q2 := _h(x * 31 + k * 5, y * 37 + k)
 							var ps := 0.6 + q2 * 0.9
-							px.append(Transform3D(Basis(Vector3.UP, q1 * TAU).scaled(Vector3(ps, ps * 0.7, ps)), Vector3(x + q2, 0.0, y + q1)))
+							px.append(Transform3D(Basis(Vector3.UP, q1 * TAU).scaled(Vector3(ps, ps * 0.7, ps)), Vector3(x + q2, m.height_at(x + q2, y + q1), y + q1)))
 			for pair in [[tx, tuft], [px, peb]]:
 				var arr: Array = pair[0]
 				if arr.is_empty():
@@ -1034,6 +1311,7 @@ func _build_scatter(dry: bool) -> void:
 				mmi.visibility_range_end = 74.0   # M3.2: 40 deg camera; fade out instead of a pop line
 				mmi.visibility_range_end_margin = 10.0
 				mmi.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+				mmi.set_meta("tv_chunk", Vector2i(cx / CHUNK, cy / CHUNK))
 				add_child(mmi)
 				var org := PackedVector2Array()
 				for xf2: Transform3D in arr:
@@ -1067,7 +1345,7 @@ func _tuft_mesh(dry: bool) -> Mesh:
 ## around it, falling off with distance) plus a few loners; cluster density follows soft noise so
 ## there are empty stretches and thickets. Three low-poly lobe meshes (small / medium / large),
 ## soft smooth-shaded shapes, dark underside to light top, per-instance shade + hue jitter.
-func _build_bushes(dry: bool) -> void:
+func _build_bushes(dry: bool, only := {}) -> void:
 	var dens := float(Settings.preset().get("scatter", 1.0))
 	if dens <= 0.0:
 		return
@@ -1088,6 +1366,8 @@ func _build_bushes(dry: bool) -> void:
 	var add := func(x: float, y: float, sz: float, r: float) -> void:
 		var v := 0 if sz < 0.8 else (1 if sz < 1.25 else 2)
 		var ck := Vector2i(int(x) / CHUNK, int(y) / CHUNK)
+		if not only.is_empty() and not only.has(ck):
+			return
 		if not per_chunk.has(ck):
 			per_chunk[ck] = [[], [], []]
 		var sc: float = sz / [0.6, 1.0, 1.5][v]
@@ -1138,6 +1418,7 @@ func _build_bushes(dry: bool) -> void:
 			mmi.visibility_range_end = 74.0
 			mmi.visibility_range_end_margin = 10.0
 			mmi.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+			mmi.set_meta("tv_chunk", ck)
 			add_child(mmi)
 			var org := PackedVector2Array()
 			for it2 in arr:
@@ -1202,12 +1483,24 @@ func _pebble_mesh() -> Mesh:
 ## and around resource fields, cracks on asphalt / concrete, oil stains on roads and where
 ## harvesters work, sand drifting onto roads, rubble at cliff feet; M3.2: scorch marks and
 ## vehicle tracks across open ground. Flat tiles only.
-func _build_ground_decals() -> void:
+var _decal_mat: ShaderMaterial = null
+func _build_ground_decals(only := {}) -> void:
+	if only.is_empty():
+		ground_decal_count = 0
+	for cy in range(0, m.h, CHUNK):
+		for cx in range(0, m.w, CHUNK):
+			if only.is_empty() or only.has(Vector2i(cx / CHUNK, cy / CHUNK)):
+				_decal_chunk(cx, cy)
+
+## M3.3 Phase 5: one decal MultiMesh per 32x32 chunk (partial rebuilds in the World Builder);
+## decals sit on sculpted ground too, but only where the hill is nearly level.
+func _decal_chunk(cx: int, cy: int) -> void:
 	var xf: Array = []
 	var cust: Array = []
 	var flat := func(x: int, y: int) -> bool:
+		var hc := m.corner_height(x, y)
 		for d: Vector2i in [Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)]:
-			if absf(heights[(y + d.y) * (m.w + 1) + x + d.x]) > 0.01:
+			if absf(heights[(y + d.y) * (m.w + 1) + x + d.x]) > 0.01 or absf(m.corner_height(x + d.x, y + d.y) - hc) > 0.12:
 				return false
 		return true
 	var tt := func(x: int, y: int) -> int: return m.ttype(Vector2i(x, y)) if m.in_bounds(Vector2i(x, y)) else SimMap.T.CLIFF
@@ -1217,8 +1510,8 @@ func _build_ground_decals() -> void:
 				if tt.call(x + dx, y + dy) == kind:
 					return true
 		return false
-	for y in range(1, m.h - 1):
-		for x in range(1, m.w - 1):
+	for y in range(maxi(1, cy), mini(m.h - 1, cy + CHUNK)):
+		for x in range(maxi(1, cx), mini(m.w - 1, cx + CHUNK)):
 			var t: int = tt.call(x, y)
 			if t == SimMap.T.WATER or t == SimMap.T.FORD or t == SimMap.T.BRIDGE or t == SimMap.T.CLIFF or not flat.call(x, y):
 				continue
@@ -1258,7 +1551,7 @@ func _build_ground_decals() -> void:
 			var b := Basis(Vector3.UP, rot).scaled(Vector3(size, 1.0, size * stretch))
 			var jx := (_h(x + 91, y) - 0.5) * 0.5
 			var jy := (_h(x, y + 37) - 0.5) * 0.5
-			xf.append(Transform3D(b, Vector3(x + 0.5 + jx, 0.012 + 0.001 * float(kind % 4), y + 0.5 + jy)))
+			xf.append(Transform3D(b, Vector3(x + 0.5 + jx, 0.012 + 0.001 * float(kind % 4) + m.height_at(x + 0.5 + jx, y + 0.5 + jy), y + 0.5 + jy)))
 			cust.append(Color(float(kind), 0.65 + 0.35 * r1, 0, 0))
 	if xf.is_empty():
 		return
@@ -1272,16 +1565,19 @@ func _build_ground_decals() -> void:
 	for i in xf.size():
 		mm.set_instance_transform(i, xf[i])
 		mm.set_instance_custom_data(i, cust[i])
-	var mat := ShaderMaterial.new()
-	mat.shader = load("res://view/terrain/ground_decal.gdshader")
-	mat.set_shader_parameter("atlas", load(TEX + "decals/ground_decals.png"))
-	mat.set_shader_parameter("fog_tex", fog_texture)
-	mat.set_shader_parameter("map_size", Vector2(m.w, m.h))
-	mat.render_priority = -2
+	if _decal_mat == null:
+		_decal_mat = ShaderMaterial.new()
+		_decal_mat.shader = load("res://view/terrain/ground_decal.gdshader")
+		_decal_mat.set_shader_parameter("atlas", load(TEX + "decals/ground_decals.png"))
+		_decal_mat.set_shader_parameter("fog_tex", fog_texture)
+		_decal_mat.set_shader_parameter("map_size", Vector2(m.w, m.h))
+		_decal_mat.render_priority = -2
+	var mat := _decal_mat
 	var mmi := MultiMeshInstance3D.new()
 	mmi.name = "GroundDecals"
+	mmi.set_meta("tv_chunk", Vector2i(cx / CHUNK, cy / CHUNK))
 	mmi.multimesh = mm
 	mmi.material_override = mat
 	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(mmi)
-	ground_decal_count = xf.size()
+	ground_decal_count += xf.size()
