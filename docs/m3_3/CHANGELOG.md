@@ -5,7 +5,20 @@ shield truck removed, aircraft spreading out). Package, signing, `user://` folde
 are unchanged, so it installs over M3.2.1 and old saves and replays still load.
 
 ## Build
-(filled in by the release-info commit)
+- APK: `FractureLine-M3.3.apk`, 97,807,664 bytes (93.3 MiB, under the 100 MB limit). arm64-v8a.
+- SHA256: `7d9faf7cf0268289e80c6f2712d38039cbc7a5f46dfb8a33c40ff89fb3154d3c`
+- Package com.malachimurphy.fractureline, launcher label "Fracture Line", same debug key as the
+  earlier test APKs (certificate SHA-256 7e96c70a…ce54). versionName 0.3.5, versionCode 19, so it
+  installs over M3.2.1. `apksigner verify` passes (v2 and v3 schemes).
+- Built from master d7d6e03. Merged as d371a54, plus the release fix da9e152: the lobby flag icons used
+  `Image.create`, which the stripped release engine does not have, so the skirmish lobby script
+  failed to compile there. It now uses `Image.create_empty`.
+- Exported-engine checks (LinuxVerify, same stripped engine profile): the UI flow passes 162 of 162,
+  and content, map_builder and wb pass. The m33 group's only misses are four checks that read
+  script source, which the export does not ship.
+- Uploaded to Google Drive (My Drive root), file id `1ucCv_wYNY8fklhAgSBcwiXBgjV9rPp0M`.
+- Play bundle: `builds/play/FractureLine.aab`, 94,374,087 bytes, versionCode 19, upload-key
+  signed. Not uploaded.
 
 ## M3.2.2 changes included
 - **Retitled "Fracture Line: Global Conflict"**: menu badge, boot splash, credits, window title.
