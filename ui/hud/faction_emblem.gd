@@ -8,6 +8,8 @@ extends Control
 ##  Russia (id ecc)  - white / blue / red horizontal bands
 ##  US               - white five-point star in a steel-blue roundel (unchanged)
 var fac: StringName = &"eu"
+## M3.3: draw the national flag filling the rect (taskbar background) instead of the roundel
+var flag_mode := false
 
 const BANDS := {
 	&"eu": [Color("#1a1a1a"), Color("#d0151c"), Color("#f2c200")],
@@ -16,6 +18,9 @@ const BANDS := {
 }
 
 func _draw() -> void:
+	if flag_mode:
+		draw_flag(self, fac, Rect2(Vector2.ZERO, size))
+		return
 	var s := minf(size.x, size.y)
 	draw_roundel(self, fac, size * 0.5, s * 0.5 - 1.0)
 
@@ -47,6 +52,29 @@ static func draw_roundel(ci: CanvasItem, f: StringName, c: Vector2, r: float) ->
 	if f == &"tpla":
 		ci.draw_circle(c, r * 0.16, bands[2])
 	ci.draw_arc(c, r, 0, TAU, 32, Color(0.85, 0.85, 0.85), maxf(1.0, r * 0.08), true)
+
+## M3.3: a simple national flag in the rect (original drawing in flag colours, no assets).
+static func draw_flag(ci: CanvasItem, f: StringName, r: Rect2) -> void:
+	if f == &"us":
+		for i in 13:
+			var h := r.size.y / 13.0
+			ci.draw_rect(Rect2(r.position + Vector2(0, i * h), Vector2(r.size.x, h + 0.5)), Color("#b22234") if i % 2 == 0 else Color.WHITE)
+		var cn := Rect2(r.position, Vector2(r.size.x * 0.4, r.size.y * 7.0 / 13.0))
+		ci.draw_rect(cn, Color("#3c3b6e"))
+		var rows := 5
+		var cols := 6
+		var sr := cn.size.y / (rows * 3.2)
+		for yy in rows:
+			for xx in cols:
+				var c := cn.position + Vector2((xx + 0.5 + (0.5 if yy % 2 == 1 else 0.0)) * cn.size.x / (cols + 0.5), (yy + 0.5) * cn.size.y / rows)
+				ci.draw_circle(c, sr, Color.WHITE)
+		return
+	var bands: Array = BANDS.get(f, BANDS[&"eu"])
+	var bh := r.size.y / 3.0
+	for i in 3:
+		ci.draw_rect(Rect2(r.position + Vector2(0, i * bh), Vector2(r.size.x, bh + 0.5)), bands[i])
+	if f == &"tpla":
+		ci.draw_circle(r.get_center(), bh * 0.3, bands[2])
 
 ## Small flag icon (texture) for option lists such as the skirmish lobby faction picker.
 static func flag_texture(f: StringName, w: int = 24, h: int = 16) -> ImageTexture:

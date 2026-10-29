@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="BuildingDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/building_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"tpla_gas_plant"
+faction = &"tpla"
+name_key = "BLD_TPLA_GAS_PLANT"
+desc_key = "BLD_TPLA_GAS_PLANT_DESC"
+category = &"base"
+cost = 600
+build_time_ms = 10000
+footprint = Vector2i(3, 3)
+max_hp = 900
+power = 8
+grid_radius = 0
+sight = 6
+prereqs = PackedStringArray()
+produces = PackedStringArray()
+is_hq = false
+is_refinery = false
+passive_income = 0
+income_amount = 0
+income_period_s = 0
+free_unit = &""
+shield_pct = 0
+view_scene = "res://view/buildings/tpla/gas_plant.tscn"
+stubs = PackedStringArray()
+weapons = PackedStringArray()
+needs_power_to_fire = false
+garrison_capacity = 0
+capturable = false
+capture_income = 0
+buildable = true
+tags = PackedStringArray()
+aux_radius = 0
+air_slots = 0

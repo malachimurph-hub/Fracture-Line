@@ -4,6 +4,17 @@ extends ScreenBase
 ## Saved maps go to user://maps (MapStore) and show up in the Skirmish lobby marked custom.
 
 var canvas: MapBuilderCanvas
+## M3.3 Phase 5 (47): the World Builder edits on the 3D map; the old 2D painter is the "2D" view.
+var wb: WorldBuilderView
+var view_stack: Control
+var view_btn: Button
+var view_tools: HBoxContainer
+var height_page: Control
+var hover_lbl: Label
+var _height_group := ButtonGroup.new()
+var _strength_group := ButtonGroup.new()
+var _hbrush_group := ButtonGroup.new()
+var _height_btns := {}
 var title_lbl: Label
 var undo_btn: Button
 var redo_btn: Button
@@ -45,7 +56,8 @@ func build() -> void:
 	top.add_child(title_lbl)
 	undo_btn = _top_btn(top, "↶ Undo", func(): canvas.undo(), 66)
 	redo_btn = _top_btn(top, "↷ Redo", func(): canvas.redo(), 66)
-	_top_btn(top, "Fit", func(): canvas.fit(), 48)
+	view_btn = _top_btn(top, "2D map", func(): set_3d(not wb.visible), 76)
+	_top_btn(top, "Fit", func(): (wb.frame_all() if wb.visible else canvas.fit()), 48)
 	_top_btn(top, "Check", func(): check_map(), 62)
 	var sv := _top_btn(top, "Save", func(): save_map(), 62)
 	sv.add_theme_color_override("font_color", UiTheme.GOLD)
@@ -54,21 +66,72 @@ func build() -> void:
 	row.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	row.add_theme_constant_override("separation", 6)
 	v.add_child(row)
+	view_stack = Control.new()
+	view_stack.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	view_stack.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	view_stack.clip_contents = true
+	row.add_child(view_stack)
 	canvas = MapBuilderCanvas.new()
-	canvas.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	canvas.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	canvas.set_anchors_preset(Control.PRESET_FULL_RECT)
 	canvas.doc_changed.connect(_refresh_top)
 	canvas.selection_changed.connect(_refresh_sel)
-	row.add_child(canvas)
+	canvas.visible = false
+	view_stack.add_child(canvas)
+	wb = WorldBuilderView.new()
+	wb.set_anchors_preset(Control.PRESET_FULL_RECT)
+	view_stack.add_child(wb)
+	wb.bind(canvas)
+	wb.view_status.connect(func(t: String): if t != "": _toast(t, Color("#ffd166")))
+	wb.hover_changed.connect(_on_hover)
+	_build_view_tools()
 	toast = UiTheme.label("", 13, Color("#9dff9a"))
 	toast.position = Vector2(8, 6)
 	toast.add_theme_constant_override("outline_size", 4)
 	toast.add_theme_color_override("font_outline_color", Color.BLACK)
-	canvas.add_child(toast)
+	view_stack.add_child(toast)
 	_build_panel(row)
 	var d := MapStore.blank("New map", MapStore.SIZES[MapStore.DEFAULT_SIZE], &"desert")
 	canvas.load_doc.call_deferred(d)
 	show_new_dialog.call_deferred(true)
+
+## View controls over the 3D map: turn, tilt, top-down, grid; a status line (tile, height).
+func _build_view_tools() -> void:
+	view_tools = HBoxContainer.new()
+	view_tools.add_theme_constant_override("separation", 3)
+	view_tools.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
+	view_tools.position = Vector2(6, -50)
+	view_tools.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	view_stack.add_child(view_tools)
+	for b in [["⟲", func(): wb.turn(-45.0)], ["⟳", func(): wb.turn(45.0)], ["Tilt", func(): wb.set_pitch(78.0 if wb.pitch < 50.0 else (38.0 if wb.pitch > 70.0 else 30.0))],
+			["Top", func(): wb.set_pitch(89.0 if wb.pitch < 88.0 else 56.0)], ["Grid", func(): wb.set_grid(not wb.grid_on)]]:
+		var bt := UiTheme.button(b[0], Vector2(48, 44))
+		bt.pressed.connect(b[1])
+		view_tools.add_child(bt)
+	hover_lbl = UiTheme.label("", 12, Color("#e8e2d0"))
+	hover_lbl.add_theme_constant_override("outline_size", 4)
+	hover_lbl.add_theme_color_override("font_outline_color", Color.BLACK)
+	hover_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	view_tools.add_child(hover_lbl)
+	view_stack.resized.connect(func(): view_tools.position = Vector2(6, view_stack.size.y - 50))
+
+func _on_hover(t: Vector2i) -> void:
+	if t.x < 0:
+		hover_lbl.text = ""
+		return
+	hover_lbl.text = "  %d, %d · %s · height %.1f m" % [t.x, t.y, MapBuilderCanvas.TILE_NAMES[canvas.tiles[t.y * canvas.w + t.x]],
+		canvas.corner_mm(t) * 0.001]
+
+## 3D World Builder view (default) or the 2D overview painter.
+func set_3d(on: bool) -> void:
+	wb.visible = on
+	view_tools.visible = on
+	canvas.visible = not on
+	view_btn.text = "2D map" if on else "3D view"
+	if on:
+		wb.rebuild_all()
+	else:
+		canvas._rebuild_image()
+		canvas.fit()
 
 func _top_btn(p: Control, text: String, cb: Callable, wmin: float) -> Button:
 	var b := UiTheme.button(text, Vector2(wmin, 44))
@@ -79,7 +142,7 @@ func _top_btn(p: Control, text: String, cb: Callable, wmin: float) -> Button:
 # ------------------------------------------------------------------ side panel
 func _build_panel(row: Control) -> void:
 	var pc := PanelContainer.new()
-	pc.custom_minimum_size = Vector2(236, 0)
+	pc.custom_minimum_size = Vector2(250, 0)
 	row.add_child(pc)
 	panel_box = VBoxContainer.new()
 	panel_box.add_theme_constant_override("separation", 4)
@@ -88,8 +151,8 @@ func _build_panel(row: Control) -> void:
 	tabs.add_theme_constant_override("separation", 3)
 	panel_box.add_child(tabs)
 	var tg := ButtonGroup.new()
-	for t in [["terrain", "Terrain"], ["assets", "Assets"], ["select", "Select"]]:
-		var b := UiTheme.button(t[1], Vector2(74, 44))
+	for t in [["terrain", "Ground"], ["height", "Height"], ["assets", "Objects"], ["select", "Select"]]:
+		var b := UiTheme.button(t[1], Vector2(56, 44))
 		b.toggle_mode = true
 		b.button_group = tg
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -98,6 +161,8 @@ func _build_panel(row: Control) -> void:
 		_tabs[t[0]] = b
 	terrain_page = _build_terrain()
 	panel_box.add_child(terrain_page)
+	height_page = _build_height()
+	panel_box.add_child(height_page)
 	assets_page = _build_assets()
 	panel_box.add_child(assets_page)
 	sel_box = VBoxContainer.new()
@@ -141,11 +206,17 @@ func show_tab(t: String) -> void:
 	_tabs[t].button_pressed = true
 	terrain_page.visible = t == "terrain"
 	assets_page.visible = t == "assets"
-	if t == "select":
+	height_page.visible = t == "height"
+	if t == "height":
+		if not canvas.tool in MapBuilderCanvas.HEIGHT_TOOLS:
+			canvas.tool = "raise"
+		_height_btns[canvas.tool].button_pressed = true
+		_toast("Drag on the map to shape the ground. Two fingers move, zoom and turn the view.")
+	elif t == "select":
 		canvas.tool = "select"
 		terrain_page.visible = false
 		assets_page.visible = false
-		_toast("Tap an item to select it, drag to move it. Two fingers pan / zoom.")
+		_toast("Tap an object to select it, drag to move it. Two fingers move, zoom and turn the view.")
 	elif t == "terrain" and not canvas.tool in ["paint", "fill", "erase"]:
 		canvas.tool = "paint"
 		_sync_tool_buttons()
@@ -219,11 +290,44 @@ func _swatch_tex(t: int) -> ImageTexture:
 	img.fill(canvas.tile_color(t) if canvas != null else Color.GRAY)
 	return ImageTexture.create_from_image(img)
 
+## M3.3 Phase 5: sculpting tools (World Builder "height" brushes).
+func _build_height() -> Control:
+	var sc := ScrollContainer.new()
+	sc.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	var v := VBoxContainer.new()
+	v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	v.add_theme_constant_override("separation", 3)
+	sc.add_child(v)
+	_section(v, "Shape the ground")
+	var g := _grid(v, 2)
+	for t in [["raise", "Raise"], ["lower", "Lower"], ["smooth", "Smooth"], ["flatten", "Flatten"], ["level0", "Level to ground"]]:
+		var tt: String = t[0]
+		_height_btns[tt] = _tbtn(g, t[1], _height_group, func(): canvas.tool = tt, 100)
+	_section(v, "Brush size")
+	var bg := _grid(v, 5)
+	for b in MapBuilderCanvas.BRUSHES:
+		var bb := _tbtn(bg, str(b), _hbrush_group, func(): canvas.brush = b, 38)
+		if b == 5:
+			bb.button_pressed = true
+	_section(v, "Strength")
+	var sg := _grid(v, 3)
+	for st in [["Gentle", 40], ["Medium", 120], ["Strong", 300]]:
+		var mm: int = st[1]
+		var sb := _tbtn(sg, st[0], _strength_group, func(): canvas.height_strength = mm, 66)
+		sb.button_pressed = mm == canvas.height_strength
+	var note := UiTheme.label("Hills slow vehicles a little on steep slopes. River banks and water stay level.", 11, UiTheme.TEXT)
+	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	v.add_child(note)
+	return sc
+
 ## The asset list: every placeable map asset, by category.
 func asset_categories() -> Array:
 	var cats: Array = []
-	cats.append(["Start positions", [{"t": "spawn", "slot": 0, "label": "Start 1"}, {"t": "spawn", "slot": 1, "label": "Start 2"},
-		{"t": "spawn", "slot": 2, "label": "Start 3"}, {"t": "spawn", "slot": 3, "label": "Start 4"}]])
+	var starts: Array = []   # M3.3 P3 (21): up to 8 start positions
+	for si in SkirmishConfig.SLOTS:
+		starts.append({"t": "spawn", "slot": si, "label": "Start %d" % (si + 1)})
+	cats.append(["Start positions", starts])
 	cats.append(["Supplies", [{"t": "res", "kind": "seam", "label": "Supply seam"}, {"t": "res", "kind": "cache", "label": "Supply cache"}]])
 	var neu: Array = []
 	var nids: Array = Content.buildings.keys()
@@ -285,6 +389,11 @@ func _build_assets() -> Control:
 				canvas.tool = "place"
 				_toast("Tap the map to place: " + what["label"]), 100)
 			b.tooltip_text = what["label"]
+			var ic: Texture2D = UnitIcons.of(StringName(what["kind"])) if what["t"] in ["pre", "neutral"] else null
+			if ic != null:   # M3.3 P5: object list shows the model icons (Phase 4)
+				b.icon = ic
+				b.expand_icon = true
+				b.add_theme_constant_override("icon_max_width", 30)
 			if what["t"] == "pre":
 				b.add_theme_color_override("font_color", MapBuilderCanvas.FAC_COL.get(Content.faction_of_id(what["kind"]), Color.WHITE))
 	return v0

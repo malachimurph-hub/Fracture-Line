@@ -1,8 +1,9 @@
 class_name Palette
 ## Player colors (colorblind-considerate set) and team shapes. Team identity is never color-only:
 ## each team also has a shape used on selection rings, minimap dots and health bars (GDD 9).
-const COLORS := [Color("#2f7fe0"), Color("#e2572b"), Color("#f0d23c"), Color("#b268d9"), Color("#2dbb8a"), Color("#f09a2a")]
-const COLOR_KEYS := ["COLOR_BLUE", "COLOR_RED", "COLOR_YELLOW", "COLOR_PURPLE", "COLOR_GREEN", "COLOR_ORANGE"]
+const COLORS := [Color("#2f7fe0"), Color("#e2572b"), Color("#f0d23c"), Color("#b268d9"), Color("#2dbb8a"), Color("#f09a2a"),
+	Color("#f27fb8"), Color("#62d6ea")]   # M3.3 P3 (21): pink and cyan for 7-8 player maps
+const COLOR_KEYS := ["COLOR_BLUE", "COLOR_RED", "COLOR_YELLOW", "COLOR_PURPLE", "COLOR_GREEN", "COLOR_ORANGE", "COLOR_PINK", "COLOR_CYAN"]
 const SHAPES := ["circle", "square", "triangle", "diamond"]
 const NEUTRAL := Color("#c8c2b4")
 static var _team_mats: Dictionary = {}

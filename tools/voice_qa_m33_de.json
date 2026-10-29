@@ -1,0 +1,198 @@
+[
+ {
+  "file": "audio/voice_ai/eu/crawler/created_1.ogg",
+  "text": "Engineering unit, reporting in.",
+  "heard": "Engineering Unit reporting in.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT), lang=de, ref = Kokoro-82M (Apache-2.0) German-accent take"
+ },
+ {
+  "file": "audio/voice_ai/eu/crawler/created_2.ogg",
+  "text": "Pioneers here. What are we building?",
+  "heard": "Pionia's here. What are we building?",
+  "score": 0.83,
+  "engine": "chatterbox-multilingual (MIT), lang=de, ref = Kokoro-82M (Apache-2.0) German-accent take"
+ },
+ {
+  "file": "audio/voice_ai/eu/field_engineer/select_1.ogg",
+  "text": "Field engineer.",
+  "heard": "Field Engineer",
+  "score": 0.7,
+  "engine": "chatterbox-multilingual (MIT), lang=de, ref = Kokoro-82M (Apache-2.0) German-accent take"
+ },
+ {
+  "file": "audio/voice_ai/eu/field_engineer/select_2.ogg",
+  "text": "Tools are ready.",
+  "heard": "pools are ready",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT), lang=de, ref = Kokoro-82M (Apache-2.0) German-accent take"
+ },
+ {
+  "file": "audio/voice_ai/eu/field_engineer/move_1.ogg",
+  "text": "On my way.",
+  "heard": "On my way",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT), lang=de, ref = Kokoro-82M (Apache-2.0) German-accent take"
+ },
+ {
+  "file": "audio/voice_ai/eu/field_engineer/move_2.ogg",
+  "text": "Moving up.",
+  "heard": "Ah moving up",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT), lang=de, ref = Kokoro-82M (Apache-2.0) German-accent take"
+ },
+ {
+  "file": "audio/voice_ai/eu/field_engineer/attack_1.ogg",
+  "text": "Engaging!",
+  "heard": "Engaging.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT), lang=de, ref = Kokoro-82M (Apache-2.0) German-accent take"
+ },
+ {
+  "file": "audio/voice_ai/eu/field_engineer/attack_2.ogg",
+  "text": "Covering fire!",
+  "heard": "Covering fire.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT), lang=de, ref = Kokoro-82M (Apache-2.0) German-accent take"
+ },
+ {
+  "file": "audio/voice_ai/eu/field_engineer/under_fire_1.ogg",
+  "text": "We're taking fire!",
+  "heard": "We're taking fire",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT), lang=de, ref = Kokoro-82M (Apache-2.0) German-accent take"
+ },
+ {
+  "file": "audio/voice_ai/eu/field_engineer/under_fire_2.ogg",
+  "text": "Get down!",
+  "heard": "Get down.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT), lang=de, ref = Kokoro-82M (Apache-2.0) German-accent take"
+ },
+ {
+  "file": "audio/voice_ai/eu/field_engineer/created_1.ogg",
+  "text": "Field engineer, reporting.",
+  "heard": "Hullfield engineer reporting",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT), lang=de, ref = Kokoro-82M (Apache-2.0) German-accent take"
+ },
+ {
+  "file": "audio/voice_ai/eu/field_engineer/created_2.ogg",
+  "text": "Engineer ready for work.",
+  "heard": "I'm engineer ready for work",
+  "score": 0.85,
+  "engine": "chatterbox-multilingual (MIT), lang=de, ref = Kokoro-82M (Apache-2.0) German-accent take"
+ },
+ {
+  "file": "audio/voice_ai/eu/field_engineer/build_1.ogg",
+  "text": "I'll get it done.",
+  "heard": "I'll get it done. You'll get it done.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT), lang=de, ref = Kokoro-82M (Apache-2.0) German-accent take"
+ },
+ {
+  "file": "audio/voice_ai/eu/field_engineer/build_2.ogg",
+  "text": "Starting work.",
+  "heard": "Arting work.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT), lang=de, ref = Kokoro-82M (Apache-2.0) German-accent take"
+ },
+ {
+  "file": "audio/voice_ai/eu/field_engineer/veteran_1.ogg",
+  "text": "Promoted. Still fixing things.",
+  "heard": "MOTED. Still fixing things.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT), lang=de, ref = Kokoro-82M (Apache-2.0) German-accent take"
+ },
+ {
+  "file": "audio/voice_ai/eu/field_engineer/garrison_1.ogg",
+  "text": "Inside. Securing the building.",
+  "heard": "Inside, securing the building.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT), lang=de, ref = Kokoro-82M (Apache-2.0) German-accent take"
+ },
+ {
+  "file": "audio/voice_ai/eu/sturmtrupp/select_1.ogg",
+  "text": "Assault squad, standing by.",
+  "heard": "Assault squad standing by",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT), lang=de, ref = Kokoro-82M (Apache-2.0) German-accent take"
+ },
+ {
+  "file": "audio/voice_ai/eu/sturmtrupp/select_2.ogg",
+  "text": "Ready.",
+  "heard": "Ready. Ready.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT), lang=de, ref = Kokoro-82M (Apache-2.0) German-accent take"
+ },
+ {
+  "file": "audio/voice_ai/eu/sturmtrupp/move_1.ogg",
+  "text": "Moving out.",
+  "heard": "Moving out.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT), lang=de, ref = Kokoro-82M (Apache-2.0) German-accent take"
+ },
+ {
+  "file": "audio/voice_ai/eu/sturmtrupp/move_2.ogg",
+  "text": "Forward, go!",
+  "heard": "Forward. Go!",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT), lang=de, ref = Kokoro-82M (Apache-2.0) German-accent take"
+ },
+ {
+  "file": "audio/voice_ai/eu/sturmtrupp/attack_1.ogg",
+  "text": "Storm them!",
+  "heard": "Storn them. Storn them.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT), lang=de, ref = Kokoro-82M (Apache-2.0) German-accent take"
+ },
+ {
+  "file": "audio/voice_ai/eu/sturmtrupp/attack_2.ogg",
+  "text": "Go, go, go!",
+  "heard": "Go go go",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT), lang=de, ref = Kokoro-82M (Apache-2.0) German-accent take"
+ },
+ {
+  "file": "audio/voice_ai/eu/sturmtrupp/under_fire_1.ogg",
+  "text": "Contact! Taking fire!",
+  "heard": "Contact taking fire talking",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT), lang=de, ref = Kokoro-82M (Apache-2.0) German-accent take"
+ },
+ {
+  "file": "audio/voice_ai/eu/sturmtrupp/under_fire_2.ogg",
+  "text": "Into cover!",
+  "heard": "Into cover, into cover",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT), lang=de, ref = Kokoro-82M (Apache-2.0) German-accent take"
+ },
+ {
+  "file": "audio/voice_ai/eu/sturmtrupp/created_1.ogg",
+  "text": "Assault team, reporting.",
+  "heard": "Assault team reporting",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT), lang=de, ref = Kokoro-82M (Apache-2.0) German-accent take"
+ },
+ {
+  "file": "audio/voice_ai/eu/sturmtrupp/created_2.ogg",
+  "text": "Sturmtrupp ready.",
+  "heard": "Stormtruck ready. Ready.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT), lang=de, ref = Kokoro-82M (Apache-2.0) German-accent take"
+ },
+ {
+  "file": "audio/voice_ai/eu/sturmtrupp/veteran_1.ogg",
+  "text": "We know the drill now.",
+  "heard": "We know the drill now",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT), lang=de, ref = Kokoro-82M (Apache-2.0) German-accent take"
+ },
+ {
+  "file": "audio/voice_ai/eu/sturmtrupp/garrison_1.ogg",
+  "text": "In the building. Holding.",
+  "heard": "In the building. Holding.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT), lang=de, ref = Kokoro-82M (Apache-2.0) German-accent take"
+ }
+]

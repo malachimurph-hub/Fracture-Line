@@ -247,7 +247,7 @@ func test_bar_and_top() -> void:
 	await secs(0.6)
 	check("nothing selected: command bar slid out", h.bar_k >= 0.999 and h.bar.position.y >= UiScale.safe_rect.end.y - 1.0, "k=%.2f" % h.bar_k)
 	check("nothing selected: minimap enlarged", h.minimap.size.x >= 150.0, h.minimap.size)
-	check("money / power / Build still on screen", h.res_panel.get_global_rect().end.y <= UiScale.logical_size().y + 0.5 and h.money_lbl.is_visible_in_tree())
+	check("money / power / Build still on screen", h.econ_box.get_global_rect().end.y <= UiScale.logical_size().y + 0.5 and h.money_lbl.is_visible_in_tree() and h.build_btn.is_visible_in_tree())
 	await shot("m26_bar_hidden")
 	m.ctl.set_selection([_builder().id])
 	h._process(0.05)
@@ -299,7 +299,7 @@ func test_themes() -> void:
 ## fully inside the screen and the title column never pushes the button column off the edge.
 func test_menu_layout(mm: Node) -> void:
 	var orig: String = mm._title.text
-	for t in ["RULES OF ENGAGEMENT", "RULES OF ENGAGEMENT: THE EXTREMELY LONG LOCALISED SUBTITLE EDITION"]:
+	for t in ["FRACTURE LINE: GLOBAL CONFLICT", "FRACTURE LINE: GLOBAL CONFLICT - THE EXTREMELY LONG LOCALISED SUBTITLE EDITION"]:
 		mm._title.text = t
 		mm._fit_title()
 		await frames(4)
@@ -366,7 +366,7 @@ func test_credits() -> void:
 		"h max %.1f view %.1f" % [sc.get_h_scroll_bar().max_value, sc.size.x])
 	check("credits text-fit: text wraps within the panel", t.size.x <= sc.size.x + 0.5 and screen.encloses(sc.get_global_rect()), "label %.1f panel %.1f" % [t.size.x, sc.size.x])
 	check("credits text-fit: body scrolls vertically", t.size.y > sc.size.y and sc.get_v_scroll_bar().max_value > sc.size.y, "text h %.0f view h %.0f" % [t.size.y, sc.size.y])
-	check("credits text-fit: starts with the new name", t.text.begins_with("RULES OF ENGAGEMENT"))
+	check("credits text-fit: starts with the new name", t.text.begins_with("FRACTURE LINE: GLOBAL CONFLICT"))
 	await shot("m27_credits_top")
 	sc.scroll_vertical = int(sc.get_v_scroll_bar().max_value)
 	await frames(3)

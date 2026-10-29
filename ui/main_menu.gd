@@ -21,10 +21,22 @@ func build() -> void:
 	b.add_theme_font_size_override("font_size", 18)
 	b.pressed.connect(func(): GameSession.goto("res://ui/skirmish_setup.tscn"))
 	right.add_child(b)
-	if SaveSystem.has_suspend():
-		var c := UiTheme.button(tr("MENU_CONTINUE"), Vector2(260, 52))
-		c.pressed.connect(_continue)
-		right.add_child(c)
+	# M3.3: Continue (autosave) and Load (manual slots) share a row so the menu still fits a phone
+	if SaveSystem.has_suspend() or SaveSystem.has_any_slot():
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 4)
+		right.add_child(row)
+		var both := SaveSystem.has_suspend() and SaveSystem.has_any_slot()
+		if SaveSystem.has_suspend():
+			var c := UiTheme.button(tr("MENU_CONTINUE_SHORT") if both else tr("MENU_CONTINUE"), Vector2(128 if both else 260, 52))
+			c.name = "Continue"
+			c.pressed.connect(_continue)
+			row.add_child(c)
+		if SaveSystem.has_any_slot():
+			var lb := UiTheme.button(tr("MENU_LOAD"), Vector2(128 if both else 260, 52))
+			lb.name = "Load"
+			lb.pressed.connect(func(): GameSession.goto("res://ui/load_screen.tscn"))
+			row.add_child(lb)
 	var mb := UiTheme.button(tr("MENU_MAP_BUILDER"), Vector2(260, 52))   # M2.8
 	mb.pressed.connect(func(): GameSession.goto("res://ui/map_builder.tscn"))
 	right.add_child(mb)
@@ -50,7 +62,7 @@ const TITLE_MIN := 22
 var _title: Label
 var _subs: Array = []
 var _right: Control
-const LOGO := "res://ui/logo/roe_badge.png"
+const LOGO := "res://ui/logo/fl_badge.png"
 var _logo: TextureRect
 
 func _title_block() -> Control:
@@ -85,7 +97,7 @@ func _title_block() -> Control:
 		_title.add_theme_font_override("font", f)
 	_title.add_theme_constant_override("shadow_offset_x", 3)
 	_title.add_theme_constant_override("shadow_offset_y", 4)
-	# M2.7: Malachi's RULES OF ENGAGEMENT badge replaces the text title (the label stays as
+	# M2.7: Malachi's title badge (M3.2.2: FRACTURE LINE / GLOBAL CONFLICT) replaces the text title (the label stays as
 	# the fallback if the texture is missing, and keeps the fit/test logic working).
 	var tex := load(LOGO) as Texture2D
 	if tex != null:

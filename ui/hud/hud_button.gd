@@ -28,6 +28,13 @@ var sub: String = ""
 var stub: bool = false
 var progress: float = -1.0
 var accent := Color(0, 0, 0, 0)
+## M3.3 Phase 4 (item 9): unit / structure icon. With an icon the button shows the picture, the
+## name on one line underneath when it fits (else on press-and-hold) and the price line as before.
+var icon_tex: Texture2D = null:
+	set(v):
+		if v != icon_tex:
+			icon_tex = v
+			queue_redraw()
 var label_text: String = "":
 	set(v):
 		if v != label_text:
@@ -233,7 +240,9 @@ func _draw() -> void:
 	var f := get_theme_default_font()
 	if accent.a > 0:
 		draw_rect(Rect2(Vector2(0, 0), Vector2(size.x, 3)), accent)
-	if label_text != "":
+	if icon_tex != null:
+		_draw_icon(f)
+	elif label_text != "":
 		_fit()
 		var r := caption_rect()
 		var h := 0.0
@@ -258,6 +267,26 @@ func _draw() -> void:
 		draw_string(f, Vector2(4, 13), "[STUB]", HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color("#ff8a7a"))
 	if progress >= 0.0:
 		draw_rect(Rect2(Vector2(0, size.y - 3), Vector2(size.x * progress, 3)), Color("#6fe3ff"))
+
+## Icon above, the name strip below it when it fits on one line (>= 9 dp), price line unchanged.
+func _draw_icon(f: Font) -> void:
+	var top := 3.0 + (11.0 if stub and not _stub_on_sub() else 0.0)
+	var bottom := size.y - (SUB_H if sub != "" else 2.0)
+	var name_h := 0.0
+	var name_fs := 9
+	var show_name := label_text != "" and size.x >= 50.0
+	if show_name:
+		var nw := f.get_string_size(label_text, HORIZONTAL_ALIGNMENT_LEFT, -1, name_fs).x
+		show_name = nw <= size.x - 4.0
+		name_h = 10.0 if show_name else 0.0
+	var box := Rect2(Vector2(1, top), Vector2(size.x - 2, maxf(4.0, bottom - top - name_h)))
+	var s := minf(box.size.x, box.size.y)
+	var ir := Rect2(box.position + (box.size - Vector2(s, s)) * 0.5, Vector2(s, s))
+	var tint := Color(1, 1, 1, 0.45) if disabled else Color(1, 1, 1, 1)
+	draw_texture_rect(icon_tex, ir, false, tint)
+	if show_name:
+		var col := get_theme_color("font_disabled_color") if disabled else get_theme_color("font_color")
+		draw_string(f, Vector2(2, bottom - 2), label_text, HORIZONTAL_ALIGNMENT_CENTER, size.x - 4, name_fs, col)
 
 ## For tests: the caption fits and the sub line fits.
 func text_fits() -> bool:

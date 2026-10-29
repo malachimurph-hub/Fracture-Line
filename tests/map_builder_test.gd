@@ -31,7 +31,7 @@ static func run(t: Node) -> void:
 	var n := 0
 	for c in scr.asset_categories():
 		n += c[1].size()
-	var want := 4 + 2 + MapBuilderCanvas.PROP_LABELS.size()
+	var want := SkirmishConfig.SLOTS + 2 + MapBuilderCanvas.PROP_LABELS.size()   # M3.3 P3: 8 starts
 	for id in Content.buildings:
 		if Content.faction_of_id(id) == &"neutral":
 			want += 1

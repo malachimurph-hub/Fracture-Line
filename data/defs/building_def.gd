@@ -17,6 +17,10 @@ extends Resource
 @export var is_hq: bool = false
 @export var is_refinery: bool = false
 @export var passive_income: int = 0          ## supply per second (Hub)
+## M3.3: income structures pay income_amount every income_period_s seconds: spread evenly over
+## the period, or in one lump at the end of it with tag "income_burst" (Russia's mine)
+@export var income_amount: int = 0
+@export var income_period_s: int = 0
 @export var free_unit: StringName = &""      ## unit spawned on completion
 @export var shield_pct: int = 25             ## grid shield as % of max hp
 @export var view_scene: String = ""

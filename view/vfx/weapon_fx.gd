@@ -30,6 +30,8 @@ const CLASSES := {
 	# M3.2 Russia
 	&"ecc_r77": "missile", &"ecc_kab": "mortar", &"ecc_vikhr": "missile", &"ecc_2a42": "autocannon",
 	&"ecc_kornet": "missile", &"ecc_zak30": "quad",
+	# M3.3 Russia: engineer rocket, missile silo
+	&"ecc_eng_rocket": "rocket", &"ecc_silo_missile": "missile",
 	# M3.2 part 2: AA ground modes, capture-unit sidearm
 	&"eu_gatling_gnd": "quad", &"tpla_wasp_gnd": "missile", &"us_patriot_gnd": "mg", &"ecc_zak30_gnd": "quad", &"sidearm": "rifle",
 }

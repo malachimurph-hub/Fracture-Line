@@ -16,7 +16,7 @@ static func run(w: SimWorld) -> void:
 		var s := w.get_ent(int(o["target"]))
 		if s == null or s.built:
 			continue
-		if w.dist_to_building(u.pos, s) <= u.radius + FX.ONE:
+		if w.dist_to_building(u.pos, s) <= OrderSys.build_reach(u, o):
 			work[s.id] = work.get(s.id, 0) + 1
 	for sid in work:
 		var s: SimEntity = w.ents[sid]

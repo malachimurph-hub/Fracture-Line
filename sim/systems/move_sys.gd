@@ -43,6 +43,7 @@ static func run(w: SimWorld) -> void:
 		elif not u.path_pending:
 			_follow(w, u)
 	_separate(w)
+	AirSys.separate(w)
 
 static func _follow(w: SimWorld, u: SimEntity) -> void:
 	var d: UnitDef = w.udef(u)

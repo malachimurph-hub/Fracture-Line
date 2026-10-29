@@ -5,7 +5,7 @@ extends Node
 ##     --rendering-method mobile res://tests/assets_m26_showcase.tscn -- <out_dir> <prefix>
 ## Prints per-shot perf counters (primitives, draw calls, objects) as PERF lines.
 const SETS := {
-	"eu": {"units": ["crawler", "grenadier", "lancer", "wolfhound", "leopold", "aegis", "flakwerk", "harvester"],
+	"eu": {"units": ["crawler", "grenadier", "lancer", "wolfhound", "leopold", "flakwerk", "harvester"],
 		"bld": ["hq", "barracks", "heavy_factory", "reactor"], "team": Color("#3a6fd8")},
 	"tpla": {"units": ["laborer", "militia", "rocket_cell", "rattler", "scrapback", "hailstorm", "shrike", "mule"],
 		"bld": ["camp", "den", "workshop", "stash"], "team": Color("#d83a3a")},

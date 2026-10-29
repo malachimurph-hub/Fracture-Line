@@ -90,10 +90,16 @@ func _ready() -> void:
 			view_cost()
 		"turret":
 			test_turret()
+		"airspread":
+			test_airspread()
 		"stash":
 			test_stash(args[1] if args.size() > 1 else "")
 		"map_builder":
 			await load("res://tests/map_builder_test.gd").run(self)   # M2.8
+		"m33":
+			await load("res://tests/m33_test.gd").run(self)   # M3.3 Phase 1
+		"wb":
+			await load("res://tests/world_builder_test.gd").run(self)   # M3.3 Phase 5 World Builder
 		"stall":
 			var r2 := MatchRunner.new()
 			r2.record_replay = false
@@ -598,7 +604,7 @@ func test_audio() -> void:
 		for t in pl:
 			fac_ok = fac_ok and ResourceLoader.exists(t) and load(t) is AudioStreamOggVorbis
 	ad.battle_faction = &"ecc"
-	fac_ok = fac_ok and ad.battle_playlist()[0].contains("ru_red_bounce")
+	fac_ok = fac_ok and ad.battle_playlist()[0].contains("ru_steppe_march")
 	ad.battle_faction = &""
 	_check(fac_ok, "M3.2 faction battle music: US rock / Russia hard bass / Germany club / Iran war drums load")
 	var missing: Array = []
@@ -1187,12 +1193,15 @@ func test_tpla() -> void:
 	_check(den != null and w.faction_of(0) == &"tpla" and w.has_tpla, "TPLA player starts with a Den")
 	var base := FX.to_tile(den.pos)
 	w.players[0].supply = 20000
-	# --- no power needed
+	# --- M3.3: TPLA (Iran) runs on Gas Turbine Plants like the other factions' power plants
 	var camp := _tpla_place(w, 0, &"tpla_camp", base)
 	_tpla_place(w, 0, &"tpla_chop_shop", base)
 	_ticks(r, 2)
 	var p0: SimPlayer = w.players[0]
-	_check(not Content.faction(&"tpla")["power"] and p0.power_prod == 0 and not p0.low_power, "TPLA needs no power (prod=%d used=%d low=%s)" % [p0.power_prod, p0.power_used, p0.low_power])
+	_check(Content.faction(&"tpla")["power"] and p0.low_power, "TPLA goes into low power without a Gas Turbine Plant (prod=%d used=%d)" % [p0.power_prod, p0.power_used])
+	_tpla_place(w, 0, &"tpla_gas_plant", base)
+	_ticks(r, 12)
+	_check(not p0.low_power and p0.power_prod == 5 + 8, "a Gas Turbine Plant powers the base (prod=%d used=%d low=%s)" % [p0.power_prod, p0.power_used, p0.low_power])
 	r.issue({"p": 0, "t": "queue", "target": camp.id, "def": "tpla_militia", "n": 3})
 	_ticks(r, 20 * 20)
 	var mil: Array = []
@@ -1200,7 +1209,7 @@ func test_tpla() -> void:
 		var e2: SimEntity = w.ents[id]
 		if e2.alive and e2.owner == 0 and e2.def_id == &"tpla_militia":
 			mil.append(e2)
-	_check(mil.size() == 3, "camp trains militia at full speed without any power plant (%d)" % mil.size())
+	_check(mil.size() == 3, "camp trains militia at full speed on gas power (%d)" % mil.size())
 	# --- M2.9: Pickups gather, the Backhoe builds (separate jobs)
 	var lab: SimEntity = null
 	var hoe: SimEntity = null
@@ -1496,7 +1505,9 @@ func _zh_scatter() -> void:
 	var arty := _zh_hit_rate(w, u, "eu_grenadier", "tpla_rust_shell", 200)
 	print("  direct-hit rate: tank cannon vs vehicle %d%%, vs infantry %d%%; rifle vs infantry %d%%; rust shell vs infantry %d%%" % [vs_veh, vs_inf, rifle, arty])
 	_check(vs_veh == 100 and rifle == 100, "accurate weapons always hit")
-	_check(vs_inf >= 20 and vs_inf <= 70, "tank cannon often misses infantry (%d%%)" % vs_inf)
+	# M3.3 (Malachi: infantry more vulnerable, tank rounds splash): the tank cannon's extra scatter
+	# vs soldiers dropped 900 -> 300 mt and its splash grew to 1000 mt, so it now mostly connects.
+	_check(vs_inf >= 70, "tank cannon mostly hits infantry now (%d%%)" % vs_inf)
 	_check(arty < 100, "artillery scatters (%d%%)" % arty)
 
 ## Distinct victims an engaged squad of 6 Grenadiers spreads its fire over, per AI difficulty.
@@ -1631,6 +1642,7 @@ const ROSTER_NEW_BUILDINGS := ["eu_flak_tower", "eu_signals", "eu_relay", "eu_ex
 
 func test_roster() -> void:
 	_roster_content()
+	_retired_units()
 	_roster_transport()
 	_roster_jammer()
 	_roster_mines()
@@ -1643,8 +1655,46 @@ func _roster_reveal(w: SimWorld) -> void:
 		ex.fill(1)
 		w.fog.explored[p] = ex
 
+## M3.2.2: the German shield truck (eu_aegis) is out of the game, but old saves / replays work.
+func _retired_units() -> void:
+	var made := false
+	for bid in Content.buildings:
+		made = made or Content.building(bid).produces.has("eu_aegis")
+	_check(not made and not Content.faction(&"eu")["units"].has(&"eu_aegis"), "shield truck is in no build list, faction roster or Map Builder palette")
+	var used := false
+	for pid in Content.ai_personalities:
+		used = used or (Content.ai_personalities[pid] as AIPersonalityDef).unit_weights.has("eu_aegis")
+	_check(not used, "no AI personality builds the shield truck")
+	var r := MatchRunner.new()
+	r.record_replay = false
+	r.start(make_cfg("1v1", 5, [], ["eu", "tpla"]))
+	r.ais.clear()
+	var w := r.sim
+	var hq: SimEntity = null
+	for id in w.ids:
+		if w.ents[id].owner == 0 and w.ents[id].kind == SimEntity.Kind.BUILDING:
+			hq = w.ents[id]
+	# an old save with a shield truck in the field and one in a Heavy Factory queue
+	var ag := w.spawn_unit(&"eu_aegis", 0, null, FX.tile_center(hq.tile + Vector2i(6, 6)))
+	var buddy := w.spawn_unit(&"eu_leopold", 0, null, FX.tile_center(hq.tile + Vector2i(7, 6)))
+	var hf := w._place_building(Content.building(&"eu_heavy_factory"), 0, hq.tile + Vector2i(-10, 8), 0, true)
+	w.players[0].supply = 100000
+	r.issue({"p": 0, "t": "queue", "target": hf.id, "def": "eu_aegis", "n": 1})   # replays of old games
+	_ticks(r, 2)
+	_check(hf.queue.has(&"eu_aegis"), "the sim still accepts a recorded shield-truck order (old replays play back)")
+	var w2 := SimWorld.new()
+	w2.deserialize(w.serialize())
+	_check(w2.state_hash() == w.state_hash() and w2.get_ent(ag.id) != null and w2.get_ent(ag.id).def_id == &"eu_aegis", "a save with a shield truck loads identically")
+	_ticks(r, 40)
+	_check(buddy.aura_tick >= w.tick - 4, "a shield truck from an old save still covers nearby units")
+	r.issue({"p": 0, "t": "queue", "target": hq.id, "def": "eu_aegis", "n": 1})
+	_ticks(r, 2)
+	_check(not hq.queue.has(&"eu_aegis"), "it cannot be queued anywhere else")
+
 func _roster_content() -> void:
 	for id in ROSTER_NEW_UNITS:
+		if Content.RETIRED_UNITS.has(StringName(id)):
+			continue   # M3.3: retired (eu_brennus); kept loadable for old saves/replays
 		var d: UnitDef = Content.unit(StringName(id))
 		_check(d != null and ResourceLoader.exists(d.view_scene) and tr(d.name_key) != d.name_key, "unit %s: def, model and name '%s'" % [id, tr(d.name_key) if d else "?"])
 		var made := false
@@ -2243,6 +2293,116 @@ func _m25_sniper_jtac() -> void:
 # ================================================================== M2.8
 ## M2.8 #9: every armed ground unit and every armed structure turns toward and hits a target
 ## placed behind it (stationary, then circling), from an attack order and from idle auto-acquire.
+## M3.2.2: a big group of helicopters given one order fans out instead of stacking in one ball.
+func _air_min_gap(units: Array) -> Array:
+	var best := 1 << 40
+	var stacked := 0
+	for i in units.size():
+		for j in range(i + 1, units.size()):
+			var d := FX.dist(units[i].pos, units[j].pos)
+			best = mini(best, d)
+			if d < FX.ONE / 2:
+				stacked += 1
+	return [best, stacked]
+
+func _air_group(w: SimWorld, def: StringName, owner: int, c: Vector2i, n: int) -> Array:
+	var out: Array = []
+	for k in n:
+		var u := w.spawn_unit(def, owner, null, FX.tile_center(c + Vector2i(k % 4, k / 4)))
+		u.pos = FX.tile_center(c + Vector2i(k % 4, k / 4))   # packed tight, one tile apart
+		out.append(u)
+	return out
+
+func _air_move_run(seed: int) -> Array:
+	var r := _us_runner(seed)
+	var w := r.sim
+	var c := _zh_open(w, 7)
+	var helis := _air_group(w, &"us_harrier", 0, c + Vector2i(-24, -6), 40)
+	var ids: Array = []
+	for u in helis:
+		ids.append(u.id)
+	var dest := FX.tile_center(c + Vector2i(4, 0))
+	r.issue({"p": 0, "t": "move", "ids": ids, "pos": dest})
+	_ticks(r, 900)
+	var far := 0
+	for u: SimEntity in helis:
+		if FX.dist(u.pos, dest) > FX.ONE * 9:
+			far += 1
+	return [r, helis, dest, far]
+
+func test_airspread() -> void:
+	var a := _air_move_run(77)
+	var w: SimWorld = a[0].sim
+	var helis: Array = a[1]
+	var g := _air_min_gap(helis)
+	var arrived := 0
+	for u: SimEntity in helis:
+		arrived += 1 if u.orders.is_empty() else 0
+		if not u.orders.is_empty():
+			print("  still moving: id %d dist %d spd %d goal %s order %s" % [u.id, FX.dist(u.pos, u.orders[0]["pos"]), u.spd, u.goal, u.orders[0]])
+	print("move: min gap %.2f tiles, %d stacked pairs, %d of 40 finished the move, %d further than 9 tiles" % [g[0] / float(FX.ONE), g[1], arrived, a[3]])
+	_check(g[0] >= FX.ONE * 12 / 10 and g[1] == 0, "40 helicopters moved to one point keep >= 1.2 tiles apart, none stacked (min %.2f)" % (g[0] / float(FX.ONE)))
+	_check(arrived == 40 and a[3] == 0, "they all finish the move in a loose group around the point (%d done, %d far)" % [arrived, a[3]])
+	# deterministic: the same run twice gives the same state
+	var b := _air_move_run(77)
+	_check(a[0].sim.state_hash() == b[0].sim.state_hash(), "air spreading is deterministic (same state hash twice)")
+	# attack: they spread around the target inside weapon range
+	var r: MatchRunner = a[0]
+	var tgt := w.spawn_unit(&"eu_leopold", 1, null, FX.tile_center(FX.to_tile(a[2]) + Vector2i(14, 0)))
+	tgt.max_hp = 100000000
+	tgt.hp = tgt.max_hp
+	tgt.orders = [{"o": "guard", "pos": tgt.pos}]
+	var ids: Array = []
+	for u in helis:
+		ids.append(u.id)
+	r.issue({"p": 0, "t": "attack", "ids": ids, "target": tgt.id})
+	_ticks(r, 500)
+	var inr := 0
+	var firing := 0
+	var sx := 0
+	var sy := 0
+	for u: SimEntity in helis:
+		if w.edge_dist(u, tgt) <= OrderSys.max_range(w, u, tgt) + FX.ONE / 2:
+			inr += 1
+		if u.target == tgt.id:
+			firing += 1
+		sx += u.pos.x - tgt.pos.x
+		sy += u.pos.y - tgt.pos.y
+	var ga := _air_min_gap(helis)
+	print("attack: min gap %.2f tiles, %d stacked, %d in range, %d on target" % [ga[0] / float(FX.ONE), ga[1], inr, firing])
+	_check(ga[0] >= FX.ONE and ga[1] == 0, "attacking helicopters stay >= 1 tile apart, none stacked (min %.2f)" % (ga[0] / float(FX.ONE)))
+	_check(inr >= 38 and firing == 40, "and (nearly) all of them sit in weapon range on the target (%d in range)" % inr)
+	# mixed group: tanks keep the ground formation, helicopters the air one
+	var tanks: Array = []
+	var mixed: Array = []
+	var c2 := FX.to_tile(a[2]) + Vector2i(-10, 8)
+	for k in 6:
+		var t := w.spawn_unit(&"us_halberd", 0, null, FX.tile_center(c2 + Vector2i(k * 2, 0)))
+		tanks.append(t)
+		mixed.append(t.id)
+	for k in 10:
+		mixed.append(helis[k].id)
+	r.issue({"p": 0, "t": "move", "ids": mixed, "pos": FX.tile_center(c2 + Vector2i(0, -6))})
+	_ticks(r, 2)
+	var ok := true
+	for t: SimEntity in tanks:
+		ok = ok and not t.orders.is_empty() and w.map.passable(FX.to_tile(t.orders[0]["pos"]), true)
+	_check(ok, "mixed group: ground units still get passable tile slots")
+	# cost: 400 airborne helicopters in one area, separation pass only
+	var r4 := _us_runner(78)
+	var w4 := r4.sim
+	var c4 := _zh_open(w4, 7)
+	for k in 400:
+		var u := w4.spawn_unit(&"us_harrier", k % 2, null, FX.tile_center(c4))
+		u.pos = FX.tile_center(c4) + Vector2i((k % 20) * 900 - 9000, (k / 20) * 900 - 9000)
+	w4.rebuild_spatial()
+	var t0 := Time.get_ticks_usec()
+	for i in 20:
+		AirSys.separate(w4)
+	var ms := (Time.get_ticks_usec() - t0) / 20000.0
+	print("separation pass, 400 helicopters packed 0.9 tile apart: %.2f ms per tick (box)" % ms)
+	_check(ms < 25.0, "separation for 400 aircraft is cheap (%.2f ms per tick on the box)" % ms)
+
 func test_turret() -> void:
 	var stuck: Array = []
 	var n := 0
@@ -2423,7 +2583,7 @@ func test_stash(maps_arg: String) -> void:
 ## M3.2 new items: capture specialists, barricades, Drone Operator + research, Field Engineer,
 ## AA ground fire, queue 15 / no unit cap / $2M funds.
 func _roster_m32() -> void:
-	_check(ProdSys.MAX_QUEUE == 15 and SimWorld.SUPPLY_CAP == 2000000, "production queue 15, funds cap $2,000,000")
+	_check(ProdSys.MAX_QUEUE == 15 and SimWorld.SUPPLY_CAP == 9999999, "production queue 15, funds cap $9,999,999 (M3.3)")
 	for aa in [&"us_patriot", &"eu_flak_tower", &"tpla_wasp_nest", &"ecc_aa_site"]:
 		var air_dps := 0.0
 		var gnd_dps := 0.0

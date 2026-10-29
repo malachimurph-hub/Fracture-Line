@@ -12,11 +12,17 @@ var combat: CombatTable
 var errors: PackedStringArray = []
 var power_order: Array[StringName] = []
 
-const UNIT_ORDER := [&"eu_crawler", &"eu_harvester", &"eu_grenadier", &"eu_lancer", &"eu_wolfhound", &"eu_boxer", &"eu_flakwerk", &"eu_leopold", &"eu_aegis", &"eu_salamander", &"eu_hearth", &"eu_spectre", &"eu_sentinel", &"eu_brennus", &"eu_thunderhead", &"eu_kestrel", &"eu_corvid", &"eu_field_engineer", &"eu_sturmtrupp"]
+const UNIT_ORDER := [&"eu_crawler", &"eu_harvester", &"eu_grenadier", &"eu_lancer", &"eu_wolfhound", &"eu_boxer", &"eu_flakwerk", &"eu_leopold", &"eu_salamander", &"eu_hearth", &"eu_spectre", &"eu_sentinel", &"eu_thunderhead", &"eu_kestrel", &"eu_corvid", &"eu_field_engineer", &"eu_sturmtrupp"]
 const BUILDING_ORDER := [&"eu_hq", &"eu_reactor", &"eu_hub", &"eu_barracks", &"eu_motor_pool", &"eu_heavy_factory", &"eu_gun_bunker", &"eu_flak_tower", &"eu_minefield", &"eu_signals", &"eu_relay", &"eu_exchange", &"eu_airstrip", &"eu_sandbags", &"eu_barricade"]
 ## M2.9: Malachi's TPLA roster (notes 2026-10-22). Internal ids kept where a unit took over a slot:
 ## militia = Rifleman, rocket_cell = Rocket Man, rattler = Technical, scrapback = Striker (Karrar MBT),
 ## bus = BMP-2 transport, hailstorm = BHX-35 (35 mm AA), blight = Koksan, shrike = Fajr-5.
+## M3.2.2: units taken out of the game (Malachi: "Remove Germany shield truck"). Their defs,
+## models, voices and names stay so old saves and replays still load and play back the same:
+## the sim still accepts a queue order for them at their old producer (replays), nothing in the
+## UI, AI or Map Builder offers them, and units already on the field keep working.
+## M3.3: Germany's heavy tank (eu_brennus) retired the same way (Malachi: "Remove heavy tank").
+const RETIRED_UNITS := {&"eu_aegis": &"eu_heavy_factory", &"eu_brennus": &"eu_heavy_factory"}
 const TPLA_UNIT_ORDER := [&"tpla_backhoe", &"tpla_pickup", &"tpla_militia", &"tpla_rocket_cell", &"tpla_marksman", &"tpla_insurgent", &"tpla_rattler", &"tpla_scrapback", &"tpla_bus", &"tpla_hailstorm", &"tpla_blight", &"tpla_shrike", &"tpla_mirage", &"tpla_mig29", &"tpla_f16"]
 const US_UNIT_ORDER := [&"us_dozer", &"us_supply_truck", &"us_grunt", &"us_javelin", &"us_jtac", &"us_sniper", &"us_lynx", &"us_bradley", &"us_halberd", &"us_picket", &"us_longreach", &"us_harrier", &"us_wraith", &"us_thunderlance", &"us_drone_operator", &"us_breacher"]
 const US_BUILDING_ORDER := [&"us_command", &"us_reactor", &"us_supply_center", &"us_barracks", &"us_garage", &"us_airfield", &"us_strategy", &"us_patriot", &"us_firebase", &"us_drop_zone", &"us_sandbags", &"us_barricade"]
@@ -24,7 +30,7 @@ const US_BUILDING_ORDER := [&"us_command", &"us_reactor", &"us_supply_center", &
 ## single soldiers). Engineer, Cargo Truck and every building are stand-ins until his list covers them.
 const ECC_UNIT_ORDER := [&"ecc_engineer", &"ecc_cargo_truck", &"ecc_rifleman", &"ecc_machine_gunner", &"ecc_rpg", &"ecc_infiltrator", &"ecc_saboteur", &"ecc_tigr", &"ecc_btr", &"ecc_typhoon", &"ecc_t90", &"ecc_zeus", &"ecc_msta", &"ecc_ka52", &"ecc_su57", &"ecc_tu160"]
 const ECC_BUILDING_ORDER := [&"ecc_hq", &"ecc_power", &"ecc_depot", &"ecc_barracks", &"ecc_factory", &"ecc_airfield", &"ecc_ministry", &"ecc_black_market", &"ecc_bunker", &"ecc_aa_site", &"ecc_sandbags", &"ecc_barricade"]
-const TPLA_BUILDING_ORDER := [&"tpla_den", &"tpla_stash", &"tpla_camp", &"tpla_chop_shop", &"tpla_tunnel", &"tpla_workshop", &"tpla_bazaar", &"tpla_demo_trap", &"tpla_camo_net", &"tpla_wasp_nest", &"tpla_airfield", &"tpla_sandbags", &"tpla_barricade"]
+const TPLA_BUILDING_ORDER := [&"tpla_den", &"tpla_gas_plant", &"tpla_cc_plant", &"tpla_stash", &"tpla_camp", &"tpla_chop_shop", &"tpla_tunnel", &"tpla_workshop", &"tpla_bazaar", &"tpla_demo_trap", &"tpla_camo_net", &"tpla_wasp_nest", &"tpla_airfield", &"tpla_sandbags", &"tpla_barricade"]
 
 ## Playable factions (skirmish). "power": whether the faction uses the power economy.
 const FACTIONS := {
@@ -34,7 +40,8 @@ const FACTIONS := {
 	# M2.8: "home_stash_pct" scales the supply stashes by this faction's spawn so they last ~17 min
 	# against its AI opening economy. M2.9: TPLA builds with a Backhoe and gathers with Pickups (separate jobs)
 	&"tpla": {"name_key": "FACTION_TPLA", "home_stash_pct": 120, "hq": &"tpla_den", "builder": &"tpla_backhoe", "start_units": [&"tpla_backhoe", &"tpla_pickup"],
-		"units": TPLA_UNIT_ORDER, "buildings": TPLA_BUILDING_ORDER, "power": false, "personality": &"tpla_scrapjack",
+		"units": TPLA_UNIT_ORDER, "buildings": TPLA_BUILDING_ORDER, "power": true,   # M3.3: Gas Turbine Plants
+		 "personality": &"tpla_scrapjack",
 		"powers": [&"tpla_ambush", &"tpla_scrap_rain", &"tpla_blight_shells", &"tpla_uprising"]},
 	# M2.5: United States (Malachi's roster; unspecified slots are ZH USA equivalents, placeholders)
 	&"us": {"name_key": "FACTION_US", "hq": &"us_command", "builder": &"us_dozer", "start_units": [&"us_dozer"],
@@ -46,6 +53,12 @@ const FACTIONS := {
 		"powers": [&"ecc_recon", &"ecc_logistics", &"ecc_strike", &"ecc_repair"]},
 		# M3.2: Russia unlocked (Malachi). The lock stays for future factions: add "enabled": false.
 }
+
+## M3.3 (Malachi: "Remove general points and abilities for all teams until we can make them
+## better"): the General button, tray, rank alerts and AI powers are off. The code, the power defs
+## and the sim commands stay (old saves and replays that bought powers still play back), and rank
+## and XP still count in the background. Set true to bring it all back.
+const GENERALS_ENABLED := false
 
 ## M3.0: false for a faction that is shown as "Coming soon" (locked, never picked by players, AI or random).
 func faction_enabled(f) -> bool:

@@ -9,7 +9,7 @@ signal zoom_level_changed(level: int)
 const PITCH_DEG := 40.0   ## M3.2: was 55
 const FOV := 32.0
 ## camera distance per zoom level (close, default, far)
-const LEVELS := [16.0, 27.0, 46.0]
+const LEVELS := [16.0, 32.4, 46.0]   ## M3.3: default zoomed out 20% (Malachi; was 27)
 var pitch_deg := PITCH_DEG   ## tools/tests may override (before/after renders)
 
 var cam: Camera3D
@@ -96,7 +96,12 @@ func ground_point(screen: Vector2) -> Vector3:
 	if absf(dir.y) < 0.0001:
 		return focus
 	var t := -o.y / dir.y
-	return o + dir * t
+	var g := o + dir * t
+	if FX.ground != null and FX.ground.has_elev:   # M3.3 P3 (17): land on the hill, not the y = 0 plane
+		for i in 3:
+			t = (FX.ground_y(g.x, g.z) - o.y) / dir.y
+			g = o + dir * t
+	return g
 
 func pan_screen(delta_screen: Vector2) -> void:
 	# move focus so the ground point under the finger stays under the finger

@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_s")
 id = &"tpla_mirage_rockets"
-damage = 40
+damage = 55
 range_mt = 4000
 min_range_mt = 0
 cooldown_ms = 250

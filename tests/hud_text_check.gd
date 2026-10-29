@@ -142,7 +142,26 @@ static func _chk(m, tree: SceneTree, check: Callable, label: String) -> void:
 		await tree.process_frame
 	var probs: Array = problems(m.hud)
 	check.call("HUD text fits (%s)" % label, probs.is_empty(), probs.slice(0, 6) if not probs.is_empty() else null)
+	_icons(m, check, label)
 	await _info_cards(m, tree, check, label)
+
+## M3.3 Phase 4: every unit / structure entry on the command card, every queued item and every
+## selection type chip shows its icon.
+static func _icons(m, check: Callable, label: String) -> void:
+	var probs: Array = []
+	for i in mini(m.hud.card.size(), m.hud.grid_buttons.size()):
+		var inf: Variant = m.hud.card[i].get("info")
+		if inf is Array and String(inf[0]) in ["unit", "building"] and (m.hud.grid_buttons[i] as HudButton).icon_tex == null:
+			probs.append("card %s has no icon" % inf[1])
+	for box in [m.hud.sel_types, m.hud.queue_box]:
+		for c in box.get_children():
+			if c is HudButton and (c as HudButton).is_visible_in_tree() and (c as HudButton).label_text != "" \
+					and not (c as HudButton).label_text.begins_with("+") and (c as HudButton).icon_tex == null:
+				probs.append("chip '%s' has no icon" % (c as HudButton).label_text.replace("\n", " "))
+	for q in m.hud.queue_slots:
+		if (q as HudButton).label_text != "" and (q as HudButton).icon_tex == null:
+			probs.append("queue slot '%s' has no icon" % (q as HudButton).label_text)
+	check.call("icons shown (%s)" % label, probs.is_empty(), probs.slice(0, 6) if not probs.is_empty() else null)
 
 ## M3.2: every build / train / research entry has a press-and-hold info card that is fully
 ## translated, data-driven and fits on screen next to its button.
@@ -165,7 +184,7 @@ static func _info_cards(m, tree: SceneTree, check: Callable, label: String) -> v
 		var dd: Variant = Content.building(StringName(inf[1])) if inf[0] == "building" else null
 		if dd != null:
 			var body := "\n".join(d["lines"])
-			if dd.passive_income > 0 and not ("/ min" in body):
+			if (dd.passive_income > 0 or dd.income_amount > 0) and not ("/ min" in body):
 				probs.append("%s: income per minute missing" % inf[1])
 			if dd.power > 0 and not ("+%d" % dd.power in body):
 				probs.append("%s: power produced missing" % inf[1])

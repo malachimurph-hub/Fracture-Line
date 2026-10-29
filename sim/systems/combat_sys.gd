@@ -204,12 +204,12 @@ static func explode(w: SimWorld, src: SimEntity, center: Vector2i, wd: WeaponDef
 		if o.res_id < 0 or not w.enemies(src.team, o.team) or w.flying(o):
 			continue
 		var frac := 100 - 50 * FX.dist(o.pos, center) / maxi(1, r)
-		var sd := wd.damage * Content.combat.mult(wd.damage_type, _armor_of(w, o)) / 100 * frac / 100 * pct / 100
+		var sd := wd.damage * splash_mult(wd, _armor_of(w, o)) / 100 * frac / 100 * pct / 100
 		w.damage(o, maxi(1, sd), src)
 	var blds: Array = []
 	for id in w.ids:
 		var b: SimEntity = w.ents[id]
-		if b.alive and (b.kind == SimEntity.Kind.BUILDING or b.kind == SimEntity.Kind.NEUTRAL) and w.enemies(src.team, b.team) and w.dist_to_building(center, b) <= r:
+		if b.alive and (b.kind == SimEntity.Kind.BUILDING or b.kind == SimEntity.Kind.NEUTRAL) and (w.enemies(src.team, b.team) or b.team < 0 and w.is_civilian(b)) and w.dist_to_building(center, b) <= r:
 			blds.append(b)
 	for b: SimEntity in blds:
 		w.damage(b, maxi(1, wd.damage * Content.combat.mult(wd.damage_type, &"structure") / 100 * pct / 100), src)
@@ -245,8 +245,44 @@ static func fire(w: SimWorld, src: SimEntity, t: SimEntity, wd: WeaponDef, dmg_p
 			if w.flying(o) != tair:
 				continue
 			var frac := 100 - 50 * FX.dist(o.pos, impact) / maxi(1, r)
-			var sd := wd.damage * Content.combat.mult(wd.damage_type, _armor_of(w, o)) / 100 * frac / 100 * dmg_pct / 100
+			var sd := wd.damage * splash_mult(wd, _armor_of(w, o)) / 100 * frac / 100 * dmg_pct / 100
 			w.damage(o, sd, src)
+		if not tair:
+			_collateral(w, src, impact, r, wd, dmg_pct, t.id if hit else 0)
+
+## M3.3 Phase 3 (19): blasts also damage civilian structures they land on or next to (empty or
+## held by anyone other than the shooter's team), at COLLATERAL_PCT of the structure damage.
+## Uses the occupancy grid, so it only looks at the few tiles under the blast.
+const COLLATERAL_PCT := 50
+static func _collateral(w: SimWorld, src: SimEntity, impact: Vector2i, r: int, wd: WeaponDef, dmg_pct: int, skip_id: int) -> void:
+	var t0 := FX.to_tile(impact - Vector2i(r, r))
+	var t1 := FX.to_tile(impact + Vector2i(r, r))
+	var seen := {}
+	for ty in range(t0.y, t1.y + 1):
+		for tx in range(t0.x, t1.x + 1):
+			var c := Vector2i(tx, ty)
+			if not w.map.in_bounds(c):
+				continue
+			var bid := w.map.occ[w.map.idx(c)]
+			if bid == 0 or bid == skip_id or seen.has(bid):
+				continue
+			seen[bid] = true
+			var b := w.get_ent(bid)
+			if b == null or not b.alive or not w.is_civilian(b) or (b.team >= 0 and not w.enemies(src.team, b.team)):
+				continue
+			if w.dist_to_building(impact, b) > r:
+				continue
+			w.damage(b, maxi(1, wd.damage * Content.combat.mult(wd.damage_type, &"structure") / 100 * COLLATERAL_PCT / 100 * dmg_pct / 100), src)
+
+## M3.3 (Malachi: "things that explode should do splash damage and heavy damage to infantry"):
+## blast damage on soldiers never uses less than SPLASH_INF_PCT of the weapon's damage, so an
+## anti-tank rocket that lands among infantry still hurts them (its direct hit stays weak).
+const SPLASH_INF_PCT := 125
+static func splash_mult(wd: WeaponDef, armor: StringName) -> int:
+	var m := Content.combat.mult(wd.damage_type, armor)
+	if armor == &"infantry":
+		m = maxi(m, SPLASH_INF_PCT)
+	return m
 
 ## Scatter radius in fx for this shot: base scatter plus extra against infantry.
 static func scatter_of(w: SimWorld, t: SimEntity, wd: WeaponDef) -> int:

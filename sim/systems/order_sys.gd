@@ -28,10 +28,17 @@ static func max_range(w: SimWorld, u: SimEntity, t: SimEntity = null) -> int:
 static func can_attack(w: SimWorld, u: SimEntity) -> bool:
 	return w.udef(u).weapons.size() > 0
 
+## M3.3 P3 (19): the unit's current order is to knock down this empty civilian building.
+static func demolishing(w: SimWorld, u: SimEntity, t: SimEntity) -> bool:
+	if t.team >= 0 or u.orders.is_empty() or not w.is_civilian(t):
+		return false
+	var o: Dictionary = u.orders[0]
+	return o.get("o", "") == "attack" and int(o.get("target", 0)) == t.id and bool(o.get("force", false))
+
 static func valid_target(w: SimWorld, u: SimEntity, t: SimEntity) -> bool:
 	if t == null or not t.alive or t.kind == SimEntity.Kind.RESOURCE:
 		return false
-	if t.kind == SimEntity.Kind.CRATE or not w.enemies(u.team, t.team):
+	if t.kind == SimEntity.Kind.CRATE or not (w.enemies(u.team, t.team) or demolishing(w, u, t)):
 		return false
 	if t.kind == SimEntity.Kind.UNIT and t.res_id < 0:
 		return false
@@ -70,6 +77,87 @@ static func find_target(w: SimWorld, u: SimEntity, p: Vector2i, r: int) -> SimEn
 			best = b
 	return best
 
+## M3.3 dozer fix (Malachi: "dozer pathing gets stuck"): the builder used to aim at the one
+## ring tile nearest itself and drop the order as unreachable whenever it stopped short (blocked
+## by a cliff, a tree line, another structure or a crowd). Now it tries up to BUILD_TRIES free
+## ring tiles around the site, nearest first, and once it has stopped close by (within 2 tiles)
+## it may work from there.
+const BUILD_TRIES := 4
+const STALL_TICKS := 60   # 3 s on the same tile
+
+static func build_reach(u: SimEntity, o: Dictionary) -> int:
+	return u.radius + (TILE * 2 if o.get("near", false) else TILE)
+
+static func _build_approach(w: SimWorld, u: SimEntity, o: Dictionary, s: SimEntity) -> void:
+	var tried: Array = o.get("tried", [])
+	var bi := int(o.get("bp", -1))
+	if bi >= 0:
+		var bp := FX.tile_center(Vector2i(bi % w.map.w, bi / w.map.w))
+		# no progress for STALL_TICKS (wedged against a wall or a crowd) counts as stopped too
+		var lp := int(o.get("lp", -1))
+		var here := w.map.idx(FX.to_tile(u.pos))
+		if here == lp:
+			o["st"] = int(o.get("st", 0)) + 1
+		else:
+			o["lp"] = here
+			o["st"] = 0
+		if not _reached(u, bp) and int(o["st"]) < STALL_TICKS:
+			_goto(u, bp)
+			return
+		o["st"] = 0
+		# stopped (arrived or stuck) but still not in reach
+		if w.dist_to_building(u.pos, s) <= u.radius + TILE * 2:
+			o["near"] = true   # close enough: work from here
+			u.goal = NONE
+			return
+		tried.append(bi)
+		o["tried"] = tried
+		o.erase("bp")
+		if tried.size() >= BUILD_TRIES:
+			_pop(u)   # unreachable from every side
+			return
+	var nt := _ring_tile(w, u, s, tried)
+	if nt.x < 0:
+		_pop(u)
+		return
+	o["bp"] = w.map.idx(nt)
+	_goto(u, FX.tile_center(nt))
+
+## Nearest passable tile on the ring just outside the footprint, not tried yet; falls back to
+## the old nearest-passable search (wider) when the whole ring is blocked.
+static func _ring_tile(w: SimWorld, u: SimEntity, s: SimEntity, tried: Array) -> Vector2i:
+	var me := FX.to_tile(u.pos)
+	var my_reg: int = w.map.region[w.map.idx(me)] if w.map.in_bounds(me) else 0
+	var best := NONE
+	var bestd := 1 << 30
+	for yy in range(-1, s.fp.y + 1):
+		for xx in range(-1, s.fp.x + 1):
+			if xx >= 0 and xx < s.fp.x and yy >= 0 and yy < s.fp.y:
+				continue
+			var c := s.tile + Vector2i(xx, yy)
+			if not w.map.in_bounds(c) or not w.map.passable(c, true) or _near_tried(w, c, tried):
+				continue
+			var rc: int = w.map.region[w.map.idx(c)]
+			if my_reg != 0 and rc != 0 and rc != my_reg:
+				continue   # cut off by terrain (cliff, water) from where the builder is
+			var d := (c - me).length_squared()
+			if d < bestd:
+				bestd = d
+				best = c
+	if best.x < 0:
+		var f := w.map.nearest_passable(me.clamp(s.tile - Vector2i.ONE, s.tile + s.fp), true)
+		if w.map.passable(f, true) and not _near_tried(w, f, tried):
+			best = f
+	return best
+
+## A failed approach tile rules out its neighbours too (they sit in the same blocked pocket).
+static func _near_tried(w: SimWorld, c: Vector2i, tried: Array) -> bool:
+	for ti in tried:
+		var t := Vector2i(int(ti) % w.map.w, int(ti) / w.map.w)
+		if absi(t.x - c.x) <= 1 and absi(t.y - c.y) <= 1:
+			return true
+	return false
+
 static func _goto(u: SimEntity, p: Vector2i) -> void:
 	if u.goal != p:
 		u.goal = p
@@ -97,6 +185,8 @@ static func _engage(w: SimWorld, u: SimEntity, t: SimEntity) -> void:
 		var dest := t.pos
 		if t.kind != SimEntity.Kind.UNIT and not w.is_air(u):
 			dest = FX.tile_center(w.map.nearest_passable(FX.to_tile(t.pos), w.is_vehicle(u)))
+		elif AirSys.spreads(w, u):
+			dest = AirSys.attack_slot(w, u, t, rng)   # M3.2.2: each helicopter its own spot in range
 		if u.goal == NONE or FX.dist2(u.goal, dest) > (TILE * 2) * (TILE * 2):
 			_goto(u, dest)
 
@@ -119,7 +209,8 @@ static func _think(w: SimWorld, u: SimEntity) -> void:
 			_amove(w, u, o)
 		"attack":
 			var t := w.get_ent(int(o["target"]))
-			if t == null or not t.alive or (not w.fog.is_visible_ent(w, u.team, t)) or not w.enemies(u.team, t.team):
+			var demolish: bool = t != null and bool(o.get("force", false)) and t.team < 0 and w.is_civilian(t)   # M3.3 P3: knock an empty house down
+			if t == null or not t.alive or (not w.fog.is_visible_ent(w, u.team, t)) or not (w.enemies(u.team, t.team) or demolish):
 				_pop(u)
 				return
 			if not can_attack(w, u):
@@ -133,14 +224,10 @@ static func _think(w: SimWorld, u: SimEntity) -> void:
 			if s == null or s.built or s.owner != u.owner:
 				_pop(u)
 				return
-			if w.dist_to_building(u.pos, s) <= u.radius + TILE:
+			if w.dist_to_building(u.pos, s) <= build_reach(u, o):
 				u.goal = NONE
 			else:
-				var bp := FX.tile_center(w.map.nearest_passable(FX.to_tile(u.pos).clamp(s.tile - Vector2i.ONE, s.tile + s.fp), true))
-				if _reached(u, bp):
-					_pop(u)   # unreachable
-				else:
-					_goto(u, bp)
+				_build_approach(w, u, o, s)
 		"repair":
 			_repair(w, u, o)
 		"harvest":

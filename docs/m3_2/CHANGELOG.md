@@ -280,3 +280,19 @@ the Zero Hour-style texture/model rebuild and the polish pass (40 degree camera)
 - Contains the boarding / garrison tap fix, "Unload n / cap" on transports, and the
   garrisonable houses above.
 - Uploaded to Google Drive (My Drive root), file id `1SXBNWdJTGMY_5Qyoaqgih973EzWtYKDp`.
+
+## M3.2.2 (unreleased, branch m322)
+
+- Germany's shield truck (Fuchs ECM Carrier, `eu_aegis`) is removed: no longer in the Heavy Factory
+  build list, the German roster / Map Builder palette, or the AI's unit weights; the AI's special
+  cases for it are gone. Balance CSV updated to match.
+- Old saves and replays: the def, model, voice set and names stay (hidden), `SAVE_VERSION` is
+  unchanged. A saved shield truck loads, keeps its 35% damage-reduction aura and can be selected;
+  a Heavy Factory queue order for it recorded in an old replay is still accepted by the sim
+  (`Content.RETIRED_UNITS`), so playback stays in sync. Nothing in the game issues that order.
+- **Retitled: "Fracture Line: Global Conflict"** ("Rules of Engagement" is a registered US/EU trademark
+  of another company for video games). New menu badge and boot splash (`ui/logo/fl_badge.png`,
+  `fl_splash.png`, from `tools/gen_icon_lc.py --logo-only`), `APP_TITLE`, credits, error screen,
+  window title. Android launcher label: **Fracture Line** (the full title would be cut off under the
+  icon). Package id, signing, `user://` folder and save format unchanged, so saves carry over.
+  Output files: `FractureLine-M3.2.2.apk`, `FractureLine.aab`. The app icon has no lettering.

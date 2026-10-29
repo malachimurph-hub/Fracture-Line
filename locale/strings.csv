@@ -1,5 +1,5 @@
 keys,en
-APP_TITLE,RULES OF ENGAGEMENT
+APP_TITLE,FRACTURE LINE: GLOBAL CONFLICT
 MENU_SUBTITLE,Skirmish command — Germany
 MENU_BUILD,"Milestone %s · original game, not affiliated with any other RTS"
 MENU_SKIRMISH,Skirmish
@@ -44,6 +44,7 @@ LOBBY_ERR_PLAYERS,Need at least 2 players (set a slot to AI).
 LOBBY_ERR_ONE_TEAM,All players are on the same team — put at least one player on a different team.
 LOBBY_ERR_COLOR,Two players have the same color — pick different colors.
 LOBBY_ERR_SPAWN,Two players have the same start position.
+LOBBY_ERR_SPAWN_MAP,That start position is not on this map (it has fewer start positions).
 LOBBY_ERR_MAP,Map missing.
 MAP_VARNO_CROSSING,Varno Crossing
 FACTION_EU,Germany
@@ -55,6 +56,8 @@ COLOR_YELLOW,Yellow
 COLOR_PURPLE,Purple
 COLOR_GREEN,Green
 COLOR_ORANGE,Orange
+COLOR_PINK,Pink
+COLOR_CYAN,Cyan
 STUB_SUPERWEAPONS,[STUB] No superweapon structures exist yet; this toggle is saved but has no effect.
 STUB_TRANSPORT,Transport: select infantry and tap this vehicle to load.
 DIFF_EASY,Easy
@@ -88,6 +91,16 @@ PAUSE_PERF,Performance overlay
 PAUSE_RESTART,Restart match
 PAUSE_SURRENDER,Surrender
 PAUSE_QUIT,Save & quit to menu
+PAUSE_SAVE,Save game
+SAVE_TITLE,Save game
+SAVE_SLOT,Slot %d
+SAVE_EMPTY,empty
+SAVE_OVERWRITE,tap again to overwrite
+SAVE_DONE,Saved to slot %d
+LOAD_TITLE,Load game
+LOAD_BAD,"can't be loaded (other version or damaged)"
+MENU_LOAD,Load game
+MENU_CONTINUE_SHORT,Continue
 HUD_GENERAL,General
 HUD_GENERAL_RANK,Gen. R%d
 HUD_BUILD,Build
@@ -103,6 +116,9 @@ HUD_POWER,Pwr %d/%d
 HUD_LOW_POWER,LOW
 HUD_POP,Pop %d/%d
 HUD_POP1,Pop %d
+HUD_POWER_TITLE,Power
+HUD_POWER_NUMBERS,"Used %d of %d produced"
+HUD_LOW_POWER_WARN,LOW POWER
 HUD_RANK,Rank %d
 HUD_GROUP_SET,Group %d set
 HUD_GROUP_HINT,Empty group — long-press (Ctrl+1–5) to assign
@@ -149,6 +165,17 @@ CMD_RESUME_BUILD_TIP,Send the nearest idle builder to finish this structure
 HUD_GROUPS_TIP,Control groups 1–5 (tap to show or hide)
 HUD_DESELECT,Clear selection
 CMD_CANCEL_BUILD_TIP,Cancel construction (full refund)
+CMD_PACK,Pack Up
+CMD_PACK_CANCEL,Stay
+CMD_PACK_TIP,"Pack the excavator up to move it (10 s). It earns nothing while packed."
+CMD_UNPACK,Set Up
+CMD_UNPACK_CANCEL,Keep Moving
+CMD_UNPACK_TIP,"Set the excavator up where it stands (10 s, open ground). Income starts again when it is up."
+HUD_PACKING,Packing up %ds
+HUD_UNPACKING,Setting up %ds
+CMD_SELL,Sell
+CMD_SELL_CONFIRM,Sell?
+CMD_SELL_TIP,"Sell this structure for 70% of its price (queued units are refunded). Tap twice to confirm."
 CMD_RALLY,Rally
 CMD_REPEAT_TIP,Repeat build: re-queue each unit when it finishes
 CMD_CANCEL_LAST,"Cancel
@@ -220,9 +247,9 @@ UNIT_EU_CRAWLER,Engineer Crane
 UNIT_EU_CRAWLER_DESC,"Wheeled mobile site crane. Builds and repairs German structures."
 UNIT_EU_HARVESTER,Logistics Truck
 UNIT_EU_HARVESTER_DESC,Heavy 6x6 military logistics truck. Hauls supplies to a Supply Hub; a roof machine gun for self-defence.
-UNIT_EU_GRENADIER,Panzer-grenadier
-UNIT_EU_GRENADIER_DESC,Mechanised infantry rifleman with rifle grenades. Can garrison.
-UNIT_EU_LANCER,Panzerfaust 3 Soldier
+UNIT_EU_GRENADIER,Infanterie
+UNIT_EU_GRENADIER_DESC,Standard infantry rifleman with rifle grenades. Can garrison.
+UNIT_EU_LANCER,Panzerfaust
 UNIT_EU_LANCER_DESC,Anti-tank soldier with a Panzerfaust 3 launcher. Strong against vehicles. Can garrison.
 UNIT_EU_WOLFHOUND,LTV
 UNIT_EU_WOLFHOUND_DESC,Protected 4x4 patrol vehicle with a roof .50 cal heavy machine gun. Carries 4 infantry.
@@ -274,7 +301,7 @@ POWER_OVERCHARGE,Smoke Screen
 POWER_OVERCHARGE_DESC,Smoke and decoys: your units in the area are much harder to hit (a strong temporary damage shield).
 POWER_BLACKOUT,Artillery Barrage
 POWER_BLACKOUT_DESC,Three heavy 155 mm shells hit the target area.
-CREDITS_BODY,"RULES OF ENGAGEMENT (formerly FRACTURE LINE) — Milestone 2.9 (skirmish: Germany, Iran and United States).
+CREDITS_BODY,"FRACTURE LINE: GLOBAL CONFLICT — Milestone 2.9 (skirmish: Germany, Iran and United States).
 Design, code, procedural 3D models (M2.6 model upgrade with automatic LODs), weathering and surface-detail shaders, decals, effects, maps, faction HUD themes, UI and text: original work made for Malachi Murphy with Grok Bot. US unit names are original and only inspired by real equipment roles.
 Textures: ambientCG (ambientcg.com), CC0 1.0 public domain — Ground097, Ground109, Grass004, Rock063, Asphalt033, Gravel035, Concrete034, CorrugatedSteel005, Rust004; winter: Snow006, Ground054, Snow004, Rock035, Ice002, Snow010A; temperate: Grass001, Ground037, Rock023, PavingStones130; arid: Ground090, Ground102, Rock061, Ground079S.
 Soldier models and animations: Quaternius, ""Toon Shooter Game Kit"" (quaternius.com), CC0 1.0 public domain — recoloured and re-equipped per faction, re-proportioned, decimated and baked to vertex animation.
@@ -302,7 +329,12 @@ BLD_TPLA_CAMP,Basij Barracks
 BLD_TPLA_CHOP_SHOP,Vehicle Factory
 BLD_TPLA_TUNNEL,Tunnel Network
 BLD_TPLA_WORKSHOP,Defence Workshop
-BLD_TPLA_BAZAAR,Trade Exchange
+BLD_TPLA_GAS_PLANT,Gas Turbine Plant
+BLD_TPLA_GAS_PLANT_DESC,"Natural gas turbine power station. Cheaper than a nuclear plant, with less output. Supplies power to the base."
+BLD_TPLA_CC_PLANT,Combined-Cycle Gas Plant
+BLD_TPLA_CC_PLANT_DESC,"Large natural gas power station. Turbine exhaust heat raises steam for a second turbine, so it gives much more power than a Gas Turbine Plant. Needs a Defence Workshop."
+BLD_TPLA_BAZAAR,Oil Derrick
+BLD_TPLA_BAZAAR_DESC,Oil well with a pumpjack that brings in $185 a minute.
 BLD_TPLA_DEMO_TRAP,Anti-Tank Mine
 BLD_TPLA_CAMO_NET,Camo Net
 BLD_TPLA_HOLE,Rebuild Site
@@ -364,11 +396,11 @@ UNIT_TPLA_BUS_DESC,Iranian tracked infantry fighting vehicle with a 30 mm cannon
 BLD_EU_FLAK_TOWER,Air Defence Gun
 BLD_EU_FLAK_TOWER_DESC,Rapid-fire 35 mm air-defence gun turret. Hits ground and air targets. Needs power to fire.
 BLD_EU_SIGNALS,Signals Center
-BLD_EU_SIGNALS_DESC,"Command and tech centre. Unlocks the Heavy Tank 130, RCH SPA, Fuchs EW Jammer, the Airfield and the advanced structures."
+BLD_EU_SIGNALS_DESC,"Command and tech centre. Unlocks the RCH SPA, Fuchs EW Jammer, the Airfield and the advanced structures."
 BLD_EU_RELAY,Repair Post
 BLD_EU_RELAY_DESC,Repairs your vehicles and heals infantry within 6 tiles (1% health per second).
-BLD_EU_EXCHANGE,Logistics Centre
-BLD_EU_EXCHANGE_DESC,Contracts civilian logistics: +4 supply per second while powered.
+BLD_EU_EXCHANGE,Automotive Plant
+BLD_EU_EXCHANGE_DESC,Car factory that brings in $465 a minute. Uses a lot of power.
 BLD_EU_AIRSTRIP,Airfield
 BLD_EU_AIRSTRIP_DESC,Builds the Tiger and the multirole fighter. 6 parking slots; each fighter uses 2. Jets land here to rearm.
 BLD_EU_MINEFIELD,Minefield
@@ -428,8 +460,8 @@ UNIT_US_THUNDERLANCE,Thunderlance Bomber
 UNIT_US_THUNDERLANCE_DESC,"Heavy bomber: one devastating strike, then it lands and rearms (45 s). Uses 4 airfield slots. Needs a Strategic Center."
 BLD_US_COMMAND,Headquarters
 BLD_US_COMMAND_DESC,US headquarters. Builds Dozers.
-BLD_US_REACTOR,Fusion Plant
-BLD_US_REACTOR_DESC,Power plant. Powers the base.
+BLD_US_REACTOR,Nuclear Power Plant
+BLD_US_REACTOR_DESC,Nuclear power plant. Powers the base.
 BLD_US_SUPPLY_CENTER,Supply Depot
 BLD_US_SUPPLY_CENTER_DESC,Warehouse supply drop-off. Comes with an M1083A1P2 Supply Truck.
 BLD_US_BARRACKS,Barracks
@@ -445,7 +477,7 @@ BLD_US_PATRIOT_DESC,"C-RAM air defence: trailer-mounted 20mm rotary gun, strong 
 BLD_US_FIREBASE,M777A2
 BLD_US_FIREBASE_DESC,Emplaced M777A2 155mm howitzer that shells ground targets at long range. Needs power.
 BLD_US_DROP_ZONE,Data Center
-BLD_US_DROP_ZONE_DESC,Server hall that brings in steady passive income.
+BLD_US_DROP_ZONE_DESC,Server hall that brings in $500 a minute. Uses a lot of power.
 POWER_US_UAV,UAV Recon
 POWER_US_UAV_DESC,A drone reveals a 14-tile area for 20 s.
 POWER_US_PARADROP,Paradrop
@@ -486,8 +518,14 @@ MAP_CRESCENT,Crescent City
 MAP_CRESCENT_DESC,"Desert metropolis. A dense downtown of glass and office towers fills the ground between the four bases: a street grid choked with parked cars, a wide central boulevard, plazas with supplies and garrisonable blocks."
 MAP_RIVERSIDE,Riverside Metro
 MAP_RIVERSIDE_DESC,"Temperate city split by a river. Four avenue bridges and two edge fords link north and south; apartment towers, shop rows and parked cars line every street."
+MAP_RIVERSIDE_NIGHT,Riverside Metro by Night
+MAP_RIVERSIDE_NIGHT_DESC,"Riverside Metro after dark. Street lamps light the avenues, windows glow and every vehicle drives with its headlights on."
+MAP_VARNO_NIGHT,Varno Crossing by Night
+MAP_VARNO_NIGHT_DESC,"Varno Crossing under a desert moon. Bases are floodlit and headlights give away moving columns."
 UNIT_ECC_ENGINEER,Engineer Vehicle
-UNIT_ECC_ENGINEER_DESC,Tracked combat engineering vehicle with a dozer blade and crane. Builds and repairs structures.
+UNIT_ECC_ENGINEER_DESC,"Tracked combat engineering vehicle with a dozer blade, a crane and a single-shot anti-tank rocket launcher. Builds and repairs structures."
+UNIT_ECC_MINE_MOBILE,Minerals Mining (on the move)
+UNIT_ECC_MINE_MOBILE_DESC,"The bucket-wheel excavator, packed up and crawling to a new site. It earns nothing until it sets up again. Tap Set Up on open ground; it takes 10 seconds."
 UNIT_ECC_CARGO_TRUCK,Cargo Truck
 UNIT_ECC_CARGO_TRUCK_DESC,Six-wheel military cargo truck. Hauls supplies from supply sources to a Supply Depot.
 UNIT_ECC_RIFLEMAN,Rifleman
@@ -526,16 +564,16 @@ BLD_ECC_BARRACKS,Barracks
 BLD_ECC_BARRACKS_DESC,"Trains Riflemen, Machine Gunners, RPG Men and Infiltrators."
 BLD_ECC_FACTORY,Vehicle Factory
 BLD_ECC_FACTORY_DESC,"Builds Tiger-M, BTR, Typhoon, T-90M, Zeus, 2S Msta and Engineer Vehicles."
-BLD_ECC_BUNKER,Kornet Nest
-BLD_ECC_BUNKER_DESC,"Sandbag ring with two 9M133 Kornet anti-tank missile launchers. Defends against ground vehicles. Needs power."
+BLD_ECC_BUNKER,Missile Silo
+BLD_ECC_BUNKER_DESC,"Fixed in-ground missile launcher. The hatch opens to fire one heavy missile at a time: slow, but hits hard. Defends against ground targets. Needs power."
 BLD_ECC_AA_SITE,ZAK-30 Citadel
 BLD_ECC_AA_SITE_DESC,"Twin 30 mm rotary anti-aircraft turret. Shreds aircraft, cannot hit ground targets. Needs power."
 BLD_ECC_AIRFIELD,Airfield
 BLD_ECC_AIRFIELD_DESC,"Builds Su-57, Ka-52 and Tu-160. 6 parking slots: bomber 4, fighter 2, helicopter 0. Jets land here to rearm."
 BLD_ECC_MINISTRY,Ministry of Defense
-BLD_ECC_MINISTRY_DESC,"Tech centre: unlocks the Tu-160 bomber and the Black Market."
-BLD_ECC_BLACK_MARKET,Black Market
-BLD_ECC_BLACK_MARKET_DESC,Warehouse trading post that brings in steady passive income.
+BLD_ECC_MINISTRY_DESC,"Tech centre: unlocks the Tu-160 bomber and Minerals Mining."
+BLD_ECC_BLACK_MARKET,Minerals Mining
+BLD_ECC_BLACK_MARKET_DESC,Giant bucket-wheel excavator that digs up $400 every 30 seconds. Needs no power.
 POWER_ECC_RECON,Recon Drone
 POWER_ECC_RECON_DESC,A drone reveals a 14-tile area for 20 s.
 POWER_ECC_LOGISTICS,Supply Convoy
@@ -592,6 +630,7 @@ INFO_REQUIRES,Requires: %s
 INFO_POWER_GEN,Power: +%d
 INFO_POWER_USE,Power use: %d
 INFO_INCOME,"Income: $%d / min (up to 4 count)"
+INFO_INCOME_BURST,Income: $%d every %d s
 INFO_INCOME_CAPTURED,Income when captured: $%d / min
 INFO_REFINERY,Harvesters unload here
 INFO_PRODUCES,Trains: %s
@@ -621,3 +660,11 @@ INFO_DMG_HMG,heavy MGs
 INFO_DMG_FLAME,flame
 INFO_DMG_SNIPER,snipers
 INFO_DMG_AA_MISSILE,AA missiles
+MAP_TWIN_RIDGES,Twin Ridges
+MAP_TWIN_RIDGES_DESC,"Two players. Rolling hills, farm fields and gravel farm tracks between two corner bases, with a paved village square in the middle. Vehicles slow a little on the slopes."
+MAP_HARVEST_VALLEY,Harvest Valley
+MAP_HARVEST_VALLEY_DESC,"Four players. A river splits the valley, crossed by two bridges and two fords; hills, fields, meadows and two villages on both banks."
+MAP_SUNFALL_BASIN,Sunfall Basin
+MAP_SUNFALL_BASIN_DESC,"Six players. Four corner bases and one on the north and south edges, around a ring of dunes and mesas with an oasis town in the gravel basin."
+MAP_HIGHLAND_CROWN,Highland Crown
+MAP_HIGHLAND_CROWN_DESC,"Eight players. Corner and edge bases around a crown of high hills, with lakes, woods, farmland and a market town in the centre."

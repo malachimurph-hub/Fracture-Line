@@ -410,6 +410,10 @@ func smart_command(screen: Vector2) -> void:
 					issue({"t": "garrison", "ids": gi, "target": t.id, "q": q})
 					world.marker(t.pos, Color("#7dff8a"))
 					units = _minus(units, gi)
+				if gi.is_empty() and not units.is_empty() and t.team < 0:   # M3.3 P3: the rest knock the empty building down
+					issue({"t": "attack", "ids": units, "target": t.id, "q": q, "flag": true})
+					world.marker(t.pos, Color("#ff4a3d"))
+					return
 			elif bd.capturable and t.owner != pid:
 				var cap: Array = []
 				for id in units:

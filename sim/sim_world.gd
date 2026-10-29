@@ -5,7 +5,7 @@ extends RefCounted
 
 const SAVE_VERSION := 2
 const CELL := 4096        ## spatial hash cell = 4 tiles
-const SUPPLY_CAP := 2000000   # M3.2: Malachi raised the funds cap from $50k to $2M
+const SUPPLY_CAP := 9999999   # M3.3: Malachi: funds can grow to $9,999,999 (M3.2 had $2M)
 
 var tick: int = 0
 var rng := PCG32.new()
@@ -222,6 +222,11 @@ func unit_max_hp(e: SimEntity) -> int:
 func get_ent(id: int) -> SimEntity:
 	var e = ents.get(id)
 	return e if e != null and e.alive else null
+
+## M3.3 Phase 3 (19): civilian houses and blocks (garrisonable neutrals) can be destroyed: blast
+## damage hits them, and units can be ordered to demolish an empty one (force attack).
+func is_civilian(e: SimEntity) -> bool:
+	return e != null and e.kind == SimEntity.Kind.NEUTRAL and bdef(e).garrison_capacity > 0
 
 func enemies(a: int, b: int) -> bool:
 	## a, b are team ids; -1 = neutral (never hostile)
@@ -478,6 +483,8 @@ func step() -> void:
 	RosterSys.run(self)
 	# M2.5 US mechanics (stealth while stationary)
 	UsSys.run(self)
+	# M3.3 Phase 3: the Russian mine packs up, drives and sets up again
+	MineSys.run(self)
 	if prof != null: t = _pt("tpla", t)
 	# 11 fog (5 Hz)
 	if tick % 4 == 0:

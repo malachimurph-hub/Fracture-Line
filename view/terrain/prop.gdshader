@@ -28,6 +28,13 @@ void vertex() {
 		VERTEX.x += sin(TIME * 1.3 + ph) * k * 0.05;
 		VERTEX.z += cos(TIME * 1.1 + ph) * k * 0.04;
 	}
+	// M3.3: leaf cards flutter on top of the slow trunk sway (cheap: a few sines per vertex)
+	if (sway > 0.0 && COLOR.a > 0.6 && COLOR.a < 0.9) {
+		float lp = MODEL_MATRIX[3].x * 1.7 + MODEL_MATRIX[3].z * 1.3 + VERTEX.x * 3.1 + VERTEX.z * 2.7;
+		float lk = min(1.0, VERTEX.y * 0.5) * sway;
+		VERTEX.y += sin(TIME * 2.6 + lp) * 0.025 * lk;
+		VERTEX.x += sin(TIME * 2.1 + lp * 1.3) * 0.02 * lk;
+	}
 	wpos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	wn = normalize((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
 }
@@ -67,6 +74,9 @@ void fragment() {
 	if (vkind < 0.5) {
 		float on = vkind < 0.15 ? 1.0 : step(0.55, fract(TIME * 0.7 + vphase));
 		EMISSION = c * (vkind < 0.15 ? 0.55 : 2.6) * on * mix(0.25, 1.0, vis) * expl;
+	}
+	if (vkind > 0.6 && vkind < 0.9) {
+		BACKLIGHT = c * 0.55;   // M3.3: sunlight shows through the leaves
 	}
 	ROUGHNESS = 0.85;
 }

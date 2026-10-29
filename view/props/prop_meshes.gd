@@ -138,7 +138,12 @@ static func _tree(st: SurfaceTool, kind: String, v: int) -> void:
 			var top := Vector3(rng.randf_range(-0.08, 0.08), 1.05 + v * 0.12, rng.randf_range(-0.08, 0.08))
 			branch(st, Vector3.ZERO, top, 0.13, 0.08, bark)
 			var ctr := top + Vector3(0, 0.45, 0)
-			sph(st, ctr, Vector3(0.55, 0.42, 0.55), leafc.darkened(0.45), 6)   # shaded inner mass
+			# M3.3: a solid, lumpy inner crown in the leaf colour (was one near-black ball) so the
+			# tree reads as a full volume from the side; the leaf cards sit on and around it
+			sph(st, ctr, Vector3(0.55, 0.42, 0.55), leafc.darkened(0.2), 7)
+			for i in 3:
+				var la := TAU * i / 3.0 + rng.randf() * 0.8
+				sph(st, ctr + Vector3(cos(la) * 0.32, rng.randf_range(-0.1, 0.15), sin(la) * 0.32), Vector3(0.36, 0.3, 0.36) * rng.randf_range(0.85, 1.1), leafc.darkened(rng.randf_range(0.12, 0.22)), 6)
 			var nb := 4 + v
 			for i in nb:
 				var a := TAU * i / nb + rng.randf_range(-0.3, 0.3)
@@ -151,8 +156,8 @@ static func _tree(st: SurfaceTool, kind: String, v: int) -> void:
 			var hgt := 2.6 + v * 0.35
 			branch(st, Vector3.ZERO, Vector3(0, hgt, 0), 0.1, 0.03, bark)
 			var tiers := 5 + v
-			var g := Color("#3a5a32").lightened(v * 0.03)
-			cyl(st, Vector3(0, hgt * 0.55, 0), 0.05, 0.55, hgt * 0.8, g.darkened(0.45), 6)   # dense core
+			var g := Color("#46683a").lightened(v * 0.03)   # M3.3: a touch lighter (read black on phones)
+			cyl(st, Vector3(0, hgt * 0.55, 0), 0.05, 0.55, hgt * 0.8, g.darkened(0.15), 7)   # dense core (M3.3: lighter, reads solid)
 			for k in tiers:
 				var t := float(k) / float(tiers)
 				var y := 0.5 + t * (hgt - 0.6)
@@ -197,7 +202,7 @@ static func _tree(st: SurfaceTool, kind: String, v: int) -> void:
 			var top2 := Vector3(rng.randf_range(-0.1, 0.1), 0.55 + v * 0.08, 0)
 			branch(st, Vector3.ZERO, top2, 0.07, 0.045, Color("#6e5a40"))
 			var ctr2 := top2 + Vector3(0, 0.3, 0)
-			sph(st, ctr2, Vector3(0.35, 0.25, 0.35), lc2.darkened(0.4), 5)
+			sph(st, ctr2, Vector3(0.35, 0.25, 0.35), lc2.darkened(0.18), 6)
 			for i in 3 + v:
 				var a := TAU * i / (3 + v) + rng.randf()
 				var e := top2 + Vector3(cos(a) * 0.4, rng.randf_range(0.15, 0.4), sin(a) * 0.4)
@@ -205,30 +210,85 @@ static func _tree(st: SurfaceTool, kind: String, v: int) -> void:
 				clump(st, e, rng.randf_range(0.6, 0.8), 3, lc2.lightened(rng.randf_range(-0.05, 0.08)), ctr2, rng)
 		"bush":
 			var lc3 := Color("#53702f").lightened(v * 0.04)
-			sph(st, Vector3(0, 0.18, 0), Vector3(0.35, 0.2, 0.32), lc3.darkened(0.4), 5)
+			sph(st, Vector3(0, 0.18, 0), Vector3(0.35, 0.2, 0.32), lc3.darkened(0.18), 6)
 			for i in 2 + v:
 				var a := TAU * i / (2 + v) + rng.randf()
 				clump(st, Vector3(cos(a) * 0.18, 0.28, sin(a) * 0.18), rng.randf_range(0.5, 0.7), 3 if v != 1 else 0, lc3.lightened(rng.randf_range(-0.05, 0.08)), Vector3(0, 0.1, 0), rng)
 
-## M3.0 angular boulders: a few rotated, faceted blocks per rock with lighter sun-facing tops,
-## darker undersides and lichen / dust tints (replaces the old smooth blobs).
+## M3.3 boulders: each rock is a cluster of irregular faceted stones (a jittered, squashed
+## low-poly sphere per stone, flattened where it sits in the ground) with per-face shading:
+## sun-facing tops lighter, flanks mid, undersides and creases darker, a few lichen / dust faces
+## and darker strata bands - real depth and a different shape for every variant.
 static func _rock(st: SurfaceTool, small: bool, v: int) -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 4242 + v * 31 + (7 if small else 0)
 	var sc := 0.35 if small else 1.0
 	var base: Color = [Color("#9c8a72"), Color("#8f8678"), Color("#a39480")][v % 3]
-	var n := 2 if small else 3 + v % 2
+	var n := 2 if small else 3 + v % 3
 	for i in n:
 		var a := rng.randf() * TAU
-		var r := rng.randf_range(0.0, 0.45) * sc * (0.0 if i == 0 else 1.0)
-		var sz := Vector3(rng.randf_range(0.6, 1.0), rng.randf_range(0.45, 0.75), rng.randf_range(0.55, 0.9)) * sc * (1.0 if i == 0 else 0.65)
-		var c := Vector3(cos(a) * r, sz.y * 0.4, sin(a) * r)
-		var rot := Vector3(rng.randf_range(-18, 18), rng.randf_range(0, 360), rng.randf_range(-22, 22))
-		var col: Color = base.darkened(rng.randf_range(0.0, 0.15))
-		box(st, c, sz, col, rot)
-		box(st, c + Vector3(0, sz.y * 0.32, 0), sz * Vector3(0.78, 0.5, 0.78), col.lightened(0.12), rot + Vector3(0, 45, 0))   # bevelled cap
-		if not small and rng.randf() < 0.6:
-			box(st, c + Vector3(0, sz.y * 0.52, 0), sz * Vector3(0.5, 0.06, 0.45), Color("#7d8256"), rot)   # lichen / dust patch
+		var r := (0.0 if i == 0 else rng.randf_range(0.35, 0.6)) * sc
+		var sz := Vector3(rng.randf_range(0.48, 0.7), rng.randf_range(0.4, 0.62), rng.randf_range(0.44, 0.66)) * sc * (1.0 if i == 0 else rng.randf_range(0.4, 0.65))
+		var c := Vector3(cos(a) * r, sz.y * 0.35, sin(a) * r)
+		_stone(st, c, sz, rng.randf() * TAU, base.darkened(rng.randf_range(0.0, 0.12)), rng, not small)
+	if not small:   # loose scree round the foot
+		for k in 4 + v % 3:
+			var a2 := rng.randf() * TAU
+			var r2 := rng.randf_range(0.55, 0.85)
+			var s2 := Vector3(0.09, 0.06, 0.08) * rng.randf_range(0.8, 1.4)
+			_stone(st, Vector3(cos(a2) * r2, s2.y * 0.3, sin(a2) * r2), s2, rng.randf() * TAU, base.darkened(rng.randf_range(0.05, 0.2)), rng, false)
+
+## One irregular stone: rings x segments sphere, radii jittered, bottom flattened at the ground.
+static func _stone(st: SurfaceTool, c: Vector3, sz: Vector3, yaw: float, col: Color, rng: RandomNumberGenerator, detail: bool) -> void:
+	var rings := 4 if detail else (3 if sz.x > 0.12 else 2)   # phone-light: ~56 tris per big stone, 20 per pebble
+	var segs := 7 if detail else 5
+	var pts := []
+	for ri in rings + 1:
+		var row := []
+		var th := PI * float(ri) / float(rings)
+		for si in segs:
+			var ph := TAU * float(si) / float(segs) + (0.3 if ri % 2 == 1 else 0.0)
+			var j := rng.randf_range(0.78, 1.12) if ri > 0 and ri < rings else 1.0
+			var p := Vector3(sin(th) * cos(ph) * j, cos(th), sin(th) * sin(ph) * j)
+			if ri == 1:
+				p.y *= rng.randf_range(0.75, 1.0)   # uneven, often flattish top
+			p = (p * sz).rotated(Vector3.UP, yaw)
+			p.y = maxf(p.y, -sz.y * 0.35)   # sits in the ground
+			row.append(c + p)
+		pts.append(row)
+	var sun := Vector3(0.35, 1.0, 0.25).normalized()
+	var strata := rng.randf_range(0.0, 1.0)
+	for ri in rings:
+		for si in segs:
+			var a: Vector3 = pts[ri][si]
+			var b: Vector3 = pts[ri][(si + 1) % segs]
+			var cc: Vector3 = pts[ri + 1][(si + 1) % segs]
+			var d: Vector3 = pts[ri + 1][si]
+			for tri0 in [[a, cc, b], [a, d, cc]]:
+				var tri: Array = tri0
+				var p0: Vector3 = tri[0]
+				var p1: Vector3 = tri[1]
+				var p2: Vector3 = tri[2]
+				var nrm: Vector3 = (p2 - p0).cross(p1 - p0)
+				if nrm.length_squared() < 1e-10:
+					continue
+				nrm = nrm.normalized()
+				var mid := (p0 + p1 + p2) / 3.0
+				if nrm.dot(mid - c) < 0.0:
+					nrm = -nrm
+					tri = [p0, p2, p1]
+				var lum := clampf(0.5 + 0.5 * nrm.dot(sun), 0.0, 1.0)
+				var fc := col.darkened(lerpf(0.32, 0.0, lum)).lightened(lerpf(0.0, 0.1, lum))
+				var my := mid.y
+				if detail and fmod(my * 7.0 + strata, 1.0) < 0.16:
+					fc = fc.darkened(0.12)   # strata band
+				if detail and nrm.y > 0.7 and rng.randf() < 0.3:
+					fc = fc.lerp(Color("#7d8256"), 0.55)   # lichen / dust on the tops
+				fc = fc.darkened(rng.randf_range(0.0, 0.06))
+				for q in tri:
+					st.set_color(fc)
+					st.set_normal(nrm)
+					st.add_vertex(q)
 
 ## Lit / dark window panes over a tower's glass bands (fixed hash per kind -> stable look) and
 ## vertical mullions; ~lit_frac of the panes glow warm at night-ish exposure.
@@ -427,6 +487,28 @@ static func make(kind: String) -> Mesh:
 		_cache[kind] = tm
 		return tm
 	match kind:
+		"rubble_civ":   # M3.3 P3 (19): a destroyed civilian building, 1 x 1 tile (scaled to the footprint)
+			var rng := RandomNumberGenerator.new()
+			rng.seed = 3301
+			var wall := Color("#b9ab92")
+			var brick := Color("#9a6a52")
+			var dark := Color("#5a534b")
+			box(st, Vector3(0, 0.02, 0), Vector3(0.96, 0.04, 0.96), Color("#8a8070"))
+			for i in 4:   # jagged wall stubs along the old outline
+				var a := i * PI * 0.5
+				var d := Vector3(sin(a), 0, cos(a)) * 0.4
+				for k in 3:
+					var off := Vector3(cos(a), 0, -sin(a)) * (k - 1) * 0.28
+					var hgt := rng.randf_range(0.06, 0.3)
+					box(st, d + off + Vector3(0, hgt * 0.5, 0), Vector3(0.26 if i % 2 == 0 else 0.06, hgt, 0.06 if i % 2 == 0 else 0.26), wall if k != 1 else brick, Vector3(0, 0, rng.randf_range(-6, 6)))
+			for i in 26:  # debris heap: broken slabs, bricks, beams
+				var p := Vector3(rng.randf_range(-0.36, 0.36), 0, rng.randf_range(-0.36, 0.36))
+				var hh := 0.16 * (1.0 - p.length() / 0.55)
+				var sz := Vector3(rng.randf_range(0.06, 0.2), rng.randf_range(0.03, 0.08), rng.randf_range(0.06, 0.2))
+				var col: Color = [wall, brick, dark, Color("#7d7468")][i % 4]
+				box(st, p + Vector3(0, maxf(0.03, hh * rng.randf_range(0.4, 1.0)), 0), sz, col, Vector3(rng.randf_range(-25, 25), rng.randf_range(0, 90), rng.randf_range(-25, 25)))
+			for i in 3:
+				box(st, Vector3(rng.randf_range(-0.2, 0.2), 0.12, rng.randf_range(-0.2, 0.2)), Vector3(0.04, 0.04, 0.5), Color("#4a3a2c"), Vector3(rng.randf_range(-20, 20), rng.randf_range(0, 180), 12))
 		"fence":
 			for fx in [-0.9, -0.3, 0.3, 0.9]:
 				box(st, Vector3(fx, 0.3, 0), Vector3(0.08, 0.6, 0.08), Color("#6e5a42"))

@@ -1,7 +1,7 @@
 class_name AIRussia
 extends AIPlayer
 ## M3.0 F Russia skirmish AI. Same rules as every AI. Uses the power-economy build planner of
-## AIPlayer with Russian structures (roles): Ministry of Defense (tech), Black Market (income),
+## AIPlayer with Russian structures (roles): Ministry of Defense (tech), Minerals Mining (income, was the Black Market),
 ## Airfield jets fly sorties through the shared AIPlayer air layer (M3.2). Infiltrators are capped like US snipers.
 
 func roles() -> Dictionary:

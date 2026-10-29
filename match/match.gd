@@ -59,6 +59,7 @@ func _build_scene() -> void:
 	# shadows, slightly cool ambient for the shadow side, light warm distance haze,
 	# slightly saturated filmic grade.
 	var menv := MapEnv.for_map(runner.sim.map_id)   # M2.5: per-map lighting
+	RenderingServer.global_shader_parameter_set(&"fl_night", float(menv.get("night", 0.0)))   # M3.3 P3 (20)
 	var env := WorldEnvironment.new()
 	var e := Environment.new()
 	e.background_mode = Environment.BG_COLOR
@@ -152,6 +153,7 @@ func _build_scene() -> void:
 
 func _exit_tree() -> void:
 	AudioDirector.on_match_end()
+	RenderingServer.global_shader_parameter_set(&"fl_night", 0.0)   # M3.3 P3: menus and the next day map are lit normally
 
 func _process(delta: float) -> void:
 	if not paused and not runner.sim.game_over:
@@ -183,6 +185,14 @@ func _income_floaters(evs: Array) -> void:
 			var u := runner.sim.get_ent(int(ev["id"]))
 			if u != null and u.owner == local_pid:
 				overlay.floater(FX.to_world(u.pos), "+$%d" % int(ev["amount"]), Color("#ffd166"))
+		elif ev["t"] == "sold" and int(ev["owner"]) == local_pid:
+			overlay.floater(FX.to_world(ev["pos"]), "+$%d" % int(ev["amount"]), Color("#ffd166"))
+		elif ev["t"] == "income" and int(ev["owner"]) == local_pid:
+			# M3.3: lump-sum income (Russia's mine): show it over each paying structure
+			for id in runner.sim.ids:
+				var b: SimEntity = runner.sim.ents[id]
+				if b.alive and b.owner == local_pid and b.kind == SimEntity.Kind.BUILDING and b.built and b.def_id == StringName(ev["def"]):
+					overlay.floater(FX.to_world(b.pos), "+$%d" % runner.sim.bdef(b).income_amount, Color("#ffd166"))
 
 func _game_over(delta: float) -> void:
 	if _over_t < 0.0:
@@ -268,6 +278,18 @@ func autosave() -> void:
 	var md := runner.serialize()
 	SaveSystem.save_suspend({"sim": md["sim"], "match": md,
 		"view": {"focus": cam.focus, "level": cam.level, "groups": ctl.groups}, "saved_at": Time.get_unix_time_from_system()})
+
+## M3.3: save to a manual slot (pause menu). Same payload as the suspend save.
+func save_to_slot(i: int) -> bool:
+	if runner.sim.game_over or local_pid < 0:
+		return false
+	var md := runner.serialize()
+	var fac := runner.sim.faction_of(local_pid)
+	var map_name := tr((Content.maps[runner.sim.map_id] as MapDef).name_key) if Content.maps.has(runner.sim.map_id) else String(runner.sim.map_id)
+	var secs := runner.sim.tick / FX.TICK_HZ
+	var label := "%s - %s - %02d:%02d" % [map_name, tr(Content.faction(fac)["name_key"]) if Content.faction(fac).has("name_key") else String(fac), secs / 60, secs % 60]
+	return SaveSystem.save_slot(i, {"sim": md["sim"], "match": md,
+		"view": {"focus": cam.focus, "level": cam.level, "groups": ctl.groups}, "saved_at": Time.get_unix_time_from_system()}, label)
 
 func _notification(what: int) -> void:
 	match what:

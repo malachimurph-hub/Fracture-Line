@@ -48,7 +48,9 @@ func _ready() -> void:
 		if parts.size() > 1:
 			for kv in parts[1].split(","):
 				var p := kv.split("=")
-				if v.has_method(p[0]):
+				if p[0] == "garrison":   # M3.3: preview the garrison flag (team colour index)
+					GarrisonMark.apply(v, int(p[1]))
+				elif v.has_method(p[0]):
 					if p.size() > 1:
 						v.call(p[0], float(p[1]))
 					else:

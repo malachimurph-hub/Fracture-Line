@@ -8,6 +8,8 @@ var sim: SimWorld
 var local_pid: int = 0
 var local_team: int = 0
 var terrain: TerrainView
+var night: NightLights = null   ## M3.3 P3 (20): light pools on night maps
+var _night_t := 0.0
 var vfx: Vfx
 var wfx: WeaponFx                ## M2.4 weapon effects (travelling rounds, no beams)
 var views: Dictionary = {}       ## id -> EntityView
@@ -25,7 +27,8 @@ var shield_domes: Dictionary = {}  ## aegis id -> MeshInstance3D
 var dome_mat: StandardMaterial3D
 var rally_nodes: Array = []
 var alpha: float = 0.0
-var unit_scale: float = 1.0      ## readability scale; infantry squads render ~1.4x (GDD 14.2)
+var unit_scale: float = 1.0      ## readability scale
+const INF_SCALE := 1.0           ## M3.3 item 16: infantry at vehicle scale (was 1.4x, GDD 14.2)
 var icon_mode: bool = false      ## far zoom: models hidden, overlay draws role icons
 var deferred_deaths: Dictionary = {}   ## unit id -> true while its killing round is in flight
 var rigs: Dictionary = {}        ## building id -> ConstructionRig while under construction
@@ -42,6 +45,8 @@ func setup(r: MatchRunner, pid: int) -> void:
 	sim = r.sim
 	local_pid = pid
 	local_team = sim.players[pid].team if pid >= 0 else -1
+	_init_crushers()
+	FX.ground = sim.map   # M3.3 P3 (17): views follow the ground height on maps with hills
 	terrain = TerrainView.new()
 	add_child(terrain)
 	terrain.decor_override = (Content.maps[sim.map_id] as MapDef).decor
@@ -49,6 +54,12 @@ func setup(r: MatchRunner, pid: int) -> void:
 	vfx = Vfx.new()
 	add_child(vfx)
 	vfx.set_fog(terrain.fog_texture, Vector2(sim.map.w, sim.map.h))
+	if float(MapEnv.for_map(sim.map_id).get("night", 0.0)) > 0.0:   # M3.3 P3 (20) night maps
+		night = NightLights.new()
+		night.name = "NightLights"
+		add_child(night)
+		night.setup(terrain.fog_texture, Vector2(sim.map.w, sim.map.h))
+		night.add_lamps(terrain.lamps, func(x: float, z: float) -> float: return FX.ground_y(x, z))
 	wfx = WeaponFx.new()
 	add_child(wfx)
 	wfx.setup(self, vfx)
@@ -70,7 +81,7 @@ func setup(r: MatchRunner, pid: int) -> void:
 	_refresh_fog()
 
 func team_shape_index(team: int) -> int:
-	return clampi(team, 0, 3)
+	return maxi(0, team) % Palette.SHAPES.size()   # M3.3 P3 (21): teams 5-8 reuse the four shapes
 
 ## M2.5 aircraft (view only): altitude eased from the sim air_state (jets ~6 m, helicopters ~4 m,
 ## parked = on the pad), spinning Rotor/TailRotor nodes, bank in turns and a ground shadow.
@@ -88,8 +99,20 @@ func _air_view(id: int, e: SimEntity, ud: UnitDef, v: Node3D, p: Vector3, delta:
 		if home != null and e.phase == 0:   # M3.1: glide slope down to the touchdown point
 			var td := FX.to_world(AirSys.local_pos(home, AirSys.RWY_X0, AirSys.RWY_Z))
 			want = clampf(FX.to_world(e.pos).distance_to(td) * 0.6, 0.0, JET_ALT)
+	var dive := ud.tags.has("suicide") and want > 0.0
+	if dive:
+		# M3.3 (Malachi: bomb drone dives onto its target): over the last ~4 tiles before it is in
+		# detonation range the drone drops from cruise height to just above the target
+		var tid := e.target
+		if tid == 0 and not e.orders.is_empty():
+			tid = int(e.orders[0].get("target", 0))
+		var tgt := sim.get_ent(tid) if tid != 0 else null
+		if tgt != null and not ud.weapons.is_empty():
+			var dist_fx := sqrt(float(FX.dist2(e.pos, tgt.pos)))
+			var reach := float(FX.mt_to_fx(Content.weapon(ud.weapons[0]).range_mt))
+			want = lerpf(0.3, want, clampf((dist_fx - reach) / float(FX.ONE * 4), 0.0, 1.0))
 	var alt: float = air_alt.get(id, want)
-	alt = move_toward(alt, want, delta * (3.0 if jet else 2.0))
+	alt = move_toward(alt, want, delta * (3.0 if jet else (4.0 if dive else 2.0)))
 	air_alt[id] = alt
 	var spin := alt > 0.2 or not jet
 	var rotors: Array = v.get_meta("_rotors", [])
@@ -233,7 +256,7 @@ func _update_stacks(delta: float) -> void:
 			var wp: Array = []
 			for sp in pts:
 				wp.append(v.global_transform * (sp as Vector3))
-			nb[id] = [wp, _stack_bld[id][1] if _stack_bld.has(id) else randf() * 0.3]
+			nb[id] = [wp, _stack_bld[id][1] if _stack_bld.has(id) else randf() * 0.3, _stack_steam.has(e.def_id)]
 		_stack_bld = nb
 	var n := 0   # (buildings still draw as models at the far, icon zoom, so their chimneys smoke too)
 	for id in _stack_bld:
@@ -249,13 +272,24 @@ func _update_stacks(delta: float) -> void:
 		if n > 10:
 			break
 		for wp in it[0]:
-			vfx.stack_puff(wp)
+			vfx.stack_puff(wp, it[2])
 
+var _stack_steam := {}   ## M3.3: def ids whose Stack markers are cooling towers (big white steam)
 const STACK_WORDS := ["factory", "reactor", "power", "plant", "refinery", "forge", "foundry", "chop_shop", "garage", "works", "mill"]
 func _stack_points(v: EntityView, def_id: StringName) -> Array:
 	if _stack_cache.has(def_id):
 		return _stack_cache[def_id]
 	var pts: Array = []
+	# M3.3: models with explicit Stack markers (cooling towers, exhaust stacks) use those
+	if v.model != null:
+		for c in v.model.get_children():
+			if c is Marker3D and String(c.name).begins_with("Stack"):
+				pts.append((c as Marker3D).position)
+				if String(c.name).contains("Steam"):
+					_stack_steam[def_id] = true
+	if not pts.is_empty():
+		_stack_cache[def_id] = pts
+		return pts
 	var ok := false
 	for w in STACK_WORDS:
 		ok = ok or String(def_id).contains(w)
@@ -305,6 +339,51 @@ func _stack_points(v: EntityView, def_id: StringName) -> Array:
 	_stack_cache[def_id] = pts
 	return pts
 
+## M3.3 item 10: where a squad manning a barricade stands: [world pos, yaw] on the side away
+## from what it is shooting at (or behind the wall's front), squads spread along the wall.
+## [] when the unit is not on a barricade.
+func _barricade_slot(e: SimEntity) -> Array:
+	var host := sim.get_ent(-e.res_id)
+	if host == null or host.kind != SimEntity.Kind.BUILDING or not CommandSys.is_barricade(sim, host):
+		return []
+	var crew: Array = []
+	for id in sim.ids:
+		var u: SimEntity = sim.ents[id]
+		if u.kind == SimEntity.Kind.UNIT and u.res_id == -host.id:
+			crew.append(id)
+	var k := maxi(0, crew.find(e.id))
+	var n := maxi(1, crew.size())
+	var c := FX.to_world(host.pos)
+	var along := Vector3.RIGHT if host.fp.x >= host.fp.y else Vector3.BACK
+	var nrm := Vector3(-along.z, 0, along.x)
+	var front := Vector3(sin(host.rot * PI * 0.5), 0, cos(host.rot * PI * 0.5))
+	var side: float = -1.0 if nrm.dot(front) > 0.0 else 1.0   # default: behind the wall's front
+	var tgt := sim.get_ent(e.target)
+	if tgt != null and tgt.alive:
+		side = -1.0 if nrm.dot(FX.to_world(tgt.pos) - c) > 0.0 else 1.0
+	if views.has(host.id):
+		var last: float = views[host.id].get_meta("crew_side", side)
+		if tgt == null or not tgt.alive:
+			side = last
+		views[host.id].set_meta("crew_side", side)
+	var length := float(maxi(host.fp.x, host.fp.y))
+	var depth := float(mini(host.fp.x, host.fp.y)) * 0.25 + 0.12   # just behind the wall line
+	var pos := c + along * ((k - (n - 1) * 0.5) * length / float(n) * 0.9) + nrm * side * depth
+	var face := -nrm * side
+	if tgt != null and tgt.alive:
+		var d := FX.to_world(tgt.pos) - pos
+		if d.length() > 0.1 and d.normalized().dot(face) > 0.2:
+			face = d.normalized()
+	return [pos, atan2(face.x, face.z)]
+
+## M3.3: the builder stands at an unfinished site it is building (OrderSys "build", in reach).
+func _builder_working(e: SimEntity) -> bool:
+	var o: Dictionary = e.head()
+	if String(o.get("o", "")) != "build" or e.goal != MoveSys.NONE:
+		return false
+	var site := sim.get_ent(int(o.get("target", 0)))
+	return site != null and not site.built and sim.dist_to_building(e.pos, site) <= OrderSys.build_reach(e, o)
+
 func m_cam_sees(p: Vector3) -> bool:
 	var c := get_viewport().get_camera_3d()
 	return c != null and c.is_position_in_frustum(p)
@@ -341,6 +420,10 @@ func _ensure_view(e: SimEntity) -> EntityView:
 	v.position = _world_pos(e)
 	if e.kind == SimEntity.Kind.BUILDING or e.kind == SimEntity.Kind.NEUTRAL:
 		v.rotation.y = [0.0, PI * 0.5, PI, -PI * 0.5][e.rot]
+		if sim.map.has_elev:
+			_seat_on_slope(v, e.tile, e.fp)
+		if e.kind == SimEntity.Kind.BUILDING:
+			terrain.clear_area(e.tile, e.fp)   # M3.3: construction clears trees, rocks and clutter
 		if e.kind == SimEntity.Kind.BUILDING and Content.btag(e.def_id, "hole") and v.model != null:
 			# a rebuild hole covers the footprint of the structure that died there
 			var hf: Vector2i = Content.building(e.def_id).footprint
@@ -351,7 +434,7 @@ func _ensure_view(e: SimEntity) -> EntityView:
 	elif e.kind == SimEntity.Kind.UNIT:
 		var d: UnitDef = Content.unit(e.def_id)
 		if d.tags.has("infantry"):
-			v.scale = Vector3.ONE * 1.4
+			v.scale = Vector3.ONE * INF_SCALE   # M3.3 item 16: at vehicle scale (was 1.4x)
 		if e.tier > 0:
 			v.set_tier(e.tier)
 		if d.shield_aura_radius > 0:
@@ -368,6 +451,8 @@ func _ensure_view(e: SimEntity) -> EntityView:
 			shield_domes[e.id] = dome
 	views[e.id] = v
 	v.set_meta("owner", e.owner)
+	if e.kind == SimEntity.Kind.NEUTRAL and e.owner >= 0:
+		GarrisonMark.apply(v, sim.players[e.owner].color)   # M3.3: a loaded save keeps the flag
 	return v
 
 ## Called after every simulation tick.
@@ -401,6 +486,7 @@ func on_tick(events: Array) -> void:
 				if _visible_pos(ev["pos"]):
 					vfx.big_blast(FX.to_world(ev["pos"]), float(ev["r"]) / FX.ONE)
 					AudioDirector.sfx("expl_huge", FX.to_world(ev["pos"]))
+				_wreck_cars(FX.to_world(ev["pos"]), float(ev["r"]) / FX.ONE)
 			"rust_zone":
 				if _visible_pos(ev["pos"]) or local_team < 0:
 					vfx.rust_cloud(FX.to_world(ev["pos"]), float(ev["r"]) / FX.ONE, float(ev["ticks"]) / FX.TICK_HZ)
@@ -416,6 +502,9 @@ func on_tick(events: Array) -> void:
 				var b := sim.get_ent(int(ev["b"]))
 				if b != null and views.has(b.id):
 					views[b.id].set_team_material(Palette.team_material(sim.players[b.owner].color))
+					if b.kind == SimEntity.Kind.NEUTRAL:
+						views[b.id].set_meta("owner", b.owner)
+						GarrisonMark.apply(views[b.id], sim.players[b.owner].color if b.owner >= 0 else -1)
 			"power_fired":
 				var col := Color("#6fe3ff") if ev["def"] != &"eu_recon_sweep" else Color("#ffe08a")
 				var r := float(ev["r"])
@@ -435,6 +524,7 @@ func on_tick(events: Array) -> void:
 				if views[id].get_meta("owner") != want:
 					views[id].set_meta("owner", want)
 					views[id].set_team_material(Palette.team_material(sim.players[want].color if want >= 0 else -1))
+					GarrisonMark.apply(views[id], sim.players[want].color if want >= 0 else -1)   # M3.3: flag + team colour
 	if sim.fog.version != fog_version:
 		_refresh_fog()
 
@@ -455,6 +545,8 @@ func _on_fire(ev: Dictionary) -> void:
 	var garrison: SimEntity = null
 	if src.res_id < 0:
 		garrison = sim.get_ent(-src.res_id)
+		if garrison != null and v != null and v.visible and CommandSys.is_barricade(sim, garrison):
+			garrison = null   # M3.3 item 10: a barricade crew shoots from its own soldiers
 	var kind: String = String(ev["vfx"])
 	var cls := WeaponFx.class_of(StringName(ev.get("w", &"")), kind)
 	if cls == "none":
@@ -485,6 +577,9 @@ func _on_fire(ev: Dictionary) -> void:
 		v.on_fire()
 	var aim: Vector3 = (to + off) - (muzzles[0] as Vector3)
 	wfx.fire(cls, muzzles, aim, to, tgt.id if tgt != null else 0, hitk, off)
+	var wd0: WeaponDef = Content.weapon(StringName(ev.get("w", &"")))
+	if wd0 != null and wd0.splash_mt > 0 and terrain.has_cars():   # M3.3 P3 (19): blasts wreck parked cars
+		get_tree().create_timer(0.25, false).timeout.connect(_wreck_cars.bind(to, maxf(0.5, wd0.splash_mt / 1000.0)))
 	var is_struct := src.kind != SimEntity.Kind.UNIT or garrison != null
 	var snd: String = AudioDirector.weapon_sfx(_faction_of(src), kind, is_struct)
 	if cls == "flame":
@@ -566,7 +661,7 @@ func _on_death(ev: Dictionary) -> void:
 		return
 	if seen and not ev.get("silent", false):
 		if ev["kind"] == SimEntity.Kind.UNIT:
-			var inf := v != null and v.scale.x > 1.2
+			var inf := v != null and v is InfantryView
 			AudioDirector.sfx("body_fall" if inf else "expl_large", pos, -4.0 if inf else -2.0)
 			if inf:
 				vfx.impact(pos + Vector3(0, 0.2, 0), 0.4)
@@ -575,6 +670,7 @@ func _on_death(ev: Dictionary) -> void:
 				vfx.wreck(pos, 18.0, 0.45)   # M3.2: scorch + tall burning-wreck smoke column
 		else:
 			vfx.building_destroyed(pos, v.footprint if v != null else Vector2(3, 3))
+			_wreck_cars(pos, (maxf(v.footprint.x, v.footprint.y) if v != null else 3.0) * 0.5 + 0.6)
 			AudioDirector.sfx("collapse", pos)
 			AudioDirector.sfx("expl_large", pos, 0.0, 0.1)
 	_forget_view(id)
@@ -586,6 +682,8 @@ func _on_death(ev: Dictionary) -> void:
 	else:
 		# M2.2 views can play a death (squad falls, vehicle wreck, building rubble) and free
 		# themselves after it; everything else disappears at once as before
+		if ev["kind"] == SimEntity.Kind.NEUTRAL and not v.has_method("play_death"):
+			_civ_rubble(v)   # M3.3 P3 (19): civilian buildings leave a rubble heap
 		if seen and not ev.get("silent", false) and v.has_method("play_death"):
 			var linger: float = v.play_death()
 			if linger > 0.0:
@@ -702,8 +800,126 @@ func _update_crashes(delta: float) -> void:
 	crashes = keep
 
 ## Called every rendered frame.
+## M3.3 Phase 3 (19): parked cars hit by a blast become burning wrecks.
+func _wreck_cars(at: Vector3, r: float) -> void:
+	if not is_instance_valid(terrain):
+		return
+	for p in terrain.wreck_cars(Vector2(at.x, at.z), r):
+		if _visible_pos(FX.from_world(p)):
+			vfx.explosion(p + Vector3(0, 0.15, 0), 0.45)
+			vfx.wreck(p, 10.0, 0.25)
+
+func _civ_rubble(v: EntityView) -> void:
+	var mi := MeshInstance3D.new()
+	mi.name = "CivRubble"
+	mi.mesh = PropMeshes.make("rubble_civ")
+	if TerrainView.shared_house_material != null:
+		mi.material_override = TerrainView.shared_house_material
+	mi.transform = Transform3D(Basis(Vector3.UP, v.rotation.y).scaled(Vector3(v.footprint.x, 1.0 + v.footprint.x * 0.2, v.footprint.y)), v.position)
+	add_child(mi)
+	rubble_count += 1
+
+var rubble_count := 0
+
+## M3.3 P3 (20): floodlit aprons round visible structures, headlight beams for ground vehicles.
+func _update_night() -> void:
+	var blds: Array = []
+	var vehs: Array = []
+	for id in views:
+		var v: EntityView = views[id]
+		var e: SimEntity = sim.ents.get(id)
+		if e == null or not v.visible:
+			continue
+		if e.kind == SimEntity.Kind.BUILDING and e.built:
+			var col: Color = Palette.color(sim.players[e.owner].color) if e.owner >= 0 else Color(1, 1, 1)
+			blds.append([v.position, v.footprint, col])
+		elif e.kind == SimEntity.Kind.UNIT and not v is InfantryView:
+			var ud: UnitDef = Content.unit(e.def_id)
+			if ud.move_layer == &"vehicle":
+				# M3.3 (Malachi): beams start at the vehicle's front and point where its hull points
+				# (the view's own +Z, tilt included, flattened onto the ground)
+				var fw: Vector3 = v.global_transform.basis.z
+				fw.y = 0.0
+				if fw.length_squared() < 1e-6:
+					fw = Vector3(sin(v.rotation.y), 0, cos(v.rotation.y))
+				vehs.append([v.position, fw.normalized(), _front_of(v), minf(2.0, v.selection_radius * 1.2)])
+	night.set_buildings(blds)
+	night.set_vehicles(vehs)
+
+## Distance (m) from a vehicle view's origin to the front of its hull (largest local +Z of its
+## meshes), cached per view.
+func _front_of(v: EntityView) -> float:
+	if v.has_meta("_front"):
+		return float(v.get_meta("_front"))
+	var fz := 0.0
+	var inv := v.global_transform.affine_inverse()
+	for n in v.find_children("*", "MeshInstance3D", true, false):
+		var mi := n as MeshInstance3D
+		if mi.mesh == null or not mi.visible or mi.visibility_range_begin > 0.0:
+			continue
+		var bb: AABB = (inv * mi.global_transform) * mi.get_aabb()
+		if bb.size.is_finite() and bb.size.length() < 30.0:
+			fz = maxf(fz, bb.end.z)
+	fz = clampf(fz, 0.3, 4.0) if fz > 0.0 else v.selection_radius * 0.8
+	v.set_meta("_front", fz)
+	return fz
+
+## M3.3 P3 (17): a structure on a slope sits level at the highest corner of its footprint, on a
+## concrete plinth that reaches down to the lowest corner (classic RTS foundation).
+func _footprint_heights(t: Vector2i, fp: Vector2i) -> Vector2:
+	var lo := 1e9
+	var hi := -1e9
+	for yy in fp.y + 1:
+		for xx in fp.x + 1:
+			var hh := sim.map.corner_height(t.x + xx, t.y + yy)
+			lo = minf(lo, hh)
+			hi = maxf(hi, hh)
+	return Vector2(lo, hi)
+
+static var _plinth_mat: StandardMaterial3D = null
+func _seat_on_slope(v: EntityView, t: Vector2i, fp: Vector2i) -> void:
+	var hr := _footprint_heights(t, fp)
+	v.position.y = hr.y
+	var drop := hr.y - hr.x
+	if drop < 0.04:
+		return
+	if _plinth_mat == null:
+		_plinth_mat = StandardMaterial3D.new()
+		_plinth_mat.albedo_color = Color("#8d8678")
+		_plinth_mat.roughness = 0.95
+	var bm := BoxMesh.new()
+	bm.size = Vector3(fp.x + 0.08, drop + 0.12, fp.y + 0.08)
+	var mi := MeshInstance3D.new()
+	mi.name = "Plinth"
+	mi.mesh = bm
+	mi.material_override = _plinth_mat
+	mi.position = Vector3(0, -(drop + 0.12) * 0.5 + 0.04, 0)
+	v.add_child(mi)
+
+## M3.3 P3 (17): ground vehicles pitch and roll with the slope they stand on.
+func _tilt_on_slope(v: EntityView, p: Vector3, yaw_r: float) -> void:
+	var f := Vector3(sin(yaw_r), 0, cos(yaw_r)) * 0.6
+	var s := Vector3(f.z, 0, -f.x)
+	var hf := FX.ground_y(p.x + f.x, p.z + f.z) - FX.ground_y(p.x - f.x, p.z - f.z)
+	var hs := FX.ground_y(p.x + s.x, p.z + s.z) - FX.ground_y(p.x - s.x, p.z - s.z)
+	v.rotation.x = lerpf(v.rotation.x, -atan2(hf, 1.2), 0.25)
+	v.rotation.z = lerpf(v.rotation.z, atan2(hs, 1.2), 0.25)
+
+## Tanks and other heavy tracked vehicles crush cars they drive over.
+var _crushers := {}
+func _init_crushers() -> void:
+	for id in Content.units:
+		var ud: UnitDef = Content.units[id]
+		if ud.move_layer == &"vehicle" and ud.armor_type == &"heavy":
+			_crushers[id] = true
+
 func frame(a: float, delta: float) -> void:
 	_update_stacks(delta)
+	if night != null:
+		_night_t -= delta
+		if _night_t <= 0.0:
+			_night_t = 0.12
+			_update_night()
 	alpha = a
 	_update_crashes(delta)
 	if terrain.has_towers:
@@ -727,20 +943,33 @@ func frame(a: float, delta: float) -> void:
 			var ud: UnitDef = Content.unit(e.def_id)
 			if ud.move_layer == &"air":
 				p = _air_view(id, e, ud, v, p, delta)
+			var man := _barricade_slot(e) if e.res_id < 0 else []
+			if not man.is_empty():
+				p = man[0]
+			if v is InfantryView:
+				(v as InfantryView).set_braced(not man.is_empty())
 			v.position = p
+			if e.moving and _crushers.has(e.def_id) and (Engine.get_process_frames() + id) % 6 == 0 and terrain.has_cars():
+				terrain.wreck_cars(Vector2(p.x, p.z), 0.42, true)   # M3.3 P3 (19): tanks flatten parked cars
 			# M2.5 sniper stealth: own (or spectated) hidden units draw translucent
 			v.set_ghosted(e.stealthy and (e.team == local_team or local_team < 0))
 			var want := atan2(float(e.dir.x), float(e.dir.y))
+			if not man.is_empty():
+				want = man[1]
 			var y0: float = yaw.get(id, want)
 			var ny := lerp_angle(y0, want, minf(1.0, delta * 8.0))
 			yaw[id] = ny
 			v.rotation.y = ny
+			if sim.map.has_elev and ud.move_layer == &"vehicle":
+				_tilt_on_slope(v, p, ny)
 			if v.has_method("set_health"):
 				v.set_health(float(e.hp) / float(maxi(1, e.max_hp)))
 			if v.turret != null and Content.unit(e.def_id).turret_dps > 0:
 				# M2.3: the sim owns turret traverse (units only fire once aimed)
 				var tang := float(e.tface) * TAU / float(FX.ANG) - ny
 				v.turret.rotation.y = lerp_angle(v.turret.rotation.y, tang, minf(1.0, delta * 12.0))
+			elif v.turret != null and ud.tags.has("spg"):
+				v.turret.rotation.y = 0.0   # M3.3: self-propelled howitzers have a fixed turret; the hull aims
 			elif v.turret != null:
 				var tgt := sim.get_ent(e.target)
 				if tgt != null and sim.tick - e.firing_tick < 40:
@@ -749,8 +978,11 @@ func frame(a: float, delta: float) -> void:
 					v.turret.rotation.y = lerp_angle(v.turret.rotation.y, ang, minf(1.0, delta * 10.0))
 				else:
 					v.turret.rotation.y = lerp_angle(v.turret.rotation.y, 0.0, minf(1.0, delta * 3.0))
-			# dust behind moving vehicles
-			if v.scale.x < 1.2 and not icon_mode:
+			# M3.3: builders animate (blade / backhoe arm / crane boom) while they work at a site
+			if v is VehicleView and not (v as VehicleView).work_parts.is_empty():
+				(v as VehicleView).working = _builder_working(e)
+			# dust behind moving vehicles (M3.3: drones leave no trail; helicopters and jets keep theirs)
+			if not v is InfantryView and not icon_mode and not ud.tags.has("drone"):
 				var spd: float = p.distance_to(v.get_meta("lastp", p)) / maxf(delta, 0.001)
 				v.set_meta("lastp", p)
 				var acc: float = fx_acc.get(id, 0.0) + delta
@@ -835,7 +1067,11 @@ func _is_visible(e: SimEntity, _mem: Dictionary) -> bool:
 		return true
 	if e.kind == SimEntity.Kind.UNIT:
 		if e.res_id < 0:
-			return false
+			# M3.3 item 10: troops manning a barricade stand behind it in plain view
+			var host := sim.get_ent(-e.res_id)
+			if host == null or host.kind != SimEntity.Kind.BUILDING or not CommandSys.is_barricade(sim, host):
+				return false
+			return host.team == local_team or sim.fog.is_visible_ent(sim, local_team, host)
 		return e.team == local_team or sim.fog.is_visible_ent(sim, local_team, e)
 	if e.team == local_team:
 		return true
@@ -865,7 +1101,7 @@ func _update_rings() -> void:
 			add_child(ring)
 			rings[id] = ring
 		ring.visible = v.visible
-		var r := v.selection_radius * (1.4 if (e.kind == SimEntity.Kind.UNIT and Content.unit(e.def_id).tags.has("infantry")) else 1.0) + 0.15
+		var r := v.selection_radius * (INF_SCALE if (e.kind == SimEntity.Kind.UNIT and Content.unit(e.def_id).tags.has("infantry")) else 1.0) + 0.15
 		ring.position = v.position + Vector3(0, 0.05, 0)
 		ring.scale = Vector3(r, 1, r)
 
@@ -912,6 +1148,10 @@ func show_ghost(def_id: StringName, tile: Vector2i, rot: int, ok: bool, pid: int
 	ghost_pad.position = center + Vector3(0, 0.07, 0)
 	ghost_pad.scale = Vector3(fpv.x, 1, fpv.y)
 	ghost_pad.material_override = ghost_ok_mat if ok else ghost_bad_mat
+	if sim.map.has_elev:
+		var hr := _footprint_heights(tile, Vector2i(fpv))
+		center.y = hr.y
+		ghost_pad.position.y = hr.y + 0.07
 	ghost_model.position = center
 	ghost_model.rotation.y = [0.0, PI * 0.5, PI, -PI * 0.5][rot]
 	ghost_model.set_overlay(ghost_overlay_ok if ok else ghost_overlay_bad)
@@ -989,3 +1229,7 @@ func update_rally(b: SimEntity) -> void:
 	var len := a.distance_to(t)
 	if len > 0.1:
 		rally_line.transform = Transform3D(Basis.looking_at(t - a, Vector3.UP), (a + t) * 0.5).scaled_local(Vector3(0.06, 0.02, len))
+
+func _exit_tree() -> void:
+	if sim != null and FX.ground == sim.map:
+		FX.ground = null   # M3.3 P3 (17): the next screen starts on flat ground

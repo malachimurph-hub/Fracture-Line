@@ -8,16 +8,24 @@ extends SceneTree
 const SRC := "res://assets_src/quaternius_toon_shooter/"
 const OUT := "res://assets/models/infantry/"
 const FPS := 15.0
-const TARGET_TRIS := 1300
+const TARGET_TRIS := 1800   # M3.3: more detail (was 1300); still one MultiMesh per squad
 const HEIGHT := 0.5          # model units (old procedural soldiers were 0.5; WorldView scales infantry x1.4)
 ## M2.6 realistic proportions (Malachi: "less cartoony infantry"): the toon rig is re-proportioned
 ## at bake time in bone space - smaller head, longer legs and arms, taller torso - so soldiers read
 ## as adults at RTS distance (head ~1/7 of height instead of ~1/4).
-const PROPORTIONS := {"Head": Vector3(0.66, 0.66, 0.66), "Neck": Vector3(0.9, 1.15, 0.9), "Torso": Vector3(0.95, 1.12, 0.95),
-	"Abdomen": Vector3(0.92, 1.15, 0.92), "UpperLeg.L": Vector3(0.9, 1.32, 0.9), "UpperLeg.R": Vector3(0.9, 1.32, 0.9),
+## M3.3 (item 16, "less cartoony"): head smaller again and torso / legs slimmer.
+const PROPORTIONS := {"Head": Vector3(0.6, 0.6, 0.6), "Neck": Vector3(0.88, 1.15, 0.88), "Torso": Vector3(0.9, 1.12, 0.9),
+	"Abdomen": Vector3(0.88, 1.15, 0.88), "UpperLeg.L": Vector3(0.85, 1.32, 0.85), "UpperLeg.R": Vector3(0.85, 1.32, 0.85),
 	"LowerLeg.L": Vector3(0.95, 1.12, 0.95), "LowerLeg.R": Vector3(0.95, 1.12, 0.95),
 	"UpperArm.L": Vector3(0.95, 1.12, 0.95), "UpperArm.R": Vector3(0.95, 1.12, 0.95)}
-const ANIMS := [["idle", "Idle", true], ["run", "Run_Gun", true], ["fire", "Idle_Shoot", true], ["die", "Death", false]]
+const ANIMS := [["idle", "Idle", true], ["run", "Run_Gun", true], ["fire", "Idle_Shoot", true], ["die", "Death", false], ["lean", "Idle_Shoot", true, "lean"]]
+## M3.3 item 10: "lean" = the shooting pose bent forward at the waist, rifle over a barricade
+## (extra local bone rotations, degrees, applied on top of the clip)
+## (skeleton-space pitch about +X; children inherit, so the values add up the spine)
+## spine bends forward (+X), the shoulders and neck counter-rotate so the rifle and eyes stay level
+const POSE_MODS := {"lean": {"Abdomen": Vector3(22, 0, 0), "Torso": Vector3(10, 0, 0), "Neck": Vector3(-24, 0, 0),
+	"Shoulder.L": Vector3(-32, 0, 0), "Shoulder.R": Vector3(-32, 0, 0)}}
+var _mod: Dictionary = {}
 
 ## colours are linear-ish sRGB hex; "team" = flagged for the per-player colour
 const WEAPON_COLORS := {"Grey": "#3d4043", "Grey2": "#2b2d2f", "DarkGrey": "#1d1e20", "LightGrey": "#6a6e72", "Red": "#5a2a22"}
@@ -239,12 +247,13 @@ func _bake(key: String, spec: Dictionary) -> Dictionary:
 		var anim: Animation = player.get_animation(a[1])
 		var n: int = maxi(2, int(round(anim.length * FPS))) if a[2] else int(ceil(anim.length * FPS)) + 1
 		anim_info[a[0]] = [frames_total, n, FPS, 1 if a[2] else 0]
-		plan.append([a[1], n, anim.length, a[2]])
+		plan.append([a[1], n, anim.length, a[2], a[3] if a.size() > 3 else ""])
 		frames_total += n
 	var pimg := Image.create_empty(width, rows * frames_total, false, Image.FORMAT_RGBAH)
 	var nimg := Image.create_empty(width, rows * frames_total, false, Image.FORMAT_RGBA8)
 	var f := 0
 	for pl in plan:
+		_mod = POSE_MODS.get(pl[4], {})
 		for k in pl[1]:
 			var t: float = (float(k) / pl[1] * pl[2]) if pl[3] else minf(pl[2], float(k) / FPS)
 			var pose := _pose(player, skel, pl[0], t, srcs, P, N, owner_of, vb, vw)
@@ -257,6 +266,7 @@ func _bake(key: String, spec: Dictionary) -> Dictionary:
 				pimg.set_pixel(x, y, Color(p.x, p.y, p.z, 1.0))
 				nimg.set_pixel(x, y, Color(n3.x * 0.5 + 0.5, n3.y * 0.5 + 0.5, n3.z * 0.5 + 0.5, 1.0))
 			f += 1
+	_mod = {}
 	# ---- final mesh (reference pose positions, vertex id in UV2, LODs generated again)
 	var V2 := PackedVector3Array()
 	var N2 := PackedVector3Array()
@@ -319,7 +329,7 @@ func _bake(key: String, spec: Dictionary) -> Dictionary:
 
 ## Model-space positions and normals of every gathered vertex at time t of `anim`.
 func _pose(player: AnimationPlayer, skel: Skeleton3D, anim: String, t: float, srcs: Array, P: PackedVector3Array, N: PackedVector3Array, owner_of: PackedInt32Array, vb: Array, vw: Array) -> Array:
-	player.play(anim)
+	player.play(anim, 0.0 if not _mod.is_empty() else -1.0)   # M3.3: no blend-in from the previous clip for pose variants
 	player.seek(t, true)
 	player.pause()
 	var nb := skel.get_bone_count()
@@ -332,6 +342,10 @@ func _pose(player: AnimationPlayer, skel: Skeleton3D, anim: String, t: float, sr
 		if pr != Vector3.ONE:
 			lp = lp * Transform3D(Basis.from_scale(pr), Vector3.ZERO)
 		g[i] = lp if par < 0 else (g[par] as Transform3D) * lp
+		var md: Vector3 = _mod.get(skel.get_bone_name(i), Vector3.ZERO)
+		if md != Vector3.ZERO:   # rotate about the bone's joint in skeleton space (rig faces +Z)
+			var gi: Transform3D = g[i]
+			g[i] = Transform3D(Basis.from_euler(md * PI / 180.0) * gi.basis, gi.origin)
 	var sk := skel.global_transform
 	var mats := []   # per src: either per-bind skin transforms or one rigid transform
 	for s in srcs:
@@ -385,6 +399,10 @@ func _bone_globals(player: AnimationPlayer, skel: Skeleton3D, anim: String, t: f
 		if pr != Vector3.ONE:
 			lp = lp * Transform3D(Basis.from_scale(pr), Vector3.ZERO)
 		g[i] = lp if par < 0 else (g[par] as Transform3D) * lp
+		var md: Vector3 = _mod.get(skel.get_bone_name(i), Vector3.ZERO)
+		if md != Vector3.ZERO:   # rotate about the bone's joint in skeleton space (rig faces +Z)
+			var gi: Transform3D = g[i]
+			g[i] = Transform3D(Basis.from_euler(md * PI / 180.0) * gi.basis, gi.origin)
 	return g
 
 func _push(kit, name: String, bone: int, rel: Transform3D, srcs: Array, P: PackedVector3Array, N: PackedVector3Array, COL: PackedColorArray, owner_of: PackedInt32Array, vb: Array, vw: Array, out: PackedInt32Array) -> void:

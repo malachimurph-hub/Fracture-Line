@@ -132,8 +132,10 @@ static func _building(d: BuildingDef, sim: SimWorld, pid: int) -> Dictionary:
 		L.append(_t("INFO_POWER_GEN") % d.power)
 	elif d.power < 0:
 		L.append(_t("INFO_POWER_USE") % -d.power)
-	if d.passive_income > 0:
-		L.append(_t("INFO_INCOME") % (d.passive_income * 60))
+	if d.tags.has("income_burst") and d.income_amount > 0:
+		L.append(_t("INFO_INCOME_BURST") % [d.income_amount, d.income_period_s] + " (" + _t("INFO_INCOME") % EconSys.per_minute(d) + ")")
+	elif d.passive_income > 0 or d.income_amount > 0:
+		L.append(_t("INFO_INCOME") % EconSys.per_minute(d))
 	if d.capture_income > 0:
 		L.append(_t("INFO_INCOME_CAPTURED") % (d.capture_income * 60))
 	if d.is_refinery:

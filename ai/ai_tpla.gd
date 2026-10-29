@@ -1,7 +1,7 @@
 class_name AITpla
 extends AIPlayer
 ## TPLA skirmish AI (insurgent playstyle, after Zero Hour's GLA AI): a Laborer economy with a
-## few reserved builders, no power, tunnels used as forward bases (guards that pop out to
+## few reserved builders, Gas Turbine Plants for power (M3.3), tunnels used as forward bases (guards that pop out to
 ## ambush, damaged units heal inside), swarm raids by Rattlers / Shrikes against the enemy
 ## economy with hit-and-run retreats, salvage hunting by idle salvage vehicles, Demo Traps on
 ## the approach routes and at expansions, and TPLA general powers. Same command interface
@@ -50,7 +50,7 @@ func think() -> void:
 		_capture()
 		if _every("t_breach", 50):
 			_breach()
-	if cfg["powers"]:
+	if cfg["powers"] and Content.GENERALS_ENABLED:   # M3.3: generals are off
 		_powers()
 	if _every("t_air", 40):
 		_air()   # M2.9: jets fly sorties from the TPLA Airfield (shared AIPlayer air layer)
@@ -141,6 +141,14 @@ func _next_building() -> StringName:
 	var counts := {}
 	for b: SimEntity in my_ents(SimEntity.Kind.BUILDING):
 		counts[b.def_id] = counts.get(b.def_id, 0) + 1
+	# M3.3: Iran runs on power now (Gas Turbine Plants): keep a little headroom ahead of the build list
+	var pw := me()
+	if counts.get(&"tpla_den", 0) > 0 and pw.power_prod - pw.power_used < 3:
+		# M3.3: once the Defence Workshop is up and money allows, the Combined-Cycle Gas Plant
+		if counts.get(&"tpla_workshop", 0) > 0 and pw.supply >= Content.building(&"tpla_cc_plant").cost + 400:
+			return &"tpla_cc_plant"
+		if pw.supply >= Content.building(&"tpla_gas_plant").cost:
+			return &"tpla_gas_plant"
 	var desired := {}
 	for item in persona.opening:
 		var id := StringName(item)

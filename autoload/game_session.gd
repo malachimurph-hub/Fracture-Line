@@ -134,13 +134,13 @@ static func broken_dependencies(path: String, seen: Dictionary = {}) -> PackedSt
 	return out
 
 func error_log_text() -> String:
-	return "RULES OF ENGAGEMENT %s (%s, %s)\n%s\n\nRecent errors:\n%s" % [
+	return "FRACTURE LINE: GLOBAL CONFLICT %s (%s, %s)\n%s\n\nRecent errors:\n%s" % [
 		ProjectSettings.get_setting("application/config/version", "?"), OS.get_name(),
 		RenderingServer.get_current_rendering_method(), last_error_text, logger.text(60)]
 
 func fail(message: String) -> void:
 	last_error_text = message
-	push_error("RULES OF ENGAGEMENT: " + message)
+	push_error("FRACTURE LINE: " + message)
 	var f := FileAccess.open(ERROR_LOG_PATH, FileAccess.WRITE)
 	if f != null:
 		f.store_string(error_log_text())

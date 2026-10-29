@@ -136,7 +136,7 @@ func think() -> void:
 		_capture()
 		if _every("t_breach", 50):
 			_breach()
-	if cfg["powers"]:
+	if cfg["powers"] and Content.GENERALS_ENABLED:   # M3.3: generals are off
 		_powers()
 	if (faction() == &"eu" or faction() == &"ecc") and _every("t_air", 40):   # M3.0 E / M3.2: German, Russian jets
 		_air()
@@ -252,7 +252,7 @@ func _next_building() -> StringName:
 		return R["support"]
 	if seconds() > 600 and difficulty != "easy" and _has_role("aa_tower") and counts.get(R["aa_tower"], 0) < 1 and p.supply > 1200:
 		return R["aa_tower"]
-	if _has_role("income") and counts.get(R["tech"], 0) >= 1 and counts.get(R["income"], 0) < 1 and p.supply > 2600:
+	if _has_role("income") and counts.get(R["tech"], 0) >= 1 and counts.get(R["income"], 0) < 1 and p.supply > Content.building(R["income"]).cost + 600:   # M3.3: income buildings now cost $2k-$6.5k
 		return R["income"]
 	if seconds() > 540 and difficulty != "easy" and _has_role("mine") and counts.get(R["mine"], 0) < (4 if difficulty == "hard" else 2) and p.supply > 600:
 		return R["mine"]
@@ -531,10 +531,6 @@ func _pick_unit(bd: BuildingDef) -> StringName:
 				enemy_armor += 1
 	var total := 0
 	var weights := {}
-	var have_aegis := 0
-	for u: SimEntity in combat_units():
-		if u.def_id == &"eu_aegis":
-			have_aegis += 1
 	for uid in bd.produces:
 		var wgt: int = int(persona.unit_weights.get(uid, 1)) * 10
 		var ud: UnitDef = Content.unit(uid)
@@ -542,8 +538,6 @@ func _pick_unit(bd: BuildingDef) -> StringName:
 			wgt *= 2
 		if uid == "eu_grenadier" and enemy_inf > enemy_armor:
 			wgt *= 2
-		if uid == "eu_aegis" and have_aegis >= 1 + combat_units().size() / 10:
-			wgt = 0
 		if ud.tags.has("aa") and _enemy_air_seen() > 0:
 			wgt *= 4   # M2.5: enemy aircraft spotted - build anti-air
 		elif uid == "eu_flakwerk" and enemy_inf < 4:
@@ -671,7 +665,7 @@ func _army() -> void:
 		var back: Array = []
 		for id in bb["wave"]:
 			var e := w.get_ent(id)
-			if e != null and e.hp * 100 < e.max_hp * 30 and e.def_id != &"eu_aegis":
+			if e != null and e.hp * 100 < e.max_hp * 30 and Content.unit(e.def_id).shield_aura_radius == 0:   # (shield carriers from old saves hold)
 				back.append(e.id)
 		if not back.is_empty():
 			_send_back(back)

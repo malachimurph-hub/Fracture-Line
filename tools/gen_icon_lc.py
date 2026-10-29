@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""RULES OF ENGAGEMENT logo + app icon (M2.7), recreated from Malachi's own concept
+"""FRACTURE LINE: GLOBAL CONFLICT logo + app icon (M2.7; retitled M3.2.2, was Rules of Engagement), recreated from Malachi's own concept
 (builds/m2_7_rename/logo_concepts/concept4_tank_hex.jpg): a front-on Abrams-style tank in
 worn bronze, inside a rounded-square bronze frame (app icon) or a bronze hexagon badge with
-'RULES / OF / ENGAGEMENT' and a small red diamond (menu logo, splash).
+'FRACTURE / LINE / GLOBAL CONFLICT' and a small red diamond (menu logo, splash).
 
 Writes:
   icon.svg                          project icon (also rasterised to the 192 px launcher icon)
   assets/icons/lc_adaptive_*.svg    Android adaptive layers (fg = tank in the safe zone, bg, mono)
-  ui/logo/roe_badge.png             menu logo (transparent, 1024 px tall)
-  ui/logo/roe_splash.png            boot splash (badge centred on a transparent wide canvas)
+  ui/logo/fl_badge.png             menu logo (transparent, 1024 px tall)
+  ui/logo/fl_splash.png            boot splash (badge centred on a transparent wide canvas)
 PNGs for the launcher icons are rasterised by tools/gen_icon_lc.gd (Godot's SVG renderer):
   python3 tools/gen_icon_lc.py && godot --headless --path . -s res://tools/gen_icon_lc.gd
 Badge lettering: Barlow Semi Condensed Black (SIL OFL 1.1), baked into the PNG only.
@@ -158,9 +158,9 @@ def badge(Hout=1024):
         f = ImageFont.truetype(FONT, int(size * k))
         x0, y0, x1, y1 = ad.textbbox((0, 0), s, font=f)
         ad.text(((W - (x1 - x0)) / 2 - x0, cy * H - (y1 + y0) / 2), s, font=f, fill=255)
-    text("RULES", 0.50, 0.78, 0.17)
-    text("OF", 0.628, 0.2, 0.06)
-    text("ENGAGEMENT", 0.72, 0.84, 0.085)
+    text("FRACTURE", 0.50, 0.80, 0.15)
+    text("LINE", 0.622, 0.34, 0.08)
+    text("GLOBAL CONFLICT", 0.725, 0.76, 0.07)
     # drop shadow under the artwork
     sh = art.filter(ImageFilter.GaussianBlur(S * 5))
     img = Image.alpha_composite(img, Image.merge("RGBA", (*[Image.new("L", (W, H), 0)] * 3, sh.point(lambda v: int(v * 0.8)))).transform((W, H), Image.AFFINE, (1, 0, -S * 3, 0, 1, -S * 5)))
@@ -169,12 +169,12 @@ def badge(Hout=1024):
     # wear: small chips knocked out of the letters/tank
     chips = noise(W, H, 3, 21).point(lambda v: 0 if v > 238 else 255)
     img.paste(metal, (0, 0), ImageChops.multiply(art, chips))
-    # rust dashes either side of OF, red diamond
+    # rust dashes either side of LINE, red diamond
     dd = ImageDraw.Draw(img)
-    for x0 in (0.13, 0.64):
-        for i in range(6):
+    for x0 in (0.13, 0.728):
+        for i in range(4):
             xs = (x0 + i * 0.04) * W
-            dd.rectangle([xs, 0.622 * H, xs + 0.022 * W, 0.628 * H], fill=(122, 52, 34, 150))
+            dd.rectangle([xs, 0.613 * H, xs + 0.022 * W, 0.619 * H], fill=(122, 52, 34, 150))
     cx, cy, hw, hh = 0.5 * W, 0.835 * H, 0.085 * W, 0.024 * H
     dd.polygon([(cx - hw, cy), (cx, cy - hh), (cx + hw, cy), (cx, cy + hh)], fill=(120, 46, 30, 255))
     dd.polygon([(cx - hw, cy), (cx, cy - hh), (cx + hw, cy)], fill=(142, 56, 36, 255))
@@ -188,13 +188,15 @@ def badge(Hout=1024):
     return img.resize((W // S, Hout), Image.LANCZOS)
 
 if __name__ == "__main__":
+    import sys
     os.makedirs(f"{ROOT}/assets/icons", exist_ok=True)
     os.makedirs(f"{ROOT}/ui/logo", exist_ok=True)
-    write_svgs()
+    if "--logo-only" not in sys.argv:   # M3.2.2 retitle: the icon (tank, no lettering) is unchanged
+        write_svgs()
     b = badge()
-    b.save(f"{ROOT}/ui/logo/roe_badge.png", optimize=True)
+    b.save(f"{ROOT}/ui/logo/fl_badge.png", optimize=True)
     sp = Image.new("RGBA", (2340, 1080), (0, 0, 0, 0))
     bs = b.resize((int(b.width * 560 / b.height), 560), Image.LANCZOS)
     sp.alpha_composite(bs, ((2340 - bs.width) // 2, (1080 - bs.height) // 2))
-    sp.save(f"{ROOT}/ui/logo/roe_splash.png", optimize=True)
-    print("wrote icon.svg, assets/icons/lc_adaptive_{bg,fg,mono}.svg, ui/logo/roe_badge.png, ui/logo/roe_splash.png")
+    sp.save(f"{ROOT}/ui/logo/fl_splash.png", optimize=True)
+    print("wrote icon.svg, assets/icons/lc_adaptive_{bg,fg,mono}.svg, ui/logo/fl_badge.png, ui/logo/fl_splash.png")

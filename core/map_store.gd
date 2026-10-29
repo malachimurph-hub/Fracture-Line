@@ -44,7 +44,37 @@ static func to_dict(md: MapDef) -> Dictionary:
 	for p in md.prebuilt:
 		pb.append({"kind": String(p["kind"]), "spawn": int(p["spawn"]), "tile": _a(p["tile"])})
 	return {"format": FORMAT, "id": String(md.id), "name": tr_name(md), "size": _a(md.size), "env": String(md.env),
-		"tiles": Array(rows), "spawns": sp, "resources": rs, "neutrals": ns, "prebuilt": pb, "decor": md.decor.duplicate(true)}
+		"tiles": Array(rows), "spawns": sp, "resources": rs, "neutrals": ns, "prebuilt": pb, "decor": md.decor.duplicate(true),
+		"hills": md.hills.duplicate(true), "night": md.night, "elev": elev_encode(md.elev)}
+
+## M3.3 Phase 5: World Builder corner heights <-> a compact string ("" when flat):
+## "z1:<count>:" + base64(deflate(int16 little-endian mm)).
+static func elev_encode(e: PackedInt32Array) -> String:
+	if e.is_empty() or e.count(0) == e.size():
+		return ""
+	var b := PackedByteArray()
+	b.resize(e.size() * 2)
+	for i in e.size():
+		b.encode_s16(i * 2, clampi(e[i], -32000, 32000))
+	return "z1:%d:%s" % [e.size(), Marshalls.raw_to_base64(b.compress(FileAccess.COMPRESSION_DEFLATE))]
+
+static func elev_decode(s: Variant, want: int = -1) -> PackedInt32Array:
+	var out := PackedInt32Array()
+	if not (s is String) or not String(s).begins_with("z1:"):
+		return out
+	var parts := String(s).split(":", true, 2)
+	if parts.size() < 3:
+		return out
+	var n := int(parts[1])
+	if n <= 0 or (want >= 0 and n != want):
+		return out
+	var b := Marshalls.base64_to_raw(parts[2]).decompress(n * 2, FileAccess.COMPRESSION_DEFLATE)
+	if b.size() != n * 2:
+		return out
+	out.resize(n)
+	for i in n:
+		out[i] = b.decode_s16(i * 2)
+	return out
 
 static func tr_name(md: MapDef) -> String:
 	return TranslationServer.translate(md.name_key) if md.name_key != "" else String(md.id)
@@ -81,6 +111,13 @@ static func from_dict(d: Dictionary) -> MapDef:
 		if e is Array and e.size() >= 4:
 			dc.append([String(e[0]), float(e[1]), float(e[2]), int(e[3])])
 	md.decor = dc
+	var hl: Array = []
+	for e2 in d.get("hills", []):
+		if e2 is Array and e2.size() >= 4:
+			hl.append([int(e2[0]), int(e2[1]), int(e2[2]), int(e2[3])])
+	md.hills = hl
+	md.night = bool(d.get("night", false))
+	md.elev = elev_decode(d.get("elev", ""), (md.size.x + 1) * (md.size.y + 1))
 	md.custom = true
 	md.content_hash = hash_of(d)
 	return md
@@ -88,6 +125,10 @@ static func from_dict(d: Dictionary) -> MapDef:
 ## Hash of everything the deterministic sim reads (not the name / id / env).
 static func hash_of(d: Dictionary) -> String:
 	var core := [d.get("size"), d.get("tiles"), d.get("spawns"), d.get("resources"), d.get("neutrals"), d.get("prebuilt", [])]
+	if not d.get("hills", []).is_empty():   # M3.3 P3: only maps with hills hash them (old hashes unchanged)
+		core.append(d["hills"])
+	if String(d.get("elev", "")) != "":   # M3.3 P5: sculpted heights (maps without them keep their hash)
+		core.append(d["elev"])
 	return JSON.stringify(core).md5_text()
 
 static func path_of(id) -> String:
@@ -206,8 +247,8 @@ static func validate(d: Dictionary) -> PackedStringArray:
 	m.load_from(md)
 	if md.spawns.size() < 2:
 		errs.append("Place at least 2 start positions (have %d)." % md.spawns.size())
-	if md.spawns.size() > 4:
-		errs.append("At most 4 start positions.")
+	if md.spawns.size() > SkirmishConfig.SLOTS:   # M3.3 P3 (21): up to 8 players
+		errs.append("At most %d start positions." % SkirmishConfig.SLOTS)
 	var occ := {}   # tile -> label
 	var claim := func(t0: Vector2i, fp: Vector2i, label: String) -> void:
 		var bad_t := false

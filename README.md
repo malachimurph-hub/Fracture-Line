@@ -1,11 +1,15 @@
-# Rules of Engagement (formerly FRACTURE LINE)
+# Fracture Line: Global Conflict
 
 Original mobile RTS for Android, made in Godot 4.7.2 for Malachi Murphy. Main scene: `res://ui/main_menu.tscn`.
 
-## Rename (M2.7)
+## Title (M3.2.2)
 
-The player-visible name is now **Rules of Engagement**: main-menu title, credits, Android launcher label
-(`application/config/name`, export `package/name`) and the APK file name (`RulesOfEngagement-M<x>.apk`).
+The player-visible name is **Fracture Line: Global Conflict** (M3.2.2; the M2.7-M3.2.1 builds were
+called "Rules of Engagement", a title that is a registered trademark of another company for video
+games, so it was dropped). Main-menu badge and title text, boot splash, credits, error screen,
+window title (`application/config/name`) and Play listing use the full title; the Android launcher
+label (export `package/name`) is the short **Fracture Line** so it is not cut off under the icon.
+Output files: `FractureLine-M<x>.apk`, `FractureLine.aab`.
 
 These stay the same so the new APK installs as an update and keeps settings and saves:
 

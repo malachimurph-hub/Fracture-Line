@@ -5,11 +5,11 @@
 [resource]
 script = ExtResource("1_s")
 id = &"us_gbu"
-damage = 110
+damage = 130
 range_mt = 3000
 min_range_mt = 0
 cooldown_ms = 500
-damage_type = &"explosive"
+damage_type = &"demolition"
 splash_mt = 900
 targets_air = false
 targets_ground = true

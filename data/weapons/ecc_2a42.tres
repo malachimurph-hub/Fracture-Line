@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_s")
 id = &"ecc_2a42"
-damage = 13
+damage = 16
 range_mt = 6000
 min_range_mt = 0
 cooldown_ms = 250

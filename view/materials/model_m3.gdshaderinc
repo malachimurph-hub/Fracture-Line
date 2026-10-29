@@ -14,6 +14,7 @@
 // Weathering (object-space triplanar, so it sticks to moving parts) as the M2 shader: panel
 // lines, chipped paint, rust, grime, ground dirt, stencils, plus damage soot / scorch.
 global uniform float fl_tex_quality;
+global uniform float fl_night;   // M3.3 P3 (20): 1 on night maps - lamps and lit windows glow brighter
 uniform sampler2D weather_tex : hint_default_white, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D rust_tex : source_color, hint_default_white, filter_linear_mipmap_anisotropic, repeat_enable;
 // M3.1: 2048 px detail normal map (plate seams, rivets, hatches, grain), object-space triplanar.
@@ -150,7 +151,7 @@ void fragment() {
 		base *= mix(0.45, 1.0, link) * mix(1.0, 1.35, pin * (1.0 - link));
 		metal = mix(0.25, 0.75, link); rough = mix(0.9, 0.45, link); panel = 0.0; weather = 0.4;
 	} else if (cls == 5) {
-		emit = base * 3.0; panel = 0.0; weather = 0.0; rough = 0.2;
+		emit = base * (3.0 + fl_night * 2.5); panel = 0.0; weather = 0.0; rough = 0.2;
 	} else if (cls == 19) {
 		float pulse = 0.5 + 0.5 * sin(TIME * 2.1 + UV2.x);
 		emit = base * mix(1.6, 4.2, pulse * pulse); panel = 0.0; weather = 0.0; rough = 0.25;

@@ -45,7 +45,7 @@ Tier key: T0 base, T1 basic production, T2 needs a T1 production building, T3 ne
 | Listening Outpost | **Sentinel Outpost** | Detector / scout | 800 / 10 / T2 | Motor Pool | Detector: reveals stealthed units and structures in sight (12). Carries 2 infantry | added |
 | Helix (helicopter) | **Kestrel Helo** | Air transport / gunship | 1500 / 15 / T3 | Airstrip | No air layer yet | stub |
 | MiG (jet) | **Corvid Jet** | Air strike | 1500 / 15 / T3 | Airstrip | No air layer yet | stub |
-| (no ZH equivalent) | **Aegis Shield Carrier** | Mobile shield | 1200 / 15 / T2 | Heavy Factory | Area shield aura | exists (EU extra) |
+| (no ZH equivalent) | **Aegis Shield Carrier** | Mobile shield | 1200 / 15 / T2 | Heavy Factory | Area shield aura | REMOVED in M3.2.2 (def kept hidden for old saves / replays) |
 
 ### Structures
 | ZH role (reference) | FRACTURE LINE | Role | Cost / build s / tier | Prereqs | Special | Status |

@@ -4,7 +4,7 @@ cd "$(dirname "$0")/.."
 G=/workspace/tools/godot
 LOG=${1:-/tmp/m28_suite}; shift || true
 mkdir -p "$LOG"
-TESTS=${@:-content saveload replay placement corners resume tpla audio zh roster m24 m25 viewcost turret stash}
+TESTS=${@:-content saveload replay placement corners resume tpla audio zh roster m24 m25 viewcost turret stash airspread m33}
 fail=0
 for t in $TESTS; do
   s=$(date +%s)
