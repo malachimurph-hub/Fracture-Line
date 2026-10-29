@@ -123,14 +123,14 @@ func set_floodlights(fixtures: Array) -> void:
 		var x := Vector3.UP.cross(z).normalized()
 		var pool_c := aim + z * 0.4
 		pool_c.y = FX.ground_y(pool_c.x, pool_c.z) + 0.05
-		var pw := 2.4 + reach * 0.45
+		var pw := 1.5 + reach * 0.3
 		bld_mm.set_instance_transform(i, Transform3D(Basis(x * pw, Vector3.UP, z * (pw * 1.35)), pool_c))
-		bld_mm.set_instance_color(i, Color(c, 0.55))
+		bld_mm.set_instance_color(i, Color(c, 0.4))
 		flare_mm.set_instance_transform(i, Transform3D(Basis().scaled(Vector3(0.55, 0.55, 0.55)), lens))
 		flare_mm.set_instance_color(i, Color(c, 1.1))
 		var ax := lens - aim
-		shaft_mm.set_instance_transform(i, Transform3D(Basis(Vector3.RIGHT * pw * 0.8, ax, Vector3.FORWARD), (lens + aim) * 0.5))
-		shaft_mm.set_instance_color(i, Color(c, 0.6))
+		shaft_mm.set_instance_transform(i, Transform3D(Basis(Vector3.RIGHT * 0.7, ax, Vector3.FORWARD), (lens + aim) * 0.5))
+		shaft_mm.set_instance_color(i, Color(c, 0.3))
 	bld_mm.visible_instance_count = n
 	shaft_mm.visible_instance_count = n
 	_flood_flares = n
@@ -160,7 +160,7 @@ func set_vehicle_lamps(items: Array) -> void:
 		var lamps: Array = it[1]
 		var sz0: float = it[3] if it.size() > 3 else 0.0
 		var len := 3.2 + sz * 1.2
-		var wid := (0.9 + sz * 0.35) / sqrt(float(maxi(1, lamps.size())))
+		var wid := (1.3 + sz * 0.45) / sqrt(float(maxi(1, lamps.size())))
 		for lp: Vector3 in lamps:
 			if nb >= MAX_BEAMS:
 				break
