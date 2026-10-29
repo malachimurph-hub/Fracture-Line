@@ -179,7 +179,7 @@ static func _info_cards(m, tree: SceneTree, check: Callable, label: String) -> v
 			probs.append("%s %s: empty card" % inf)
 			continue
 		for line in d["lines"]:
-			if "INFO_" in line or "_DESC" in line or RegEx.create_from_string("%[-+0-9.]*[sdfv]").search(line) != null:
+			if "INFO_" in line or "_DESC" in line or _has_fmt(line):
 				probs.append("%s: untranslated '%s'" % [inf[1], line])
 		var dd: Variant = Content.building(StringName(inf[1])) if inf[0] == "building" else null
 		if dd != null:
@@ -257,6 +257,8 @@ static func lobby_problems(root: Control) -> Array:
 		var b := c as Control
 		if b == null or not b.is_visible_in_tree():
 			continue
+		if _scrolled_out(b):
+			continue   # M3.3: 8-slot lobby - rows below the fold are reached by scrolling
 		if not screen.encloses(b.get_global_rect()):
 			out.append("'%s' partly off screen %s" % [b.get("text"), b.get_global_rect()])
 		if b is Button:
@@ -276,3 +278,26 @@ static func lobby_problems(root: Control) -> Array:
 			if w > avail + 0.5:
 				out.append("'%s' text %.0f > %.0f" % [pb.text, w, avail])
 	return out
+
+
+## a leftover format placeholder such as %s, %d, %.1f or %+d (no RegEx: the stripped release
+## engine is built without the regex module)
+static func _has_fmt(line: String) -> bool:
+	var i := line.find("%")
+	while i >= 0:
+		var j := i + 1
+		while j < line.length() and "-+0123456789.".contains(line[j]):
+			j += 1
+		if j < line.length() and "sdfv".contains(line[j]):
+			return true
+		i = line.find("%", i + 1)
+	return false
+
+## inside a ScrollContainer and not fully within its visible area (reached by scrolling)
+static func _scrolled_out(c: Control) -> bool:
+	var p := c.get_parent()
+	while p != null:
+		if p is ScrollContainer:
+			return not (p as Control).get_global_rect().grow(0.5).encloses(c.get_global_rect())
+		p = p.get_parent()
+	return false

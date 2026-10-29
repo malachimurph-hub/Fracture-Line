@@ -87,7 +87,7 @@ func _run() -> void:
 			if String(o.name).begins_with("Difficulty"):
 				diffs.append(o)
 		var vis := diffs.filter(func(o): return o.is_visible_in_tree() and not o.disabled and o.modulate.a > 0.5)
-		_check(diffs.size() == 4 and vis.size() == 1, "lobby: Difficulty column (%d dropdowns, %d shown for AI slots)" % [diffs.size(), vis.size()])
+		_check(diffs.size() == SkirmishConfig.SLOTS and vis.size() == 1, "lobby: Difficulty column (%d dropdowns, %d shown for AI slots)" % [diffs.size(), vis.size()])
 		_check(vis.size() == 1 and vis[0].get_item_text(vis[0].selected) == tr("LOBBY_DIFF_MEDIUM"), "lobby: AI difficulty defaults to Medium")
 		var lp: Array = HudTextCheck.lobby_problems(cs)
 		_check(lp.is_empty(), "lobby fits 2340x1080, no clipped text %s" % [lp])
