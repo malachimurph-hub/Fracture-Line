@@ -70,6 +70,7 @@ static func run(t: Node) -> void:
 	_germany(t)
 	load("res://tests/m33_p2_test.gd").run(t)   # Phase 2
 	load("res://tests/m33_p3_test.gd").run(t)   # Phase 3
+	load("res://tests/m33_p4_test.gd").run(t)   # Phase 4
 
 # ------------------------------------------------------------------ combat balance
 static func _balance(t: Node) -> void:
