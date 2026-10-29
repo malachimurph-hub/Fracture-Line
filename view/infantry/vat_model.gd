@@ -16,3 +16,9 @@ extends Resource
 @export var anims: Dictionary = {}
 @export var height: float = 0.5
 @export var source: String = ""
+## M3.4: look variants baked into the mesh (vertex variant masks; the view picks one per soldier)
+@export var variants: int = 1
+## M3.4: 0 = always fires standing, 1 = some soldiers kneel to fire, 2 = always kneels (marksmen)
+@export var fire_kneel: int = 0
+## vertex colour packing: 1 = M2.6 (B + 1000 * team), 2 = M3.4 (B + 256 * (flags + 16 * mask))
+@export var fmt: int = 1

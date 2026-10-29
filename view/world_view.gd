@@ -435,6 +435,8 @@ func _ensure_view(e: SimEntity) -> EntityView:
 		var d: UnitDef = Content.unit(e.def_id)
 		if d.tags.has("infantry"):
 			v.scale = Vector3.ONE * INF_SCALE   # M3.3 item 16: at vehicle scale (was 1.4x)
+			if v is InfantryView:
+				(v as InfantryView).set_variant(e.id)   # M3.4: per-soldier look
 		if e.tier > 0:
 			v.set_tier(e.tier)
 		if d.shield_aura_radius > 0:

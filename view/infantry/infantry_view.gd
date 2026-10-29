@@ -22,6 +22,9 @@ var _speed := 0.0
 var _alive := 0
 var dying := false
 var braced := false               ## M3.3 item 10: manning a barricade (line up, lean over it)
+var variant := 0                  ## M3.4: look variant (head gear / packs) of this soldier
+var _scale := 1.0                 ## M3.4: slight per-soldier size variation
+const SKIN_TONES := [1.0, 0.72, 0.88, 1.08]
 
 func _ready() -> void:
 	super._ready()
@@ -43,7 +46,7 @@ func _ready() -> void:
 	for i in _n:
 		# small per-soldier facing / timing variety; stable per formation slot
 		var yaw := sin(i * 12.9898) * 0.25
-		mm.set_instance_transform(i, Transform3D(Basis(Vector3.UP, yaw), formation[i]))
+		mm.set_instance_transform(i, Transform3D(Basis(Vector3.UP, yaw).scaled(Vector3.ONE * _scale), formation[i]))
 		_phase[i] = fposmod(i * 0.37, 1.0)
 		_t[i] = _phase[i]
 	_apply()
@@ -57,6 +60,7 @@ static func _material(v: VatModel) -> ShaderMaterial:
 	m.set_shader_parameter("vat_nrm", v.nrm_tex)
 	m.set_shader_parameter("vat_w", v.width)
 	m.set_shader_parameter("vat_rows", v.rows)
+	m.set_shader_parameter("vat_fmt", v.fmt)
 	_mats[v] = m
 	return m
 
@@ -70,6 +74,38 @@ func set_team_material(mat: Material) -> void:
 		mmi = get_node("Model/Squad")
 	mmi.set_instance_shader_parameter(&"team_color", c)
 
+## M3.4 WorldView: pick this soldier's look from a stable per-unit seed (the entity id): head
+## gear / pack variant, skin tone, a slight uniform tint, height +-4 %, and clip timing.
+func set_variant(seed: int) -> void:
+	var h := absi(hash(seed * 7919 + 17))
+	variant = h % maxi(1, vat.variants if vat != null else 1)
+	_scale = 0.96 + float((h / 7) % 9) * 0.01
+	if mmi == null:
+		mmi = get_node("Model/Squad")
+	mmi.set_instance_shader_parameter(&"variant", float(variant))
+	mmi.set_instance_shader_parameter(&"skin_tone", SKIN_TONES[(h / 5) % SKIN_TONES.size()])
+	mmi.set_instance_shader_parameter(&"tint", 0.94 + float((h / 11) % 7) * 0.02)
+	for i in _phase.size():
+		_phase[i] = fposmod(_phase[i] + float(h % 97) / 97.0, 1.0)
+	if mmi.multimesh != null:
+		for i in _n:
+			var yaw := sin(i * 12.9898) * 0.25
+			mmi.multimesh.set_instance_transform(i, Transform3D(Basis(Vector3.UP, yaw).scaled(Vector3.ONE * _scale), formation[i]))
+
+## M3.4: which clip a state plays for this soldier (walk when slow, kneeling fire for some, two
+## death falls); older bakes without the clip fall back.
+func _clip_name(st: int, i: int) -> String:
+	var cn: String = ["idle", "run", "fire", "die", "lean", "walk"][st]
+	if st == 2 and vat.fire_kneel > 0 and (vat.fire_kneel == 2 or (variant + i) % 2 == 1):
+		cn = "fire_kneel"
+	elif st == 3 and (variant + i) % 2 == 1:
+		cn = "die2"
+	if not vat.anims.has(cn):
+		cn = {"fire_kneel": "fire", "die2": "die", "walk": "run", "lean": "fire"}.get(cn, "fire")
+	if not vat.anims.has(cn):
+		cn = "fire"
+	return cn
+
 ## WorldView: the squad mans a barricade - soldiers stand in a tight line behind the wall and
 ## lean over it with their rifles ("lean" clip; older bakes fall back to the shooting pose).
 func set_braced(on := true) -> void:
@@ -81,7 +117,9 @@ func set_braced(on := true) -> void:
 		var yaw := sin(i * 12.9898) * 0.25
 		var xf := Transform3D(Basis(Vector3.UP, yaw), formation[i])
 		if on:
-			xf = Transform3D(Basis(Vector3.UP, yaw * 0.3), Vector3((i - (_n - 1) * 0.5) * 0.17, 0, sin(i * 4.1) * 0.03))
+			xf = Transform3D(Basis(Vector3.UP, yaw * 0.3).scaled(Vector3.ONE * _scale), Vector3((i - (_n - 1) * 0.5) * 0.17, 0, sin(i * 4.1) * 0.03))
+		else:
+			xf = Transform3D(Basis(Vector3.UP, yaw).scaled(Vector3.ONE * _scale), formation[i])
 		mm.set_instance_transform(i, xf)
 
 ## WorldView: a shot was fired by this squad.
@@ -119,11 +157,12 @@ func _process(delta: float) -> void:
 	_last_pos = p
 	_fire_left = maxf(0.0, _fire_left - delta)
 	var moving := _speed > 0.25 and not dying
+	var slow := _speed < 0.7
 	for i in _n:
 		if _state[i] == 3:
 			_dead_t[i] += delta
 		else:
-			var s := 1 if moving else (2 if _fire_left > 0.0 else 0)
+			var s := (5 if slow else 1) if moving else (2 if _fire_left > 0.0 else 0)
 			if braced and not moving:
 				s = 4
 			if s != _state[i]:
@@ -135,10 +174,7 @@ func _process(delta: float) -> void:
 func _apply() -> void:
 	var mm := mmi.multimesh
 	for i in _n:
-		var cn: String = ["idle", "run", "fire", "die", "lean"][_state[i]]
-		if not vat.anims.has(cn):
-			cn = "fire"
-		var clip: Array = vat.anims[cn]
+		var clip: Array = vat.anims[_clip_name(_state[i], i)]
 		var first: int = clip[0]
 		var count: int = clip[1]
 		var fps: float = clip[2]
