@@ -60,6 +60,7 @@ func _build_scene() -> void:
 	# slightly saturated filmic grade.
 	var menv := MapEnv.for_map(runner.sim.map_id)   # M2.5: per-map lighting
 	RenderingServer.global_shader_parameter_set(&"fl_night", float(menv.get("night", 0.0)))   # M3.3 P3 (20)
+	RenderingServer.global_shader_parameter_set(&"fl_fill", MapEnv.model_fill(menv))   # M3.4
 	var env := WorldEnvironment.new()
 	var e := Environment.new()
 	e.background_mode = Environment.BG_COLOR
@@ -154,6 +155,7 @@ func _build_scene() -> void:
 func _exit_tree() -> void:
 	AudioDirector.on_match_end()
 	RenderingServer.global_shader_parameter_set(&"fl_night", 0.0)   # M3.3 P3: menus and the next day map are lit normally
+	RenderingServer.global_shader_parameter_set(&"fl_fill", Vector4.ZERO)
 
 func _process(delta: float) -> void:
 	if not paused and not runner.sim.game_over:

@@ -2,7 +2,7 @@ extends "res://tests/m33_shots.gd"
 ## M3.4 screenshots (no release build):
 ##   xvfb-run -a -s "-screen 0 1600x900x24" godot --path . --resolution 1600x900 \
 ##     --rendering-method mobile res://tests/m34_shots.tscn -- <out_dir> <part>
-## part: night | headlights | inf:<fac> (infantry close-ups: idle, firing, running)
+## part: night | headlights | shade (night base + city + the same base by day) | inf:<fac> (infantry close-ups: idle, firing, running)
 func _ready() -> void:
 	var args := OS.get_cmdline_user_args()
 	out_dir = args[0] if args.size() > 0 else "/tmp/m34"
@@ -13,6 +13,9 @@ func _ready() -> void:
 		await run_night()
 	elif p == "headlights":
 		await run_headlights()
+	elif p == "shade":
+		await run_night()
+		await run_day_base()
 	elif p.begins_with("inf:"):
 		await run_inf_close(p.substr(4))
 	print("=== M34 SHOTS DONE")
@@ -83,3 +86,19 @@ func _fire_all(firing: Array) -> void:
 			v.on_fire()
 			v._last_pos = Vector3.INF   # shots only: hold the firing pose even if the crowd shuffles
 			v._speed = 0.0
+
+
+## M3.4 shading check: the night_base_f layout on the daytime Riverside Metro (shadowed sides)
+func run_day_base() -> void:
+	await _start("riverside_metro", ["us", "eu"], false)
+	var hq := Vector2i(30, 30)
+	_bld(&"us_barracks", hq + Vector2i(6, 0))
+	_bld(&"us_reactor", hq + Vector2i(0, 6))
+	_bld(&"us_garage", hq + Vector2i(6, 6))
+	for k in 4:
+		_unit([&"us_halberd", &"us_bradley", &"us_lynx", &"us_halberd"][k], hq + Vector2i(12, 2 + k * 3), FX.ANG / 4)
+	_look(Vector2(hq.x + 8, hq.y + 7), 0)
+	m.cam.dist = 24.0
+	m.cam.target_dist = 24.0
+	await frames(50)
+	await shot("day_base")

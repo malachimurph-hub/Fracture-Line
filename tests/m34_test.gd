@@ -7,6 +7,7 @@ static func run(t: Node) -> void:
 	_lamps_on_models(t)
 	_beams_every_frame(t)
 	_floodlights(t)
+	_structure_fill(t)
 	if ResourceLoader.exists("res://tests/m34_inf_test.gd"):
 		await load("res://tests/m34_inf_test.gd").run(t)
 
@@ -162,3 +163,21 @@ static func _floodlights(t: Node) -> void:
 	for c in cols.values():
 		distinct[str(c)] = true
 	t._check(distinct.size() == 4, "each faction's floodlights have their own colour")
+
+# ------------------------------------------------------------------ structure shading (sky fill)
+## Malachi: "the shading on the structures might be a little too dark". Structures, hulls and
+## civilian buildings get a cheap sky fill from the fl_fill global; much stronger by moonlight,
+## a little by day; the infantry shader is left alone and no lights are added.
+static func _structure_fill(t: Node) -> void:
+	var day := MapEnv.model_fill(MapEnv.for_map(&"riverside_metro"))
+	var night := MapEnv.model_fill(MapEnv.for_map(&"riverside_metro_night"))
+	var dl := Vector3(day.x, day.y, day.z).length()
+	var nl := Vector3(night.x, night.y, night.z).length()
+	t._check(dl > 0.0 and nl > dl * 3.0 and nl < 2.0, "structures get a sky fill: a little by day (%.3f), more by moonlight (%.3f)" % [dl, nl])
+	var model := FileAccess.get_file_as_string("res://view/materials/model_m3.gdshaderinc")
+	var prop := FileAccess.get_file_as_string("res://view/terrain/prop.gdshader")
+	var inf := FileAccess.get_file_as_string("res://view/infantry/vat_soldier.gdshader")
+	t._check(model.contains("global uniform vec4 fl_fill") and prop.contains("global uniform vec4 fl_fill") and not inf.contains("fl_fill"), "the fill is in the structure / vehicle and prop shaders, not the infantry's")
+	t._check(ProjectSettings.has_setting("shader_globals/fl_fill"), "fl_fill is a project shader global")
+	var mt := FileAccess.get_file_as_string("res://match/match.gd")
+	t._check(mt.contains("MapEnv.model_fill(menv)") and mt.contains("\"fl_fill\", Vector4.ZERO"), "the match sets the fill for its map and clears it on the way out")

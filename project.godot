@@ -80,6 +80,11 @@ fl_night={
 "value": 0.0
 }
 
+fl_fill={
+"type": "vec4",
+"value": Vector4(0, 0, 0, 0)
+}
+
 fl_tex_quality={
 "type": "float",
 "value": 1.0
