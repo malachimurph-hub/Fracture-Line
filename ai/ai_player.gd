@@ -136,7 +136,7 @@ func think() -> void:
 		_capture()
 		if _every("t_breach", 50):
 			_breach()
-	if cfg["powers"]:
+	if cfg["powers"] and Content.GENERALS_ENABLED:   # M3.3: generals are off
 		_powers()
 	if (faction() == &"eu" or faction() == &"ecc") and _every("t_air", 40):   # M3.0 E / M3.2: German, Russian jets
 		_air()

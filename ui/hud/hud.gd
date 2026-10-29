@@ -193,6 +193,7 @@ func _build() -> void:
 	rp.add_child(row)
 	general_btn = _hud_btn(tr("HUD_GENERAL"), Vector2(77, 44))
 	general_btn.primary.connect(toggle_tray)
+	general_btn.visible = Content.GENERALS_ENABLED   # M3.3: generals are off
 	row.add_child(general_btn)
 	build_btn = _hud_btn(tr("HUD_BUILD"), Vector2(50, 44))
 	build_btn.primary.connect(open_build)
@@ -1183,6 +1184,9 @@ func open_build() -> void:
 			toast(tr("REASON_NO_BUILDER"))
 
 func toggle_tray() -> void:
+	if not Content.GENERALS_ENABLED:
+		tray.visible = false
+		return
 	tray.visible = not tray.visible
 	if tray.visible:
 		_fill_tray()
@@ -1329,7 +1333,7 @@ func on_events(events: Array) -> void:
 					alert("lowpower", tr("ALERT_LOW_POWER"), Vector2i(-1, -1), 20.0)
 					AudioDirector.announce("low_power")
 			"rank":
-				if int(ev["owner"]) == pid:
+				if int(ev["owner"]) == pid and Content.GENERALS_ENABLED:
 					alert("rank", tr("ALERT_RANK") % int(ev["rank"]), Vector2i(-1, -1), 0.5)
 					AudioDirector.announce("general_promoted")
 			"eliminated":
@@ -1376,6 +1380,6 @@ func on_events(events: Array) -> void:
 				if int(ev.get("owner", -1)) == pid and ev["kind"] == SimEntity.Kind.BUILDING and Content.btag(StringName(ev.get("def", "")), "tunnel") and not ev.get("silent", false):
 					AudioDirector.announce("tunnel_lost")
 			"power_fired":
-				if int(ev["owner"]) != pid and sim.enemies(sim.player_team(int(ev["owner"])), my_team) and float(ev["r"]) > 0:
+				if int(ev["owner"]) != pid and Content.GENERALS_ENABLED and sim.enemies(sim.player_team(int(ev["owner"])), my_team) and float(ev["r"]) > 0:
 					alert("enemy_power", tr("ALERT_ENEMY_POWER"), ev["pos"], 10.0)
 					AudioDirector.announce("enemy_power_detected")

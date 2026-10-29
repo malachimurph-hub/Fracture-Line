@@ -11,11 +11,14 @@ func build() -> void:
 	var secs := int(r.get("ticks", 0)) / 20
 	v.add_child(UiTheme.label(tr("RESULT_DURATION") % [secs / 60, secs % 60], 14, UiTheme.CYAN))
 	var g := GridContainer.new()
-	g.columns = 8
+	var ranks := Content.GENERALS_ENABLED   # M3.3: generals are off, so no rank column
+	g.columns = 8 if ranks else 7
 	g.add_theme_constant_override("h_separation", 14)
 	g.add_theme_constant_override("v_separation", 6)
 	v.add_child(g)
 	for k in ["RES_COL_PLAYER", "RES_COL_TEAM", "RES_COL_RANK", "RES_COL_BUILT", "RES_COL_LOST", "RES_COL_KILLS", "RES_COL_STRUCT", "RES_COL_HARVEST"]:
+		if k == "RES_COL_RANK" and not ranks:
+			continue
 		g.add_child(UiTheme.label(tr(k), 12, Color(0.7, 0.7, 0.7)))
 	for p in r.get("players", []):
 		var st: Dictionary = p["stats"]
@@ -23,7 +26,8 @@ func build() -> void:
 		var lbl := UiTheme.label(name, 13, Palette.COLORS[int(p["color"])])
 		g.add_child(lbl)
 		g.add_child(UiTheme.label(str(int(p["team"]) + 1) + ("  WIN" if int(p["team"]) == int(r.get("winner_team", -9)) else ""), 13))
-		g.add_child(UiTheme.label(str(p["rank"]), 13))
+		if ranks:
+			g.add_child(UiTheme.label(str(p["rank"]), 13))
 		g.add_child(UiTheme.label(str(st.get("built", 0)), 13))
 		g.add_child(UiTheme.label(str(st.get("lost", 0)), 13))
 		g.add_child(UiTheme.label(str(st.get("kills", 0)), 13))

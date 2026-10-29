@@ -53,6 +53,12 @@ const FACTIONS := {
 		# M3.2: Russia unlocked (Malachi). The lock stays for future factions: add "enabled": false.
 }
 
+## M3.3 (Malachi: "Remove general points and abilities for all teams until we can make them
+## better"): the General button, tray, rank alerts and AI powers are off. The code, the power defs
+## and the sim commands stay (old saves and replays that bought powers still play back), and rank
+## and XP still count in the background. Set true to bring it all back.
+const GENERALS_ENABLED := false
+
 ## M3.0: false for a faction that is shown as "Coming soon" (locked, never picked by players, AI or random).
 func faction_enabled(f) -> bool:
 	var k := StringName(f)

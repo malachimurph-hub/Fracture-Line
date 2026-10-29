@@ -50,7 +50,7 @@ func think() -> void:
 		_capture()
 		if _every("t_breach", 50):
 			_breach()
-	if cfg["powers"]:
+	if cfg["powers"] and Content.GENERALS_ENABLED:   # M3.3: generals are off
 		_powers()
 	if _every("t_air", 40):
 		_air()   # M2.9: jets fly sorties from the TPLA Airfield (shared AIPlayer air layer)

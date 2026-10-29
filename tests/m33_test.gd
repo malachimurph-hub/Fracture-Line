@@ -49,6 +49,7 @@ static func place(w: SimWorld, pid: int, def_id: StringName, near: Vector2i, ski
 static func run(t: Node) -> void:
 	_balance(t)
 	_economy(t)
+	_generals(t)
 	_germany(t)
 
 # ------------------------------------------------------------------ combat balance
@@ -142,6 +143,43 @@ static func _economy(t: Node) -> void:
 static func _ticks(r: MatchRunner, n: int) -> void:
 	for i in n:
 		r.advance()
+
+# ------------------------------------------------------------------ Generals (hidden)
+static func _generals(t: Node) -> void:
+	t._check(not Content.GENERALS_ENABLED, "General points and powers are switched off")
+	# a hard AI with plenty of points and rank never buys or fires a power
+	var r := MatchRunner.new()
+	r.record_replay = false
+	var cfg: Dictionary = load("res://tests/test_runner.gd").make_cfg("1v1", 11, ["hard", "hard"], ["us", "ecc"])
+	for sl in cfg["slots"]:
+		sl["kind"] = "ai"
+	r.start(cfg)
+	var w := r.sim
+	for p in w.players:
+		p.rank = 5
+		p.points = 20
+	var fired := 0
+	for i in 2400:
+		r.advance()
+		for ev in w.events:
+			if String(ev.get("t", "")) in ["power_bought", "power_fired"]:
+				fired += 1
+	t._check(fired == 0 and w.players[0].powers.is_empty() and w.players[1].powers.is_empty(), "hard AIs with 20 points buy and fire no powers (%d events)" % fired)
+	# an old replay's power purchase still plays back (the sim keeps the commands)
+	var pw: StringName = &""
+	for id in Content.powers:
+		var d: PowerDef = Content.powers[id]
+		if not d.stub and Content.faction_of_id(id) == w.players[0].faction and d.rank_required <= 5 and d.point_cost <= 20:
+			pw = id
+			break
+	t._check(pw != &"", "test setup: a US power to buy (%s)" % pw)
+	r.ais.clear()
+	r.issue({"p": 0, "t": "buy_power", "def": String(pw)})
+	r.advance()
+	t._check(w.players[0].powers.has(String(pw)), "an old replay's power purchase still plays back")
+	# the HUD has no General button and the tray never opens
+	var hud_src: String = FileAccess.get_file_as_string("res://ui/hud/hud.gd")
+	t._check(hud_src.contains("general_btn.visible = Content.GENERALS_ENABLED"), "the HUD hides the General button while generals are off")
 
 # ------------------------------------------------------------------ Germany
 static func _germany(t: Node) -> void:
