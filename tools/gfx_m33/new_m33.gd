@@ -32,7 +32,7 @@ static func jobs() -> Dictionary:
 	return {
 		"us_drop_zone": func() -> void: _make("drop_zone", Vector2(4, 4), 1.0, "us", _data_center4),
 		"us_reactor": func() -> void: _make("reactor", Vector2(3, 3), 2.4, "us", _nuclear, Callable(), [Vector3(0.78, 2.42, -0.62), Vector3(-0.42, 2.42, -0.82)]),
-		"tpla_gas_plant": func() -> void: _make("gas_plant", Vector2(3, 3), 1.9, "tpla", _gas_plant, Callable(), [Vector3(0.95, 1.92, -0.85), Vector3(0.45, 1.92, -0.85)]),
+		"tpla_gas_plant": func() -> void: _make("gas_plant", Vector2(3, 3), 1.9, "tpla", _gas_plant, Callable(), [Vector3(0.95, Y0 + 1.92, -0.5), Vector3(0.45, Y0 + 1.92, -0.5)]),
 		"tpla_cc_plant": func() -> void: _make("cc_plant", Vector2(4, 4), 2.6, "tpla", _cc_plant, _cc_fans, [Vector3(-0.95, 2.62, -1.2), Vector3(0.15, 2.62, -1.2)]),
 		"tpla_bazaar": func() -> void: _make("bazaar", Vector2(2, 2), 1.5, "tpla", _derrick, _pumpjack),
 		"eu_exchange": func() -> void: _make("exchange", Vector2(3, 3), 1.0, "eu", _auto_plant, Callable(), [Vector3(1.05, 1.15, -0.95)]),
@@ -85,7 +85,7 @@ static func _make(short: String, fp: Vector2, top: float, fac: String, hull_fn: 
 	i = 0
 	for p in stacks:
 		var sk := Marker3D.new()
-		sk.name = ("StackSteam%d" if short == "reactor" else "Stack%d") % i
+		sk.name = "Stack%d" % i
 		sk.position = p
 		model.add_child(sk)
 		sk.owner = root
@@ -250,7 +250,7 @@ static func _nuclear(g) -> void:
 	# containment: cylinder + dome
 	var dc := Vector3(-0.72, Y0, 0.6)
 	g.color(NP_W, Geo.CONCRETE)
-	g.cyl(0.5, 0.5, 0.55, 20, Transform3D(Basis.IDENTITY, dc + Vector3(0, 0.275, 0)))
+	g.cyl(0.5, 0.5, 0.55, 20, Transform3D(Basis.IDENTITY, dc))   # M3.3 fix: on the ground (was 0.275 up)
 	g.dome(0.5, 0.34, 4, 20, Transform3D(Basis.IDENTITY, dc + Vector3(0, 0.55, 0)))
 	g.color(NP_W2, Geo.CONCRETE)
 	g.band(0.505, Y0 + 0.5, 0.03, 0.004, 20, Transform3D(Basis.IDENTITY, Vector3(dc.x, 0, dc.z)))
@@ -299,6 +299,7 @@ static func _ir_band(g, c: Vector3, w: float, yaw: float) -> void:
 	for i in n:
 		g.rbox(t * Vector3(-w * 0.5 + 0.045 + i * 0.09, 0, 0.004), Vector3(0.026, 0.026, 0.004), Vector3(0, yaw, 45))
 
+const GP_SZ := -0.5   # gas plant stack z (over the boiler, which spans z -0.75 .. -0.15)
 static func _gas_plant(g) -> void:
 	# turbine hall
 	g.color(IR_S, Geo.CONCRETE)
@@ -332,14 +333,17 @@ static func _gas_plant(g) -> void:
 		g.color("#7f8481", Geo.STEEL)
 		for y in [0.25, 0.55]:
 			g.box(Vector3(x, Y0 + y, -0.144), Vector3(0.37, 0.02, 0.01))
-		g.color("#c9ccc8", Geo.STEEL)
-		g.cyl(0.11, 0.09, 1.1, 12, Transform3D(Basis.IDENTITY, Vector3(x, Y0 + 0.8 + 0.55, -0.85 + 0.0)))
-		g.color("#d8503c", Geo.PAINT)
-		g.band(0.092, Y0 + 1.75, 0.05, 0.004, 12, Transform3D(Basis.IDENTITY, Vector3(x, 0, -0.85)))
+		# M3.3 fix (Malachi): the stacks stand on the boiler roofs (cyl() grows up from its origin;
+		# they used to start 0.55 above the roof and behind the boiler, so they floated)
 		g.color(STEEL, Geo.STEEL)
-		g.box(Vector3(x, Y0 + 0.7, -0.78), Vector3(0.18, 0.18, 0.16))   # breeching duct
-		g.rail_ring(0.13, Y0 + 1.3, 10, 0.06, Transform3D(Basis.IDENTITY, Vector3(x, 0, -0.85)))
-		g.ladder(Vector3(x + 0.11, Y0 + 0.8, -0.85), 0.9, Vector3.BACK)
+		g.cyl(0.15, 0.12, 0.08, 12, Transform3D(Basis.IDENTITY, Vector3(x, Y0 + 0.79, GP_SZ)))   # seating collar
+		g.color("#c9ccc8", Geo.STEEL)
+		g.cyl(0.11, 0.09, 1.1, 12, Transform3D(Basis.IDENTITY, Vector3(x, Y0 + 0.8, GP_SZ)))
+		g.color("#d8503c", Geo.PAINT)
+		g.band(0.092, Y0 + 1.75, 0.05, 0.004, 12, Transform3D(Basis.IDENTITY, Vector3(x, 0, GP_SZ)))
+		g.color(STEEL, Geo.STEEL)
+		g.rail_ring(0.13, Y0 + 1.3, 10, 0.06, Transform3D(Basis.IDENTITY, Vector3(x, 0, GP_SZ)))
+		g.ladder(Vector3(x + 0.105, Y0 + 0.8, GP_SZ), 0.9, Vector3.RIGHT)
 	# gas pipeline (yellow) from the property edge, valves, pig launcher
 	g.color(IR_G, Geo.PAINT)
 	g.pipe([Vector3(-1.45, Y0 + 0.08, -0.85), Vector3(-0.2, Y0 + 0.08, -0.85), Vector3(-0.2, Y0 + 0.08, -0.25), Vector3(0.25, Y0 + 0.08, -0.25)], 0.04)
@@ -363,7 +367,7 @@ static func _gas_plant(g) -> void:
 			g.box(p + Vector3(0.125, 0.1, -0.08 + k * 0.08), Vector3(0.012, 0.16, 0.012))
 		g.insulator(p + Vector3(0, 0.2, 0), 0.08)
 	_fence(g, 1.4, 1.4, 0.35)
-	UM._roof_lights(g, [Vector3(0.95, Y0 + 1.9, -0.85), Vector3(0.45, Y0 + 1.9, -0.85)])
+	UM._roof_lights(g, [Vector3(0.95, Y0 + 1.9, GP_SZ), Vector3(0.45, Y0 + 1.9, GP_SZ)])
 
 # ================================================================== Iran Combined-Cycle Gas Plant (4 x 4)
 ## Malachi 2026-10-29: Iran's advanced natural-gas power. Two gas-turbine halls (front), each
@@ -410,7 +414,7 @@ static func _cc_plant(g) -> void:
 		g.color("#8f9490", Geo.STEEL)
 		g.cbox(Vector3(x, Y0 + 0.9, -0.95), Vector3(0.3, 0.3, 0.3), 0.01)
 		g.color("#c9ccc8", Geo.STEEL)
-		g.cyl(0.15, 0.12, 2.5, 14, Transform3D(Basis.IDENTITY, sp + Vector3(0, Y0 + 1.25, 0)))
+		g.cyl(0.15, 0.12, 2.5, 14, Transform3D(Basis.IDENTITY, sp + Vector3(0, Y0, 0)))   # M3.3 fix: from the ground (was 1.25 up)
 		g.color("#d8503c", Geo.PAINT)
 		for y in [2.2, 2.42]:
 			g.band(0.125, Y0 + y, 0.07, 0.004, 14, Transform3D(Basis.IDENTITY, sp))
@@ -435,13 +439,14 @@ static func _cc_plant(g) -> void:
 	for iz in 4:
 		var c := Vector3(1.37, Y0 + 0.87, -1.2 + iz * 0.5)
 		g.color("#6f7471", Geo.STEEL)
-		g.cyl(0.17, 0.17, 0.05, 16, Transform3D(Basis.IDENTITY, c + Vector3(-0.18, 0.025, 0)))
-		g.cyl(0.17, 0.17, 0.05, 16, Transform3D(Basis.IDENTITY, c + Vector3(0.18, 0.025, 0)))
+		g.cyl(0.17, 0.17, 0.05, 16, Transform3D(Basis.IDENTITY, c + Vector3(-0.18, -0.01, 0)))   # M3.3 fix: on the deck
+		g.cyl(0.17, 0.17, 0.05, 16, Transform3D(Basis.IDENTITY, c + Vector3(0.18, -0.01, 0)))
 	g.color("#b4b8b4", Geo.STEEL)
-	g.rbox(Vector3(1.2, Y0 + 1.05, -0.45), Vector3(0.38, 0.01, 2.0), Vector3(0, 0, 35))
-	g.rbox(Vector3(1.54, Y0 + 1.05, -0.45), Vector3(0.38, 0.01, 2.0), Vector3(0, 0, -35))
+	# M3.3 fix: the A-frame coils stand on the fan deck (they hovered 8 cm above it)
+	g.rbox(Vector3(1.22, Y0 + 0.965, -0.45), Vector3(0.38, 0.01, 2.0), Vector3(0, 0, 35))
+	g.rbox(Vector3(1.52, Y0 + 0.965, -0.45), Vector3(0.38, 0.01, 2.0), Vector3(0, 0, -35))
 	g.color(STEEL, Geo.STEEL)
-	g.box(Vector3(1.37, Y0 + 1.16, -0.45), Vector3(0.1, 0.06, 2.0))
+	g.box(Vector3(1.37, Y0 + 1.07, -0.45), Vector3(0.1, 0.06, 2.0))
 	# steam pipework: boilers -> turbine hall -> condenser header
 	g.color("#d4d6d2", Geo.STEEL)
 	for k in 2:
@@ -518,7 +523,7 @@ static func _derrick(g) -> void:
 	# storage tanks
 	for p in [Vector3(0.55, Y0, -0.55), Vector3(0.55, Y0, -0.1)]:
 		g.color("#e6e1d4", Geo.PAINT)
-		g.cyl(0.17, 0.17, 0.34, 14, Transform3D(Basis.IDENTITY, p + Vector3(0, 0.17, 0)))
+		g.cyl(0.17, 0.17, 0.34, 14, Transform3D(Basis.IDENTITY, p))   # M3.3 fix: on the ground (was 0.17 up)
 		g.dome(0.17, 0.05, 2, 14, Transform3D(Basis.IDENTITY, p + Vector3(0, 0.34, 0)))
 		g.color(IR_T, Geo.PAINT)
 		g.band(0.172, p.y + 0.24, 0.04, 0.003, 14, Transform3D(Basis.IDENTITY, Vector3(p.x, 0, p.z)))
@@ -607,7 +612,7 @@ static func _auto_plant(g) -> void:
 		g.cbox(Vector3(1.1, Y0 + 0.66, -1.0 + i * 0.5), Vector3(0.4, 0.12, 0.3), 0.01)
 		g.fan(Vector3(1.1, Y0 + 0.72, -1.0 + i * 0.5), 0.1, 5, 6.0 + i)
 	g.color("#c9ccc8", Geo.STEEL)
-	g.cyl(0.07, 0.06, 0.55, 10, Transform3D(Basis.IDENTITY, Vector3(1.05, Y0 + 0.6 + 0.27, -0.95)))
+	g.cyl(0.07, 0.06, 0.55, 10, Transform3D(Basis.IDENTITY, Vector3(1.05, Y0 + 0.59, -0.95)))   # M3.3 fix: on the roof
 	g.color("#d8503c", Geo.PAINT)
 	g.band(0.062, Y0 + 1.07, 0.04, 0.003, 10, Transform3D(Basis.IDENTITY, Vector3(1.05, 0, -0.95)))
 	g.color(STEEL, Geo.STEEL)   # conveyor bridge hall -> paint shop
@@ -660,9 +665,9 @@ static func _excavator(g) -> void:
 		g.color(BW_G, Geo.STEEL)
 		g.cbox(Vector3(p.x, Y0 + 0.24, p.y), Vector3(0.3, 0.1, 0.5), 0.02)
 	g.color(BW_G, Geo.STEEL)
-	g.cyl(0.95, 0.95, 0.1, 20, Transform3D(Basis.IDENTITY, Vector3(0, Y0 + 0.34, 0)))   # ring girder
+	g.cyl(0.95, 0.95, 0.1, 20, Transform3D(Basis.IDENTITY, Vector3(0, Y0 + 0.285, 0)))   # ring girder (M3.3 fix: on the crawler frames)
 	g.color(BW_Y, Geo.PAINT)
-	g.cyl(0.7, 0.75, 0.12, 20, Transform3D(Basis.IDENTITY, Vector3(0, Y0 + 0.45, 0)))   # turntable
+	g.cyl(0.7, 0.75, 0.12, 20, Transform3D(Basis.IDENTITY, Vector3(0, Y0 + 0.38, 0)))   # turntable
 	# superstructure house
 	g.color(BW_Y, Geo.PAINT)
 	g.cbox(Vector3(0, Y0 + 0.75, -0.1), Vector3(0.9, 0.5, 1.0), 0.02)
@@ -673,9 +678,11 @@ static func _excavator(g) -> void:
 	g.color(GLASS_C, Geo.GLASS)
 	g.box(Vector3(0.05, Y0 + 1.2, -0.046), Vector3(0.45, 0.08, 0.006))
 	g.color(BW_O, Geo.PAINT)   # operator cab hung off the front, looking at the wheel
-	g.cbox(Vector3(-0.35, Y0 + 0.95, 0.55), Vector3(0.22, 0.2, 0.22), 0.015)
+	g.cbox(Vector3(-0.35, Y0 + 0.95, 0.52), Vector3(0.22, 0.2, 0.3), 0.015)   # M3.3 fix: bolted to the house front (was a 4 cm gap)
+	g.color(STEEL, Geo.STEEL)
+	g.box(Vector3(-0.35, Y0 + 0.84, 0.5), Vector3(0.16, 0.03, 0.26))   # cab bracket
 	g.color(GLASS_C, Geo.GLASS)
-	g.plate(Vector3(-0.35, Y0 + 0.97, 0.663), Vector3(0.18, 0.12, 0.006), Vector3(-12, 0, 0))
+	g.plate(Vector3(-0.35, Y0 + 0.97, 0.673), Vector3(0.18, 0.12, 0.006), Vector3(-12, 0, 0))
 	g.color("#ffffff", Geo.TEAM)
 	for s in [-1.0, 1.0]:
 		g.box(Vector3(s * 0.452, Y0 + 0.88, -0.1), Vector3(0.006, 0.07, 0.8))
@@ -772,11 +779,11 @@ static func _bucket_wheel(model: Node3D, root: Node3D, mat: Material) -> int:
 ## missile nose, a low control bunker, vents, warning stripes and perimeter posts.
 static func _silo(g) -> void:
 	g.color("#8d887d", Geo.CONCRETE)
-	g.cyl(0.62, 0.66, 0.08, 20, Transform3D(Basis.IDENTITY, Vector3(0.0, Y0 + 0.04, 0.1)))   # collar
+	g.cyl(0.62, 0.66, 0.08, 20, Transform3D(Basis.IDENTITY, Vector3(0.0, Y0 - 0.0, 0.1)))   # collar (M3.3 fix: from the ground)
 	g.color("#a19c90", Geo.CONCRETE)
-	g.cyl(0.5, 0.52, 0.02, 20, Transform3D(Basis.IDENTITY, Vector3(0.0, Y0 + 0.09, 0.1)))
+	g.cyl(0.5, 0.52, 0.02, 20, Transform3D(Basis.IDENTITY, Vector3(0.0, Y0 + 0.079, 0.1)))
 	g.color("#1c1d1c", Geo.DARK)
-	g.cyl(0.36, 0.36, 0.012, 16, Transform3D(Basis.IDENTITY, Vector3(0.0, Y0 + 0.095, 0.1)))   # shaft mouth
+	g.cyl(0.36, 0.36, 0.012, 16, Transform3D(Basis.IDENTITY, Vector3(0.0, Y0 + 0.09, 0.1)))   # shaft mouth
 	g.color("#5f6a56", Geo.PAINT)   # missile nose deep in the shaft
 	g.lathe([[Y0 + 0.02, 0.16], [Y0 + 0.07, 0.12], [Y0 + 0.095, 0.0]], 12, Transform3D(Basis.IDENTITY, Vector3(0, 0, 0.1)))
 	g.color("#e8d34a", Geo.PAINT)
@@ -796,8 +803,8 @@ static func _silo(g) -> void:
 	g.box(Vector3(-0.5, Y0 + 0.07, -0.548), Vector3(0.16, 0.1, 0.006))
 	g.color("#5d6163", Geo.STEEL)
 	for x in [0.35, 0.6]:
-		g.cyl(0.05, 0.05, 0.1, 8, Transform3D(Basis.IDENTITY, Vector3(x, Y0 + 0.05, -0.75)))
-		g.cyl(0.07, 0.07, 0.015, 8, Transform3D(Basis.IDENTITY, Vector3(x, Y0 + 0.12, -0.75)))
+		g.cyl(0.05, 0.05, 0.1, 8, Transform3D(Basis.IDENTITY, Vector3(x, Y0, -0.75)))   # M3.3 fix: vents from the ground
+		g.cyl(0.07, 0.07, 0.015, 8, Transform3D(Basis.IDENTITY, Vector3(x, Y0 + 0.1, -0.75)))
 	g.tube(Vector3(-0.75, Y0 + 0.16, -0.75), Vector3(-0.75, Y0 + 0.6, -0.75), 0.006, 3)
 	g.color("#ffffff", Geo.TEAM)
 	g.box(Vector3(-0.5, Y0 + 0.13, -0.547), Vector3(0.5, 0.025, 0.006))
