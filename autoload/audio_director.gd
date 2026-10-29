@@ -42,13 +42,15 @@ const BATTLE_PLAYLIST := ["res://audio/music/battle_iron_convoy.ogg", "res://aud
 const FACTION_PLAYLISTS := {
 	&"us": ["res://audio/music/battle_us_liberty_steel.ogg", "res://audio/music/battle_iron_convoy.ogg",
 		"res://audio/music/battle_dust_devils.ogg", "res://audio/music/battle_last_light.ogg"],
-	&"ecc": ["res://audio/music/battle_ru_red_bounce.ogg"],
+	&"ecc": ["res://audio/music/battle_ru_steppe_march.ogg", "res://audio/music/battle_ru_red_bounce.ogg"],
 	&"eu": ["res://audio/music/battle_de_tiefgarage.ogg"],
 	&"tpla": ["res://audio/music/battle_ir_zagros.ogg"],
 }
 var battle_faction: StringName = &""
 var _shuffle: Array = []
 var _last_battle := ""
+## M3.3: a match opens with the faction's signature track (playlist[0]), then shuffles.
+var _lead_first := false
 const AMBIENT := {"wind": "res://audio/ambient/desert_wind.ogg", "river": "res://audio/ambient/river.ogg"}
 
 var manifest: Dictionary = {}
@@ -211,6 +213,7 @@ func play_music(track: String) -> void:
 	music_track = track
 	if track == "battle":
 		_shuffle.clear()
+		_lead_first = FACTION_PLAYLISTS.has(battle_faction)
 		_next_battle_track()
 		return
 	var s := stream(MUSIC.get(track, ""))
@@ -231,6 +234,11 @@ func _next_battle_track() -> void:
 		_shuffle.shuffle()
 		if _shuffle.size() > 1 and _shuffle[0] == _last_battle:
 			_shuffle.push_back(_shuffle.pop_front())
+		if _lead_first:
+			var lead: String = battle_playlist()[0]
+			_shuffle.erase(lead)
+			_shuffle.push_front(lead)
+	_lead_first = false
 	_last_battle = _shuffle.pop_front()
 	var s := stream(_last_battle)
 	if s == null:

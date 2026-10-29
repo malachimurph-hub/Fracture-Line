@@ -602,7 +602,7 @@ func test_audio() -> void:
 		for t in pl:
 			fac_ok = fac_ok and ResourceLoader.exists(t) and load(t) is AudioStreamOggVorbis
 	ad.battle_faction = &"ecc"
-	fac_ok = fac_ok and ad.battle_playlist()[0].contains("ru_red_bounce")
+	fac_ok = fac_ok and ad.battle_playlist()[0].contains("ru_steppe_march")
 	ad.battle_faction = &""
 	_check(fac_ok, "M3.2 faction battle music: US rock / Russia hard bass / Germany club / Iran war drums load")
 	var missing: Array = []

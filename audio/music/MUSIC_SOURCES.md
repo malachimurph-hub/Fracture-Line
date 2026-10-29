@@ -28,3 +28,12 @@ In-match playback: autoload/audio_director.gd BATTLE_PLAYLIST, shuffled without 
 
 Battle music follows the local player's faction (AudioDirector.FACTION_PLAYLISTS); the menu stays rock.
 Regenerate: `python3 tools/gen_music_m32.py [us ru de ir] [--sample OUTDIR]`.
+
+## M3.3 traditional Russian theme (tools/gen_music_m33_ru.py)
+
+| File | Title | Faction | Style |
+|---|---|---|---|
+| battle_ru_steppe_march.ogg | Steppe March | Russia (opens every Russian match; Red Bounce stays in the shuffle) | traditional-style march, D minor, 108 bpm: male choir, balalaika tremolo and strums, bayan (button accordion) oom-pah, low brass, march snare, bass drum, timpani; accelerating balalaika bridge |
+
+Original composition (melodies and harmony written for this game; no folk tunes, anthems or other
+existing works quoted). Pure synthesis, no samples. Regenerate: `python3 tools/gen_music_m33_ru.py [--sample OUTDIR]`.
