@@ -453,4 +453,5 @@ static func _gfx(t: Node) -> void:
 	t._check(bomb["rotors"] == 4 and bomb["red"] > 0 and bomb["green"] == 0, "bomb drone: quadcopter with red lamps (%s)" % str(bomb))
 	t._check(scout["rotors"] == 4 and scout["green"] > 0 and scout["red"] == 0, "scout drone: quadcopter with green lamps (%s)" % str(scout))
 	var src: String = FileAccess.get_file_as_string("res://view/world_view.gd")
-	t._check(src.contains('ud.move_layer != &"air"'), "aircraft (drones) leave no dust trail")
+	t._check(src.contains('not ud.tags.has("drone")') and not src.contains('ud.move_layer != &"air"'), "drones leave no trail; helicopters and jets keep theirs")
+	t._check(Content.unit(&"us_bomb_drone").tags.has("drone") and Content.unit(&"us_scout_drone").tags.has("drone"), "both drones tagged drone")

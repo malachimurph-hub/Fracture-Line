@@ -765,9 +765,8 @@ func frame(a: float, delta: float) -> void:
 					v.turret.rotation.y = lerp_angle(v.turret.rotation.y, ang, minf(1.0, delta * 10.0))
 				else:
 					v.turret.rotation.y = lerp_angle(v.turret.rotation.y, 0.0, minf(1.0, delta * 3.0))
-			# dust behind moving vehicles (M3.3: not behind aircraft - drones trailed a dust "vapour
-			# trail" at altitude)
-			if v.scale.x < 1.2 and not icon_mode and ud.move_layer != &"air":
+			# dust behind moving vehicles (M3.3: drones leave no trail; helicopters and jets keep theirs)
+			if v.scale.x < 1.2 and not icon_mode and not ud.tags.has("drone"):
 				var spd: float = p.distance_to(v.get_meta("lastp", p)) / maxf(delta, 0.001)
 				v.set_meta("lastp", p)
 				var acc: float = fx_acc.get(id, 0.0) + delta
