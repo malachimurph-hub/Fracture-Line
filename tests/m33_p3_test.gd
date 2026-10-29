@@ -181,7 +181,7 @@ static func _night(t: Node) -> void:
 	for e in [M33._hq(w, 0), tank]:
 		wv._ensure_view(e)
 	wv.frame(1.0, 0.2)
-	t._check(wv.night.bld_mm.visible_instance_count >= 1 and wv.night.veh_mm.visible_instance_count >= 1, "structures are floodlit and vehicles drive with headlights")
+	t._check(wv.night.bld_mm.visible_instance_count >= 1 and wv.night.veh_mm.visible_instance_count >= 1, "structures carry floodlights and vehicles drive with headlights")
 	var src: String = FileAccess.get_file_as_string("res://view/materials/model_m3.gdshaderinc")
 	t._check(src.contains("fl_night"), "lamps and lit windows glow brighter at night")
 	wv.queue_free()

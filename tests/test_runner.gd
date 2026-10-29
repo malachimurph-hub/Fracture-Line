@@ -100,6 +100,8 @@ func _ready() -> void:
 			await load("res://tests/m33_test.gd").run(self)   # M3.3 Phase 1
 		"wb":
 			await load("res://tests/world_builder_test.gd").run(self)   # M3.3 Phase 5 World Builder
+		"m34":
+			await load("res://tests/m34_test.gd").run(self)   # M3.4 night lights + infantry
 		"stall":
 			var r2 := MatchRunner.new()
 			r2.record_replay = false
