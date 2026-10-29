@@ -754,6 +754,12 @@ func _draw_portrait() -> void:
 	var fit: Array = HudButton.fit_paragraph(ent_name(e), f, box, 12)
 	portrait_fit_ok = fit[1]
 	var para: TextParagraph = fit[0]
+	# M3.3 Phase 4: the portrait shows the unit / structure icon (its name is beside it)
+	var ic := UnitIcons.of(e.def_id) if e.kind == SimEntity.Kind.UNIT or e.kind == SimEntity.Kind.BUILDING else null
+	if ic != null:
+		var side := minf(s.x, s.y) - 6.0
+		sel_portrait.draw_texture_rect(ic, Rect2((s - Vector2(side, side)) * 0.5, Vector2(side, side)), false)
+		return
 	var h := 0.0
 	for i in para.get_line_count():
 		h += para.get_line_size(i).y
@@ -892,6 +898,7 @@ func _fill_types(units: Array) -> void:
 		listed += 1
 		var b := _hud_btn(tr(Content.unit(d).name_key), Vector2(59, 44))
 		b.sub = "×%d" % counts[d]
+		b.icon_tex = UnitIcons.of(d)   # M3.3 Phase 4: selection chips show the unit's icon
 		b.primary.connect(func():
 			var only: Array = []
 			for id in ctl.own_units_selected():
@@ -924,6 +931,7 @@ func _refresh_queue(e: SimEntity) -> void:
 		var q: HudButton = queue_slots[i]
 		var has := b != null and i < b.queue.size()
 		q.label_text = short_name(tr(Content.unit(b.queue[i]).name_key)) if has else ""
+		q.icon_tex = UnitIcons.of(b.queue[i]) if has else null   # M3.3 Phase 4: queue icons
 		q.progress = -1.0
 		q.badge = ""
 		q.disabled = not has
@@ -979,6 +987,7 @@ func _fill_queue(b: SimEntity) -> void:
 	var shown := b.queue.size() if b.queue.size() <= qmax else maxi(1, _chips_fit(QUEUE_CHIP.x, 24.0))
 	for i in shown:
 		var q := _hud_btn(tr(Content.unit(b.queue[i]).name_key), QUEUE_CHIP)
+		q.icon_tex = UnitIcons.of(b.queue[i])
 		if i == 0:
 			var need := FX.ms_to_ticks(Content.unit(b.queue[0]).build_time_ms) * 2
 			q.progress = float(b.q_progress) / float(maxi(1, need))
@@ -1042,6 +1051,7 @@ func _refresh_card() -> void:
 			b.accent = c.get("accent", Color(0, 0, 0, 0))
 			b.tooltip_text = c.get("tip", "")
 			b.has_info = c.has("info")
+			b.icon_tex = _entry_icon(c)
 			b.modulate = Color(1, 1, 1, 1) if not b.disabled else Color(1, 1, 1, 0.75)
 		else:
 			b.visible = true
@@ -1053,8 +1063,16 @@ func _refresh_card() -> void:
 			b.accent = Color(0, 0, 0, 0)
 			b.disabled = true
 			b.has_info = false
+			b.icon_tex = null
 			b.modulate = Color(1, 1, 1, 0.25)
 		b.queue_redraw()
+
+## M3.3 Phase 4: the icon of a train / build entry (its info card names the unit or structure).
+func _entry_icon(c: Dictionary) -> Texture2D:
+	var inf: Variant = c.get("info")
+	if inf is Array and (inf as Array).size() >= 2 and String(inf[0]) in ["unit", "building"]:
+		return UnitIcons.of(inf[1])
+	return null
 
 ## M3.2: data-driven info card (InfoCard) for a build / train / research / power entry.
 func _on_grid_info(on: bool, i: int, b: HudButton) -> void:

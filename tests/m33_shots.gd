@@ -15,6 +15,8 @@ func _ready() -> void:
 		await run_civ()
 	elif p == "mine":
 		await run_mine()
+	elif p.begins_with("hud:"):
+		await run_hud_icons(p.substr(4))
 	elif p == "headlights":
 		await run_headlights()
 	elif p == "hills":
@@ -146,3 +148,45 @@ func run_headlights() -> void:
 	m.cam.target_dist = 22.0
 	await frames(28)
 	await shot("night_headlights_fixed")
+
+## M3.3 Phase 4 (item 9): HUD icons - the build menu (builder selected), a factory with a queue,
+## and a mixed selection's type chips. fac = us | eu | tpla | ecc.
+func run_hud_icons(fac: String) -> void:
+	await _start("varno_crossing", [fac, "us" if fac != "us" else "eu"], false)
+	var fd: Dictionary = Content.faction(StringName(fac))
+	var hq := FX.to_tile(sim.ents[sim.ids[0]].pos)
+	for id in sim.ids:
+		var e0: SimEntity = sim.ents[id]
+		if e0.owner == 0 and e0.def_id == StringName(fd["hq"]):
+			hq = e0.tile
+	sim.players[0].supply = 20000
+	var builder: SimEntity = null
+	for id in sim.ids:
+		var e: SimEntity = sim.ents[id]
+		if e.owner == 0 and e.kind == SimEntity.Kind.UNIT and Content.unit(e.def_id).tags.has("builder"):
+			builder = e
+	_look(Vector2(hq.x + 6, hq.y + 6), 0)
+	m.cam.dist = 22.0
+	m.cam.target_dist = 22.0
+	if builder != null:
+		m.ctl.set_selection([builder.id])
+	await frames(30)
+	await shot("hud_icons_build_" + fac)
+	# a factory with a queue
+	var fac_b: SimEntity = null
+	for bid in Content.buildings:
+		var bd: BuildingDef = Content.buildings[bid]
+		if String(bid).begins_with(fac + "_") and bd.produces.size() >= 3 and fac_b == null and not bd.produces.has(StringName(fd.get("builder", ""))):
+			var t := _bld(bid, hq + Vector2i(7, 0))
+			for id in sim.ids:
+				var e2: SimEntity = sim.ents[id]
+				if e2.kind == SimEntity.Kind.BUILDING and e2.tile == t:
+					fac_b = e2
+	if fac_b != null:
+		var bd2: BuildingDef = Content.building(fac_b.def_id)
+		for k in 5:
+			m.ctl.queue_unit(fac_b, bd2.produces[k % bd2.produces.size()], 1)
+		m.ctl.set_selection([fac_b.id])
+		_look(Vector2(fac_b.tile.x + 2, fac_b.tile.y + 4), 0)
+	await frames(30)
+	await shot("hud_icons_queue_" + fac)
