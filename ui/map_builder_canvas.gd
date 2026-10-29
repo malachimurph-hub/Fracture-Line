@@ -8,6 +8,9 @@ extends Control
 ##        | {t:"pre", kind, slot, tile}   (pre-placed unit / building owned by start slot)
 signal doc_changed
 signal selection_changed
+## M3.3 Phase 5: what changed, so the 3D World Builder view can update only that part.
+## kind: "height" (rect = corner rect) | "tiles" (tile rect) | "items" | "all"
+signal edited(kind: String, rect: Rect2i)
 
 const TILE_NAMES := ["Grass", "Road", "Rough", "Water", "Ford", "Bridge", "Cliff", "Forest"]
 const BRUSHES := [1, 3, 5, 9, 15]
@@ -29,6 +32,13 @@ var map_name := ""
 var map_id := ""
 var env: StringName = &"desert"
 var dirty := false
+## M3.3 Phase 5 (47): sculpted ground height per tile corner (mm), (w + 1) * (h + 1). Hills from
+## a copied map are baked into it; saved as MapDef.elev (MapStore.elev_encode).
+var elev := PackedInt32Array()
+const HEIGHT_TOOLS := ["raise", "lower", "smooth", "flatten", "level0"]
+const HEIGHT_CAP := 3200       ## same as SimMap.ELEV_CAP
+var height_strength := 120     ## mm per dab at the brush centre (raise / lower)
+var _flat_target := 0
 
 var tool := "paint"            ## paint | fill | erase | place | select
 var paint_t := 0
@@ -83,6 +93,11 @@ func load_doc(d: Dictionary) -> void:
 		var ln: String = rows[y]
 		for x in mini(w, ln.length()):
 			tiles[y * w + x] = SimMap.CHAR_TO_T.get(ln[x], SimMap.T.GRASS)
+	elev = MapStore.elev_decode(d.get("elev", ""), (w + 1) * (h + 1))
+	if elev.size() != (w + 1) * (h + 1):
+		elev = PackedInt32Array()
+		elev.resize((w + 1) * (h + 1))
+	_bake_hills(d.get("hills", []))
 	items.clear()
 	var sp: Array = d.get("spawns", [])
 	for i in sp.size():
@@ -113,6 +128,24 @@ func load_doc(d: Dictionary) -> void:
 	fit()
 	doc_changed.emit()
 	selection_changed.emit()
+	edited.emit("all", Rect2i(0, 0, w + 1, h + 1))
+
+## Hills ([cx, cy, r, mm], SimMap.build_elevation's bump) become sculpted height.
+func _bake_hills(hills: Array) -> void:
+	for hl in hills:
+		var cx := int(hl[0])
+		var cy := int(hl[1])
+		var r := maxi(2, int(hl[2]))
+		var hm := int(hl[3])
+		var r2 := r * r
+		for y in range(maxi(0, cy - r), mini(h, cy + r) + 1):
+			for x in range(maxi(0, cx - r), mini(w, cx + r) + 1):
+				var d2 := (x - cx) * (x - cx) + (y - cy) * (y - cy)
+				if d2 < r2:
+					var u := 1024 - d2 * 1024 / r2
+					elev[y * (w + 1) + x] += hm * (u * u / 1024) / 1024
+	for i in elev.size():
+		elev[i] = clampi(elev[i], -HEIGHT_CAP, HEIGHT_CAP)
 
 func to_doc() -> Dictionary:
 	var rows: Array = []
@@ -150,17 +183,65 @@ func to_doc() -> Dictionary:
 			"neutral": ns.append({"kind": it["kind"], "tile": MapStore._a(it["tile"])})
 			"pre": pb.append({"kind": it["kind"], "spawn": int(slot_to_i.get(int(it["slot"]), -1)), "tile": MapStore._a(it["tile"])})
 	return {"format": MapStore.FORMAT, "id": map_id, "name": map_name, "size": [w, h], "env": String(env), "tiles": rows,
-		"spawns": sp, "resources": rs, "neutrals": ns, "prebuilt": pb, "decor": dc}
+		"spawns": sp, "resources": rs, "neutrals": ns, "prebuilt": pb, "decor": dc, "elev": MapStore.elev_encode(elev)}
 
 func _snapshot() -> Dictionary:
-	return {"tiles": tiles.duplicate(), "items": items.duplicate(true)}
+	return {"tiles": tiles.duplicate(), "items": items.duplicate(true), "elev": elev.duplicate()}
 
 func _restore(s: Dictionary) -> void:
+	# M3.3 Phase 5: tell the 3D view only what changed (a full rebuild of a big map is slow)
+	var tr := diff_rect(tiles, s["tiles"], w)
+	var er := Rect2i()
+	if s.has("elev"):
+		er = diff_rect_i(elev, s["elev"], w + 1)
+	var items_changed: bool = items != s["items"]
 	tiles = s["tiles"].duplicate()
 	items = s["items"].duplicate(true)
+	if s.has("elev"):
+		elev = s["elev"].duplicate()
 	selected = -1
 	_rebuild_image()
 	selection_changed.emit()
+	if tr.size != Vector2i.ZERO:
+		edited.emit("tiles", tr)
+	if er.size != Vector2i.ZERO:
+		edited.emit("height", er)
+		edited.emit("height_done", er)
+	if items_changed:
+		edited.emit("items", Rect2i())
+
+## bounding box of the cells that differ (row width `rw`)
+static func diff_rect(a: PackedByteArray, b: PackedByteArray, rw: int) -> Rect2i:
+	if a.size() != b.size():
+		return Rect2i(0, 0, rw, b.size() / maxi(1, rw))
+	if a == b:
+		return Rect2i()
+	var x0 := rw
+	var y0 := 1 << 30
+	var x1 := -1
+	var y1 := -1
+	for i in a.size():
+		if a[i] != b[i]:
+			var x := i % rw
+			var y := i / rw
+			x0 = mini(x0, x); x1 = maxi(x1, x); y0 = mini(y0, y); y1 = maxi(y1, y)
+	return Rect2i(x0, y0, x1 - x0 + 1, y1 - y0 + 1)
+
+static func diff_rect_i(a: PackedInt32Array, b: PackedInt32Array, rw: int) -> Rect2i:
+	if a.size() != b.size():
+		return Rect2i(0, 0, rw, maxi(a.size(), b.size()) / maxi(1, rw))
+	if a == b:
+		return Rect2i()
+	var x0 := rw
+	var y0 := 1 << 30
+	var x1 := -1
+	var y1 := -1
+	for i in a.size():
+		if a[i] != b[i]:
+			var x := i % rw
+			var y := i / rw
+			x0 = mini(x0, x); x1 = maxi(x1, x); y0 = mini(y0, y); y1 = maxi(y1, y)
+	return Rect2i(x0, y0, x1 - x0 + 1, y1 - y0 + 1)
 
 func _push_undo(s: Dictionary) -> void:
 	_undo.append(s)
@@ -199,7 +280,7 @@ func tile_ok(t: Vector2i) -> bool:
 func _set_tile(t: Vector2i, v: int) -> void:
 	if tile_ok(t) and tiles[t.y * w + t.x] != v:
 		tiles[t.y * w + t.x] = v
-		_img.set_pixel(t.x, t.y, tile_color(v))
+		_img.set_pixel(t.x, t.y, _shaded(tile_color(v), t.x, t.y) if elev.size() == (w + 1) * (h + 1) else tile_color(v))
 		_img_dirty = true
 
 func _brush_at(t: Vector2i) -> void:
@@ -225,6 +306,125 @@ func paint(path: Array) -> void:
 		else:
 			_brush_line(path[i - 1], path[i])
 	_push_undo(s)
+	edited.emit("tiles", _path_rect(path, brush / 2 + 1))
+
+## M3.3 Phase 5: live brush strokes for the 3D view (the ground updates under the finger):
+## begin_paint() at the first tile, paint_to() per new tile, end_paint() = one undo step.
+var _pstroke = null
+var _plast := Vector2i(-1, -1)
+func begin_paint(t: Vector2i) -> void:
+	_pstroke = _snapshot()
+	_plast = t
+	_brush_at(t)
+	edited.emit("tiles", _path_rect([t], brush / 2 + 1))
+
+func paint_to(t: Vector2i) -> void:
+	if _pstroke == null or t == _plast:
+		return
+	_brush_line(_plast, t)
+	edited.emit("tiles", _path_rect([_plast, t], brush / 2 + 1))
+	_plast = t
+
+func end_paint() -> void:
+	if _pstroke != null and _pstroke["tiles"] != tiles:
+		_push_undo(_pstroke)
+	_pstroke = null
+
+func cancel_paint() -> void:
+	if _pstroke == null:
+		return
+	var r := diff_rect(_pstroke["tiles"], tiles, w)
+	tiles = _pstroke["tiles"].duplicate()
+	_pstroke = null
+	_rebuild_image()
+	if r.size != Vector2i.ZERO:
+		edited.emit("tiles", r)
+
+func _path_rect(path: Array, pad: int) -> Rect2i:
+	if path.is_empty():
+		return Rect2i()
+	var r := Rect2i(path[0], Vector2i.ONE)
+	for p in path:
+		r = r.expand(p).expand(p + Vector2i.ONE)
+	return r.grow(pad).intersection(Rect2i(0, 0, w, h))
+
+# ------------------------------------------------------------------ M3.3 Phase 5: sculpting
+## Height brush stroke: begin_height() once, height_dab() per brush position (tile-space centre,
+## radius in tiles), end_height() commits one undo step. Modes: raise / lower (add or remove
+## height_strength mm at the centre, smooth falloff), smooth (relax toward the neighbours),
+## flatten (toward the height under the first dab), level0 (back to the ground plane).
+var _hstroke = null
+var _hrect := Rect2i()
+func begin_height(at: Vector2 = Vector2(-1, -1)) -> void:
+	_hstroke = _snapshot()
+	_hrect = Rect2i()
+	_flat_target = corner_mm(Vector2i(roundi(at.x), roundi(at.y))) if at.x >= 0 else 0
+
+func corner_mm(c: Vector2i) -> int:
+	if c.x < 0 or c.y < 0 or c.x > w or c.y > h or elev.is_empty():
+		return 0
+	return elev[c.y * (w + 1) + c.x]
+
+func height_dab(at: Vector2, radius: float, mode: String) -> Rect2i:
+	if _hstroke == null:
+		begin_height(at)
+	var r := maxf(0.75, radius)
+	var x0 := maxi(0, floori(at.x - r))
+	var x1 := mini(w, ceili(at.x + r))
+	var y0 := maxi(0, floori(at.y - r))
+	var y1 := mini(h, ceili(at.y + r))
+	var src := elev.duplicate() if mode == "smooth" else elev
+	for y in range(y0, y1 + 1):
+		for x in range(x0, x1 + 1):
+			var d := Vector2(x, y).distance_to(at) / r
+			if d >= 1.0:
+				continue
+			var f := (1.0 - d * d) * (1.0 - d * d)   # same bump shape as the hills
+			var k := y * (w + 1) + x
+			var v := elev[k]
+			match mode:
+				"raise":
+					v += roundi(height_strength * f)
+				"lower":
+					v -= roundi(height_strength * f)
+				"flatten":
+					v = roundi(lerpf(v, _flat_target, minf(1.0, f * 1.6)))
+				"level0":
+					v = roundi(lerpf(v, 0.0, minf(1.0, f * 1.6)))
+				"smooth":
+					var acc := 0
+					var n := 0
+					for dy in range(-1, 2):
+						for dx in range(-1, 2):
+							var xx := x + dx
+							var yy := y + dy
+							if xx >= 0 and yy >= 0 and xx <= w and yy <= h:
+								acc += src[yy * (w + 1) + xx]
+								n += 1
+					v = roundi(lerpf(v, float(acc) / n, minf(1.0, f * 0.9)))
+			elev[k] = clampi(v, -HEIGHT_CAP, HEIGHT_CAP)
+	var rr := Rect2i(x0, y0, x1 - x0 + 1, y1 - y0 + 1)
+	_hrect = rr if _hrect.size == Vector2i.ZERO else _hrect.merge(rr)
+	_shade_rect(rr)
+	edited.emit("height", rr)
+	return rr
+
+func end_height() -> void:
+	if _hstroke == null:
+		return
+	if _hstroke["elev"] != elev:
+		_push_undo(_hstroke)
+	_hstroke = null
+	edited.emit("height_done", _hrect)
+
+func cancel_height() -> void:
+	if _hstroke != null:
+		elev = _hstroke["elev"].duplicate()
+		_hstroke = null
+		edited.emit("height", _hrect)
+
+func has_height() -> bool:
+	return elev.count(0) < elev.size()
 
 func fill(t: Vector2i) -> void:
 	if not tile_ok(t):
@@ -249,6 +449,7 @@ func fill(t: Vector2i) -> void:
 				stack.append(ny * w + nx)
 	_rebuild_image()
 	_push_undo(s)
+	edited.emit("tiles", diff_rect(s["tiles"], tiles, w))
 
 static func item_fp(it: Dictionary) -> Vector2i:
 	match it["t"]:
@@ -292,6 +493,7 @@ func place_at(t: Vector2i, what: Dictionary = {}) -> int:
 	items.append(it)
 	selected = items.size() - 1
 	_push_undo(s)
+	edited.emit("items", Rect2i())
 	selection_changed.emit()
 	queue_redraw()
 	return selected
@@ -324,6 +526,7 @@ func move_selected(to_tile: Vector2i) -> void:
 	var fp := item_fp(items[selected])
 	items[selected]["tile"] = Vector2i(clampi(to_tile.x, 0, w - fp.x), clampi(to_tile.y, 0, h - fp.y))
 	_push_undo(s)
+	edited.emit("items", Rect2i())
 	queue_redraw()
 
 func delete_selected() -> void:
@@ -333,6 +536,7 @@ func delete_selected() -> void:
 	items.remove_at(selected)
 	selected = -1
 	_push_undo(s)
+	edited.emit("items", Rect2i())
 	selection_changed.emit()
 	queue_redraw()
 
@@ -343,6 +547,7 @@ func set_selected_amount(a: int) -> void:
 	items[selected]["amount"] = clampi(a, 1000, 200000)
 	amounts[items[selected]["kind"]] = items[selected]["amount"]
 	_push_undo(s)
+	edited.emit("items", Rect2i())
 	selection_changed.emit()
 	queue_redraw()
 
@@ -356,6 +561,7 @@ func rotate_selected() -> void:
 	var fp := item_fp(it)
 	it["tile"] = Vector2i(clampi(it["tile"].x, 0, w - fp.x), clampi(it["tile"].y, 0, h - fp.y))
 	_push_undo(s)
+	edited.emit("items", Rect2i())
 	selection_changed.emit()
 	queue_redraw()
 
@@ -365,6 +571,7 @@ func set_selected_slot(slot: int) -> void:
 	var s := _snapshot()
 	items[selected]["slot"] = slot
 	_push_undo(s)
+	edited.emit("items", Rect2i())
 	selection_changed.emit()
 	queue_redraw()
 
@@ -373,6 +580,7 @@ func set_env(e: StringName) -> void:
 	_rebuild_image()
 	dirty = true
 	doc_changed.emit()
+	edited.emit("all", Rect2i(0, 0, w + 1, h + 1))
 
 # ------------------------------------------------------------------ view
 func tile_at(p: Vector2) -> Vector2i:
@@ -421,12 +629,30 @@ func _rebuild_image() -> void:
 	var cols: Array = []
 	for t in 8:
 		cols.append(tile_color(t))
+	var shade := elev.size() == (w + 1) * (h + 1) and has_height()
 	for y in h:
 		for x in w:
-			_img.set_pixel(x, y, cols[tiles[y * w + x]])
+			var c: Color = cols[tiles[y * w + x]]
+			if shade:
+				c = _shaded(c, x, y)
+			_img.set_pixel(x, y, c)
 	_tex = ImageTexture.create_from_image(_img)
 	_img_dirty = false
 	queue_redraw()
+
+## M3.3 P5: 2D hill shading (light from the north-west) + a little brightness with height
+func _shaded(c: Color, x: int, y: int) -> Color:
+	var k := y * (w + 1) + x
+	var s := float(elev[k] - elev[k + w + 2]) * 0.0012 + float(elev[k]) * 0.00004
+	return c.lightened(s) if s > 0.0 else c.darkened(-s)
+
+func _shade_rect(r: Rect2i) -> void:
+	if _img == null:
+		return
+	for y in range(maxi(0, r.position.y - 1), mini(h, r.end.y + 1)):
+		for x in range(maxi(0, r.position.x - 1), mini(w, r.end.x + 1)):
+			_img.set_pixel(x, y, _shaded(tile_color(tiles[y * w + x]), x, y))
+	_img_dirty = true
 
 func _process(_dt: float) -> void:
 	if _img_dirty and _tex != null:
@@ -603,6 +829,9 @@ func _press(p: Vector2) -> void:
 				_drag_off = Vector2i(items[selected]["tile"]) - t
 			else:
 				_pan_one = true
+		"raise", "lower", "smooth", "flatten", "level0":   # M3.3 P5: sculpting works in the 2D view too
+			begin_height(Vector2(t) + Vector2(0.5, 0.5))
+			height_dab(Vector2(t) + Vector2(0.5, 0.5), brush * 0.5 + 0.25, tool)
 	queue_redraw()
 
 func _drag(p: Vector2) -> void:
@@ -621,6 +850,9 @@ func _drag(p: Vector2) -> void:
 				var fp := item_fp(items[_drag_item])
 				var nt := t + _drag_off
 				items[_drag_item]["tile"] = Vector2i(clampi(nt.x, 0, w - fp.x), clampi(nt.y, 0, h - fp.y))
+		"raise", "lower", "smooth", "flatten", "level0":
+			if t != _last_tile:
+				height_dab(Vector2(t) + Vector2(0.5, 0.5), brush * 0.5 + 0.25, tool)
 		_:
 			_pan_one = _pan_one or _moved
 	if _pan_one:
@@ -639,6 +871,9 @@ func _release(p: Vector2) -> void:
 		"paint", "erase":
 			if _snap != null and _snap["tiles"] != tiles:
 				_push_undo(_snap)
+				edited.emit("tiles", diff_rect(_snap["tiles"], tiles, w))
+		"raise", "lower", "smooth", "flatten", "level0":
+			end_height()
 		"fill":
 			if not _moved:
 				fill(t)
@@ -648,6 +883,7 @@ func _release(p: Vector2) -> void:
 		"select":
 			if _drag_item >= 0 and _moved and _snap != null:
 				_push_undo(_snap)
+				edited.emit("items", Rect2i())
 	_snap = null
 	_drag_item = -1
 	_pan_one = false
