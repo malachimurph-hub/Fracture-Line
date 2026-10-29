@@ -78,7 +78,7 @@ static func draw_flag(ci: CanvasItem, f: StringName, r: Rect2) -> void:
 
 ## Small flag icon (texture) for option lists such as the skirmish lobby faction picker.
 static func flag_texture(f: StringName, w: int = 24, h: int = 16) -> ImageTexture:
-	var img := Image.create(w, h, false, Image.FORMAT_RGBA8)
+	var img := Image.create_empty(w, h, false, Image.FORMAT_RGBA8)
 	if f == &"us":
 		for y in h:
 			var col := Color("#b22234") if (y * 7 / h) % 2 == 0 else Color.WHITE
