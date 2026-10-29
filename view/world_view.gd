@@ -401,6 +401,8 @@ func _ensure_view(e: SimEntity) -> EntityView:
 			shield_domes[e.id] = dome
 	views[e.id] = v
 	v.set_meta("owner", e.owner)
+	if e.kind == SimEntity.Kind.NEUTRAL and e.owner >= 0:
+		GarrisonMark.apply(v, sim.players[e.owner].color)   # M3.3: a loaded save keeps the flag
 	return v
 
 ## Called after every simulation tick.
@@ -449,6 +451,9 @@ func on_tick(events: Array) -> void:
 				var b := sim.get_ent(int(ev["b"]))
 				if b != null and views.has(b.id):
 					views[b.id].set_team_material(Palette.team_material(sim.players[b.owner].color))
+					if b.kind == SimEntity.Kind.NEUTRAL:
+						views[b.id].set_meta("owner", b.owner)
+						GarrisonMark.apply(views[b.id], sim.players[b.owner].color if b.owner >= 0 else -1)
 			"power_fired":
 				var col := Color("#6fe3ff") if ev["def"] != &"eu_recon_sweep" else Color("#ffe08a")
 				var r := float(ev["r"])
@@ -468,6 +473,7 @@ func on_tick(events: Array) -> void:
 				if views[id].get_meta("owner") != want:
 					views[id].set_meta("owner", want)
 					views[id].set_team_material(Palette.team_material(sim.players[want].color if want >= 0 else -1))
+					GarrisonMark.apply(views[id], sim.players[want].color if want >= 0 else -1)   # M3.3: flag + team colour
 	if sim.fog.version != fog_version:
 		_refresh_fog()
 

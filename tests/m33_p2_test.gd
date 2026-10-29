@@ -5,6 +5,7 @@ const M33 := preload("res://tests/m33_test.gd")
 
 static func run(t: Node) -> void:
 	_builders(t)
+	_garrison_flag(t)
 
 # ------------------------------------------------------------------ builders at work (45 / 33 / 36)
 static func _builders(t: Node) -> void:
@@ -40,3 +41,16 @@ static func _builders(t: Node) -> void:
 		t._check(v != null and v.work_parts.size() == 1 and v.work_parts[0][0].name == pair[3], "%s: the %s is a separate moving part" % [pair[1], pair[3]])
 		t._check(worked and moved, "%s: animates its %s while it works at the site" % [pair[1], pair[3]])
 		wv.queue_free()
+
+# ------------------------------------------------------------------ garrisoned civilian structures (11)
+static func _garrison_flag(t: Node) -> void:
+	var v: Node3D = load("res://view/buildings/neutral/house_a.tscn").instantiate()
+	t.add_child(v)
+	GarrisonMark.apply(v, 1)
+	var m: GarrisonMark = v.get_node_or_null("GarrisonMark")
+	t._check(m != null and m.visible and m.flag != null and m._mat.albedo_color == Palette.color(1), "a garrisoned house flies a flag in the occupier's colour")
+	GarrisonMark.apply(v, -1)
+	t._check(m != null and not m.visible, "the flag comes down when the house is empty")
+	v.queue_free()
+	var src: String = FileAccess.get_file_as_string("res://view/world_view.gd")
+	t._check(src.count("GarrisonMark.apply(") >= 3, "WorldView raises the flag on garrison, on empty-out and on load")
