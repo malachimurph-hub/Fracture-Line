@@ -5,7 +5,7 @@ const SHADER := "res://view/materials/weathered.gdshader"
 const TEX := "res://assets/textures/materials/"
 const FACTION := {
 	&"eu": {"rust": 0.12, "wear": 0.45, "dirt": 0.55},
-	&"tpla": {"rust": 0.55, "wear": 0.85, "dirt": 0.85},
+	&"tpla": {"rust": 0.15, "wear": 0.5, "dirt": 0.65},   # M3.3 item 34: a modern army, not ramshackle (was 0.55 / 0.85 / 0.85)
 	&"ecc": {"rust": 0.2, "wear": 0.55, "dirt": 0.7},   # M3.0 F Russia: worn field paint
 }
 const NEUTRAL := {"rust": 0.35, "wear": 0.6, "dirt": 0.7}
