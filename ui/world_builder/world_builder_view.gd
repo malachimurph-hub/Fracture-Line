@@ -247,6 +247,8 @@ func _rebuild_terrain() -> void:
 	tv.cache_shore = false
 	FX.ground = map
 	tv.build(map, "", MapEnv.of(canvas.env))
+	tv.fog_image.fill(Color(1, 1, 1))   # no fog of war in the editor: everything explored and in view
+	tv.fog_texture.update(tv.fog_image)
 	if terrain != null:
 		terrain.queue_free()
 	terrain = tv
@@ -347,7 +349,9 @@ func _scene(path: String) -> PackedScene:
 func rebuild_items() -> void:
 	for n in item_nodes:
 		if is_instance_valid(n):
-			(n as Node).queue_free()
+			# freed at once: a burst of edits in one frame must not pile up old models
+			(n as Node).get_parent().remove_child(n)
+			(n as Node).free()
 	item_nodes.clear()
 	for i in canvas.items.size():
 		item_nodes.append(_make_item(canvas.items[i]))
