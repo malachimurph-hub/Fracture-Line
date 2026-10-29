@@ -97,7 +97,7 @@ func _title_block() -> Control:
 		_title.add_theme_font_override("font", f)
 	_title.add_theme_constant_override("shadow_offset_x", 3)
 	_title.add_theme_constant_override("shadow_offset_y", 4)
-	# M2.7: Malachi's title badge (M3.2.2: FRACTURE LINE / GLOBAL CONFLICT) replaces the text title (the label stays as
+	# M2.7: Malachi's title badge (M3.2.2: FRACTURE LINE / MODERN CONFLICT) replaces the text title (the label stays as
 	# the fallback if the texture is missing, and keeps the fit/test logic working).
 	var tex := load(LOGO) as Texture2D
 	if tex != null:
