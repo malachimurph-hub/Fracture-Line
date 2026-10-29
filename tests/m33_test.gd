@@ -64,6 +64,7 @@ static func run(t: Node) -> void:
 	_sell(t)
 	_dozer(t)
 	_clear(t)
+	_savefix(t)
 	_germany(t)
 
 # ------------------------------------------------------------------ combat balance
@@ -382,3 +383,13 @@ static func _clear(t: Node) -> void:
 	t._check(_props_left(wv2, tile, fp) == 0, "after loading a save the structure's ground is still clear")
 	wv.queue_free()
 	wv2.queue_free()
+
+# ------------------------------------------------------------------ save fidelity
+static func _savefix(t: Node) -> void:
+	var e := SimEntity.new()
+	e.firing_tick = 1234
+	var e2 := SimEntity.from_dict(e.to_dict())
+	t._check(e2.firing_tick == 1234, "a save keeps each unit's last-shot tick (clip reloads continue identically after a load)")
+	var d := e.to_dict()
+	d.erase("firing_tick")
+	t._check(SimEntity.from_dict(d).firing_tick == -100, "older saves without it still load")

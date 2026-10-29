@@ -97,7 +97,8 @@ const _FIELDS := ["id", "kind", "def_id", "owner", "team", "pos", "hp", "max_hp"
 	"carry", "res_id", "phase", "phase_t", "overcharge_until", "dir", "moving", "aura_tick", "tile", "fp", "rot", "built",
 	"progress", "build_ticks", "queue", "q_progress", "q_paid", "rally", "rally_attack", "repeat", "powered", "gridded", "hold_reason",
 	"amount", "max_amount", "tier", "aux_def", "aux_t", "stealthy", "stealth_mask",
-	"face", "spd", "tface", "pre", "pre_ok", "ammo", "air_home", "air_state", "air_t", "still"]
+	"face", "spd", "tface", "pre", "pre_ok", "ammo", "air_home", "air_state", "air_t", "still",
+	"firing_tick"]   # M3.3: was not saved - after a load idle units refilled a part-used clip at once (desync)
 
 func to_dict() -> Dictionary:
 	var d := {}
