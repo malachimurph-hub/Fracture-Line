@@ -88,6 +88,16 @@ PAUSE_PERF,Performance overlay
 PAUSE_RESTART,Restart match
 PAUSE_SURRENDER,Surrender
 PAUSE_QUIT,Save & quit to menu
+PAUSE_SAVE,Save game
+SAVE_TITLE,Save game
+SAVE_SLOT,Slot %d
+SAVE_EMPTY,empty
+SAVE_OVERWRITE,tap again to overwrite
+SAVE_DONE,Saved to slot %d
+LOAD_TITLE,Load game
+LOAD_BAD,"can't be loaded (other version or damaged)"
+MENU_LOAD,Load game
+MENU_CONTINUE_SHORT,Continue
 HUD_GENERAL,General
 HUD_GENERAL_RANK,Gen. R%d
 HUD_BUILD,Build
@@ -103,6 +113,9 @@ HUD_POWER,Pwr %d/%d
 HUD_LOW_POWER,LOW
 HUD_POP,Pop %d/%d
 HUD_POP1,Pop %d
+HUD_POWER_TITLE,Power
+HUD_POWER_NUMBERS,"Used %d of %d produced"
+HUD_LOW_POWER_WARN,LOW POWER
 HUD_RANK,Rank %d
 HUD_GROUP_SET,Group %d set
 HUD_GROUP_HINT,Empty group — long-press (Ctrl+1–5) to assign

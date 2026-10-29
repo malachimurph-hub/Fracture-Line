@@ -21,10 +21,22 @@ func build() -> void:
 	b.add_theme_font_size_override("font_size", 18)
 	b.pressed.connect(func(): GameSession.goto("res://ui/skirmish_setup.tscn"))
 	right.add_child(b)
-	if SaveSystem.has_suspend():
-		var c := UiTheme.button(tr("MENU_CONTINUE"), Vector2(260, 52))
-		c.pressed.connect(_continue)
-		right.add_child(c)
+	# M3.3: Continue (autosave) and Load (manual slots) share a row so the menu still fits a phone
+	if SaveSystem.has_suspend() or SaveSystem.has_any_slot():
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 4)
+		right.add_child(row)
+		var both := SaveSystem.has_suspend() and SaveSystem.has_any_slot()
+		if SaveSystem.has_suspend():
+			var c := UiTheme.button(tr("MENU_CONTINUE_SHORT") if both else tr("MENU_CONTINUE"), Vector2(128 if both else 260, 52))
+			c.name = "Continue"
+			c.pressed.connect(_continue)
+			row.add_child(c)
+		if SaveSystem.has_any_slot():
+			var lb := UiTheme.button(tr("MENU_LOAD"), Vector2(128 if both else 260, 52))
+			lb.name = "Load"
+			lb.pressed.connect(func(): GameSession.goto("res://ui/load_screen.tscn"))
+			row.add_child(lb)
 	var mb := UiTheme.button(tr("MENU_MAP_BUILDER"), Vector2(260, 52))   # M2.8
 	mb.pressed.connect(func(): GameSession.goto("res://ui/map_builder.tscn"))
 	right.add_child(mb)

@@ -277,6 +277,18 @@ func autosave() -> void:
 	SaveSystem.save_suspend({"sim": md["sim"], "match": md,
 		"view": {"focus": cam.focus, "level": cam.level, "groups": ctl.groups}, "saved_at": Time.get_unix_time_from_system()})
 
+## M3.3: save to a manual slot (pause menu). Same payload as the suspend save.
+func save_to_slot(i: int) -> bool:
+	if runner.sim.game_over or local_pid < 0:
+		return false
+	var md := runner.serialize()
+	var fac := runner.sim.faction_of(local_pid)
+	var map_name := tr((Content.maps[runner.sim.map_id] as MapDef).name_key) if Content.maps.has(runner.sim.map_id) else String(runner.sim.map_id)
+	var secs := runner.sim.tick / FX.TICK_HZ
+	var label := "%s - %s - %02d:%02d" % [map_name, tr(Content.faction(fac)["name_key"]) if Content.faction(fac).has("name_key") else String(fac), secs / 60, secs % 60]
+	return SaveSystem.save_slot(i, {"sim": md["sim"], "match": md,
+		"view": {"focus": cam.focus, "level": cam.level, "groups": ctl.groups}, "saved_at": Time.get_unix_time_from_system()}, label)
+
 func _notification(what: int) -> void:
 	match what:
 		NOTIFICATION_APPLICATION_PAUSED:

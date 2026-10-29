@@ -65,6 +65,8 @@ static func run(t: Node) -> void:
 	_dozer(t)
 	_clear(t)
 	_savefix(t)
+	_slots(t)
+	_gfx(t)
 	_germany(t)
 
 # ------------------------------------------------------------------ combat balance
@@ -393,3 +395,62 @@ static func _savefix(t: Node) -> void:
 	var d := e.to_dict()
 	d.erase("firing_tick")
 	t._check(SimEntity.from_dict(d).firing_tick == -100, "older saves without it still load")
+
+# ------------------------------------------------------------------ save slots
+static func _slots(t: Node) -> void:
+	var r := _runner(["us", "ecc"])
+	_ticks(r, 40)
+	var md := r.serialize()
+	for i in SaveSystem.MANUAL_SLOTS:
+		SaveSystem.delete_slot(i)
+	t._check(not SaveSystem.has_any_slot() and SaveSystem.list_slots().size() == 8, "8 manual save slots, all empty")
+	var at := 1793245260.0
+	t._check(SaveSystem.save_slot(3, {"sim": md["sim"], "match": md, "view": {}, "saved_at": at}, "Varno - USA - 00:02"), "save to slot 4")
+	var ls: Array = SaveSystem.list_slots()
+	t._check(not ls[3]["empty"] and ls[0]["empty"] and float(ls[3]["saved_at"]) == at and ls[3]["label"] == "Varno - USA - 00:02",
+		"the slot list shows its time stamp and label")
+	t._check(SaveSystem.stamp(at).length() == 16 and SaveSystem.stamp(at).begins_with("2026-"), "time stamp reads like %s" % SaveSystem.stamp(at))
+	var d := SaveSystem.load_slot(3)
+	var b := MatchRunner.new()
+	b.deserialize(d["match"])
+	t._check(not d.is_empty() and b.sim.state_hash() == r.sim.state_hash(), "a slot loads back to the same match")
+	t._check(SaveSystem.load_slot(5).is_empty(), "an empty slot loads nothing")
+	SaveSystem.delete_slot(3)
+	t._check(not SaveSystem.has_any_slot(), "a slot can be cleared")
+
+# ------------------------------------------------------------------ Technical white, drones
+static func _lamp_and_paint(scene: String) -> Dictionary:
+	var n: Node = load(scene).instantiate()
+	var out := {"rotors": 0, "red": 0, "green": 0, "white": 0, "sand": 0}
+	for c in n.find_children("*Rotor*", "Node3D", true, false):
+		if not c is MeshInstance3D:
+			out["rotors"] += 1
+	for mi: MeshInstance3D in n.find_children("*", "MeshInstance3D", true, false):
+		if mi.mesh == null:
+			continue
+		for si in mi.mesh.get_surface_count():
+			var cols = mi.mesh.surface_get_arrays(si)[Mesh.ARRAY_COLOR]
+			if cols == null:
+				continue
+			for c: Color in cols:
+				var cl := int(c.a * 20.0 + 0.5)
+				if cl == 5 and c.r > 0.8 and c.g < 0.3:
+					out["red"] += 1
+				elif cl == 5 and c.g > 0.8 and c.r < 0.3:
+					out["green"] += 1
+				elif (cl == 0 or cl == 20) and c.r > 0.5 and c.s < 0.1:
+					out["white"] += 1
+				elif (cl == 0 or cl == 20) and c.s > 0.18 and c.h * 360.0 > 25.0 and c.h * 360.0 < 55.0:
+					out["sand"] += 1
+	n.free()
+	return out
+
+static func _gfx(t: Node) -> void:
+	var tech := _lamp_and_paint("res://view/units/tpla/rattler.tscn")
+	t._check(tech["white"] > 500 and tech["sand"] == 0, "Iran Technical is painted white again (%d white, %d sand)" % [tech["white"], tech["sand"]])
+	var bomb := _lamp_and_paint("res://view/units/us/bomb_drone.tscn")
+	var scout := _lamp_and_paint("res://view/units/us/scout_drone.tscn")
+	t._check(bomb["rotors"] == 4 and bomb["red"] > 0 and bomb["green"] == 0, "bomb drone: quadcopter with red lamps (%s)" % str(bomb))
+	t._check(scout["rotors"] == 4 and scout["green"] > 0 and scout["red"] == 0, "scout drone: quadcopter with green lamps (%s)" % str(scout))
+	var src: String = FileAccess.get_file_as_string("res://view/world_view.gd")
+	t._check(src.contains('ud.move_layer != &"air"'), "aircraft (drones) leave no dust trail")
