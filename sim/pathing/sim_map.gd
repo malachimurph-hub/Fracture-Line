@@ -63,19 +63,23 @@ func load_from(def: MapDef) -> void:
 	pf.bind(self)
 	pf.setup(self)
 	_build_regions()
-	build_elevation(def.hills)
+	build_elevation(def.hills, def.elev)
 
 ## hills: [[centre_x, centre_y, radius, height_mm], ...] (tiles; height may be negative for a
 ## hollow). Each is a smooth bump (1 - d^2/r^2)^2, summed and clamped. Corners that touch water,
 ## a ford or a bridge stay at 0 so rivers keep their banks.
-func build_elevation(hills: Array) -> void:
+## base: World Builder corner heights (mm, (w + 1) * (h + 1)) the hills are added to.
+func build_elevation(hills: Array, base: PackedInt32Array = PackedInt32Array()) -> void:
 	elev = PackedInt32Array()
 	elev.resize((w + 1) * (h + 1))
 	slope = PackedByteArray()
 	slope.resize(w * h)
-	has_elev = not hills.is_empty()
+	var sculpted := base.size() == elev.size() and base.count(0) < base.size()
+	has_elev = not hills.is_empty() or sculpted
 	if not has_elev:
 		return
+	if sculpted:
+		elev = base.duplicate()
 	for hl in hills:
 		var cx := int(hl[0])
 		var cy := int(hl[1])

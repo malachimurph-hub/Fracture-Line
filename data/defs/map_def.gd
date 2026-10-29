@@ -15,6 +15,9 @@ extends Resource
 ## M3.3 Phase 3 (17): hills and hollows, [[centre_x, centre_y, radius, height_mm], ...] (tiles).
 ## Sim-relevant (vehicles slow on slopes); built into SimMap.elev.
 @export var hills: Array = []   ## M2.5 view environment (MapEnv): desert | winter | temperate
+## M3.3 Phase 5 (47) World Builder: hand-sculpted ground height at every tile corner in mm,
+## (w + 1) * (h + 1) values, added to the hills. Empty on every map made before the World Builder.
+@export var elev: PackedInt32Array = PackedInt32Array()
 ## M2.8 map builder: optional pre-placed units / buildings, {kind, spawn, tile}. Each belongs to
 ## the player who starts on spawn slot `spawn`; skipped when no player uses that slot.
 @export var prebuilt: Array[Dictionary] = []
