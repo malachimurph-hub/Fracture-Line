@@ -1500,7 +1500,9 @@ func _zh_scatter() -> void:
 	var arty := _zh_hit_rate(w, u, "eu_grenadier", "tpla_rust_shell", 200)
 	print("  direct-hit rate: tank cannon vs vehicle %d%%, vs infantry %d%%; rifle vs infantry %d%%; rust shell vs infantry %d%%" % [vs_veh, vs_inf, rifle, arty])
 	_check(vs_veh == 100 and rifle == 100, "accurate weapons always hit")
-	_check(vs_inf >= 20 and vs_inf <= 70, "tank cannon often misses infantry (%d%%)" % vs_inf)
+	# M3.3 (Malachi: infantry more vulnerable, tank rounds splash): the tank cannon's extra scatter
+	# vs soldiers dropped 900 -> 300 mt and its splash grew to 1000 mt, so it now mostly connects.
+	_check(vs_inf >= 70, "tank cannon mostly hits infantry now (%d%%)" % vs_inf)
 	_check(arty < 100, "artillery scatters (%d%%)" % arty)
 
 ## Distinct victims an engaged squad of 6 Grenadiers spreads its fire over, per AI difficulty.
@@ -1686,6 +1688,8 @@ func _retired_units() -> void:
 
 func _roster_content() -> void:
 	for id in ROSTER_NEW_UNITS:
+		if Content.RETIRED_UNITS.has(StringName(id)):
+			continue   # M3.3: retired (eu_brennus); kept loadable for old saves/replays
 		var d: UnitDef = Content.unit(StringName(id))
 		_check(d != null and ResourceLoader.exists(d.view_scene) and tr(d.name_key) != d.name_key, "unit %s: def, model and name '%s'" % [id, tr(d.name_key) if d else "?"])
 		var made := false
@@ -2574,7 +2578,7 @@ func test_stash(maps_arg: String) -> void:
 ## M3.2 new items: capture specialists, barricades, Drone Operator + research, Field Engineer,
 ## AA ground fire, queue 15 / no unit cap / $2M funds.
 func _roster_m32() -> void:
-	_check(ProdSys.MAX_QUEUE == 15 and SimWorld.SUPPLY_CAP == 2000000, "production queue 15, funds cap $2,000,000")
+	_check(ProdSys.MAX_QUEUE == 15 and SimWorld.SUPPLY_CAP == 9999999, "production queue 15, funds cap $9,999,999 (M3.3)")
 	for aa in [&"us_patriot", &"eu_flak_tower", &"tpla_wasp_nest", &"ecc_aa_site"]:
 		var air_dps := 0.0
 		var gnd_dps := 0.0
