@@ -341,6 +341,8 @@ func _ensure_view(e: SimEntity) -> EntityView:
 	v.position = _world_pos(e)
 	if e.kind == SimEntity.Kind.BUILDING or e.kind == SimEntity.Kind.NEUTRAL:
 		v.rotation.y = [0.0, PI * 0.5, PI, -PI * 0.5][e.rot]
+		if e.kind == SimEntity.Kind.BUILDING:
+			terrain.clear_area(e.tile, e.fp)   # M3.3: construction clears trees, rocks and clutter
 		if e.kind == SimEntity.Kind.BUILDING and Content.btag(e.def_id, "hole") and v.model != null:
 			# a rebuild hole covers the footprint of the structure that died there
 			var hf: Vector2i = Content.building(e.def_id).footprint

@@ -819,6 +819,64 @@ func _multimesh(items: Array, mesh: Mesh, mat: Material, kind: String, suffix: S
 	mmi.material_override = mat
 	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if kind.begins_with("car_") else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	add_child(mmi)
+	if not PropMeshes.FOOTPRINT.has(kind):
+		var org := PackedVector2Array()
+		for it2 in items:
+			org.append(Vector2(float(it2[0]), float(it2[1])))
+		_clearable(mmi, org)   # M3.3: trees, rocks, cars ... make way for structures
+
+# ---------------------------------------------------------------- M3.3 construction clears props
+## Malachi: "Building construction should clear trees and rocks". Decor is view-only (MultiMesh
+## instances, not sim entities), so a structure's footprint just hides the natural props and
+## clutter under it (trees, rocks, bushes, grass tufts, cars, poles) when its view appears -
+## including the views rebuilt after loading a save. Houses / towers block building anyway.
+var _clear_sets: Array = []   ## [[MultiMeshInstance3D, Rect2 (tiles), PackedVector2Array origins, PackedByteArray hidden], ...]
+var cleared_count := 0
+
+## Origins are kept on the CPU side: reading MultiMesh transforms back would stall the GPU.
+func _clearable(mmi: MultiMeshInstance3D, origins: PackedVector2Array) -> void:
+	if origins.is_empty():
+		return
+	var r := Rect2(origins[0], Vector2.ZERO)
+	for o in origins:
+		r = r.expand(o)
+	var hid := PackedByteArray()
+	hid.resize(origins.size())
+	_clear_sets.append([mmi, r.grow(1.0), origins, hid])
+
+## Hide every clearable prop whose base is inside the footprint (plus a small margin so trunks
+## and rocks at the edge don't poke through the walls). Returns how many were hidden.
+func clear_area(t: Vector2i, fp: Vector2i) -> int:
+	var area := Rect2(Vector2(t) - Vector2(0.15, 0.15), Vector2(fp) + Vector2(0.3, 0.3))
+	var n := 0
+	for cs in _clear_sets:
+		var mmi: MultiMeshInstance3D = cs[0]
+		if not is_instance_valid(mmi) or not (cs[1] as Rect2).intersects(area):
+			continue
+		var org: PackedVector2Array = cs[2]
+		var hid: PackedByteArray = cs[3]
+		for i in org.size():
+			if hid[i] == 0 and area.has_point(org[i]):
+				hid[i] = 1
+				mmi.multimesh.set_instance_transform(i, Transform3D(Basis().scaled(Vector3.ZERO), Vector3(org[i].x, 0.0, org[i].y)))
+				n += 1
+		cs[3] = hid
+	cleared_count += n
+	return n
+
+## Props still showing with their base inside the rect (tests).
+func props_in(t: Vector2i, fp: Vector2i) -> int:
+	var area := Rect2(Vector2(t) + Vector2(0.05, 0.05), Vector2(fp) - Vector2(0.1, 0.1))
+	var n := 0
+	for cs in _clear_sets:
+		if not (cs[1] as Rect2).intersects(area):
+			continue
+		var org: PackedVector2Array = cs[2]
+		var hid: PackedByteArray = cs[3]
+		for i in org.size():
+			if hid[i] == 0 and area.has_point(org[i]):
+				n += 1
+	return n
 
 ## M2.9: up to 24 unit positions (world space, nearest the camera focus) that tall towers fade around.
 func set_occluded_units(pts: PackedVector4Array) -> void:
@@ -904,6 +962,10 @@ func _build_scatter(dry: bool) -> void:
 				mmi.visibility_range_end_margin = 10.0
 				mmi.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
 				add_child(mmi)
+				var org := PackedVector2Array()
+				for xf2: Transform3D in arr:
+					org.append(Vector2(xf2.origin.x, xf2.origin.z))
+				_clearable(mmi, org)
 				scatter_count += arr.size()
 
 ## Tuft: 5 tapered blades leaning outward, darker at the root (vertex colour = fake AO).
@@ -1002,6 +1064,10 @@ func _build_bushes(dry: bool) -> void:
 			mmi.visibility_range_end_margin = 10.0
 			mmi.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
 			add_child(mmi)
+			var org := PackedVector2Array()
+			for it2 in arr:
+				org.append(Vector2((it2[0] as Transform3D).origin.x, (it2[0] as Transform3D).origin.z))
+			_clearable(mmi, org)
 			scatter_count += arr.size()
 
 ## One bush: 3-6 overlapping irregular lobes (jittered low-poly spheres, smooth normals), the

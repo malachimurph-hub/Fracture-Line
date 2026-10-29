@@ -63,6 +63,7 @@ static func run(t: Node) -> void:
 	_generals(t)
 	_sell(t)
 	_dozer(t)
+	_clear(t)
 	_germany(t)
 
 # ------------------------------------------------------------------ combat balance
@@ -337,3 +338,47 @@ static func _dozer(t: Node) -> void:
 			gave_up = true
 			break
 	t._check(gave_up and not s2.built, "a fully boxed-in site is given up (%s built=%s pos=%s site=%s)" % [str(dz2.orders), s2.built, FX.to_tile(dz2.pos), st2])
+
+# ------------------------------------------------------------------ construction clears props
+static func _props_left(wv: WorldView, tile: Vector2i, fp: Vector2i) -> int:
+	return wv.terrain.props_in(tile, fp)
+
+static func _clear(t: Node) -> void:
+	var r := _runner(["us", "eu"])
+	var w := r.sim
+	var wv := WorldView.new()
+	t.add_child(wv)
+	wv.setup(r, 0)
+	var hq := _hq(w, 0)
+	# a spot with decor (trees / rocks / bushes / grass) on it
+	var tile := Vector2i(-1, -1)
+	var fp := Content.building(&"us_barracks").footprint
+	for k in 400:
+		var c := Vector2i(8 + (k * 7) % (w.map.w - 16), 8 + ((k * 7) / (w.map.w - 16)) * 5 % (w.map.h - 16))
+		if free_rect(w, c, fp) and _props_left(wv, c, fp) >= 3:
+			tile = c
+			break
+	var tot := 0
+	for cs in wv.terrain._clear_sets:
+		tot += (cs[2] as PackedVector2Array).size()
+	t._check(tile.x >= 0, "test setup: open ground with decor on it (%s; %d clearable sets, %d props)" % [str(tile), wv.terrain._clear_sets.size(), tot])
+	if tile.x < 0:
+		wv.queue_free()
+		return
+	var before := _props_left(wv, tile, fp)
+	var b := w._place_building(Content.building(&"us_barracks"), 0, tile, 0, false)
+	wv._ensure_view(b)
+	t._check(_props_left(wv, tile, fp) == 0, "a new construction site clears the %d props under it" % before)
+	# after a load the rebuilt views clear the same ground
+	var r2 := MatchRunner.new()
+	r2.record_replay = false
+	r2.start(r.setup_cfg)
+	r2.ais.clear()
+	r2.deserialize(r.serialize())
+	var wv2 := WorldView.new()
+	t.add_child(wv2)
+	wv2.setup(r2, 0)
+	wv2._ensure_view(r2.sim.get_ent(b.id))
+	t._check(_props_left(wv2, tile, fp) == 0, "after loading a save the structure's ground is still clear")
+	wv.queue_free()
+	wv2.queue_free()
