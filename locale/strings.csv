@@ -149,6 +149,9 @@ CMD_RESUME_BUILD_TIP,Send the nearest idle builder to finish this structure
 HUD_GROUPS_TIP,Control groups 1–5 (tap to show or hide)
 HUD_DESELECT,Clear selection
 CMD_CANCEL_BUILD_TIP,Cancel construction (full refund)
+CMD_SELL,Sell
+CMD_SELL_CONFIRM,Sell?
+CMD_SELL_TIP,"Sell this structure for 70% of its price (queued units are refunded). Tap twice to confirm."
 CMD_RALLY,Rally
 CMD_REPEAT_TIP,Repeat build: re-queue each unit when it finishes
 CMD_CANCEL_LAST,"Cancel

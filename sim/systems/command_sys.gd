@@ -2,6 +2,36 @@ class_name CommandSys
 ## Validates and applies Commands. Same path for human, AI and replay input.
 ## Command = {tick, p (player), t (type), ids[], pos (fixed Vector2i), target, q (queue), def, n, flag}
 
+## M3.3 (Malachi: "Option to sell a building for 70% of its cost"): a finished own structure
+## (not the HQ) is removed at once for 70% of its price plus a refund of whatever is queued in
+## it; troops inside step out; no explosion, no XP for anyone, not counted as a loss.
+const SELL_PCT := 70
+
+static func sell_value(w: SimWorld, b: SimEntity) -> int:
+	var v := w.bdef(b).cost * SELL_PCT / 100
+	for paid in b.q_paid:
+		v += int(paid)
+	return v
+
+static func can_sell(w: SimWorld, pid: int, b: SimEntity) -> bool:
+	return b != null and b.alive and b.owner == pid and b.kind == SimEntity.Kind.BUILDING and b.built and not w.bdef(b).is_hq
+
+static func sell(w: SimWorld, pid: int, b: SimEntity) -> void:
+	if not can_sell(w, pid, b):
+		return
+	var value := sell_value(w, b)
+	var p: SimPlayer = w.players[pid]
+	p.supply = mini(SimWorld.SUPPLY_CAP, p.supply + value)
+	b.queue.clear()
+	b.q_paid.clear()
+	b.q_progress = 0
+	b.alive = false
+	w.map.unstamp(b.tile, b.fp)
+	w.power_dirty = true
+	w._eject_garrison(b)
+	w.events.append({"t": "sold", "id": b.id, "def": b.def_id, "pos": b.pos, "owner": pid, "amount": value})
+	w.events.append({"t": "death", "id": b.id, "kind": b.kind, "def": b.def_id, "pos": b.pos, "owner": pid, "silent": true, "sold": true})
+
 static func apply(w: SimWorld, c: Dictionary) -> void:
 	var pid: int = int(c.get("p", -1))
 	if pid < 0 or pid >= w.players.size() or w.players[pid].eliminated:
@@ -137,6 +167,8 @@ static func apply(w: SimWorld, c: Dictionary) -> void:
 				w.map.unstamp(s2.tile, s2.fp)
 				w.power_dirty = true
 				w.events.append({"t": "death", "id": s2.id, "kind": s2.kind, "def": s2.def_id, "pos": s2.pos, "owner": pid, "silent": true})
+		"sell":   # M3.3: sell a finished structure for 70% of its price
+			sell(w, pid, w.get_ent(int(c.get("target", 0))))
 		"queue":
 			_queue(w, pid, c)
 		"dequeue":

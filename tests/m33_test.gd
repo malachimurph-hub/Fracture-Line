@@ -50,6 +50,7 @@ static func run(t: Node) -> void:
 	_balance(t)
 	_economy(t)
 	_generals(t)
+	_sell(t)
 	_germany(t)
 
 # ------------------------------------------------------------------ combat balance
@@ -205,3 +206,72 @@ static func _germany(t: Node) -> void:
 	var w2 := SimWorld.new()
 	w2.deserialize(w.serialize())
 	t._check(w2.get_ent(old.id) != null and w2.state_hash() == w.state_hash(), "a save with a heavy tank loads identically")
+
+# ------------------------------------------------------------------ sell for 70%
+static func _sell(t: Node) -> void:
+	var r := _runner(["us", "tpla"])
+	var w := r.sim
+	var hq := _hq(w, 0)
+	var bar := place(w, 0, &"us_barracks", hq.tile)
+	t._check(bar != null, "test setup: a US barracks")
+	w.players[0].supply = 10000
+	var uid: StringName = Content.building(&"us_barracks").produces[0]
+	r.issue({"p": 0, "t": "queue", "target": bar.id, "def": String(uid), "n": 2})
+	_ticks(r, 2)
+	var paid := 0
+	for v in bar.q_paid:
+		paid += int(v)
+	var before: int = w.players[0].supply
+	var lost_before: int = w.players[0].stats["structures_lost"]
+	var want := Content.building(&"us_barracks").cost * 70 / 100 + paid
+	t._check(CommandSys.sell_value(w, bar) == want and paid > 0, "sell value is 70%% of the price plus the queue ($%d)" % want)
+	r.issue({"p": 0, "t": "sell", "target": bar.id})
+	var sold := false
+	r.advance()
+	for ev in w.events:
+		sold = sold or (String(ev["t"]) == "sold" and int(ev["id"]) == bar.id)
+	_ticks(r, 1)
+	t._check(not bar.alive and w.get_ent(bar.id) == null and sold, "the barracks is sold and removed")
+	t._check(w.players[0].supply == before + want, "seller gets $%d back (%d -> %d)" % [want, before, w.players[0].supply])
+	t._check(w.players[0].stats["structures_lost"] == lost_before, "a sold structure does not count as lost")
+	var free := true
+	for yy in bar.fp.y:
+		for xx in bar.fp.x:
+			free = free and w.map.occ[w.map.idx(bar.tile + Vector2i(xx, yy))] == 0
+	t._check(free, "the ground is free to build on again")
+	# the HQ can't be sold; another player's structure can't be sold
+	var s0: int = w.players[0].supply
+	r.issue({"p": 0, "t": "sell", "target": hq.id})
+	var ehq := _hq(w, 1)
+	r.issue({"p": 0, "t": "sell", "target": ehq.id})
+	_ticks(r, 2)
+	t._check(hq.alive and ehq.alive and w.players[0].supply == s0, "the HQ and enemy structures can't be sold")
+	# an unfinished site can't be sold (Cancel refunds it in full instead)
+	var site := w._place_building(Content.building(&"us_barracks"), 0, spot(w, 0, &"us_barracks", hq.tile), 0, false)
+	r.issue({"p": 0, "t": "sell", "target": site.id})
+	_ticks(r, 2)
+	t._check(site.alive, "an unfinished site can't be sold")
+	# Iran: selling leaves no rebuild hole
+	var ihq := _hq(w, 1)
+	var ib := place(w, 1, &"tpla_camp", ihq.tile)
+	if ib != null:
+		r.issue({"p": 1, "t": "sell", "target": ib.id})
+		_ticks(r, 3)
+		t._check(not ib.alive and w.pending_holes.is_empty(), "a sold Iranian structure leaves no rebuild hole")
+	# replays: a recorded sell plays back to the same state
+	var a := MatchRunner.new()
+	a.record_replay = true
+	a.start(load("res://tests/test_runner.gd").make_cfg("1v1", 5, [], ["us", "eu"]))
+	a.ais.clear()
+	var b2 := place(a.sim, 0, &"us_barracks", _hq(a.sim, 0).tile)
+	var b_tile := b2.tile
+	_ticks(a, 30)
+	a.issue({"p": 0, "t": "sell", "target": b2.id})
+	_ticks(a, 30)
+	var p := MatchRunner.new()
+	p.start(a.setup_cfg)
+	p.ais.clear()
+	p.sim._place_building(Content.building(&"us_barracks"), 0, b_tile, 0, true)
+	p.set_replay_feed(a.replay)
+	_ticks(p, 60)
+	t._check(p.sim.state_hash() == a.sim.state_hash(), "a replay with a sell plays back identically")

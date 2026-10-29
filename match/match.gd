@@ -183,6 +183,8 @@ func _income_floaters(evs: Array) -> void:
 			var u := runner.sim.get_ent(int(ev["id"]))
 			if u != null and u.owner == local_pid:
 				overlay.floater(FX.to_world(u.pos), "+$%d" % int(ev["amount"]), Color("#ffd166"))
+		elif ev["t"] == "sold" and int(ev["owner"]) == local_pid:
+			overlay.floater(FX.to_world(ev["pos"]), "+$%d" % int(ev["amount"]), Color("#ffd166"))
 		elif ev["t"] == "income" and int(ev["owner"]) == local_pid:
 			# M3.3: lump-sum income (Russia's mine): show it over each paying structure
 			for id in runner.sim.ids:

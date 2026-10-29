@@ -1074,7 +1074,28 @@ func _make_card() -> Array:
 			"alt": func(): ctl.issue({"t": "rally", "ids": [e.id], "clear": true})})
 		out.append({"text": tr("CMD_LOOP_ON") if e.repeat else tr("CMD_LOOP"), "pin": true, "act": func(): ctl.issue({"t": "repeat", "target": e.id, "flag": not e.repeat}), "tip": tr("CMD_REPEAT_TIP")})
 		out.append({"text": tr("CMD_CANCEL_LAST"), "pin": true, "act": func(): ctl.dequeue(e, -1), "disabled": e.queue.is_empty()})
+	if CommandSys.can_sell(sim, pid, e) and ctl.selection.size() == 1:
+		out.append(_sell_entry(e))
 	return out
+
+## M3.3: Sell for 70% - the first tap arms it ("Confirm?"), a second tap within 3 s sells.
+var _sell_arm_id := -1
+var _sell_arm_ms := 0
+const SELL_CONFIRM_MS := 3000
+
+func _sell_entry(e: SimEntity) -> Dictionary:
+	var armed := _sell_arm_id == e.id and Time.get_ticks_msec() - _sell_arm_ms < SELL_CONFIRM_MS
+	return {"text": tr("CMD_SELL_CONFIRM") if armed else tr("CMD_SELL"), "sub": "+" + _money_str(CommandSys.sell_value(sim, e)), "pin": true,
+		"accent": Color("#ff6a4a"), "tip": tr("CMD_SELL_TIP"), "act": func(): sell_tap(e)}
+
+func sell_tap(e: SimEntity) -> void:
+	if _sell_arm_id == e.id and Time.get_ticks_msec() - _sell_arm_ms < SELL_CONFIRM_MS:
+		_sell_arm_id = -1
+		ctl.issue({"t": "sell", "target": e.id})
+	else:
+		_sell_arm_id = e.id
+		_sell_arm_ms = Time.get_ticks_msec()
+	_refresh_card()
 
 const TYPE_MAX := 3
 const QUEUE_MAX := 4
@@ -1082,14 +1103,17 @@ const QUEUE_CHIP := Vector2(59, 44)
 
 ## M3.2: "$2,000,000" with thousands separators; the font steps down for 7-digit amounts.
 func _money(v: int) -> String:
+	var t := _money_str(v)
+	money_lbl.add_theme_font_size_override("font_size", 17 if t.length() <= 8 else 14)
+	return t
+
+func _money_str(v: int) -> String:
 	var d := str(absi(v))
 	var out := ""
 	while d.length() > 3:
 		out = "," + d.substr(d.length() - 3) + out
 		d = d.substr(0, d.length() - 3)
-	var t := ("-$" if v < 0 else "$") + d + out
-	money_lbl.add_theme_font_size_override("font_size", 17 if t.length() <= 8 else 14)
-	return t
+	return ("-$" if v < 0 else "$") + d + out
 
 func _hud_btn(caption: String, sz: Vector2) -> HudButton:
 	var b := HudButton.new()
