@@ -68,6 +68,7 @@ static func run(t: Node) -> void:
 	_slots(t)
 	_gfx(t)
 	_germany(t)
+	load("res://tests/m33_p2_test.gd").run(t)   # Phase 2
 
 # ------------------------------------------------------------------ combat balance
 static func _balance(t: Node) -> void:

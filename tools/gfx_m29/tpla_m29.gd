@@ -241,20 +241,44 @@ static func _backhoe() -> void:
 		h.plate(Vector3(s * 0.3, 0.3, -0.62), Vector3(0.2, 0.06, 0.1), Vector3(0, 0, s * -20.0))
 		h.tube(Vector3(s * 0.38, 0.28, -0.62), Vector3(s * 0.44, 0.06, -0.64), 0.025, 6)
 		h.cbox(Vector3(s * 0.44, 0.03, -0.64), Vector3(0.12, 0.03, 0.12), 0.008)
-	h.plain = true
-	h.color(YEL, Geo.PAINT)
-	h.plate(Vector3(0, 0.75, -0.8), Vector3(0.08, 0.1, 0.8), Vector3(-62, 0, 0))   # boom
-	h.plate(Vector3(0, 0.95, -0.88), Vector3(0.07, 0.08, 0.5), Vector3(40, 0, 0))   # dipper
-	h.plain = false
-	h.color("#c9ccce", Geo.STEEL)
-	h.tube(Vector3(0, 0.5, -0.68), Vector3(0, 0.95, -0.72), 0.018, 6)
-	h.color(TP_S, Geo.STEEL)
-	h.prism_x([Vector2(-0.7, 0.85), Vector2(-0.62, 0.72), Vector2(-0.54, 0.76), Vector2(-0.58, 0.9)], -0.1, 0.1)
+	# M3.3: boom, dipper, ram and bucket are one node "Arm" (pivot on the swing frame) so the
+	# backhoe digs, swings and dumps while it builds; "Dirt" is the bucket load
+	var w = K.new()
+	var piv := Vector3(0, 0.42, -0.66)
+	w.xf = Transform3D(Basis.IDENTITY, -piv)
+	w.plain = true
+	w.color(YEL, Geo.PAINT)
+	_beam(w, piv, Vector3(0, 0.8, -0.78), 0.08, 0.1)   # boom (kinked)
+	_beam(w, Vector3(0, 0.8, -0.78), Vector3(0, 0.92, -0.98), 0.08, 0.09)
+	_beam(w, Vector3(0, 0.95, -0.97), Vector3(0, 0.5, -1.12), 0.065, 0.08)   # dipper
+	w.plain = false
+	w.color("#c9ccce", Geo.STEEL)
+	w.tube(Vector3(0, 0.5, -0.7), Vector3(0, 0.82, -0.86), 0.018, 6)   # boom ram
+	w.tube(Vector3(0, 0.97, -0.92), Vector3(0, 0.62, -1.06), 0.014, 6)   # bucket ram
+	w.color(TP_S, Geo.STEEL)
+	w.tube(Vector3(-0.06, 0.92, -0.98), Vector3(0.06, 0.92, -0.98), 0.03, 8)   # elbow pin
+	w.prism_x([Vector2(-1.08, 0.52), Vector2(-1.2, 0.5), Vector2(-1.25, 0.36), Vector2(-1.17, 0.29), Vector2(-1.1, 0.38)], -0.1, 0.1)   # bucket
+	for x in [-0.07, 0.0, 0.07]:
+		w.cbox(Vector3(x, 0.28, -1.18), Vector3(0.025, 0.03, 0.04), 0.005)   # teeth
+	var arm := VK._mi(model, root, "Arm", w.commit(mat), piv)
+	arm.set_meta("work", "arm")
+	var d = K.new()
+	d.color("#6e5a3e", Geo.SANDBAG)
+	d.cbox(Vector3(0, 0.03, 0), Vector3(0.17, 0.06, 0.12), 0.02)   # bucket load
+	d.cbox(Vector3(0.01, 0.07, 0), Vector3(0.1, 0.04, 0.08), 0.015)
+	var dn := VK._mi(arm, root, "Dirt", d.commit(mat), Vector3(0, 0.47, -1.16) - piv)
+	dn.set_meta("dirt", true)
+	dn.visible = false
 	h.color("#ffffff", Geo.TEAM)
 	for s in [-1.0, 1.0]:
 		h.box(Vector3(s * 0.235, 0.36, -0.2), Vector3(0.006, 0.05, 0.5))
 	V4._lamps(h, 0.16, 0.43, 0.63)
 	_finish(root, model, h, mat, "backhoe", [], 1.2)
+
+static func _beam(g, a: Vector3, b: Vector3, w: float, h: float, ch := 0.01) -> void:
+	var d := b - a
+	var bs := Basis.looking_at(d.normalized(), Vector3.UP if absf(d.normalized().y) < 0.95 else Vector3.RIGHT)
+	g.cbox(Vector3.ZERO, Vector3(w, h, d.length()), ch, Transform3D(bs, (a + b) * 0.5))
 
 # ------------------------------------------------------------------ tracked hull (shared)
 ## Low T-72-family style hull: track runs, lower hull, upper hull with a sloped glacis.

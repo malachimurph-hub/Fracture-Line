@@ -654,25 +654,47 @@ static func _eu_crawler() -> void:
 		h.cbox(Vector3(0.06, 0.45 + k * 0.075, -0.82), Vector3(0.56, 0.065, 0.14), 0.01)   # counterweight
 	h.color("#c23a2a", Geo.PAINT)
 	h.box(Vector3(0.06, 0.53, -0.895), Vector3(0.5, 0.04, 0.006))
-	# telescopic boom: 3 sections, laid forward over the cab on a boom rest; luffing ram
-	var bt := Transform3D(Basis(Vector3.RIGHT, deg_to_rad(-4.0)), Vector3(0.1, 0.7, -0.55))
-	h.color(CY, Geo.PAINT)
-	h.xloft([[0.0, K.sect(-0.06, -0.05, 0.06, 0.065, 0.07, 0.055, 0.015)], [0.75, K.sect(-0.055, -0.045, 0.055, 0.06, 0.065, 0.05, 0.015)]], bt)
-	h.color(CY_D, Geo.PAINT)
-	h.xloft([[0.75, K.sect(-0.045, -0.037, 0.045, 0.05, 0.054, 0.042, 0.012)], [1.25, K.sect(-0.042, -0.034, 0.042, 0.047, 0.05, 0.04, 0.012)]], bt)
-	h.color(CY, Geo.PAINT)
-	h.xloft([[1.25, K.sect(-0.035, -0.028, 0.035, 0.038, 0.042, 0.032, 0.01)], [1.5, K.sect(-0.032, -0.026, 0.032, 0.035, 0.038, 0.03, 0.01)]], bt)
-	h.color("#c23a2a", Geo.PAINT)
-	for z in [0.68, 1.2]:
-		h.box(bt * Vector3(0, 0, z), Vector3(0.14, 0.13, 0.03))   # section collars
+	# telescopic boom: 3 sections, laid forward over the cab on a boom rest; luffing ram.
+	# M3.3: the boom is its own node "Boom" (pivot at its heel) so it luffs up while building;
+	# the inner sections are "BoomTip" (meta tele, slides out) and the hook hangs plumb ("hang").
+	var bp := Vector3(0.1, 0.7, -0.55)
+	var b = K.new()
+	b.plain = true
+	b.color(CY, Geo.PAINT)
+	b.xloft([[0.0, K.sect(-0.06, -0.05, 0.06, 0.065, 0.07, 0.055, 0.015)], [0.75, K.sect(-0.055, -0.045, 0.055, 0.06, 0.065, 0.05, 0.015)]])
+	b.color("#c23a2a", Geo.PAINT)
+	b.box(Vector3(0, 0, 0.68), Vector3(0.14, 0.13, 0.03))   # section collar
+	b.color(EU_S, Geo.STEEL)
+	b.tube(Vector3(0, -0.07, -0.02), Vector3(0, -0.07, 0.35), 0.03, 8)   # luffing ram (rides with the boom)
+	b.tube(Vector3(0, -0.07, 0.0), Vector3(0, -0.24, 0.24), 0.035, 8)
+	var boom := VK._mi(model, root, "Boom", b.commit(mat), bp)
+	boom.rotation.x = deg_to_rad(-4.0)
+	boom.set_meta("work", "boom")
+	var t = K.new()
+	t.plain = true
+	t.color(CY_D, Geo.PAINT)
+	t.xloft([[0.1, K.sect(-0.045, -0.037, 0.045, 0.05, 0.054, 0.042, 0.012)], [1.25, K.sect(-0.042, -0.034, 0.042, 0.047, 0.05, 0.04, 0.012)]])
+	t.color(CY, Geo.PAINT)
+	t.xloft([[0.8, K.sect(-0.035, -0.028, 0.035, 0.038, 0.042, 0.032, 0.01)], [1.5, K.sect(-0.032, -0.026, 0.032, 0.035, 0.038, 0.03, 0.01)]])
+	t.color("#c23a2a", Geo.PAINT)
+	t.box(Vector3(0, 0, 1.2), Vector3(0.1, 0.1, 0.03))
+	t.color(EU_S, Geo.STEEL)
+	t.tube(Vector3(0, 0.0, 1.5), Vector3(0, -0.03, 1.56), 0.05, 10)   # boom head sheaves
+	var tip := VK._mi(boom, root, "BoomTip", t.commit(mat))
+	tip.set_meta("tele", true)
+	var k = K.new()
+	k.plain = true
+	k.color(EU_S, Geo.STEEL)
+	k.tube(Vector3.ZERO, Vector3(0, -0.2, 0), 0.004, 3)   # hook rope
+	k.color(CY_D, Geo.PAINT)
+	k.cbox(Vector3(0, -0.22, 0), Vector3(0.07, 0.07, 0.04), 0.008)   # hook block
+	k.color(EU_S, Geo.STEEL)
+	k.tube(Vector3(0, -0.26, 0), Vector3(0, -0.29, 0.02), 0.012, 6)
+	var hook := VK._mi(tip, root, "Hook", k.commit(mat), Vector3(0, -0.06, 1.56))
+	hook.rotation.x = deg_to_rad(4.0)
+	hook.set_meta("hang", true)
+	h.plain = true
 	h.color(EU_S, Geo.STEEL)
-	h.tube(bt * Vector3(0, 0.0, 1.5), bt * Vector3(0, -0.03, 1.56), 0.05, 10)   # boom head sheaves
-	h.tube(bt * Vector3(0, -0.05, 1.56), Vector3(0.1, 0.42, 1.0), 0.004, 3)    # hook rope
-	h.color(CY_D, Geo.PAINT)
-	h.cbox(Vector3(0.1, 0.4, 1.0), Vector3(0.07, 0.07, 0.04), 0.008)               # hook block (stowed at the bumper)
-	h.color(EU_S, Geo.STEEL)
-	h.tube(Vector3(0.1, 0.36, 1.0), Vector3(0.1, 0.33, 1.02), 0.012, 6)
-	h.tube(Vector3(0.1, 0.44, -0.3), bt * Vector3(0, -0.07, 0.35), 0.035, 8)       # luffing ram
 	h.cbox(Vector3(0.1, 0.62, 0.52), Vector3(0.12, 0.05, 0.06), 0.008)              # boom rest
 	h.tube(Vector3(0.1, 0.36, 0.52), Vector3(0.1, 0.6, 0.52), 0.016, 6)
 	h.color("#ffffff", Geo.TEAM)

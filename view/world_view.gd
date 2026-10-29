@@ -328,6 +328,14 @@ func _stack_points(v: EntityView, def_id: StringName) -> Array:
 	_stack_cache[def_id] = pts
 	return pts
 
+## M3.3: the builder stands at an unfinished site it is building (OrderSys "build", in reach).
+func _builder_working(e: SimEntity) -> bool:
+	var o: Dictionary = e.head()
+	if String(o.get("o", "")) != "build" or e.goal != MoveSys.NONE:
+		return false
+	var site := sim.get_ent(int(o.get("target", 0)))
+	return site != null and not site.built and sim.dist_to_building(e.pos, site) <= OrderSys.build_reach(e, o)
+
 func m_cam_sees(p: Vector3) -> bool:
 	var c := get_viewport().get_camera_3d()
 	return c != null and c.is_position_in_frustum(p)
@@ -776,6 +784,9 @@ func frame(a: float, delta: float) -> void:
 					v.turret.rotation.y = lerp_angle(v.turret.rotation.y, ang, minf(1.0, delta * 10.0))
 				else:
 					v.turret.rotation.y = lerp_angle(v.turret.rotation.y, 0.0, minf(1.0, delta * 3.0))
+			# M3.3: builders animate (blade / backhoe arm / crane boom) while they work at a site
+			if v is VehicleView and not (v as VehicleView).work_parts.is_empty():
+				(v as VehicleView).working = _builder_working(e)
 			# dust behind moving vehicles (M3.3: drones leave no trail; helicopters and jets keep theirs)
 			if v.scale.x < 1.2 and not icon_mode and not ud.tags.has("drone"):
 				var spd: float = p.distance_to(v.get_meta("lastp", p)) / maxf(delta, 0.001)

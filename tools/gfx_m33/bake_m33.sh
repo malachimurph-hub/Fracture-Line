@@ -10,11 +10,20 @@ W=${W:-/workspace/tex14}
 rm -rf $W/m33_dump $W/m33_bake && mkdir -p $W/m33_dump $W/m33_bake
 timeout 600 $G --headless --path . -s res://tools/gfx_m32/tex14/dump.gd -- $W/m33_dump "$@" 2>&1 | grep -E "DUMPED|ERROR"
 NAMES=$(for s in "$@"; do echo "$s" | sed 's#res://view/##; s#/#__#g; s#\.tscn$##'; done)
-$PY tools/gfx_m32/tex14/bake.py $W/m33_dump $W/m33_bake $NAMES || exit 1
+# DETAIL="name1 name2": run the M3.2 secondary-detail pass on those regenerated scenes first
+SRC=$W/m33_dump
+MD=""
+if [ -n "$DETAIL" ]; then
+	rm -rf $W/m33_det && mkdir -p $W/m33_det && cp $W/m33_dump/* $W/m33_det/
+	$PY tools/gfx_m32/tex14/detail.py $W/m33_dump $W/m33_det $DETAIL || exit 1
+	SRC=$W/m33_det
+	MD=$W/m33_det
+fi
+$PY tools/gfx_m32/tex14/bake.py $SRC $W/m33_bake $NAMES || exit 1
 $PY tools/gfx_m33/atlas_update.py assets/textures/bake/bake_atlas.png $W/placement.json $W/bake $W/m33_bake $W/m33_part.json $NAMES || exit 1
 L=$($PY -c "import json;print(json.load(open('$W/placement.json'))['layers'])")
 sed -i "s/^slices\/vertical=.*/slices\/vertical=$L/" assets/textures/bake/bake_atlas.png.import
 cp $W/m33_bake/* $W/bake/
-timeout 600 $G --headless --path . -s res://tools/gfx_m32/tex14/apply.gd -- $W/m33_part.json 2>&1 | grep -E "BAKE|APPLIED|ERROR"
+timeout 600 $G --headless --path . -s res://tools/gfx_m32/tex14/apply.gd -- $W/m33_part.json $MD 2>&1 | grep -E "BAKE|APPLIED|ERROR"
 timeout 600 $G --headless --path . --import >/dev/null 2>&1
 git checkout docs/m1/ 2>/dev/null

@@ -644,24 +644,42 @@ static func _dozer() -> void:
 	h.color(US_S, Geo.STEEL)
 	h.plate(Vector3(0, 0.28, -0.7), Vector3(0.36, 0.06, 0.1), Vector3.ZERO)
 	h.plate(Vector3(0, 0.14, -0.78), Vector3(0.05, 0.26, 0.05), Vector3(-25, 0, 0))
+	# M3.3: the blade (push arms, rams, blade, cutting edge) is its own node "Blade", pivoting
+	# on the push-arm mounts, so the dozer can push, lift and dump while it builds (VehicleView)
+	var w = K.new()
+	var piv := Vector3(0, 0.2, 0.05)
+	w.xf = Transform3D(Basis.IDENTITY, -piv)
 	# blade on push arms with hydraulic rams
 	for s in [-0.36, 0.36]:
-		h.tube(Vector3(s, 0.2, 0.05), Vector3(s, 0.2, 0.72), 0.03, 6)
-		h.tube(Vector3(s * 0.7, 0.5, 0.25), Vector3(s * 0.8, 0.32, 0.7), 0.022, 6)
-		h.color("#c9ccce", Geo.STEEL)
-		h.tube(Vector3(s * 0.75, 0.41, 0.48), Vector3(s * 0.8, 0.32, 0.7), 0.012, 6)
-		h.color(US_S, Geo.STEEL)
-	h.plain = true
-	h.color(YEL, Geo.PAINT)
-	h.prism_x([Vector2(0.72, 0.04), Vector2(0.8, 0.06), Vector2(0.87, 0.2), Vector2(0.87, 0.34), Vector2(0.8, 0.48), Vector2(0.73, 0.46)], -0.54, 0.54)
-	h.color("#b88d25", Geo.PAINT)
+		w.tube(Vector3(s, 0.2, 0.05), Vector3(s, 0.2, 0.72), 0.03, 6)
+		w.tube(Vector3(s * 0.7, 0.5, 0.25), Vector3(s * 0.8, 0.32, 0.7), 0.022, 6)
+		w.color("#c9ccce", Geo.STEEL)
+		w.tube(Vector3(s * 0.75, 0.41, 0.48), Vector3(s * 0.8, 0.32, 0.7), 0.012, 6)
+		w.color(US_S, Geo.STEEL)
+	w.plain = true
+	w.color(YEL, Geo.PAINT)
+	w.prism_x([Vector2(0.72, 0.04), Vector2(0.8, 0.06), Vector2(0.87, 0.2), Vector2(0.87, 0.34), Vector2(0.8, 0.48), Vector2(0.73, 0.46)], -0.54, 0.54)
+	w.color("#b88d25", Geo.PAINT)
 	for x in [-0.36, -0.12, 0.12, 0.36]:   # blade ribs (back side)
-		h.box(Vector3(x, 0.28, 0.72), Vector3(0.03, 0.36, 0.05))
+		w.box(Vector3(x, 0.28, 0.72), Vector3(0.03, 0.36, 0.05))
 	for s in [-1.0, 1.0]:   # angled end plates
-		h.plate(Vector3(s * 0.54, 0.25, 0.8), Vector3(0.03, 0.42, 0.14), Vector3(0, s * -12.0, 0))
-	h.plain = false
-	h.color(US_S, Geo.STEEL)
-	h.plate(Vector3(0, 0.05, 0.85), Vector3(1.06, 0.04, 0.06), Vector3(20, 0, 0))   # cutting edge
+		w.plate(Vector3(s * 0.54, 0.25, 0.8), Vector3(0.03, 0.42, 0.14), Vector3(0, s * -12.0, 0))
+	w.plain = false
+	w.color(US_S, Geo.STEEL)
+	w.plate(Vector3(0, 0.05, 0.85), Vector3(1.06, 0.04, 0.06), Vector3(20, 0, 0))   # cutting edge
+	var bn := VK._mi(model, root, "Blade", w.commit(mat), piv)
+	bn.set_meta("work", "blade")
+	var d = K.new()
+	d.color("#6e5a3e", Geo.SANDBAG)
+	d.cbox(Vector3(0, 0.05, 0.02), Vector3(0.62, 0.1, 0.34), 0.04)   # pushed spoil heap
+	d.cbox(Vector3(0.02, 0.13, 0.0), Vector3(0.42, 0.09, 0.24), 0.035)
+	d.cbox(Vector3(-0.03, 0.2, -0.02), Vector3(0.22, 0.07, 0.14), 0.03)
+	d.color("#5c4a33", Geo.SANDBAG)
+	d.cbox(Vector3(0.12, 0.05, 0.08), Vector3(0.12, 0.08, 0.1), 0.03)
+	d.cbox(Vector3(-0.14, 0.04, -0.04), Vector3(0.1, 0.07, 0.09), 0.03)
+	var dn := VK._mi(bn, root, "Dirt", d.commit(mat), Vector3(0, -0.19, 0.98))
+	dn.set_meta("dirt", true)
+	dn.visible = false
 	h.color("#ffffff", Geo.TEAM)
 	for s in [-1.0, 1.0]:
 		h.box(Vector3(s * 0.52, 0.32, -0.12), Vector3(0.006, 0.03, 0.8))
