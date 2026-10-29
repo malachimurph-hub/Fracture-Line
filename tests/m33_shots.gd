@@ -42,7 +42,7 @@ func run_night() -> void:
 	m.cam.dist = 24.0
 	m.cam.target_dist = 24.0
 	await frames(50)
-	await shot("night_base")
+	await shot("night_base_f")
 	var lp := _nearest_lamp(Vector2(90, 70))
 	for k in 3:
 		_unit([&"us_halberd", &"us_bradley", &"us_lynx"][k], Vector2i(int(lp.x) + k * 3 - 3, int(lp.y) + 2), FX.ANG / 4)
@@ -80,7 +80,7 @@ func run_civ() -> void:
 	m.cam.dist = 16.0
 	m.cam.target_dist = 16.0
 	await frames(60)
-	await shot("civ_rubble_cars")
+	await shot("civ_rubble_f")
 
 func run_mine() -> void:
 	await _start("ochre_wells", ["ecc", "us"], false)
