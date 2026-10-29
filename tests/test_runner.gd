@@ -96,6 +96,8 @@ func _ready() -> void:
 			test_stash(args[1] if args.size() > 1 else "")
 		"map_builder":
 			await load("res://tests/map_builder_test.gd").run(self)   # M2.8
+		"m33":
+			await load("res://tests/m33_test.gd").run(self)   # M3.3 Phase 1
 		"stall":
 			var r2 := MatchRunner.new()
 			r2.record_replay = false

@@ -10,6 +10,7 @@ static func run(w: SimWorld) -> void:
 	if w.tick % 20 != 0:
 		return
 	var hubs := {}       ## owner -> {def id: [count, income]}
+	var earners := {}    ## M3.3: owner -> {def id: count} for income_amount structures
 	var pumps := {}
 	for id in w.ids:
 		var e: SimEntity = w.ents[id]
@@ -23,6 +24,10 @@ static func run(w: SimWorld) -> void:
 				var cur: Array = hubs[e.owner].get(d.id, [0, d.passive_income])
 				cur[0] += 1
 				hubs[e.owner][d.id] = cur
+			if d.income_amount > 0 and d.income_period_s > 0:
+				if not earners.has(e.owner):
+					earners[e.owner] = {}
+				earners[e.owner][d.id] = int(earners[e.owner].get(d.id, 0)) + 1
 		elif e.kind == SimEntity.Kind.NEUTRAL and w.bdef(e).capture_income > 0:
 			pumps[e.owner] = pumps.get(e.owner, 0) + w.bdef(e).capture_income
 	for p in w.players:
@@ -36,10 +41,36 @@ static func run(w: SimWorld) -> void:
 			inc += mini(4, int(hc[0])) * int(hc[1])
 		if p.low_power:
 			inc /= 2
+		var sec := w.tick / FX.TICK_HZ
+		for did in earners.get(p.id, {}):
+			var ed: BuildingDef = Content.building(did)
+			var pay := period_pay(ed, mini(4, int(earners[p.id][did])), sec)
+			if p.low_power and not ed.tags.has("no_power"):
+				pay /= 2
+			if pay > 0 and ed.tags.has("income_burst"):
+				w.events.append({"t": "income", "owner": p.id, "def": did, "amount": pay})
+			inc += pay
 		if p.logistics_until > w.tick:
 			inc *= 2
 		inc += int(pumps.get(p.id, 0))
 		add_supply(w, p, inc)
+
+## M3.3: what n copies of an income structure pay in second `sec`. The amount per period is paid
+## out evenly (integer steps that add up exactly over each period), or all at once on the last
+## second of the period for "income_burst" structures (Russia's mine: $400 every 30 s).
+static func period_pay(d: BuildingDef, n: int, sec: int) -> int:
+	var per := maxi(1, d.income_period_s)
+	var total := d.income_amount * n
+	var k := sec % per
+	if d.tags.has("income_burst"):
+		return total if k == per - 1 else 0
+	return total * (k + 1) / per - total * k / per
+
+## M3.3: income per minute of one copy (info cards, HUD).
+static func per_minute(d: BuildingDef) -> int:
+	if d.income_amount > 0 and d.income_period_s > 0:
+		return d.income_amount * 60 / d.income_period_s
+	return d.passive_income * 60
 
 static func add_supply(w: SimWorld, p: SimPlayer, amount: int) -> void:
 	p.supply = mini(SimWorld.SUPPLY_CAP, p.supply + amount)

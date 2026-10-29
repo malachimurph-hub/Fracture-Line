@@ -3,7 +3,9 @@ class_name SkirmishConfig
 ## with team 1-4, color, faction and start position (or random). resolve() turns a lobby
 ## into a MatchRunner cfg; validate() returns "" or a localization key explaining the error.
 
-const MONEY := [5000, 10000, 20000, 50000, 100000, 500000, 1000000, 2000000]   # M3.2: up to the $2M funds cap
+## M3.3 (Malachi): starting cash is limited to $50k (funds can still grow to the $9,999,999 cap).
+const MONEY := [5000, 10000, 20000, 30000, 50000]
+const MAX_START := 50000
 const DIFFS := ["easy", "medium", "hard"]
 
 static func default_setup() -> Dictionary:
@@ -66,8 +68,18 @@ static func validate(cfg: Dictionary) -> String:
 	return ""
 
 ## Lobby -> runner cfg: drops open/closed slots, picks a seed if 0, fills random spawns.
+## M3.3: nearest allowed starting cash at or below v (a value above the $50k limit becomes $50k).
+static func clamp_money(v: int) -> int:
+	var best: int = MONEY[0]
+	for mv in MONEY:
+		if mv <= v:
+			best = mv
+	return best
+
 static func resolve(cfg: Dictionary) -> Dictionary:
 	var out := cfg.duplicate(true)
+	if out.has("options"):
+		out["options"]["start_money"] = clamp_money(int(out["options"].get("start_money", 10000)))
 	var seed := int(cfg.get("seed", 0))
 	if seed == 0:
 		seed = int(Time.get_unix_time_from_system()) % 1000000 + 1

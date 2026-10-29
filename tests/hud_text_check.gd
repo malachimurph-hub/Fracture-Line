@@ -165,7 +165,7 @@ static func _info_cards(m, tree: SceneTree, check: Callable, label: String) -> v
 		var dd: Variant = Content.building(StringName(inf[1])) if inf[0] == "building" else null
 		if dd != null:
 			var body := "\n".join(d["lines"])
-			if dd.passive_income > 0 and not ("/ min" in body):
+			if (dd.passive_income > 0 or dd.income_amount > 0) and not ("/ min" in body):
 				probs.append("%s: income per minute missing" % inf[1])
 			if dd.power > 0 and not ("+%d" % dd.power in body):
 				probs.append("%s: power produced missing" % inf[1])

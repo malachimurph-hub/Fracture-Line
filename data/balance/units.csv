@@ -14,10 +14,10 @@ tpla_rattler,UNIT_TPLA_RATTLER,500,6000,2,,vehicle|salvage|raider,400,light,tpla
 tpla_hailstorm,UNIT_TPLA_HAILSTORM,750,9000,2,,vehicle|aa|salvage,520,light,tpla_quad|tpla_cd_laser,2000,vehicle,9,540,0,0,0,anti_air,,,0,0,160,0,0,0
 tpla_scrapback,UNIT_TPLA_SCRAPBACK,850,10000,2,,vehicle|tank|salvage,760,heavy,tpla_scrap_cannon,1900,vehicle,8,580,0,0,0,tank,,,0,0,90,0,0,0
 tpla_shrike,UNIT_TPLA_SHRIKE,900,10000,2,tpla_workshop,vehicle|artillery,320,light,tpla_buggy_rockets,2400,vehicle,10,540,0,0,0,artillery,,,200,600,0,0,0,0
-tpla_blight,UNIT_TPLA_BLIGHT,1200,13000,3,tpla_workshop,vehicle|artillery|setup,420,light,tpla_rust_shell,1500,vehicle,10,600,0,0,0,artillery,,,0,0,0,0,0,0
+tpla_blight,UNIT_TPLA_BLIGHT,1200,13000,3,tpla_workshop,vehicle|artillery|setup|spg,420,light,tpla_rust_shell,1500,vehicle,10,600,0,0,0,artillery,,,0,0,0,0,0,0
 eu_brennus,UNIT_EU_BRENNUS,1800,18000,4,eu_signals,vehicle|tank|heavy_tank,1500,heavy,eu_twin_cannon,1200,vehicle,8,750,0,0,0,tank,,,0,0,60,0,0,0
 eu_salamander,UNIT_EU_SALAMANDER,900,12000,2,,vehicle|flame,700,heavy,eu_flamer,1700,vehicle,8,560,0,0,0,flame,,,0,0,120,0,0,0
-eu_thunderhead,UNIT_EU_THUNDERHEAD,1600,16000,3,eu_signals,vehicle|artillery,500,light,eu_howitzer,1300,vehicle,9,620,0,0,0,artillery,,,0,0,0,0,0,0
+eu_thunderhead,UNIT_EU_THUNDERHEAD,1600,16000,3,eu_signals,vehicle|artillery|spg,500,light,eu_howitzer,1300,vehicle,9,620,0,0,0,artillery,,,0,0,0,0,0,0
 eu_hearth,UNIT_EU_HEARTH,1000,12000,2,,vehicle|artillery,450,light,eu_hearth_rockets,1700,vehicle,9,520,0,0,0,artillery,,,0,0,0,0,0,0
 eu_spectre,UNIT_EU_SPECTRE,900,10000,2,eu_signals,vehicle|jammer,450,light,,2000,vehicle,10,520,0,0,0,jammer,,,0,0,0,0,0,0
 eu_sentinel,UNIT_EU_SENTINEL,800,10000,2,,vehicle|detector|scout|transport,500,light,,2200,vehicle,12,520,0,0,0,detector,,,0,0,0,2,1,0
@@ -41,7 +41,7 @@ us_halberd,UNIT_US_HALBERD,1200,13000,3,,vehicle|tank,980,heavy,us_tank_gun,1750
 us_lynx,UNIT_US_LYNX,700,8000,2,,vehicle|transport|raider,550,light,us_lynx_hmg,3000,vehicle,10,500,0,0,0,ifv,fire_from_inside,,200,600,200,5,0,0
 us_bradley,UNIT_US_BRADLEY,1000,11000,2,,vehicle|transport|ifv,820,light,us_bradley_25mm,2200,vehicle,9,560,0,0,0,ifv,fire_from_inside,,150,800,160,6,0,0
 us_picket,UNIT_US_PICKET,850,10000,2,,vehicle|aa,520,light,us_stinger|us_avenger_mg,2500,vehicle,9,500,0,0,0,anti_air,,,0,0,180,0,0,0
-us_longreach,UNIT_US_LONGREACH,1400,15000,3,us_strategy,vehicle|artillery,420,light,us_howitzer,1300,vehicle,9,600,0,0,0,artillery,,,0,0,40,0,0,0
+us_longreach,UNIT_US_LONGREACH,1400,15000,3,us_strategy,vehicle|artillery|spg,420,light,us_howitzer,1300,vehicle,9,600,0,0,0,artillery,,,0,0,0,0,0,0
 us_thunderlance,UNIT_US_THUNDERLANCE,2500,20000,4,us_strategy,air|jet|bomber,900,air,us_bomb_bay,4800,air,10,800,0,0,0,air_strike,,jet,110,1500,0,0,0,4
 us_wraith,UNIT_US_WRAITH,1500,13000,3,,air|jet|fighter|aa,520,air,us_aam|us_gbu,5600,air,11,650,0,0,0,air_strike,,jet,160,1200,0,0,0,2
 us_harrier,UNIT_US_HARRIER,1600,15000,3,,air|helicopter,540,air,us_hellfire|us_chaingun,3200,air,10,650,0,0,0,air_strike,,heli,200,900,180,0,0,0
@@ -55,7 +55,7 @@ ecc_tigr,UNIT_ECC_TIGR,700,8000,2,,vehicle|transport|raider,560,light,ecc_kord,2
 ecc_btr,UNIT_ECC_BTR,1000,11000,2,,vehicle|transport|ifv,840,light,ecc_btr_30mm,2300,vehicle,9,580,0,0,0,ifv,fire_from_inside,,150,800,160,7,0,0
 ecc_typhoon,UNIT_ECC_TYPHOON,1100,12000,2,,vehicle|transport,1000,light,ecc_kord_rws,2100,vehicle,8,620,0,0,0,transport,,,170,700,180,10,0,0
 ecc_t90,UNIT_ECC_T90,1100,12000,3,,vehicle|tank,970,heavy,ecc_125mm,1750,vehicle,8,600,0,0,0,tank,,,0,0,80,0,0,0
-ecc_msta,UNIT_ECC_MSTA,1400,15000,3,ecc_depot,vehicle|artillery,480,light,ecc_152mm,1350,vehicle,10,620,0,0,0,artillery,,,0,0,40,0,0,0
+ecc_msta,UNIT_ECC_MSTA,1400,15000,3,ecc_depot,vehicle|artillery|spg,480,light,ecc_152mm,1350,vehicle,10,620,0,0,0,artillery,,,0,0,0,0,0,0
 ecc_zeus,UNIT_ECC_ZEUS,800,9000,2,,vehicle|aa,540,light,ecc_zu23,2000,vehicle,9,540,0,0,0,anti_air,,,0,0,170,0,0,0
 ecc_su57,UNIT_ECC_SU57,1500,13000,3,,air|jet|fighter|aa,540,air,ecc_r77|ecc_kab,5800,air,11,650,0,0,0,air_strike,,jet,160,1200,0,0,0,2
 ecc_ka52,UNIT_ECC_KA52,1600,15000,3,,air|helicopter,560,air,ecc_vikhr|ecc_2a42,3200,air,10,650,0,0,0,air_strike,,heli,190,900,180,0,0,0

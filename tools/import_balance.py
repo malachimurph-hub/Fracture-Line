@@ -52,6 +52,7 @@ for r in rows("buildings.csv"):
         ("footprint", "Vector2i(%s, %s)" % (r["footprint_w"], r["footprint_h"])), ("max_hp", r["max_hp"]), ("power", r["power"]),
         ("grid_radius", r["grid_radius"]), ("sight", r["sight"]), ("prereqs", psa(r["prereqs"])), ("produces", psa(r["produces"])),
         ("is_hq", b(r["is_hq"])), ("is_refinery", b(r["is_refinery"])), ("passive_income", r["passive_income"]),
+        ("income_amount", r.get("income_amount", "0") or "0"), ("income_period_s", r.get("income_period_s", "0") or "0"),
         ("free_unit", sn(r["free_unit"])), ("shield_pct", r["shield_pct"]),
         ("view_scene", s("res://view/buildings/%s/%s.tscn" % (fac, short))), ("stubs", psa(r["stubs"])),
         ("weapons", psa(r["weapons"])), ("needs_power_to_fire", b(r["needs_power_to_fire"])),

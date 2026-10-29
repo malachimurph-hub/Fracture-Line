@@ -741,6 +741,8 @@ func frame(a: float, delta: float) -> void:
 				# M2.3: the sim owns turret traverse (units only fire once aimed)
 				var tang := float(e.tface) * TAU / float(FX.ANG) - ny
 				v.turret.rotation.y = lerp_angle(v.turret.rotation.y, tang, minf(1.0, delta * 12.0))
+			elif v.turret != null and ud.tags.has("spg"):
+				v.turret.rotation.y = 0.0   # M3.3: self-propelled howitzers have a fixed turret; the hull aims
 			elif v.turret != null:
 				var tgt := sim.get_ent(e.target)
 				if tgt != null and sim.tick - e.firing_tick < 40:

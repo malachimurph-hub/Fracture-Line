@@ -71,6 +71,8 @@ func build() -> void:
 	money.custom_minimum_size = Vector2(172, 44)
 	for mv in SkirmishConfig.MONEY:
 		money.add_item(tr("LOBBY_MONEY") % mv)
+	# M3.3: a lobby remembered from M3.2 may hold more than the $50k start limit
+	cfg["options"]["start_money"] = SkirmishConfig.clamp_money(int(cfg["options"]["start_money"]))
 	money.selected = SkirmishConfig.MONEY.find(int(cfg["options"]["start_money"]))
 	money.item_selected.connect(func(i): cfg["options"]["start_money"] = SkirmishConfig.MONEY[i])
 	right.add_child(money)

@@ -204,7 +204,7 @@ static func explode(w: SimWorld, src: SimEntity, center: Vector2i, wd: WeaponDef
 		if o.res_id < 0 or not w.enemies(src.team, o.team) or w.flying(o):
 			continue
 		var frac := 100 - 50 * FX.dist(o.pos, center) / maxi(1, r)
-		var sd := wd.damage * Content.combat.mult(wd.damage_type, _armor_of(w, o)) / 100 * frac / 100 * pct / 100
+		var sd := wd.damage * splash_mult(wd, _armor_of(w, o)) / 100 * frac / 100 * pct / 100
 		w.damage(o, maxi(1, sd), src)
 	var blds: Array = []
 	for id in w.ids:
@@ -245,8 +245,18 @@ static func fire(w: SimWorld, src: SimEntity, t: SimEntity, wd: WeaponDef, dmg_p
 			if w.flying(o) != tair:
 				continue
 			var frac := 100 - 50 * FX.dist(o.pos, impact) / maxi(1, r)
-			var sd := wd.damage * Content.combat.mult(wd.damage_type, _armor_of(w, o)) / 100 * frac / 100 * dmg_pct / 100
+			var sd := wd.damage * splash_mult(wd, _armor_of(w, o)) / 100 * frac / 100 * dmg_pct / 100
 			w.damage(o, sd, src)
+
+## M3.3 (Malachi: "things that explode should do splash damage and heavy damage to infantry"):
+## blast damage on soldiers never uses less than SPLASH_INF_PCT of the weapon's damage, so an
+## anti-tank rocket that lands among infantry still hurts them (its direct hit stays weak).
+const SPLASH_INF_PCT := 125
+static func splash_mult(wd: WeaponDef, armor: StringName) -> int:
+	var m := Content.combat.mult(wd.damage_type, armor)
+	if armor == &"infantry":
+		m = maxi(m, SPLASH_INF_PCT)
+	return m
 
 ## Scatter radius in fx for this shot: base scatter plus extra against infantry.
 static func scatter_of(w: SimWorld, t: SimEntity, wd: WeaponDef) -> int:

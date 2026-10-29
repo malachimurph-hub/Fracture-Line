@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_s")
 id = &"eu_tiger_atgm"
-damage = 70
+damage = 90
 range_mt = 7500
 min_range_mt = 0
 cooldown_ms = 700

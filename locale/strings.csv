@@ -220,9 +220,9 @@ UNIT_EU_CRAWLER,Engineer Crane
 UNIT_EU_CRAWLER_DESC,"Wheeled mobile site crane. Builds and repairs German structures."
 UNIT_EU_HARVESTER,Logistics Truck
 UNIT_EU_HARVESTER_DESC,Heavy 6x6 military logistics truck. Hauls supplies to a Supply Hub; a roof machine gun for self-defence.
-UNIT_EU_GRENADIER,Panzer-grenadier
-UNIT_EU_GRENADIER_DESC,Mechanised infantry rifleman with rifle grenades. Can garrison.
-UNIT_EU_LANCER,Panzerfaust 3 Soldier
+UNIT_EU_GRENADIER,Infanterie
+UNIT_EU_GRENADIER_DESC,Standard infantry rifleman with rifle grenades. Can garrison.
+UNIT_EU_LANCER,Panzerfaust
 UNIT_EU_LANCER_DESC,Anti-tank soldier with a Panzerfaust 3 launcher. Strong against vehicles. Can garrison.
 UNIT_EU_WOLFHOUND,LTV
 UNIT_EU_WOLFHOUND_DESC,Protected 4x4 patrol vehicle with a roof .50 cal heavy machine gun. Carries 4 infantry.
@@ -302,7 +302,8 @@ BLD_TPLA_CAMP,Basij Barracks
 BLD_TPLA_CHOP_SHOP,Vehicle Factory
 BLD_TPLA_TUNNEL,Tunnel Network
 BLD_TPLA_WORKSHOP,Defence Workshop
-BLD_TPLA_BAZAAR,Trade Exchange
+BLD_TPLA_BAZAAR,Oil Derrick
+BLD_TPLA_BAZAAR_DESC,Oil well with a pumpjack that brings in $185 a minute.
 BLD_TPLA_DEMO_TRAP,Anti-Tank Mine
 BLD_TPLA_CAMO_NET,Camo Net
 BLD_TPLA_HOLE,Rebuild Site
@@ -364,11 +365,11 @@ UNIT_TPLA_BUS_DESC,Iranian tracked infantry fighting vehicle with a 30 mm cannon
 BLD_EU_FLAK_TOWER,Air Defence Gun
 BLD_EU_FLAK_TOWER_DESC,Rapid-fire 35 mm air-defence gun turret. Hits ground and air targets. Needs power to fire.
 BLD_EU_SIGNALS,Signals Center
-BLD_EU_SIGNALS_DESC,"Command and tech centre. Unlocks the Heavy Tank 130, RCH SPA, Fuchs EW Jammer, the Airfield and the advanced structures."
+BLD_EU_SIGNALS_DESC,"Command and tech centre. Unlocks the RCH SPA, Fuchs EW Jammer, the Airfield and the advanced structures."
 BLD_EU_RELAY,Repair Post
 BLD_EU_RELAY_DESC,Repairs your vehicles and heals infantry within 6 tiles (1% health per second).
-BLD_EU_EXCHANGE,Logistics Centre
-BLD_EU_EXCHANGE_DESC,Contracts civilian logistics: +4 supply per second while powered.
+BLD_EU_EXCHANGE,Automotive Plant
+BLD_EU_EXCHANGE_DESC,Car factory that brings in $465 a minute. Uses a lot of power.
 BLD_EU_AIRSTRIP,Airfield
 BLD_EU_AIRSTRIP_DESC,Builds the Tiger and the multirole fighter. 6 parking slots; each fighter uses 2. Jets land here to rearm.
 BLD_EU_MINEFIELD,Minefield
@@ -428,8 +429,8 @@ UNIT_US_THUNDERLANCE,Thunderlance Bomber
 UNIT_US_THUNDERLANCE_DESC,"Heavy bomber: one devastating strike, then it lands and rearms (45 s). Uses 4 airfield slots. Needs a Strategic Center."
 BLD_US_COMMAND,Headquarters
 BLD_US_COMMAND_DESC,US headquarters. Builds Dozers.
-BLD_US_REACTOR,Fusion Plant
-BLD_US_REACTOR_DESC,Power plant. Powers the base.
+BLD_US_REACTOR,Nuclear Power Plant
+BLD_US_REACTOR_DESC,Nuclear power plant. Powers the base.
 BLD_US_SUPPLY_CENTER,Supply Depot
 BLD_US_SUPPLY_CENTER_DESC,Warehouse supply drop-off. Comes with an M1083A1P2 Supply Truck.
 BLD_US_BARRACKS,Barracks
@@ -445,7 +446,7 @@ BLD_US_PATRIOT_DESC,"C-RAM air defence: trailer-mounted 20mm rotary gun, strong 
 BLD_US_FIREBASE,M777A2
 BLD_US_FIREBASE_DESC,Emplaced M777A2 155mm howitzer that shells ground targets at long range. Needs power.
 BLD_US_DROP_ZONE,Data Center
-BLD_US_DROP_ZONE_DESC,Server hall that brings in steady passive income.
+BLD_US_DROP_ZONE_DESC,Server hall that brings in $500 a minute. Uses a lot of power.
 POWER_US_UAV,UAV Recon
 POWER_US_UAV_DESC,A drone reveals a 14-tile area for 20 s.
 POWER_US_PARADROP,Paradrop
@@ -533,9 +534,9 @@ BLD_ECC_AA_SITE_DESC,"Twin 30 mm rotary anti-aircraft turret. Shreds aircraft, c
 BLD_ECC_AIRFIELD,Airfield
 BLD_ECC_AIRFIELD_DESC,"Builds Su-57, Ka-52 and Tu-160. 6 parking slots: bomber 4, fighter 2, helicopter 0. Jets land here to rearm."
 BLD_ECC_MINISTRY,Ministry of Defense
-BLD_ECC_MINISTRY_DESC,"Tech centre: unlocks the Tu-160 bomber and the Black Market."
-BLD_ECC_BLACK_MARKET,Black Market
-BLD_ECC_BLACK_MARKET_DESC,Warehouse trading post that brings in steady passive income.
+BLD_ECC_MINISTRY_DESC,"Tech centre: unlocks the Tu-160 bomber and Minerals Mining."
+BLD_ECC_BLACK_MARKET,Minerals Mining
+BLD_ECC_BLACK_MARKET_DESC,Giant bucket-wheel excavator that digs up $400 every 30 seconds. Needs no power.
 POWER_ECC_RECON,Recon Drone
 POWER_ECC_RECON_DESC,A drone reveals a 14-tile area for 20 s.
 POWER_ECC_LOGISTICS,Supply Convoy
@@ -592,6 +593,7 @@ INFO_REQUIRES,Requires: %s
 INFO_POWER_GEN,Power: +%d
 INFO_POWER_USE,Power use: %d
 INFO_INCOME,"Income: $%d / min (up to 4 count)"
+INFO_INCOME_BURST,Income: $%d every %d s
 INFO_INCOME_CAPTURED,Income when captured: $%d / min
 INFO_REFINERY,Harvesters unload here
 INFO_PRODUCES,Trains: %s

@@ -11,6 +11,6 @@ expansion = 3
 tech_rush = 4
 harass = 1
 opening = PackedStringArray("eu_reactor", "eu_hub", "eu_barracks", "eu_reactor", "eu_motor_pool", "eu_gun_bunker", "eu_heavy_factory", "eu_reactor", "eu_hub")
-unit_weights = {"eu_grenadier": 3, "eu_lancer": 3, "eu_wolfhound": 2, "eu_flakwerk": 1, "eu_leopold": 6, "eu_salamander": 2, "eu_hearth": 2, "eu_spectre": 1, "eu_sentinel": 1, "eu_brennus": 3, "eu_thunderhead": 1, "eu_kestrel": 0, "eu_corvid": 0}
+unit_weights = {"eu_grenadier": 3, "eu_lancer": 3, "eu_wolfhound": 2, "eu_flakwerk": 1, "eu_leopold": 6, "eu_salamander": 2, "eu_hearth": 2, "eu_spectre": 1, "eu_sentinel": 1, "eu_thunderhead": 1, "eu_kestrel": 0, "eu_corvid": 0}
 wave_growth_pct = 40
 first_wave_value = 4000

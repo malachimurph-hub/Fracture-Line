@@ -252,7 +252,7 @@ func _next_building() -> StringName:
 		return R["support"]
 	if seconds() > 600 and difficulty != "easy" and _has_role("aa_tower") and counts.get(R["aa_tower"], 0) < 1 and p.supply > 1200:
 		return R["aa_tower"]
-	if _has_role("income") and counts.get(R["tech"], 0) >= 1 and counts.get(R["income"], 0) < 1 and p.supply > 2600:
+	if _has_role("income") and counts.get(R["tech"], 0) >= 1 and counts.get(R["income"], 0) < 1 and p.supply > Content.building(R["income"]).cost + 600:   # M3.3: income buildings now cost $2k-$6.5k
 		return R["income"]
 	if seconds() > 540 and difficulty != "easy" and _has_role("mine") and counts.get(R["mine"], 0) < (4 if difficulty == "hard" else 2) and p.supply > 600:
 		return R["mine"]

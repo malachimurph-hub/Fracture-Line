@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_s")
 id = &"us_chaingun"
-damage = 12
+damage = 15
 range_mt = 6000
 min_range_mt = 0
 cooldown_ms = 240
