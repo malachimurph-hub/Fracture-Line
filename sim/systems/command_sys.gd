@@ -167,6 +167,11 @@ static func apply(w: SimWorld, c: Dictionary) -> void:
 				w.map.unstamp(s2.tile, s2.fp)
 				w.power_dirty = true
 				w.events.append({"t": "death", "id": s2.id, "kind": s2.kind, "def": s2.def_id, "pos": s2.pos, "owner": pid, "silent": true})
+		"pack":   # M3.3 Phase 3: Minerals Mining packs up to move
+			MineSys.pack(w, pid, w.get_ent(int(c.get("target", 0))))
+		"unpack":
+			for id in c.get("ids", []):
+				MineSys.unpack(w, pid, w.get_ent(int(id)))
 		"sell":   # M3.3: sell a finished structure for 70% of its price
 			sell(w, pid, w.get_ent(int(c.get("target", 0))))
 		"queue":

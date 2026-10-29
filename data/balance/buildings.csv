@@ -47,7 +47,7 @@ ecc_bunker,BLD_ECC_BUNKER,defense,1000,12000,2,2,1400,-3,0,9,ecc_barracks,,0,0,0
 ecc_aa_site,BLD_ECC_AA_SITE,defense,1000,12000,2,2,1200,-3,0,10,ecc_barracks,,0,0,0,,0,ecc_zak30|ecc_zak30_gnd,1,0,0,0,1,,,0,0,0,0
 ecc_airfield,BLD_ECC_AIRFIELD,production,1800,16000,8,8,1800,-4,0,7,ecc_factory,ecc_su57|ecc_ka52|ecc_tu160,0,0,0,,0,,0,0,0,0,1,,airfield,0,6,0,0
 ecc_ministry,BLD_ECC_MINISTRY,tech,2000,16000,4,4,1500,-3,0,8,ecc_factory,,0,0,0,,0,,0,0,0,0,1,,,0,0,0,0
-ecc_black_market,BLD_ECC_BLACK_MARKET,tech,6500,20000,3,3,1000,0,0,6,ecc_ministry,,0,0,0,,0,,0,0,0,0,1,,income_burst|no_power,0,0,400,30
+ecc_black_market,BLD_ECC_BLACK_MARKET,tech,6500,20000,3,3,1000,0,0,6,ecc_ministry,,0,0,0,,0,,0,0,0,0,1,,income_burst|no_power|mobile,0,0,400,30
 eu_sandbags,BLD_SANDBAGS,defense,100,4000,2,1,700,0,0,5,,,0,0,0,,0,,0,3,0,0,1,,barricade|no_hole,0,0,0,0
 eu_barricade,BLD_BARRICADE,defense,250,7000,2,1,1600,0,0,5,,,0,0,0,,0,,0,3,0,0,1,,barricade|no_hole,0,0,0,0
 tpla_sandbags,BLD_SANDBAGS,defense,100,4000,2,1,700,0,0,5,,,0,0,0,,0,,0,3,0,0,1,,barricade|no_hole,0,0,0,0

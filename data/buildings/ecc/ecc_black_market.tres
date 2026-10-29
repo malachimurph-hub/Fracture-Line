@@ -33,6 +33,6 @@ garrison_capacity = 0
 capturable = false
 capture_income = 0
 buildable = true
-tags = PackedStringArray("income_burst", "no_power")
+tags = PackedStringArray("income_burst", "no_power", "mobile")
 aux_radius = 0
 air_slots = 0

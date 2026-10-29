@@ -1236,6 +1236,13 @@ func _make_card() -> Array:
 				var r := ctl._nearest_resource(sim.ents[hv[0]].pos)
 				if r != 0:
 					ctl.issue({"t": "harvest", "ids": hv, "target": r})})
+		var mm := ctl._filter(units, "mobile_mine")
+		if not mm.is_empty():   # M3.3 Phase 3: set the excavator up where it stands
+			var me0: SimEntity = sim.ents[mm[0]]
+			var up := MineSys.unpacking(me0)
+			out.push_front({"text": tr("CMD_UNPACK_CANCEL") if up else tr("CMD_UNPACK"),
+				"sub": tr("HUD_UNPACKING") % ceili(MineSys.ticks_left(sim, me0) / 20.0) if up else "",
+				"act": func(): ctl.issue({"t": "unpack", "ids": mm}), "tip": tr("CMD_UNPACK_TIP"), "accent": Color("#7dff8a")})
 		var ud := Content.unit(e.def_id)
 		if ud.transport_capacity > 0 and units.size() == 1:
 			var n_in := RosterSys.passengers(sim, e).size()
@@ -1268,6 +1275,11 @@ func _make_card() -> Array:
 		var inside := TplaSys.network_units(sim, pid).size()
 		out.append({"text": tr("HUD_EVACUATE"), "sub": "%d / %d" % [inside, TplaSys.network_capacity()], "disabled": inside == 0,
 			"act": func(): ctl.issue({"t": "unload", "ids": [e.id]}), "tip": tr("HUD_EVACUATE_TIP"), "accent": Color("#ffd166")})
+	if MineSys.is_mobile_site(sim, e):   # M3.3 Phase 3: pack the excavator up to move it
+		var pk := MineSys.packing(sim, e)
+		out.append({"text": tr("CMD_PACK_CANCEL") if pk else tr("CMD_PACK"),
+			"sub": tr("HUD_PACKING") % ceili(MineSys.ticks_left(sim, e) / 20.0) if pk else "",
+			"act": func(): ctl.issue({"t": "pack", "target": e.id}), "tip": tr("CMD_PACK_TIP"), "accent": Color("#7dff8a")})
 	if bd2.tags.has("trap"):
 		out.append({"text": tr("HUD_DETONATE"), "act": func(): ctl.issue({"t": "detonate", "ids": [e.id]}), "accent": Color("#ff6a4a"), "tip": tr("HUD_DETONATE_TIP")})
 	for uid in bd2.produces:
@@ -1625,6 +1637,15 @@ func on_events(events: Array) -> void:
 				if su != null and su.owner == pid:
 					toast(tr("ALERT_SALVAGE") % [ent_name(su), int(ev["tier"])])
 					AudioDirector.announce("salvage_upgrade")
+			"mine_moved":   # M3.3 Phase 3: the mine became a vehicle (or a structure again) - keep it selected
+				if int(ev["owner"]) == pid and ctl.selection.has(int(ev["from"])):
+					var ns: Array = ctl.selection.duplicate()
+					ns[ns.find(int(ev["from"]))] = int(ev["to"])
+					ctl.set_selection(ns)
+					_refresh_t = 0.0
+			"mine_unpack":
+				if ev.has("why") and sim.get_ent(int(ev["id"])) != null and sim.get_ent(int(ev["id"])).owner == pid:
+					toast(tr(String(ev["why"])))
 			"hole_rebuild":
 				if int(ev["owner"]) == pid:
 					AudioDirector.announce("hole_rebuild")

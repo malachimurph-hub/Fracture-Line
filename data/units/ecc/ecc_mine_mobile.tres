@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"ecc_mine_mobile"
+faction = &"ecc"
+name_key = "UNIT_ECC_MINE_MOBILE"
+desc_key = "UNIT_ECC_MINE_MOBILE_DESC"
+cost = 0
+build_time_ms = 0
+pop = 0
+prereqs = PackedStringArray()
+tags = PackedStringArray("vehicle", "mobile_mine")
+max_hp = 1000
+armor_type = &"heavy"
+weapons = PackedStringArray()
+speed_mtps = 375
+move_layer = &"vehicle"
+sight = 6
+radius_mt = 1400
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 0
+role = &"support"
+view_scene = "res://view/units/ecc/mine_mobile.tscn"
+stubs = PackedStringArray()
+loco = &""
+turn_dps = 0
+accel_ms = 0
+turret_dps = 0
+abilities = PackedStringArray()
+transport_capacity = 0
+detector = false
+air_slots = 0

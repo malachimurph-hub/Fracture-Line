@@ -24,7 +24,7 @@ static func run(w: SimWorld) -> void:
 				var cur: Array = hubs[e.owner].get(d.id, [0, d.passive_income])
 				cur[0] += 1
 				hubs[e.owner][d.id] = cur
-			if d.income_amount > 0 and d.income_period_s > 0:
+			if d.income_amount > 0 and d.income_period_s > 0 and not (e.aux_t > 0 and d.tags.has("mobile")):   # packing: no income
 				if not earners.has(e.owner):
 					earners[e.owner] = {}
 				earners[e.owner][d.id] = int(earners[e.owner].get(d.id, 0)) + 1

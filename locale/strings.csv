@@ -162,6 +162,14 @@ CMD_RESUME_BUILD_TIP,Send the nearest idle builder to finish this structure
 HUD_GROUPS_TIP,Control groups 1–5 (tap to show or hide)
 HUD_DESELECT,Clear selection
 CMD_CANCEL_BUILD_TIP,Cancel construction (full refund)
+CMD_PACK,Pack Up
+CMD_PACK_CANCEL,Stay
+CMD_PACK_TIP,"Pack the excavator up to move it (10 s). It earns nothing while packed."
+CMD_UNPACK,Set Up
+CMD_UNPACK_CANCEL,Keep Moving
+CMD_UNPACK_TIP,"Set the excavator up where it stands (10 s, open ground). Income starts again when it is up."
+HUD_PACKING,Packing up %ds
+HUD_UNPACKING,Setting up %ds
 CMD_SELL,Sell
 CMD_SELL_CONFIRM,Sell?
 CMD_SELL_TIP,"Sell this structure for 70% of its price (queued units are refunded). Tap twice to confirm."
@@ -509,6 +517,8 @@ MAP_RIVERSIDE,Riverside Metro
 MAP_RIVERSIDE_DESC,"Temperate city split by a river. Four avenue bridges and two edge fords link north and south; apartment towers, shop rows and parked cars line every street."
 UNIT_ECC_ENGINEER,Engineer Vehicle
 UNIT_ECC_ENGINEER_DESC,"Tracked combat engineering vehicle with a dozer blade, a crane and a single-shot anti-tank rocket launcher. Builds and repairs structures."
+UNIT_ECC_MINE_MOBILE,Minerals Mining (on the move)
+UNIT_ECC_MINE_MOBILE_DESC,"The bucket-wheel excavator, packed up and crawling to a new site. It earns nothing until it sets up again. Tap Set Up on open ground; it takes 10 seconds."
 UNIT_ECC_CARGO_TRUCK,Cargo Truck
 UNIT_ECC_CARGO_TRUCK_DESC,Six-wheel military cargo truck. Hauls supplies from supply sources to a Supply Depot.
 UNIT_ECC_RIFLEMAN,Rifleman

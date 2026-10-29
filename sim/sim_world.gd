@@ -478,6 +478,8 @@ func step() -> void:
 	RosterSys.run(self)
 	# M2.5 US mechanics (stealth while stationary)
 	UsSys.run(self)
+	# M3.3 Phase 3: the Russian mine packs up, drives and sets up again
+	MineSys.run(self)
 	if prof != null: t = _pt("tpla", t)
 	# 11 fog (5 Hz)
 	if tick % 4 == 0:
