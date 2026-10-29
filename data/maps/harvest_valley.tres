@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="MapDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/map_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"harvest_valley"
+name_key = "MAP_HARVEST_VALLEY"
+description_key = "MAP_HARVEST_VALLEY_DESC"
+size = Vector2i(192, 192)
+tiles_path = "res://data/maps/harvest_valley.txt"
+spawns = Array[Vector2i]([Vector2i(22, 22), Vector2i(166, 166), Vector2i(166, 22), Vector2i(22, 166)])
+resources = Array[Dictionary]([{"kind": "seam", "tile": Vector2i(35, 23), "amount": 85000}, {"kind": "seam", "tile": Vector2i(156, 23), "amount": 85000}, {"kind": "seam", "tile": Vector2i(35, 168), "amount": 85000}, {"kind": "seam", "tile": Vector2i(156, 168), "amount": 85000}, {"kind": "cache", "tile": Vector2i(23, 35), "amount": 20000}, {"kind": "cache", "tile": Vector2i(168, 35), "amount": 20000}, {"kind": "cache", "tile": Vector2i(23, 156), "amount": 20000}, {"kind": "cache", "tile": Vector2i(168, 156), "amount": 20000}, {"kind": "seam", "tile": Vector2i(72, 80), "amount": 60000}, {"kind": "seam", "tile": Vector2i(119, 80), "amount": 60000}, {"kind": "seam", "tile": Vector2i(72, 111), "amount": 60000}, {"kind": "seam", "tile": Vector2i(119, 111), "amount": 60000}, {"kind": "seam", "tile": Vector2i(52, 52), "amount": 60000}, {"kind": "seam", "tile": Vector2i(139, 52), "amount": 60000}, {"kind": "seam", "tile": Vector2i(52, 139), "amount": 60000}, {"kind": "seam", "tile": Vector2i(139, 139), "amount": 60000}])
+neutrals = Array[Dictionary]([{"kind": "neutral_pump", "tile": Vector2i(46, 70)}, {"kind": "neutral_pump", "tile": Vector2i(144, 70)}, {"kind": "neutral_pump", "tile": Vector2i(46, 120)}, {"kind": "neutral_pump", "tile": Vector2i(144, 120)}, {"kind": "neutral_pump", "tile": Vector2i(84, 46)}, {"kind": "neutral_pump", "tile": Vector2i(106, 46)}, {"kind": "neutral_pump", "tile": Vector2i(84, 144)}, {"kind": "neutral_pump", "tile": Vector2i(106, 144)}, {"kind": "neutral_civ_block", "tile": Vector2i(54, 74)}, {"kind": "neutral_civ_block", "tile": Vector2i(135, 74)}, {"kind": "neutral_civ_block", "tile": Vector2i(54, 115)}, {"kind": "neutral_civ_block", "tile": Vector2i(135, 115)}, {"kind": "neutral_civ_block", "tile": Vector2i(63, 74)}, {"kind": "neutral_civ_block", "tile": Vector2i(126, 74)}, {"kind": "neutral_civ_block", "tile": Vector2i(63, 115)}, {"kind": "neutral_civ_block", "tile": Vector2i(126, 115)}, {"kind": "neutral_civ_block", "tile": Vector2i(54, 83)}, {"kind": "neutral_civ_block", "tile": Vector2i(135, 83)}, {"kind": "neutral_civ_block", "tile": Vector2i(54, 106)}, {"kind": "neutral_civ_block", "tile": Vector2i(135, 106)}, {"kind": "neutral_civ_block", "tile": Vector2i(63, 83)}, {"kind": "neutral_civ_block", "tile": Vector2i(126, 83)}, {"kind": "neutral_civ_block", "tile": Vector2i(63, 106)}, {"kind": "neutral_civ_block", "tile": Vector2i(126, 106)}])
+env = &"temperate"
+hills = [[58, 30, 12, 2860], [134, 30, 12, 2860], [58, 162, 12, 2860], [134, 162, 12, 2860], [30, 62, 11, 2340], [162, 62, 11, 2340], [30, 130, 11, 2340], [162, 130, 11, 2340], [72, 64, 11, 3120], [120, 64, 11, 3120], [72, 128, 11, 3120], [120, 128, 11, 3120], [90, 30, 8, 1950], [102, 30, 8, 1950], [90, 162, 8, 1950], [102, 162, 8, 1950]]

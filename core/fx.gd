@@ -49,8 +49,17 @@ static func step_toward(a: Vector2i, b: Vector2i, step: int) -> Vector2i:
 		return b
 	return Vector2i(a.x + ((b.x - a.x) * step) / d, a.y + ((b.y - a.y) * step) / d)
 
+## M3.3 Phase 3 (17): the map whose ground height the view follows (set by WorldView; the sim
+## never calls to_world, so this is view-only).
+static var ground: SimMap = null
+
 static func to_world(p: Vector2i) -> Vector3:
-	return Vector3(float(p.x) / ONE, 0.0, float(p.y) / ONE)
+	var x := float(p.x) / ONE
+	var z := float(p.y) / ONE
+	return Vector3(x, ground.height_at(x, z) if ground != null and ground.has_elev else 0.0, z)
+
+static func ground_y(x: float, z: float) -> float:
+	return ground.height_at(x, z) if ground != null and ground.has_elev else 0.0
 
 static func from_world(v: Vector3) -> Vector2i:
 	return Vector2i(int(v.x * ONE), int(v.z * ONE))

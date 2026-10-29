@@ -7,18 +7,39 @@ class_name SkirmishConfig
 const MONEY := [5000, 10000, 20000, 30000, 50000]
 const MAX_START := 50000
 const DIFFS := ["easy", "medium", "hard"]
+## M3.3 P3 (21): up to 8 players (6 and 8 player maps); slots 5-8 start closed
+const SLOTS := 8
 
 static func default_setup() -> Dictionary:
+	var slots: Array = [
+		{"kind": "human", "team": 0, "color": 0, "difficulty": "", "spawn": -1, "faction": "eu"},
+		{"kind": "ai", "team": 1, "color": 1, "difficulty": "medium", "spawn": -1, "faction": "eu"},
+	]
+	for i in range(2, SLOTS):
+		slots.append({"kind": "closed", "team": i, "color": i, "difficulty": "medium", "spawn": -1, "faction": "eu"})
 	return {
 		"map": "varno_crossing", "seed": 0,
 		"options": {"fog": true, "start_money": 10000, "superweapons": false},
-		"slots": [
-			{"kind": "human", "team": 0, "color": 0, "difficulty": "", "spawn": -1, "faction": "eu"},
-			{"kind": "ai", "team": 1, "color": 1, "difficulty": "medium", "spawn": -1, "faction": "eu"},
-			{"kind": "closed", "team": 2, "color": 2, "difficulty": "medium", "spawn": -1, "faction": "eu"},
-			{"kind": "closed", "team": 3, "color": 3, "difficulty": "medium", "spawn": -1, "faction": "eu"},
-		],
+		"slots": slots,
 	}
+
+## M3.3 P3 (21): a lobby remembered from a 4-slot build gets closed slots 5-8 added.
+static func normalize(cfg: Dictionary) -> Dictionary:
+	var out := cfg.duplicate(true)
+	var slots: Array = out.get("slots", [])
+	var used := {}
+	for s in slots:
+		used[int(s.get("color", 0))] = true
+	for i in range(slots.size(), SLOTS):
+		var c := i
+		for k in Palette.COLORS.size():
+			if not used.has(k):
+				c = k
+				break
+		used[c] = true
+		slots.append({"kind": "closed", "team": i, "color": c, "difficulty": "medium", "spawn": -1, "faction": "eu"})
+	out["slots"] = slots
+	return out
 
 ## M2.5: skirmish maps in lobby order (Varno Crossing first, then by id).
 ## M2.8: map-builder maps follow the built-in ones (hidden save-embedded copies are left out).
@@ -54,6 +75,9 @@ static func validate(cfg: Dictionary) -> String:
 			return "LOBBY_ERR_COLOR"
 		colors[int(s["color"])] = true
 		var sp := int(s["spawn"])
+		var md0: MapDef = Content.maps.get(StringName(cfg.get("map", "varno_crossing")))
+		if md0 != null and sp >= md0.spawns.size():
+			return "LOBBY_ERR_SPAWN_MAP"
 		if sp >= 0:
 			if spawns.has(sp):
 				return "LOBBY_ERR_SPAWN"

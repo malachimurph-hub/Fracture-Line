@@ -96,7 +96,12 @@ func ground_point(screen: Vector2) -> Vector3:
 	if absf(dir.y) < 0.0001:
 		return focus
 	var t := -o.y / dir.y
-	return o + dir * t
+	var g := o + dir * t
+	if FX.ground != null and FX.ground.has_elev:   # M3.3 P3 (17): land on the hill, not the y = 0 plane
+		for i in 3:
+			t = (FX.ground_y(g.x, g.z) - o.y) / dir.y
+			g = o + dir * t
+	return g
 
 func pan_screen(delta_screen: Vector2) -> void:
 	# move focus so the ground point under the finger stays under the finger

@@ -44,6 +44,7 @@ LOBBY_ERR_PLAYERS,Need at least 2 players (set a slot to AI).
 LOBBY_ERR_ONE_TEAM,All players are on the same team — put at least one player on a different team.
 LOBBY_ERR_COLOR,Two players have the same color — pick different colors.
 LOBBY_ERR_SPAWN,Two players have the same start position.
+LOBBY_ERR_SPAWN_MAP,That start position is not on this map (it has fewer start positions).
 LOBBY_ERR_MAP,Map missing.
 MAP_VARNO_CROSSING,Varno Crossing
 FACTION_EU,Germany
@@ -55,6 +56,8 @@ COLOR_YELLOW,Yellow
 COLOR_PURPLE,Purple
 COLOR_GREEN,Green
 COLOR_ORANGE,Orange
+COLOR_PINK,Pink
+COLOR_CYAN,Cyan
 STUB_SUPERWEAPONS,[STUB] No superweapon structures exist yet; this toggle is saved but has no effect.
 STUB_TRANSPORT,Transport: select infantry and tap this vehicle to load.
 DIFF_EASY,Easy
@@ -657,3 +660,11 @@ INFO_DMG_HMG,heavy MGs
 INFO_DMG_FLAME,flame
 INFO_DMG_SNIPER,snipers
 INFO_DMG_AA_MISSILE,AA missiles
+MAP_TWIN_RIDGES,Twin Ridges
+MAP_TWIN_RIDGES_DESC,"Two players. Rolling hills, farm fields and gravel farm tracks between two corner bases, with a paved village square in the middle. Vehicles slow a little on the slopes."
+MAP_HARVEST_VALLEY,Harvest Valley
+MAP_HARVEST_VALLEY_DESC,"Four players. A river splits the valley, crossed by two bridges and two fords; hills, fields, meadows and two villages on both banks."
+MAP_SUNFALL_BASIN,Sunfall Basin
+MAP_SUNFALL_BASIN_DESC,"Six players. Four corner bases and one on the north and south edges, around a ring of dunes and mesas with an oasis town in the gravel basin."
+MAP_HIGHLAND_CROWN,Highland Crown
+MAP_HIGHLAND_CROWN_DESC,"Eight players. Corner and edge bases around a crown of high hills, with lakes, woods, farmland and a market town in the centre."

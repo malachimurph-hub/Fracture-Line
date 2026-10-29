@@ -15,6 +15,8 @@ const COLORS := {
 }
 const BIOME_A := {"s": Color(1, 0, 0, 0), "d": Color(0, 1, 0, 0), "g": Color(0, 0, 1, 0), "G": Color(0, 0, 0, 1)}
 const BIOME_B := {"a": Color(1, 0, 0, 0), "r": Color(0, 1, 0, 0), "w": Color(0, 0, 1, 0), "c": Color(0, 0, 0, 1)}
+## M3.3 P3 (22): extra ground types: e earth, v gravel, p pavers, l lush grass
+const BIOME_C := {"e": Color(1, 0, 0, 0), "v": Color(0, 1, 0, 0), "p": Color(0, 0, 1, 0), "l": Color(0, 0, 0, 1)}
 const TEX := "res://assets/textures/"
 
 var fog_image: Image
@@ -136,11 +138,25 @@ func biome_at(x: int, y: int) -> String:
 func _build_splats() -> void:
 	var ia := Image.create_empty(m.w, m.h, false, Image.FORMAT_RGBA8)
 	var ib := Image.create_empty(m.w, m.h, false, Image.FORMAT_RGBA8)
+	var ic := Image.create_empty(m.w, m.h, false, Image.FORMAT_RGBA8)
+	var any_c := false
 	for y in m.h:
 		for x in m.w:
 			var b := biome_at(x, y)
 			ia.set_pixel(x, y, BIOME_A.get(b, Color(0, 0, 0, 0)))
 			ib.set_pixel(x, y, BIOME_B.get(b, Color(0, 0, 0, 0)))
+			if BIOME_C.has(b):
+				ic.set_pixel(x, y, BIOME_C[b])
+				any_c = true
+	if any_c:
+		var cs := ic.duplicate() as Image
+		cs.resize(maxi(4, m.w / 2), maxi(4, m.h / 2), Image.INTERPOLATE_BILINEAR)
+		cs.resize(m.w, m.h, Image.INTERPOLATE_CUBIC)
+		for y in m.h:
+			for x in m.w:
+				ic.set_pixel(x, y, ic.get_pixel(x, y).lerp(cs.get_pixel(x, y), 0.5))
+		material.set_shader_parameter("splat_c", ImageTexture.create_from_image(ic))
+	material.set_shader_parameter("has_splat_c", 1.0 if any_c else 0.0)
 	# soften natural-ground transitions (asphalt stays crisp)
 	var sa := ia.duplicate() as Image
 	var soft := ia.duplicate() as Image   # wide, organic falloff (≈3 tiles)
@@ -312,7 +328,7 @@ func _build_chunk(cx: int, cy: int) -> void:
 	var vw := x1 - cx + 1
 	for y in range(cy, y1 + 1):
 		for x in range(cx, x1 + 1):
-			var hv := heights[y * (m.w + 1) + x]
+			var hv := heights[y * (m.w + 1) + x] + m.corner_height(x, y)   # M3.3 P3 (17): hills
 			st.set_uv(Vector2(x, y))
 			st.add_vertex(Vector3(x, hv, y))
 	for y in range(0, y1 - cy):
@@ -610,9 +626,9 @@ func _build_lane_markings() -> void:
 	for y in m.h:
 		for x in m.w:
 			if x % 2 == 0 and road.call(x, y) and road.call(x, y - 1) and not road.call(x, y + 1) and not road.call(x, y - 2) and road.call(x - 1, y) and road.call(x + 1, y):
-				pts.append(Transform3D(Basis(), Vector3(x + 0.5, 0.025, y)))
+				pts.append(Transform3D(Basis(), Vector3(x + 0.5, 0.025 + m.height_at(x + 0.5, y), y)))
 			if y % 2 == 0 and road.call(x, y) and road.call(x - 1, y) and not road.call(x + 1, y) and not road.call(x - 2, y) and road.call(x, y - 1) and road.call(x, y + 1):
-				pts.append(Transform3D(Basis(Vector3.UP, PI * 0.5), Vector3(x, 0.025, y + 0.5)))
+				pts.append(Transform3D(Basis(Vector3.UP, PI * 0.5), Vector3(x, 0.025 + m.height_at(x, y + 0.5), y + 0.5)))
 	if pts.is_empty():
 		return
 	var q := QuadMesh.new()
@@ -814,7 +830,7 @@ func _multimesh(items: Array, mesh: Mesh, mat: Material, kind: String, suffix: S
 		var n := _h(int(x * 13.0), int(z * 7.0))
 		var s := lerpf(0.8, 1.25, n) if jitter else 1.0
 		var yaw: float = n * TAU if jitter else float(it[2]) * PI * 0.5
-		var y := heights[clampi(int(z), 0, m.h) * (m.w + 1) + clampi(int(x), 0, m.w)] if kind.begins_with("rock") else 0.0
+		var y := (heights[clampi(int(z), 0, m.h) * (m.w + 1) + clampi(int(x), 0, m.w)] if kind.begins_with("rock") else 0.0) + m.height_at(x, z)
 		var b := Basis(Vector3.UP, yaw).scaled(Vector3(s, s * lerpf(0.9, 1.15, _h(int(x), int(z))), s))
 		mm.set_instance_transform(i, Transform3D(b, Vector3(x, y, z)))
 		mm.set_instance_color(i, (prop_tint.darkened(n * 0.15) if jitter else prop_tint))
@@ -1065,6 +1081,8 @@ func _build_bushes(dry: bool) -> void:
 		var tt := m.ttype(t)
 		if tt != SimMap.T.GRASS and tt != SimMap.T.ROUGH and tt != SimMap.T.FOREST:
 			return false
+		if biome_at(t.x, t.y) in ["p", "v", "e"]:   # M3.3 P3 (22): no bushes on pavers, gravel or tilled earth
+			return false
 		return absf(heights[t.y * (m.w + 1) + t.x]) < 0.01 and absf(heights[(t.y + 1) * (m.w + 1) + t.x + 1]) < 0.01
 	var cell := 5 if dry else 7
 	var add := func(x: float, y: float, sz: float, r: float) -> void:
@@ -1073,7 +1091,7 @@ func _build_bushes(dry: bool) -> void:
 		if not per_chunk.has(ck):
 			per_chunk[ck] = [[], [], []]
 		var sc: float = sz / [0.6, 1.0, 1.5][v]
-		var xf := Transform3D(Basis(Vector3.UP, r * TAU).scaled(Vector3(sc, sc * (0.85 + r * 0.3), sc)), Vector3(x, 0.0, y))
+		var xf := Transform3D(Basis(Vector3.UP, r * TAU).scaled(Vector3(sc, sc * (0.85 + r * 0.3), sc)), Vector3(x, m.height_at(x, y), y))
 		per_chunk[ck][v].append([xf, shades[int(r * 97.0) % shades.size()]])
 	for gy in range(0, m.h, cell):
 		for gx in range(0, m.w, cell):

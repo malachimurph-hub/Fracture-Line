@@ -21,6 +21,16 @@ var pf: Pathfinder
 var region: PackedInt32Array
 ## Same for foot builders (TPLA Laborers walk through forest and fords).
 var foot_region: PackedInt32Array
+## M3.3 Phase 3 (17) elevation: ground height at every tile corner in milli-units, built in
+## integers from MapDef.hills so every device gets the same numbers. 0 everywhere on maps
+## without hills (all maps before M3.3), and always 0 at the water's edge.
+var elev: PackedInt32Array
+## Vehicle slow-down per tile from the steepest corner-to-corner rise (percent, 0..SLOPE_MAX).
+var slope: PackedByteArray
+var has_elev := false
+const SLOPE_MAX := 20          ## steepest slopes cost vehicles 20% speed
+const SLOPE_DIV := 12          ## mm of rise per tile for each 1% slow-down
+const ELEV_CAP := 3200         ## mm
 
 func load_from(def: MapDef) -> void:
 	w = def.size.x
@@ -53,6 +63,67 @@ func load_from(def: MapDef) -> void:
 	pf.bind(self)
 	pf.setup(self)
 	_build_regions()
+	build_elevation(def.hills)
+
+## hills: [[centre_x, centre_y, radius, height_mm], ...] (tiles; height may be negative for a
+## hollow). Each is a smooth bump (1 - d^2/r^2)^2, summed and clamped. Corners that touch water,
+## a ford or a bridge stay at 0 so rivers keep their banks.
+func build_elevation(hills: Array) -> void:
+	elev = PackedInt32Array()
+	elev.resize((w + 1) * (h + 1))
+	slope = PackedByteArray()
+	slope.resize(w * h)
+	has_elev = not hills.is_empty()
+	if not has_elev:
+		return
+	for hl in hills:
+		var cx := int(hl[0])
+		var cy := int(hl[1])
+		var r := maxi(2, int(hl[2]))
+		var hm := int(hl[3])
+		var r2 := r * r
+		for y in range(maxi(0, cy - r), mini(h, cy + r) + 1):
+			for x in range(maxi(0, cx - r), mini(w, cx + r) + 1):
+				var d2 := (x - cx) * (x - cx) + (y - cy) * (y - cy)
+				if d2 >= r2:
+					continue
+				var u := 1024 - d2 * 1024 / r2
+				elev[y * (w + 1) + x] += hm * (u * u / 1024) / 1024
+	for y in h + 1:
+		for x in w + 1:
+			var k := y * (w + 1) + x
+			var v := clampi(elev[k], -ELEV_CAP, ELEV_CAP)
+			for d: Vector2i in [Vector2i(-1, -1), Vector2i(0, -1), Vector2i(-1, 0), Vector2i(0, 0)]:
+				var tt := ttype(Vector2i(x, y) + d) if in_bounds(Vector2i(x, y) + d) else T.GRASS
+				if tt == T.WATER or tt == T.FORD or tt == T.BRIDGE:
+					v = 0
+			elev[k] = v
+	for y in h:
+		for x in w:
+			var a := elev[y * (w + 1) + x]
+			var b := elev[y * (w + 1) + x + 1]
+			var c := elev[(y + 1) * (w + 1) + x]
+			var d := elev[(y + 1) * (w + 1) + x + 1]
+			var rise := maxi(maxi(absi(a - b), absi(c - d)), maxi(absi(a - c), absi(b - d)))
+			slope[y * w + x] = mini(SLOPE_MAX, rise / SLOPE_DIV)
+
+## Ground height (world units) at a point in tile space, bilinear over the corner heights.
+func height_at(x: float, z: float) -> float:
+	if not has_elev:
+		return 0.0
+	var fx := clampf(x, 0.0, float(w) - 0.001)
+	var fz := clampf(z, 0.0, float(h) - 0.001)
+	var ix := int(fx)
+	var iz := int(fz)
+	var tx := fx - ix
+	var tz := fz - iz
+	var k := iz * (w + 1) + ix
+	var a := lerpf(float(elev[k]), float(elev[k + 1]), tx)
+	var b := lerpf(float(elev[k + w + 1]), float(elev[k + w + 2]), tx)
+	return lerpf(a, b, tz) * 0.001
+
+func corner_height(x: int, y: int) -> float:
+	return float(elev[clampi(y, 0, h) * (w + 1) + clampi(x, 0, w)]) * 0.001 if has_elev else 0.0
 
 func _build_regions() -> void:
 	region = _flood(VEH_OK)
@@ -139,7 +210,10 @@ func terrain_passable(t: Vector2i, vehicle: bool) -> bool:
 func speed_pct(t: Vector2i, vehicle: bool) -> int:
 	if not in_bounds(t):
 		return 100
-	return SPEED_PCT[tiles[idx(t)]][1 if vehicle else 0]
+	var i := idx(t)
+	if vehicle and has_elev:   # M3.3 P3 (17): vehicles slow a little on slopes
+		return SPEED_PCT[tiles[i]][1] * (100 - slope[i]) / 100
+	return SPEED_PCT[tiles[i]][1 if vehicle else 0]
 
 func stamp(tile: Vector2i, fp: Vector2i, id: int) -> void:
 	for yy in fp.y:

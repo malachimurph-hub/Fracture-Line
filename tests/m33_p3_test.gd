@@ -7,6 +7,9 @@ static func run(t: Node) -> void:
 	_mine_moves(t)
 	_civilians(t)
 	_night(t)
+	_elevation(t)
+	_ground_variety(t)
+	_new_maps(t)
 
 static func _adv(r: MatchRunner, n: int) -> void:
 	for i in n:
@@ -187,3 +190,135 @@ static func _night(t: Node) -> void:
 	wv2.setup(r2, 0)
 	t._check(wv2.night == null, "day maps have no night lights")
 	wv2.queue_free()
+
+# ------------------------------------------------------------------ 17: elevation
+static func _elevation(t: Node) -> void:
+	var flat := M33._runner(["us", "eu"])
+	var fm := flat.sim.map
+	var any_slope := 0
+	for v in fm.slope:
+		any_slope = maxi(any_slope, v)
+	t._check(not fm.has_elev and any_slope == 0, "existing maps stay flat (old saves and replays play the same)")
+	var r := _runner_on("harvest_valley", ["us", "tpla"])
+	var m := r.sim.map
+	var steep := Vector2i(-1, -1)
+	for y in m.h:
+		for x in m.w:
+			if m.slope[y * m.w + x] >= 10 and m.ttype(Vector2i(x, y)) == SimMap.T.GRASS:
+				steep = Vector2i(x, y)
+	t._check(m.has_elev and steep.x >= 0, "the new maps have real hills (steep tile %s)" % str(steep))
+	if steep.x >= 0:
+		var base: int = SimMap.SPEED_PCT[SimMap.T.GRASS][1]
+		var sp := m.speed_pct(steep, true)
+		t._check(sp < base and sp >= base * 80 / 100 and m.speed_pct(steep, false) == SimMap.SPEED_PCT[SimMap.T.GRASS][0],
+			"vehicles slow a little on slopes (%d%% of %d%%), infantry do not" % [sp, base])
+	var md: MapDef = Content.maps[&"harvest_valley"]
+	var hl: Array = md.hills[0]
+	var top := m.height_at(float(hl[0]), float(hl[1]))
+	t._check(top > 1.5 and absf(m.height_at(float(md.spawns[0].x + 2), float(md.spawns[0].y + 2))) < 0.05, "hilltops stand %.1f m high; the bases stay level" % top)
+	var d := MapStore.to_dict(md)
+	var back := MapStore.from_dict(d)
+	t._check(back != null and back.hills.size() == md.hills.size(), "hills are kept when a map is saved / embedded in a save")
+	var wv := WorldView.new()
+	t.add_child(wv)
+	wv.setup(r, 0)
+	t._check(FX.ground == m and FX.to_world(FX.tile_center(Vector2i(int(hl[0]), int(hl[1])))).y > 1.5, "units and buildings stand on the hill (view height follows the ground)")
+	var w := r.sim
+	var on := Vector2i(int(hl[0]) - 5, int(hl[1]) - 2)
+	var bd := Content.building(&"us_barracks")
+	var b := w._place_building(bd, 0, on, 0, true)
+	wv._ensure_view(b)
+	var bv: Node3D = wv.views.get(b.id)
+	t._check(bv != null and bv.get_node_or_null("Plinth") != null, "a structure on a slope stands level on a concrete plinth")
+	var tank := w.spawn_unit(&"us_halberd", 0, null, FX.tile_center(steep if steep.x >= 0 else on))
+	tank.face = FX.ANG / 4
+	wv._ensure_view(tank)
+	wv.cur[tank.id] = wv._world_pos(tank)
+	wv.prev[tank.id] = wv.cur[tank.id]
+	for k in 6:
+		wv.frame(0.05, 0.5)
+	var tv: Node3D = wv.views.get(tank.id)
+	t._check(tv != null and (absf(tv.rotation.x) > 0.02 or absf(tv.rotation.z) > 0.02), "vehicles tilt with the slope (pitch %.2f, roll %.2f)" % [tv.rotation.x if tv else 0.0, tv.rotation.z if tv else 0.0])
+	t.remove_child(wv)
+	t._check(FX.ground == null, "the next screen starts on flat ground")
+	wv.free()
+
+# ------------------------------------------------------------------ 22: ground variety
+static func _ground_variety(t: Node) -> void:
+	for mid in ["twin_ridges", "harvest_valley", "sunfall_basin", "highland_crown"]:
+		var md: MapDef = Content.maps[StringName(mid)]
+		var bio := FileAccess.get_file_as_string(md.tiles_path.replace(".txt", ".biome.txt"))
+		var kinds := []
+		for c in ["e", "v", "p", "l", "g", "G", "d", "s"]:
+			if bio.contains(c):
+				kinds.append(c)
+		t._check(bio.contains("v") and bio.contains("p") and kinds.size() >= 5, "%s: %d ground types incl. gravel and pavers (%s)" % [mid, kinds.size(), "".join(kinds)])
+	var src := FileAccess.get_file_as_string("res://view/terrain/terrain.gdshader")
+	t._check(src.contains("splat_c") and src.contains("pavers"), "the terrain shader blends earth, gravel, pavers and lush grass")
+
+# ------------------------------------------------------------------ 21: 2 / 4 / 6 / 8 player maps
+static func _new_maps(t: Node) -> void:
+	var want := {"twin_ridges": [2, 128], "harvest_valley": [4, 192], "sunfall_basin": [6, 224], "highland_crown": [8, 256]}
+	for mid in want:
+		var md: MapDef = Content.maps.get(StringName(mid))
+		t._check(md != null and md.spawns.size() == want[mid][0] and md.size.x == want[mid][1] and not md.hills.is_empty() and md.resources.size() >= md.spawns.size() * 2,
+			"%s: %d players on %d x %d with hills, %d supply piles" % [mid, md.spawns.size() if md else 0, md.size.x if md else 0, md.size.y if md else 0, md.resources.size() if md else 0])
+		t._check(SkirmishConfig.map_ids().has(StringName(mid)), "%s is in the lobby map list" % mid)
+	t._check(Palette.COLORS.size() >= 8 and Palette.COLOR_KEYS.size() == Palette.COLORS.size(), "8 player colours")
+	var ds := SkirmishConfig.default_setup()
+	t._check(ds["slots"].size() == 8 and SkirmishConfig.active(ds).size() == 2, "the lobby has 8 slots (5-8 start closed)")
+	var old := ds.duplicate(true)
+	old["slots"] = old["slots"].slice(0, 4)
+	var nrm := SkirmishConfig.normalize(old)
+	var cols := {}
+	for s in nrm["slots"]:
+		cols[int(s["color"])] = true
+	t._check(nrm["slots"].size() == 8 and cols.size() == 8, "a remembered 4-slot lobby opens with 8 slots")
+	var cfg := SkirmishConfig.default_setup()
+	cfg["map"] = "highland_crown"
+	for i in 8:
+		cfg["slots"][i]["kind"] = "human" if i == 0 else "ai"
+		cfg["slots"][i]["team"] = i
+		cfg["slots"][i]["faction"] = ["us", "eu", "tpla", "ecc"][i % 4]
+	t._check(SkirmishConfig.validate(cfg) == "", "an 8-player free-for-all on Highland Crown is valid")
+	var c6 := cfg.duplicate(true)
+	c6["map"] = "sunfall_basin"
+	t._check(SkirmishConfig.validate(c6) == "LOBBY_ERR_PLAYERS", "8 players do not fit a 6-player map")
+	var c4 := SkirmishConfig.default_setup()
+	c4["slots"][1]["spawn"] = 6
+	t._check(SkirmishConfig.validate(c4) == "LOBBY_ERR_SPAWN_MAP", "a start position the map does not have is refused")
+	var res := SkirmishConfig.resolve(cfg)
+	for s in res["slots"]:
+		s["kind"] = "ai"
+		s["difficulty"] = "medium"
+	var sp := {}
+	for s in res["slots"]:
+		sp[int(s["spawn"])] = true
+	t._check(sp.size() == 8, "8 players get 8 different start positions")
+	var r := MatchRunner.new()
+	r.record_replay = false
+	r.start(res)
+	var t0 := Time.get_ticks_msec()
+	_adv(r, 600)
+	var ms := float(Time.get_ticks_msec() - t0) / 600.0
+	var hqs := 0
+	for pl in r.sim.players.size():
+		if r.sim.count_owned(pl, Content.faction(r.sim.players[pl].faction)["hq"]) > 0:
+			hqs += 1
+	t._check(hqs == 8 and r.ais.size() == 8 and not r.sim.game_over, "8 AIs play Highland Crown for 30 s (%d HQs, %.1f ms per sim tick headless)" % [hqs, ms])
+	var blds := 0
+	for id in r.sim.ids:
+		var e: SimEntity = r.sim.ents[id]
+		if e.kind == SimEntity.Kind.BUILDING and e.owner >= 0:
+			blds += 1
+	t._check(blds > 8, "they start building their bases (%d structures after 30 s)" % blds)
+	var vmd := MapStore.to_dict(Content.maps[&"highland_crown"])
+	var verr := MapStore.validate(vmd)
+	var too_many := false
+	for e in verr:
+		too_many = too_many or e.begins_with("At most")
+	t._check(not too_many, "the Map Builder accepts 8 start positions (opening Highland Crown as a base)")
+	for mid in ["twin_ridges", "sunfall_basin"]:
+		var r2 := _runner_on(mid, ["tpla", "ecc"])
+		_adv(r2, 300)
+		t._check(not r2.sim.game_over and r2.sim.players.size() == 2, "%s: a 1v1 runs" % mid)

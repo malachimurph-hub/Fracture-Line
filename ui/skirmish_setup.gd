@@ -17,7 +17,8 @@ var rows: VBoxContainer
 var preview: Control
 
 func build() -> void:
-	cfg = GameSession.setup.duplicate(true) if not GameSession.setup.is_empty() and GameSession.setup.get("slots", []).size() == 4 else SkirmishConfig.default_setup()
+	var n_sl: int = GameSession.setup.get("slots", []).size()
+	cfg = SkirmishConfig.normalize(GameSession.setup) if not GameSession.setup.is_empty() and (n_sl == 4 or n_sl == SkirmishConfig.SLOTS) else SkirmishConfig.default_setup()
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", 6)
 	body.add_child(v)
@@ -43,7 +44,14 @@ func build() -> void:
 	left.add_child(hdr)
 	rows = VBoxContainer.new()
 	rows.add_theme_constant_override("separation", 4)
-	left.add_child(rows)
+	# M3.3 P3 (21): 8 slots scroll inside the lobby (the phone shows about four at a time)
+	var rs := ScrollContainer.new()
+	rs.name = "SlotScroll"
+	rs.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	rs.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	rs.add_child(rows)
+	rows.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	left.add_child(rs)
 	_build_rows()
 	var right := VBoxContainer.new()
 	right.custom_minimum_size = Vector2(172, 0)
@@ -107,7 +115,7 @@ func build() -> void:
 func _build_rows() -> void:
 	for c in rows.get_children():
 		c.queue_free()
-	for i in 4:
+	for i in cfg["slots"].size():
 		var s: Dictionary = cfg["slots"][i]
 		var r := HBoxContainer.new()
 		r.add_theme_constant_override("separation", 4)
@@ -170,7 +178,7 @@ func _build_rows() -> void:
 		var team := OptionButton.new()
 		team.custom_minimum_size = Vector2(COLS["team"], 44)
 		team.fit_to_longest_item = false
-		for t in 4:
+		for t in SkirmishConfig.SLOTS:
 			team.add_item(str(t + 1))
 		team.selected = int(s["team"])
 		team.item_selected.connect(func(idx): s["team"] = idx; _validate())
@@ -179,7 +187,7 @@ func _build_rows() -> void:
 		sp.custom_minimum_size = Vector2(COLS["start"], 44)
 		sp.fit_to_longest_item = false
 		sp.add_item(tr("LOBBY_RANDOM"))
-		for t in 4:
+		for t in SkirmishConfig.SLOTS:
 			sp.add_item(str(t + 1))
 		sp.selected = int(s["spawn"]) + 1
 		sp.item_selected.connect(func(idx): s["spawn"] = idx - 1; _validate(); preview.queue_redraw())

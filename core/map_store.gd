@@ -44,7 +44,8 @@ static func to_dict(md: MapDef) -> Dictionary:
 	for p in md.prebuilt:
 		pb.append({"kind": String(p["kind"]), "spawn": int(p["spawn"]), "tile": _a(p["tile"])})
 	return {"format": FORMAT, "id": String(md.id), "name": tr_name(md), "size": _a(md.size), "env": String(md.env),
-		"tiles": Array(rows), "spawns": sp, "resources": rs, "neutrals": ns, "prebuilt": pb, "decor": md.decor.duplicate(true)}
+		"tiles": Array(rows), "spawns": sp, "resources": rs, "neutrals": ns, "prebuilt": pb, "decor": md.decor.duplicate(true),
+		"hills": md.hills.duplicate(true), "night": md.night}
 
 static func tr_name(md: MapDef) -> String:
 	return TranslationServer.translate(md.name_key) if md.name_key != "" else String(md.id)
@@ -81,6 +82,12 @@ static func from_dict(d: Dictionary) -> MapDef:
 		if e is Array and e.size() >= 4:
 			dc.append([String(e[0]), float(e[1]), float(e[2]), int(e[3])])
 	md.decor = dc
+	var hl: Array = []
+	for e2 in d.get("hills", []):
+		if e2 is Array and e2.size() >= 4:
+			hl.append([int(e2[0]), int(e2[1]), int(e2[2]), int(e2[3])])
+	md.hills = hl
+	md.night = bool(d.get("night", false))
 	md.custom = true
 	md.content_hash = hash_of(d)
 	return md
@@ -88,6 +95,8 @@ static func from_dict(d: Dictionary) -> MapDef:
 ## Hash of everything the deterministic sim reads (not the name / id / env).
 static func hash_of(d: Dictionary) -> String:
 	var core := [d.get("size"), d.get("tiles"), d.get("spawns"), d.get("resources"), d.get("neutrals"), d.get("prebuilt", [])]
+	if not d.get("hills", []).is_empty():   # M3.3 P3: only maps with hills hash them (old hashes unchanged)
+		core.append(d["hills"])
 	return JSON.stringify(core).md5_text()
 
 static func path_of(id) -> String:
@@ -206,8 +215,8 @@ static func validate(d: Dictionary) -> PackedStringArray:
 	m.load_from(md)
 	if md.spawns.size() < 2:
 		errs.append("Place at least 2 start positions (have %d)." % md.spawns.size())
-	if md.spawns.size() > 4:
-		errs.append("At most 4 start positions.")
+	if md.spawns.size() > SkirmishConfig.SLOTS:   # M3.3 P3 (21): up to 8 players
+		errs.append("At most %d start positions." % SkirmishConfig.SLOTS)
 	var occ := {}   # tile -> label
 	var claim := func(t0: Vector2i, fp: Vector2i, label: String) -> void:
 		var bad_t := false

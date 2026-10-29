@@ -10,6 +10,8 @@ global uniform float fl_tex_quality;
 uniform sampler2D fog_tex : filter_linear, repeat_disable;
 uniform sampler2D splat_a : filter_linear, repeat_disable; // sand, dirt, dry scrub, green
 uniform sampler2D splat_b : filter_linear, repeat_disable; // asphalt, rock, riverbed, concrete
+uniform sampler2D splat_c : hint_default_black, filter_linear, repeat_disable; // M3.3 P3 (22): earth, gravel, pavers, lush grass
+uniform float has_splat_c = 0.0;
 uniform sampler2DArray t_albedo : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2DArray t_nrao : hint_default_white, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D t_detail : hint_default_white, filter_linear_mipmap_anisotropic, repeat_enable;
@@ -84,8 +86,14 @@ void fragment() {
 	b.g = max(b.g, steep);
 	a = pow(a, vec4(1.6)); b = pow(b, vec4(1.6));
 	b.r = hi ? smoothstep(0.3, 0.7, tex_bicubic(splat_b, p / map_size).r) : texture(splat_b, p / map_size).r; // asphalt stays crisp, smooth curves
-	float sum = a.r + a.g + a.b + a.a + b.r + b.g + b.b + b.a + 1e-4;
-	a /= sum; b /= sum;
+	vec4 cc = vec4(0.0);
+	if (has_splat_c > 0.5) {
+		cc = pow(texture(splat_c, (p + jitter * 0.6) / map_size), vec4(1.6));
+		cc.b = texture(splat_c, p / map_size).b;   // pavers keep a crisp edge like asphalt
+		cc.b = smoothstep(0.3, 0.7, cc.b);
+	}
+	float sum = a.r + a.g + a.b + a.a + b.r + b.g + b.b + b.a + cc.r + cc.g + cc.b + cc.a + 1e-4;
+	a /= sum; b /= sum; cc /= sum;
 	float w[7] = float[](a.r, a.g, a.b + a.a, b.r, b.g, b.b, b.a);
 	float sc[7] = float[](0.16, 0.2, 0.3, 0.3, 0.14, 0.32, 0.22);
 	vec3 tint[7] = vec3[](vec3(1.02, 0.97, 0.88), vec3(1.05, 0.95, 0.85), vec3(1.0), vec3(1.12, 1.08, 1.04),
@@ -129,6 +137,37 @@ void fragment() {
 				vec4 n0 = texture(t_nrao, vec3(uv, float(i)), bias);
 				if (tm > 0.02) n0 = mix(n0, texture(t_nrao, vec3(uv2, float(i)), bias), tm);
 				nr += w[i] * n0;
+			}
+		}
+	}
+	// M3.3 P3 (22): extra ground types re-use the base layers with their own scale, tint and pattern
+	if (has_splat_c > 0.5) {
+		float cw[4] = float[](cc.r, cc.g, cc.b, cc.a);
+		float cl[4] = float[](1.0, 4.0, 6.0, 2.0);
+		float cs[4] = float[](0.11, 0.42, 0.25, 0.22);
+		vec3 ct[4] = vec3[](vec3(0.6, 0.53, 0.47), vec3(0.98, 0.96, 0.92), vec3(1.04, 0.98, 0.9), vec3(0.8, 1.06, 0.74));
+		for (int j = 0; j < 4; j++) {
+			if (cw[j] > 0.01) {
+				vec2 uv = (j == 1 ? ROT2 * p : p) * cs[j];
+				vec3 c = texture(t_albedo, vec3(uv, cl[j]), bias).rgb;
+				if (j == 1) { // gravel: desaturated rock chips over packed dirt
+					float l = dot(c, vec3(0.3, 0.59, 0.11));
+					c = mix(vec3(l), c, 0.35) * 1.12;
+					c = mix(c, texture(t_albedo, vec3(p * 0.2, 1.0), bias).rgb * 0.95, 0.35);
+				} else if (j == 2) { // pavers: large slabs with soft mortar joints
+					vec2 gp = p * vec2(1.0, 2.0);
+					gp.x += step(1.0, mod(floor(gp.y), 2.0)) * 0.5;
+					vec2 fr = abs(fract(gp) - 0.5);
+					float joint = smoothstep(0.47, 0.5, max(fr.x, fr.y * 1.0));
+					c *= 1.0 - joint * 0.22;
+					c *= mix(0.95, 1.05, vnoise(floor(gp) * 1.37));
+				} else if (j == 0) { // earth: tilled / dark soil with gentle furrow shading
+					c *= mix(0.92, 1.06, vnoise(p * 0.7 + 2.0));
+					c *= 0.9 + 0.1 * smoothstep(-0.4, 0.6, sin(p.y * 6.2832 * 1.4 + vnoise(p * 0.3) * 1.5));   // soft furrows
+				}
+				c *= ct[j];
+				col += cw[j] * c;
+				if (hi) nr += cw[j] * texture(t_nrao, vec3(uv, cl[j]), bias);
 			}
 		}
 	}

@@ -11,7 +11,10 @@ extends Resource
 @export var env: StringName = &"desert"
 ## M3.3 Phase 3 (20): night version of a map (view only: moonlight, lit windows, street lamps,
 ## floodlights and headlights). Same tiles as its day map.
-@export var night: bool = false   ## M2.5 view environment (MapEnv): desert | winter | temperate
+@export var night: bool = false
+## M3.3 Phase 3 (17): hills and hollows, [[centre_x, centre_y, radius, height_mm], ...] (tiles).
+## Sim-relevant (vehicles slow on slopes); built into SimMap.elev.
+@export var hills: Array = []   ## M2.5 view environment (MapEnv): desert | winter | temperate
 ## M2.8 map builder: optional pre-placed units / buildings, {kind, spawn, tile}. Each belongs to
 ## the player who starts on spawn slot `spawn`; skipped when no player uses that slot.
 @export var prebuilt: Array[Dictionary] = []

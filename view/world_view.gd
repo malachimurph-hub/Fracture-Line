@@ -46,6 +46,7 @@ func setup(r: MatchRunner, pid: int) -> void:
 	local_pid = pid
 	local_team = sim.players[pid].team if pid >= 0 else -1
 	_init_crushers()
+	FX.ground = sim.map   # M3.3 P3 (17): views follow the ground height on maps with hills
 	terrain = TerrainView.new()
 	add_child(terrain)
 	terrain.decor_override = (Content.maps[sim.map_id] as MapDef).decor
@@ -58,7 +59,7 @@ func setup(r: MatchRunner, pid: int) -> void:
 		night.name = "NightLights"
 		add_child(night)
 		night.setup(terrain.fog_texture, Vector2(sim.map.w, sim.map.h))
-		night.add_lamps(terrain.lamps, func(x: float, z: float) -> float: return 0.0)
+		night.add_lamps(terrain.lamps, func(x: float, z: float) -> float: return FX.ground_y(x, z))
 	wfx = WeaponFx.new()
 	add_child(wfx)
 	wfx.setup(self, vfx)
@@ -80,7 +81,7 @@ func setup(r: MatchRunner, pid: int) -> void:
 	_refresh_fog()
 
 func team_shape_index(team: int) -> int:
-	return clampi(team, 0, 3)
+	return maxi(0, team) % Palette.SHAPES.size()   # M3.3 P3 (21): teams 5-8 reuse the four shapes
 
 ## M2.5 aircraft (view only): altitude eased from the sim air_state (jets ~6 m, helicopters ~4 m,
 ## parked = on the pad), spinning Rotor/TailRotor nodes, bank in turns and a ground shadow.
@@ -419,6 +420,8 @@ func _ensure_view(e: SimEntity) -> EntityView:
 	v.position = _world_pos(e)
 	if e.kind == SimEntity.Kind.BUILDING or e.kind == SimEntity.Kind.NEUTRAL:
 		v.rotation.y = [0.0, PI * 0.5, PI, -PI * 0.5][e.rot]
+		if sim.map.has_elev:
+			_seat_on_slope(v, e.tile, e.fp)
 		if e.kind == SimEntity.Kind.BUILDING:
 			terrain.clear_area(e.tile, e.fp)   # M3.3: construction clears trees, rocks and clutter
 		if e.kind == SimEntity.Kind.BUILDING and Content.btag(e.def_id, "hole") and v.model != null:
@@ -837,6 +840,47 @@ func _update_night() -> void:
 	night.set_buildings(blds)
 	night.set_vehicles(vehs)
 
+## M3.3 P3 (17): a structure on a slope sits level at the highest corner of its footprint, on a
+## concrete plinth that reaches down to the lowest corner (classic RTS foundation).
+func _footprint_heights(t: Vector2i, fp: Vector2i) -> Vector2:
+	var lo := 1e9
+	var hi := -1e9
+	for yy in fp.y + 1:
+		for xx in fp.x + 1:
+			var hh := sim.map.corner_height(t.x + xx, t.y + yy)
+			lo = minf(lo, hh)
+			hi = maxf(hi, hh)
+	return Vector2(lo, hi)
+
+static var _plinth_mat: StandardMaterial3D = null
+func _seat_on_slope(v: EntityView, t: Vector2i, fp: Vector2i) -> void:
+	var hr := _footprint_heights(t, fp)
+	v.position.y = hr.y
+	var drop := hr.y - hr.x
+	if drop < 0.04:
+		return
+	if _plinth_mat == null:
+		_plinth_mat = StandardMaterial3D.new()
+		_plinth_mat.albedo_color = Color("#8d8678")
+		_plinth_mat.roughness = 0.95
+	var bm := BoxMesh.new()
+	bm.size = Vector3(fp.x + 0.08, drop + 0.12, fp.y + 0.08)
+	var mi := MeshInstance3D.new()
+	mi.name = "Plinth"
+	mi.mesh = bm
+	mi.material_override = _plinth_mat
+	mi.position = Vector3(0, -(drop + 0.12) * 0.5 + 0.04, 0)
+	v.add_child(mi)
+
+## M3.3 P3 (17): ground vehicles pitch and roll with the slope they stand on.
+func _tilt_on_slope(v: EntityView, p: Vector3, yaw_r: float) -> void:
+	var f := Vector3(sin(yaw_r), 0, cos(yaw_r)) * 0.6
+	var s := Vector3(f.z, 0, -f.x)
+	var hf := FX.ground_y(p.x + f.x, p.z + f.z) - FX.ground_y(p.x - f.x, p.z - f.z)
+	var hs := FX.ground_y(p.x + s.x, p.z + s.z) - FX.ground_y(p.x - s.x, p.z - s.z)
+	v.rotation.x = lerpf(v.rotation.x, -atan2(hf, 1.2), 0.25)
+	v.rotation.z = lerpf(v.rotation.z, atan2(hs, 1.2), 0.25)
+
 ## Tanks and other heavy tracked vehicles crush cars they drive over.
 var _crushers := {}
 func _init_crushers() -> void:
@@ -892,6 +936,8 @@ func frame(a: float, delta: float) -> void:
 			var ny := lerp_angle(y0, want, minf(1.0, delta * 8.0))
 			yaw[id] = ny
 			v.rotation.y = ny
+			if sim.map.has_elev and ud.move_layer == &"vehicle":
+				_tilt_on_slope(v, p, ny)
 			if v.has_method("set_health"):
 				v.set_health(float(e.hp) / float(maxi(1, e.max_hp)))
 			if v.turret != null and Content.unit(e.def_id).turret_dps > 0:
@@ -1078,6 +1124,10 @@ func show_ghost(def_id: StringName, tile: Vector2i, rot: int, ok: bool, pid: int
 	ghost_pad.position = center + Vector3(0, 0.07, 0)
 	ghost_pad.scale = Vector3(fpv.x, 1, fpv.y)
 	ghost_pad.material_override = ghost_ok_mat if ok else ghost_bad_mat
+	if sim.map.has_elev:
+		var hr := _footprint_heights(tile, Vector2i(fpv))
+		center.y = hr.y
+		ghost_pad.position.y = hr.y + 0.07
 	ghost_model.position = center
 	ghost_model.rotation.y = [0.0, PI * 0.5, PI, -PI * 0.5][rot]
 	ghost_model.set_overlay(ghost_overlay_ok if ok else ghost_overlay_bad)
@@ -1155,3 +1205,7 @@ func update_rally(b: SimEntity) -> void:
 	var len := a.distance_to(t)
 	if len > 0.1:
 		rally_line.transform = Transform3D(Basis.looking_at(t - a, Vector3.UP), (a + t) * 0.5).scaled_local(Vector3(0.06, 0.02, len))
+
+func _exit_tree() -> void:
+	if sim != null and FX.ground == sim.map:
+		FX.ground = null   # M3.3 P3 (17): the next screen starts on flat ground

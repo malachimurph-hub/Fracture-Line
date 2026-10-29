@@ -222,8 +222,10 @@ func _swatch_tex(t: int) -> ImageTexture:
 ## The asset list: every placeable map asset, by category.
 func asset_categories() -> Array:
 	var cats: Array = []
-	cats.append(["Start positions", [{"t": "spawn", "slot": 0, "label": "Start 1"}, {"t": "spawn", "slot": 1, "label": "Start 2"},
-		{"t": "spawn", "slot": 2, "label": "Start 3"}, {"t": "spawn", "slot": 3, "label": "Start 4"}]])
+	var starts: Array = []   # M3.3 P3 (21): up to 8 start positions
+	for si in SkirmishConfig.SLOTS:
+		starts.append({"t": "spawn", "slot": si, "label": "Start %d" % (si + 1)})
+	cats.append(["Start positions", starts])
 	cats.append(["Supplies", [{"t": "res", "kind": "seam", "label": "Supply seam"}, {"t": "res", "kind": "cache", "label": "Supply cache"}]])
 	var neu: Array = []
 	var nids: Array = Content.buildings.keys()

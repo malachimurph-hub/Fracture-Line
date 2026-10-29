@@ -15,6 +15,8 @@ func _ready() -> void:
 		await run_civ()
 	elif p == "mine":
 		await run_mine()
+	elif p == "hills":
+		await run_hills()
 	elif p.begins_with("map:"):
 		await run_map_view(p.substr(4))
 	print("=== M33 SHOTS DONE")
@@ -100,3 +102,23 @@ func run_map_view(mid: String) -> void:
 	m.cam.target_dist = 30.0
 	await frames(50)
 	await shot("map_" + mid)
+
+## M3.3 P3 (17): vehicles tilt on a hillside; a structure on a slope stands on a concrete plinth.
+func run_hills() -> void:
+	await _start("harvest_valley", ["us", "tpla"], false)
+	var md: MapDef = Content.maps[&"harvest_valley"]
+	var hl: Array = md.hills[2]
+	var c := Vector2i(int(hl[0]), int(hl[1]))
+	_bld(&"us_barracks", c + Vector2i(-int(hl[2]) / 2 - 2, -2))
+	for k in 5:
+		_unit([&"us_halberd", &"us_bradley", &"us_lynx", &"us_halberd", &"us_bradley"][k], c + Vector2i(k * 3 - 6, 3 + (k % 2) * 3), FX.ANG / 4 + k * 200)
+	_look(Vector2(c.x - 2, c.y + 3), 0)
+	m.cam.dist = 22.0
+	m.cam.target_dist = 22.0
+	await frames(60)
+	await shot("hills_valley2")
+	_look(Vector2(md.size.x * 0.3, md.size.y * 0.32), 0)
+	m.cam.dist = 34.0
+	m.cam.target_dist = 34.0
+	await frames(50)
+	await shot("hills_fields2")
