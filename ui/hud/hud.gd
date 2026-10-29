@@ -35,7 +35,15 @@ var grid: GridContainer
 var grid_buttons: Array = []
 var money_lbl: Label
 var power_lbl: Label
-var power_bar: ProgressBar
+var power_bar: PowerSegBar
+var econ_box: Control         ## M3.3: top-centre money box + 40-segment power bar
+var money_box: Panel
+var queue_grid: GridContainer ## M3.3: 8-slot production queue (right end of the bar)
+var queue_slots: Array = []
+const QUEUE_SLOTS := 8
+const QSLOT := Vector2(34, 46)
+const FLAG_ALPHA := 0.2
+const ECON_W := 150.0
 var pop_lbl: Label
 var rank_lbl: Label
 var general_btn: HudButton
@@ -115,6 +123,15 @@ func _build() -> void:
 	bar.add_theme_stylebox_override("panel", UiTheme.fbox(fac, fp["bg"], fp["frame"], -1, int(fp["radius"])))
 	root.add_child(bar)
 	blockers.append(bar)
+	# M3.3 (Malachi: "Add emblem or country's flag in background of the task bar"): the national
+	# flag drawn faintly behind the selection panel and command grid
+	emblem = FactionEmblem.new()
+	emblem.name = "BarFlag"
+	emblem.fac = fac
+	emblem.flag_mode = true
+	emblem.modulate = Color(1, 1, 1, FLAG_ALPHA)
+	emblem.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bar.add_child(emblem)
 	minimap = Minimap.new()
 	minimap.setup(world, cam, ctl)
 	root.add_child(minimap)      # M2.6: own node so it can grow when the bar slides out
@@ -165,39 +182,62 @@ func _build() -> void:
 		b.hold_info.connect(_on_grid_info.bind(i, b))
 		grid.add_child(b)
 		grid_buttons.append(b)
-	# resources panel
+	# M3.3: production queue panel at the right end of the bar - 8 slots (4 x 2) like Zero Hour
 	res_panel = Panel.new()
-	res_panel.name = "ResPanel"
+	res_panel.name = "QueuePanel"
 	res_panel.add_theme_stylebox_override("panel", UiTheme.fbox(fac, fp["bg"], fp["frame"], -1, int(fp["radius"])))
 	root.add_child(res_panel)
 	blockers.append(res_panel)
-	emblem = FactionEmblem.new()
-	emblem.fac = fac
-	emblem.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	res_panel.add_child(emblem)
-	var rp := VBoxContainer.new()
-	rp.name = "Res"
-	rp.add_theme_constant_override("separation", 2)
-	res_panel.add_child(rp)
-	money_lbl = UiTheme.label("$0", 17, fp["money"])
-	rp.add_child(money_lbl)
-	power_bar = ProgressBar.new()
-	power_bar.show_percentage = false
-	power_bar.custom_minimum_size = Vector2(110, 8)
-	rp.add_child(power_bar)
-	power_lbl = UiTheme.label("", 11)
-	rp.add_child(power_lbl)
+	queue_grid = GridContainer.new()
+	queue_grid.name = "Queue"
+	queue_grid.columns = 4
+	queue_grid.add_theme_constant_override("h_separation", 3)
+	queue_grid.add_theme_constant_override("v_separation", 3)
+	res_panel.add_child(queue_grid)
+	for i in QUEUE_SLOTS:
+		var q := _hud_btn("", QSLOT)
+		q.add_theme_font_size_override("font_size", 10)
+		q.hit_pad = 5.0   # 44 dp tap target
+		var qi := i
+		q.primary.connect(func(): _on_queue_slot(qi))
+		q.has_info = true
+		q.hold_info.connect(func(on: bool): _on_queue_info(qi, q, on))
+		queue_grid.add_child(q)
+		queue_slots.append(q)
+	# M3.3 (Malachi: "Money amount and power, move to top of center screen, money in a colored box
+	# with white letters. Power in a bar with ~40 squares"): top-centre economy box
+	econ_box = Control.new()
+	econ_box.name = "Econ"
+	root.add_child(econ_box)
+	money_box = Panel.new()
+	money_box.name = "MoneyBox"
+	money_box.add_theme_stylebox_override("panel", UiTheme.box(Color(fp["money"]).darkened(0.55), Color(fp["money"]), 1, 4, 2.0))
+	econ_box.add_child(money_box)
+	money_lbl = UiTheme.label("$0", 16, Color.WHITE)
+	money_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	money_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	money_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
+	money_lbl.add_theme_constant_override("outline_size", 3)
+	money_box.add_child(money_lbl)
+	power_bar = PowerSegBar.new()
+	power_bar.name = "PowerBar"
+	power_bar.hold_info.connect(_on_power_info)
+	econ_box.add_child(power_bar)
+	blockers.append(money_box)
+	blockers.append(power_bar)
+	power_lbl = UiTheme.label("", 10)   # low-power warning under the bar
+	power_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	power_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	power_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
+	power_lbl.add_theme_constant_override("outline_size", 3)
+	econ_box.add_child(power_lbl)
 	pop_lbl = power_lbl
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 4)
-	rp.add_child(row)
-	general_btn = _hud_btn(tr("HUD_GENERAL"), Vector2(77, 44))
+	general_btn = _hud_btn(tr("HUD_GENERAL"), Vector2(77, TOP_H))
 	general_btn.primary.connect(toggle_tray)
 	general_btn.visible = Content.GENERALS_ENABLED   # M3.3: generals are off
-	row.add_child(general_btn)
-	build_btn = _hud_btn(tr("HUD_BUILD"), Vector2(50, 44))
+	build_btn = _hud_btn(tr("HUD_BUILD"), Vector2(56, TOP_H))
+	build_btn.name = "BuildBtn"
 	build_btn.primary.connect(open_build)
-	row.add_child(build_btn)
 	rank_lbl = UiTheme.label("", 11, fp["accent"])
 	# top strip
 	top = HBoxContainer.new()
@@ -211,6 +251,8 @@ func _build() -> void:
 	idle.primary.connect(ctl.select_idle_builder)
 	top.add_child(idle)
 	idle_btn = idle
+	top.add_child(build_btn)   # M3.3: Build moved up here (the money panel became the queue)
+	top.add_child(general_btn)
 	var sp := Control.new()
 	sp.custom_minimum_size = Vector2(TOP_PAD * 2 + 2, 1)
 	top.add_child(sp)
@@ -251,7 +293,7 @@ func _build() -> void:
 	menu_btn.primary.connect(toggle_pause_menu)
 	top.add_child(menu_btn)
 	top.add_theme_constant_override("separation", int(TOP_PAD * 2))
-	for c in [army, idle, pause_btn, menu_btn, groups_btn, compass_btn] + group_btns:
+	for c in [army, idle, build_btn, general_btn, pause_btn, menu_btn, groups_btn, compass_btn] + group_btns:
 		c.hit_pad = TOP_PAD
 		c.add_theme_font_size_override("font_size", 11)
 		blockers.append(c)
@@ -343,6 +385,12 @@ func _build_pause_menu() -> void:
 	v.add_theme_constant_override("separation", 8)
 	hb.add_child(v)
 	v.add_child(UiTheme.label(tr("PAUSE_TITLE"), 20, UiTheme.GOLD))
+	var bg := GridContainer.new()   # M3.3: two columns so every option fits on a phone
+	bg.name = "Buttons"
+	bg.columns = 2
+	bg.add_theme_constant_override("h_separation", 8)
+	bg.add_theme_constant_override("v_separation", 6)
+	v.add_child(bg)
 	# M3.1: touch controls help next to the buttons
 	var hv := VBoxContainer.new()
 	hv.name = "Controls"
@@ -351,9 +399,10 @@ func _build_pause_menu() -> void:
 	hv.add_child(UiTheme.label(tr("HELP_CONTROLS"), 16, UiTheme.GOLD))
 	var hl := UiTheme.label(tr("HELP_CONTROLS_BODY"), 11)
 	hl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	hl.custom_minimum_size = Vector2(300, 0)
+	hl.custom_minimum_size = Vector2(250, 0)
 	hv.add_child(hl)
 	var items := [["PAUSE_RESUME", func(): toggle_pause_menu()],
+		["PAUSE_SAVE", func(): show_save_slots(true)],
 		["PAUSE_SPEED", func(): m.cycle_speed(); _update_pause_menu()],
 		["PAUSE_HEALTHBARS", func(): Settings.s("always_health_bars", not Settings.g("always_health_bars")); _update_pause_menu()],
 		["PAUSE_PERF", func(): Settings.s("perf_overlay", not Settings.g("perf_overlay")); _update_pause_menu()],
@@ -361,13 +410,75 @@ func _build_pause_menu() -> void:
 		["PAUSE_SURRENDER", func(): m.surrender()],
 		["PAUSE_QUIT", func(): m.quit_to_menu()]]
 	for it in items:
-		var b := UiTheme.button(tr(it[0]), Vector2(240, 48))
+		var b := UiTheme.button(tr(it[0]), Vector2(196, 44))
 		b.name = it[0]
 		b.pressed.connect(it[1])
-		v.add_child(b)
+		bg.add_child(b)
+
+	# M3.3 save slots (replaces the button panel while open)
+	var sp := PanelContainer.new()
+	sp.name = "Slots"
+	sp.visible = false
+	pause_menu.add_child(sp)
+	var sv := VBoxContainer.new()
+	sv.add_theme_constant_override("separation", 6)
+	sp.add_child(sv)
+	sv.add_child(UiTheme.label(tr("SAVE_TITLE"), 18, UiTheme.GOLD))
+	var sg := GridContainer.new()
+	sg.name = "SlotGrid"
+	sg.columns = 2
+	sg.add_theme_constant_override("h_separation", 8)
+	sg.add_theme_constant_override("v_separation", 6)
+	sv.add_child(sg)
+	for i in SaveSystem.MANUAL_SLOTS:
+		var b := UiTheme.button("", Vector2(250, 46))
+		b.name = "Slot%d" % i
+		b.add_theme_font_size_override("font_size", 11)
+		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		b.clip_text = true
+		b.pressed.connect(func(): save_slot_tap(i))
+		sg.add_child(b)
+	var bk := UiTheme.button("‹ " + tr("BACK"), Vector2(120, 42))
+	bk.name = "SlotsBack"
+	bk.pressed.connect(func(): show_save_slots(false))
+	bk.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	sv.add_child(bk)
+
+## M3.3: save-slot picker in the pause menu. A filled slot asks for a second tap to overwrite.
+var _slot_arm := -1
+func show_save_slots(on: bool) -> void:
+	_slot_arm = -1
+	pause_menu.get_node("P").visible = not on
+	pause_menu.get_node("Slots").visible = on
+	if on:
+		_fill_save_slots()
+	_layout_pause_menu()
+
+func _fill_save_slots() -> void:
+	var g := pause_menu.get_node("Slots").find_child("SlotGrid", true, false)
+	for e: Dictionary in SaveSystem.list_slots():
+		var b: Button = g.get_node("Slot%d" % int(e["slot"]))
+		var head := tr("SAVE_SLOT") % (int(e["slot"]) + 1)
+		if e["empty"]:
+			b.text = head + "  -  " + tr("SAVE_EMPTY")
+		elif _slot_arm == int(e["slot"]):
+			b.text = head + "  -  " + tr("SAVE_OVERWRITE")
+		else:
+			b.text = head + "  " + SaveSystem.stamp(float(e["saved_at"])) + "\n" + String(e["label"])
+
+func save_slot_tap(i: int) -> void:
+	var filled: bool = not bool((SaveSystem.list_slots()[i] as Dictionary)["empty"])
+	if filled and _slot_arm != i:
+		_slot_arm = i
+		_fill_save_slots()
+		return
+	_slot_arm = -1
+	if m.save_to_slot(i):
+		toast(tr("SAVE_DONE") % (i + 1))
+	_fill_save_slots()
 
 func _update_pause_menu() -> void:
-	var v := pause_menu.get_node("P").find_child("V", true, false)
+	var v := pause_menu.get_node("P").find_child("Buttons", true, false)
 	v.get_node("PAUSE_SPEED").text = tr("PAUSE_SPEED") + ": %sx" % str(m.speed)
 	v.get_node("PAUSE_HEALTHBARS").text = tr("PAUSE_HEALTHBARS") + ": " + (tr("ON") if Settings.g("always_health_bars") else tr("OFF"))
 	v.get_node("PAUSE_PERF").text = tr("PAUSE_PERF") + ": " + (tr("ON") if Settings.g("perf_overlay") else tr("OFF"))
@@ -393,17 +504,13 @@ func _layout() -> void:
 	var mms := lerpf(mm_small, mm_big, ek)
 	minimap.size = Vector2(mms, mms)
 	minimap.position = Vector2(sr.position.x + pad, lerpf(bar.position.y + pad, sr.end.y - mms - pad, ek))
-	var res_w := 135.0
 	var grid_w := BTN.x * 5 + 12.0
-	var res: Control = res_panel.get_node("Res")
-	# resource panel: docked in the bar's right end; framed on its own when the bar is out
+	# M3.3: 8-slot queue docked in the bar's right end (slides out with the bar)
+	var res_w := QSLOT.x * 4 + 9.0
 	res_panel.size = Vector2(res_w + pad * 2, bh)
-	res_panel.position = Vector2(sr.end.x - res_panel.size.x, minf(bar.position.y, sr.end.y - bh))
-	res_panel.self_modulate = Color(1, 1, 1, ek)
-	res.position = Vector2(pad, pad)
-	res.size = Vector2(res_w, bh - pad * 2)
-	emblem.size = Vector2(26, 26)
-	emblem.position = Vector2(res_w - 26 - pad, pad + 2)
+	res_panel.position = Vector2(sr.end.x - res_panel.size.x, bar.position.y)
+	res_panel.self_modulate = Color(1, 1, 1, 0.0)   # the bar's own frame shows behind it
+	queue_grid.position = Vector2(pad, (bh - (QSLOT.y * 2 + 3)) * 0.5)
 	res_w = res_w + pad
 	var res_x := bar.size.x - res_w - pad
 	grid.position = Vector2(res_x - grid_w - pad, pad)
@@ -411,6 +518,10 @@ func _layout() -> void:
 	var sw := grid.position.x - sx - 8
 	sel_panel.position = Vector2(sx, pad)
 	sel_panel.size = Vector2(sw, bh - pad * 2)
+	# faded national flag behind the selection panel (3:2), where the bar has open space
+	var fh := bh - 8.0
+	emblem.size = Vector2(fh * 1.5, fh)
+	emblem.position = Vector2(sel_panel.position.x + maxf(0.0, sel_panel.size.x - emblem.size.x), 4.0)
 	# X (clear selection) sits left of the portrait
 	deselect_btn.position = Vector2(0, 2)
 	deselect_btn.size = XBTN
@@ -429,7 +540,23 @@ func _layout() -> void:
 	resume_btn.position = Vector2(sw - 78, row_y)
 	top.position = sr.position + Vector2(4 + TOP_PAD, 4 + TOP_PAD)
 	top.size = Vector2(sr.size.x - 8 - TOP_PAD * 2, TOP_H)
+	# M3.3 top-centre economy: money box over the 40-segment power bar; nudged right when the
+	# expanded control-group row would run under it
+	var ew := ECON_W
+	econ_box.size = Vector2(ew, 44)
+	var ex := sr.position.x + (sr.size.x - ew) * 0.5
+	ex = clampf(ex, _top_left_end() + 6.0, maxf(_top_left_end() + 6.0, _top_right_start() - ew - 6.0))
+	econ_box.position = Vector2(ex, sr.position.y + 4)
+	money_box.position = Vector2.ZERO
+	money_box.size = Vector2(ew, 24)
+	money_lbl.position = Vector2.ZERO
+	money_lbl.size = money_box.size
+	power_bar.position = Vector2(2, 28)
+	power_bar.size = Vector2(ew - 4, 8)
+	power_lbl.position = Vector2(0, 38)
+	power_lbl.size = Vector2(ew, 14)
 	alerts_box.position = sr.position + Vector2(6, 52)
+	_layout_pause_menu()
 	alerts_box.size = Vector2(minf(288, sr.size.x * 0.36), 10)
 	var lift := maxf(vis_h, minimap.size.y + pad if bar_k > 0.0 else 0.0)
 	back_btn.position = sr.position + Vector2(6, sr.size.y - lift - 56)
@@ -447,8 +574,46 @@ func _layout() -> void:
 	perf_lbl.position = sr.position + Vector2(sr.size.x - 210, 52)
 	pause_menu.position = Vector2.ZERO
 	pause_menu.size = root.size
-	var pc: Control = pause_menu.get_node("P")
-	pc.position = root.size * 0.5 - Vector2(130, 210)
+
+
+## Right edge (local x in root) of the visible left-hand top-strip buttons, and left edge of the
+## right-hand ones (the HBox lays out with fixed sizes, so this is computed from them).
+func _top_left_end() -> float:
+	var x := top.position.x
+	var sep := float(top.get_theme_constant("separation"))
+	for c: Control in top.get_children():
+		if c.size_flags_horizontal == Control.SIZE_EXPAND_FILL:
+			break
+		if c.visible:
+			x += c.custom_minimum_size.x + sep
+	return x
+
+func _top_right_start() -> float:
+	var x := top.position.x + top.size.x
+	var sep := float(top.get_theme_constant("separation"))
+	var kids := top.get_children()
+	kids.reverse()
+	for c: Control in kids:
+		if c.size_flags_horizontal == Control.SIZE_EXPAND_FILL:
+			break
+		if c.visible:
+			x -= maxf(c.custom_minimum_size.x, c.get_combined_minimum_size().x) + sep
+	return x
+
+## M3.3 pause menu fix (Malachi: "cut off on bottom of screen, the last option is half
+## showing"): buttons in a 2-column grid, the panel centred on its measured size and clamped
+## inside the safe area; the controls help shrinks to fit beside it.
+func _layout_pause_menu() -> void:
+	var sr := UiScale.safe_rect
+	if sr.size.x <= 0:
+		sr = Rect2(Vector2.ZERO, UiScale.logical_size())
+	for pn in ["P", "Slots"]:
+		var pc: Control = pause_menu.get_node(pn)
+		pc.reset_size()
+		var sz := pc.get_combined_minimum_size()
+		var avail := sr.size - Vector2(16, 16)
+		pc.size = Vector2(minf(sz.x, avail.x), minf(sz.y, avail.y))
+		pc.position = sr.position + ((sr.size - pc.size) * 0.5).max(Vector2(8, 8))
 
 ## M2.6 (Malachi): with nothing selected (and no placement / targeting going on) the command bar
 ## slides out of the way and the minimap grows; any selection slides it back up.
@@ -542,6 +707,7 @@ func _refresh() -> void:
 	groups_btn.queue_redraw()
 	if pid < 0:
 		money_lbl.text = tr("HUD_OBSERVER")
+		power_bar.visible = false
 		power_lbl.text = ""
 		pop_lbl.text = ""
 		rank_lbl.text = ""
@@ -553,13 +719,9 @@ func _refresh() -> void:
 		var needs_power: bool = Content.faction(p.faction)["power"]
 		power_bar.visible = needs_power
 		if needs_power:
-			power_bar.max_value = maxi(1, maxi(p.power_prod, p.power_used))
-			power_bar.value = p.power_used
-			power_bar.modulate = Color("#ff5a4a") if p.low_power else Color("#6fe3ff")
-			power_lbl.text = tr("HUD_POWER") % [p.power_used, p.power_prod] + (" " + tr("HUD_LOW_POWER") if p.low_power else "") + "  " + tr("HUD_POP1") % p.pop
-		else:
-			# one line (M2.1 smaller bar): TPLA shows no power bar, so only the population
-			power_lbl.text = tr("HUD_POP1") % p.pop
+			power_bar.set_power(p.power_prod, p.power_used)
+		# M3.3: the numbers live in the hold card; only a low-power warning shows under the bar
+		power_lbl.text = tr("HUD_LOW_POWER_WARN") if needs_power and p.low_power else ""
 		power_lbl.add_theme_color_override("font_color", Color("#ff7a6a") if p.low_power else UiTheme.TEXT)
 		var next: int = SimPlayer.RANK_XP[p.rank + 1] if p.rank + 1 < SimPlayer.RANK_XP.size() else -1
 		rank_lbl.text = tr("HUD_RANK") % p.rank + ("  XP %d/%d" % [p.xp, next] if next > 0 else "  XP %d" % p.xp)
@@ -616,6 +778,7 @@ func _refresh_selection_info() -> void:
 	resume_btn.visible = e != null and pid >= 0 and resume_site_for(ctl.own_units_selected()) != null
 	for c in queue_box.get_children():
 		c.queue_free()
+	_refresh_queue(e)
 	if e == null:
 		sel_name.text = ""
 		sel_info.text = tr("HUD_NOTHING_SELECTED")
@@ -689,7 +852,6 @@ func _refresh_selection_info() -> void:
 				lines.append(tr("HUD_GARRISON") % [ng, bd.garrison_capacity])
 			if e.hold_reason != "":
 				lines.append(tr(e.hold_reason))
-			_fill_queue(e)
 	elif e.kind == SimEntity.Kind.NEUTRAL:
 		var nd := Content.building(e.def_id)
 		if nd.garrison_capacity > 0:
@@ -749,6 +911,66 @@ func _fill_types(units: Array) -> void:
 func _chips_fit(w: float, reserve: float) -> int:
 	var avail := sel_panel.size.x - reserve
 	return clampi(int((avail + 3.0) / (w + 3.0)), 1, 4)
+
+## M3.3: the 8 queue slots show the selected own producer's queue (first = in progress with its
+## fill); tap a slot to cancel that item; an 8th slot with more behind it shows "+N".
+var _queue_owner: SimEntity = null
+func _refresh_queue(e: SimEntity) -> void:
+	var b: SimEntity = null
+	if e != null and e.kind == SimEntity.Kind.BUILDING and e.owner == pid and e.built and not Content.building(e.def_id).produces.is_empty():
+		b = e
+	_queue_owner = b
+	for i in QUEUE_SLOTS:
+		var q: HudButton = queue_slots[i]
+		var has := b != null and i < b.queue.size()
+		q.label_text = short_name(tr(Content.unit(b.queue[i]).name_key)) if has else ""
+		q.progress = -1.0
+		q.badge = ""
+		q.disabled = not has
+		q.modulate = Color(1, 1, 1, 1.0 if has else 0.45)
+		q.tooltip_text = tr("HUD_TAP_CANCEL") if has else ""
+		if has and i == 0:
+			var need := FX.ms_to_ticks(Content.unit(b.queue[0]).build_time_ms) * 2
+			q.progress = float(b.q_progress) / float(maxi(1, need))
+		if has and i == QUEUE_SLOTS - 1 and b.queue.size() > QUEUE_SLOTS:
+			q.badge = "+%d" % (b.queue.size() - QUEUE_SLOTS + 1)
+		q.queue_redraw()
+
+## Slot caption until unit icons land (plan item: icons): initials of a multi-word name, else
+## the first 4 letters. The full name is on press-and-hold.
+static func short_name(n: String) -> String:
+	var words := n.replace("-", " ").split(" ", false)
+	if words.size() > 1:
+		var o := ""
+		for w in words.slice(0, 3):
+			o += w.substr(0, 1).to_upper()
+		return o
+	return n.substr(0, 4)
+
+func _on_queue_slot(i: int) -> void:
+	var b := _queue_owner
+	if b != null and b.alive and i < b.queue.size():
+		ctl.dequeue(b, i)
+		_refresh_queue(b)
+
+func _on_queue_info(i: int, q: HudButton, on: bool) -> void:
+	var b := _queue_owner
+	if on and b != null and i < b.queue.size():
+		show_info(InfoCard.build("unit", b.queue[i], sim, pid), q.get_global_rect())
+	else:
+		hide_info()
+
+## M3.3: hold the power bar -> produced / used numbers (+ population).
+func _on_power_info(on: bool) -> void:
+	if not on or pid < 0:
+		hide_info()
+		return
+	var p: SimPlayer = sim.players[pid]
+	var lines: Array = [tr("HUD_POWER_NUMBERS") % [p.power_used, p.power_prod]]
+	if p.low_power:
+		lines.append(tr("HUD_LOW_POWER"))
+	lines.append(tr("HUD_POP1") % p.pop)
+	show_info({"title": tr("HUD_POWER_TITLE"), "lines": lines}, power_bar.get_global_rect())
 
 func _fill_queue(b: SimEntity) -> void:
 	if b.queue.is_empty():
@@ -1279,6 +1501,7 @@ func toggle_pause_menu() -> void:
 	pause_menu.visible = not pause_menu.visible
 	if pause_menu.visible:
 		_update_pause_menu()
+		show_save_slots(false)
 		m.set_paused(true, true)
 	else:
 		m.set_paused(false, true)
@@ -1308,7 +1531,15 @@ func alert(key: String, text: String, pos: Vector2i, throttle_s: float = 8.0) ->
 			a["node"].queue_free()
 	var b := UiTheme.button(text, Vector2(144, 40))   # width -10%; height stays 40 (was already below the floor; alerts are a secondary tap)
 	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	b.add_theme_font_size_override("font_size", 11)
+	b.add_theme_font_size_override("font_size", 12)
+	# M3.3 (Malachi: "Base notifications - no backing, just text"): no box, outlined text (still tappable)
+	for st in ["normal", "hover", "pressed", "focus", "disabled", "hover_pressed"]:
+		b.add_theme_stylebox_override(st, StyleBoxEmpty.new())
+	for fc in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
+		b.add_theme_color_override(fc, Color("#ffe08a"))
+	b.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
+	b.add_theme_constant_override("outline_size", 4)
+	b.set_meta("text_only", true)
 	b.pressed.connect(func():
 		cam.jump_to(FX.to_world(pos))
 		back_btn.visible = true)

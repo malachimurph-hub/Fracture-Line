@@ -247,7 +247,7 @@ func test_bar_and_top() -> void:
 	await secs(0.6)
 	check("nothing selected: command bar slid out", h.bar_k >= 0.999 and h.bar.position.y >= UiScale.safe_rect.end.y - 1.0, "k=%.2f" % h.bar_k)
 	check("nothing selected: minimap enlarged", h.minimap.size.x >= 150.0, h.minimap.size)
-	check("money / power / Build still on screen", h.res_panel.get_global_rect().end.y <= UiScale.logical_size().y + 0.5 and h.money_lbl.is_visible_in_tree())
+	check("money / power / Build still on screen", h.econ_box.get_global_rect().end.y <= UiScale.logical_size().y + 0.5 and h.money_lbl.is_visible_in_tree() and h.build_btn.is_visible_in_tree())
 	await shot("m26_bar_hidden")
 	m.ctl.set_selection([_builder().id])
 	h._process(0.05)

@@ -29,6 +29,8 @@ func _ready() -> void:
 			await _m2_gallery()
 		"m21":
 			await run_m21()
+		"m33":
+			await run_m33()
 		"perf":
 			await run_perf(int(args[1]) if args.size() > 1 else 20)
 	for c in checks:
@@ -780,3 +782,72 @@ func _m2_gallery() -> void:
 	await frames(20)
 	await shot("m2_vfx_tpla")
 	m4.queue_free()
+
+
+## M3.3 HUD shots + checks: top-centre money / 40-segment power bar, 8-slot queue, flag behind the
+## bar, text-only alerts, pause menu fully on screen (and the save slots), zoom.
+func run_m33() -> void:
+	for fac in ["us", "eu", "tpla", "ecc"]:
+		var cfg := lobby_cfg(1)
+		cfg["slots"][0]["faction"] = fac
+		var m := await start_match(cfg)
+		fast_forward(m, 20 * 120)
+		var sim: SimWorld = m.runner.sim
+		var prod: SimEntity = null
+		for id in sim.ids:
+			var e: SimEntity = sim.ents[id]
+			if e.owner == 0 and e.kind == SimEntity.Kind.BUILDING and e.built and not Content.building(e.def_id).produces.is_empty() and not Content.building(e.def_id).is_hq:
+				prod = e
+				break
+		if prod == null:
+			prod = _first(m, 0, Content.faction(StringName(fac))["hq"])
+		var h = m.hud
+		var vs: Vector2 = UiScale.logical_size()
+		if prod != null:
+			sim.players[0].supply += 20000
+			m.ctl.queue_unit(prod, Content.building(prod.def_id).produces[0], 10)
+			fast_forward(m, 2, false)
+			m.ctl.set_selection([prod.id])
+			m.cam.jump_to(FX.to_world(prod.pos), false)
+		await frames(16)
+		h.alert("attacked_b", tr("ALERT_BASE_ATTACK"), prod.pos if prod != null else Vector2i(0, 0), 0.0)
+		await frames(3)   # (software rendering is slow: an alert lives 6 s)
+		await shot("m33_%s_hud" % fac)
+		var er: Rect2 = h.econ_box.get_global_rect()
+		check("%s: money box + power bar at the top centre" % fac, absf(er.get_center().x - vs.x * 0.5) < vs.x * 0.2 and er.position.y < 60, er)
+		check("%s: power bar has 40 segments" % fac, PowerSegBar.SEGS == 40 and (not h.power_bar.visible or h.power_bar.size.x >= 120))
+		var shown := 0
+		for q in h.queue_slots:
+			if q.label_text != "":
+				shown += 1
+		check("%s: 8-slot queue shows 8 of 10 queued" % fac, h.queue_slots.size() == 8 and shown == 8, shown)
+		var qr: Rect2 = h.res_panel.get_global_rect()
+		check("%s: queue panel at the right end of the bar, on screen" % fac, qr.end.x <= vs.x + 0.5 and qr.position.x > vs.x * 0.6 and qr.end.y <= vs.y + 0.5, qr)
+		check("%s: national flag behind the bar" % fac, h.emblem.flag_mode and h.emblem.get_parent() == h.bar and h.emblem.modulate.a < 0.3)
+		var text_only := true
+		for a in h.alerts:
+			text_only = text_only and a["node"].get_theme_stylebox("normal") is StyleBoxEmpty
+		check("%s: alerts are text only" % fac, text_only and not h.alerts.is_empty())
+		check("%s: Build button still on screen" % fac, h.build_btn.is_visible_in_tree() and h.build_btn.get_global_rect().end.y <= vs.y)
+		h.toggle_pause_menu()
+		await frames(6)
+		await shot("m33_%s_pause" % fac)
+		var all_in := true
+		for b in h.pause_menu.find_children("PAUSE_*", "Button", true, false):
+			if b.is_visible_in_tree():
+				all_in = all_in and Rect2(Vector2.ZERO, vs).encloses(b.get_global_rect())
+		check("%s: every pause menu option fully on screen (%s)" % [fac, vs], all_in)
+		h.show_save_slots(true)
+		await frames(6)
+		await shot("m33_%s_slots" % fac)
+		var slots_in := true
+		for b in h.pause_menu.get_node("Slots").find_children("Slot*", "Button", true, false):
+			slots_in = slots_in and Rect2(Vector2.ZERO, vs).encloses(b.get_global_rect())
+		check("%s: all 8 save slots on screen" % fac, slots_in)
+		h.toggle_pause_menu()
+		m.ctl.set_selection([])
+		await frames(20)
+		await shot("m33_%s_nosel" % fac)
+		check("%s: default zoom 20%% further out" % fac, absf(CameraRig.LEVELS[1] - 27.0 * 1.2) < 0.01 and m.cam.level == 1)
+		m.queue_free()
+		await frames(3)

@@ -9,7 +9,7 @@ signal zoom_level_changed(level: int)
 const PITCH_DEG := 40.0   ## M3.2: was 55
 const FOV := 32.0
 ## camera distance per zoom level (close, default, far)
-const LEVELS := [16.0, 27.0, 46.0]
+const LEVELS := [16.0, 32.4, 46.0]   ## M3.3: default zoomed out 20% (Malachi; was 27)
 var pitch_deg := PITCH_DEG   ## tools/tests may override (before/after renders)
 
 var cam: Camera3D
