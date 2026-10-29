@@ -432,6 +432,20 @@ static func _engineer() -> void:
 	h.tube(Vector3(-0.45, 0.5, -0.85), Vector3(0.45, 0.5, -0.85), 0.018, 6)
 	h.color("#ff9a2a", Geo.LAMP)
 	h.cbox(Vector3(0.3, 0.76, -0.25), Vector3(0.05, 0.04, 0.05), 0.01)
+	# M3.3: single-shot anti-tank rocket launcher on a roof pintle (front left), with a spare
+	# round in a rack behind it
+	h.color(RU_S, Geo.STEEL)
+	h.tube(Vector3(-0.2, 0.72, 0.12), Vector3(-0.2, 0.84, 0.12), 0.02, 6)
+	h.cbox(Vector3(-0.2, 0.86, 0.12), Vector3(0.08, 0.05, 0.1), 0.01)
+	h.color(RU_D, Geo.PAINT)
+	h.tube(Vector3(-0.2, 0.9, -0.2), Vector3(-0.2, 0.92, 0.42), 0.045, 10)   # launch tube
+	h.color("#2b2d2c", Geo.DARK)
+	h.cyl(0.04, 0.04, 0.01, 10, Transform3D(Basis(Vector3.RIGHT, PI * 0.5), Vector3(-0.2, 0.92, 0.425)))
+	h.color(RU_S, Geo.STEEL)
+	h.cbox(Vector3(-0.12, 0.9, 0.08), Vector3(0.05, 0.08, 0.06), 0.008)   # sight + grip
+	h.tube(Vector3(-0.2, 0.86, 0.02), Vector3(-0.2, 0.82, 0.0), 0.01, 4)
+	h.color("#4d5741", Geo.PAINT)
+	h.tube(Vector3(-0.36, 0.76, -0.3), Vector3(-0.36, 0.78, 0.1), 0.035, 8)   # spare round in its rack
 	U()._vfinish(root, model, h, mat, "engineer", [], 1.4, "ecc")
 
 # ------------------------------------------------------------------ Cargo Truck (stand-in, 6x6)

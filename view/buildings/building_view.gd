@@ -27,6 +27,9 @@ var _smoke_t := 0.0
 var _dead_t := 0.0
 var external_scaffold := false   ## M2.4: a ConstructionRig draws the faction's scaffold instead
 var under_construction := false
+var anim_parts: Array = []      ## M3.3: [node, kind, base rotation] - "spin" / "nod" / "door"
+var _anim_t := 0.0
+var _door_t := 0.0              ## seconds the silo hatch stays open after a launch
 
 func _ready() -> void:
 	super._ready()
@@ -39,6 +42,9 @@ func _ready() -> void:
 		if c is Marker3D and String(c.name).begins_with("Fire"):
 			anchors.append(c)
 	_gather(self)
+	for c in get_node("Model").get_children():
+		if c is Node3D and c.has_meta("anim"):
+			anim_parts.append([c, String(c.get_meta("anim")), (c as Node3D).rotation])
 
 func _gather(n: Node) -> void:
 	for c in n.get_children():
@@ -123,7 +129,33 @@ func play_death() -> float:
 	_each(&"damage_amt", 0.85)
 	return rubble_s
 
+## M3.3: a launch from this structure (WorldView): silo hatches swing open for a moment.
+func on_fire() -> void:
+	_door_t = 2.4
+
+## Moving parts (bucket wheel, pumpjack beam, silo hatches): only when built, not destroyed and
+## on screen. A node rotation each, no extra draw calls.
+func _animate(delta: float) -> void:
+	_anim_t += delta
+	_door_t = maxf(0.0, _door_t - delta)
+	var live := _prog >= 1.0 or _prog < 0.0
+	for a in anim_parts:
+		var n: Node3D = a[0]
+		var base: Vector3 = a[2]
+		match a[1]:
+			"spin":
+				if live:
+					n.rotation.x = wrapf(n.rotation.x + delta * float(n.get_meta("speed", 1.0)), -PI, PI)
+			"nod":
+				if live:
+					n.rotation.x = base.x + sin(_anim_t * float(n.get_meta("speed", 1.5))) * float(n.get_meta("amp", 0.2))
+			"door":
+				var want := deg_to_rad(float(n.get_meta("open_deg", 90.0))) if _door_t > 0.0 else 0.0
+				n.rotation.z = move_toward(n.rotation.z, base.z + want, delta * (5.0 if _door_t > 0.0 else 1.6))
+
 func _process(delta: float) -> void:
+	if not anim_parts.is_empty() and _state < 3 and is_visible_in_tree():
+		_animate(delta)
 	if _state == 0 or not is_visible_in_tree():
 		return
 	var wv = get_parent()

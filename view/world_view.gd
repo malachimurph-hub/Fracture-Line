@@ -245,7 +245,7 @@ func _update_stacks(delta: float) -> void:
 			var wp: Array = []
 			for sp in pts:
 				wp.append(v.global_transform * (sp as Vector3))
-			nb[id] = [wp, _stack_bld[id][1] if _stack_bld.has(id) else randf() * 0.3]
+			nb[id] = [wp, _stack_bld[id][1] if _stack_bld.has(id) else randf() * 0.3, _stack_steam.has(e.def_id)]
 		_stack_bld = nb
 	var n := 0   # (buildings still draw as models at the far, icon zoom, so their chimneys smoke too)
 	for id in _stack_bld:
@@ -261,13 +261,24 @@ func _update_stacks(delta: float) -> void:
 		if n > 10:
 			break
 		for wp in it[0]:
-			vfx.stack_puff(wp)
+			vfx.stack_puff(wp, it[2])
 
+var _stack_steam := {}   ## M3.3: def ids whose Stack markers are cooling towers (big white steam)
 const STACK_WORDS := ["factory", "reactor", "power", "plant", "refinery", "forge", "foundry", "chop_shop", "garage", "works", "mill"]
 func _stack_points(v: EntityView, def_id: StringName) -> Array:
 	if _stack_cache.has(def_id):
 		return _stack_cache[def_id]
 	var pts: Array = []
+	# M3.3: models with explicit Stack markers (cooling towers, exhaust stacks) use those
+	if v.model != null:
+		for c in v.model.get_children():
+			if c is Marker3D and String(c.name).begins_with("Stack"):
+				pts.append((c as Marker3D).position)
+				if String(c.name).contains("Steam"):
+					_stack_steam[def_id] = true
+	if not pts.is_empty():
+		_stack_cache[def_id] = pts
+		return pts
 	var ok := false
 	for w in STACK_WORDS:
 		ok = ok or String(def_id).contains(w)
