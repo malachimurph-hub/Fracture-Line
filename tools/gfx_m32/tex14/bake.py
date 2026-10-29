@@ -112,13 +112,12 @@ def emblem(fac, size):
             rr = r * 0.8 if k % 2 == 0 else r * 0.32
             pts.append((c + rr * math.cos(a), c + rr * math.sin(a)))
         d.polygon(pts, fill=255)
-    elif fac == "eu":     # square-ended cross with outline
-        w = r * 0.36
-        for (x0, y0, x1, y1) in [(c - r, c - w, c + r, c + w), (c - w, c - r, c + w, c + r)]:
-            d.rectangle([x0, y0, x1, y1], fill=255)
-        w2 = w * 0.55
-        for (x0, y0, x1, y1) in [(c - r * 0.85, c - w2, c + r * 0.85, c + w2), (c - w2, c - r * 0.85, c + w2, c + r * 0.85)]:
-            d.rectangle([x0, y0, x1, y1], fill=0)
+    elif fac == "eu":     # M3.3: Bundeswehr-style cross (straight flared arms), white border only
+        def xcross(rr, w0, w1):
+            return [(c - w1, c - rr), (c + w1, c - rr), (c + w0, c - w0), (c + rr, c - w1), (c + rr, c + w1), (c + w0, c + w0),
+                    (c + w1, c + rr), (c - w1, c + rr), (c - w0, c + w0), (c - rr, c + w1), (c - rr, c - w1), (c - w0, c - w0)]
+        d.polygon(xcross(r * 0.9, r * 0.17, r * 0.4), fill=255)
+        d.polygon(xcross(r * 0.72, r * 0.09, r * 0.28), fill=0)
     elif fac == "tpla":   # three stacked chevrons
         for k in range(3):
             y = c - r * 0.7 + k * r * 0.55
