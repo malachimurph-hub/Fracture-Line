@@ -131,13 +131,22 @@ is_structure = true
 [node name="Model" type="Node3D" parent="." unique_id=305143239]
 
 [node name="Foundation" type="MeshInstance3D" parent="Model" unique_id=1343103554]
+instance_shader_parameters/bake_o = Vector4(-0.98, -0.01, -0.98, 29)
+instance_shader_parameters/bake_r = Vector4(0.00390625, 0.00390625, 0.7558594, 0.50390625)
+instance_shader_parameters/bake_s = Vector4(1.96, 0.12099999, 1.96, 1)
 mesh = SubResource("ArrayMesh_75p3g")
 
 [node name="Hull" type="MeshInstance3D" parent="Model" unique_id=1052761053]
+instance_shader_parameters/bake_o = Vector4(-0.936, 0.065, -0.93519616, 29)
+instance_shader_parameters/bake_r = Vector4(0.00390625, 0.515625, 0.7207031, 0.48046875)
+instance_shader_parameters/bake_s = Vector4(1.8694642, 1.3779461, 1.8703923, 1)
 mesh = SubResource("ArrayMesh_rwhmi")
 
 [node name="Beam" type="MeshInstance3D" parent="Model" unique_id=1816897082]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, 0.58, 0.2)
+instance_shader_parameters/bake_o = Vector4(-0.07, -0.31, -0.38, 29)
+instance_shader_parameters/bake_r = Vector4(0.734375, 0.515625, 0.22265625, 0.1484375)
+instance_shader_parameters/bake_s = Vector4(0.14, 0.42000002, 0.7943301, 1)
 mesh = SubResource("ArrayMesh_ww4lg")
 metadata/anim = "nod"
 metadata/speed = 1.6

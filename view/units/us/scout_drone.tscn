@@ -94,6 +94,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.16970563, 0.33, 0.16970563)
 metadata/rotor_axis = "y"
 
 [node name="RotorMesh" type="MeshInstance3D" parent="Model/Rotor" unique_id=2113863274]
+instance_shader_parameters/bake_o = Vector4(-0.1205, -0.01, -0.07, 63)
+instance_shader_parameters/bake_r = Vector4(0.50390625, 0.26367188, 0.1640625, 0.109375)
+instance_shader_parameters/bake_s = Vector4(0.241, 0.089999996, 0.14, 1)
 mesh = SubResource("ArrayMesh_dcdqo")
 
 [node name="TailRotor" type="Node3D" parent="Model" unique_id=361202220]
@@ -102,6 +105,9 @@ metadata/rotor_axis = "y"
 metadata/rotor_dir = -1.0
 
 [node name="RotorMesh" type="MeshInstance3D" parent="Model/TailRotor" unique_id=572420445]
+instance_shader_parameters/bake_o = Vector4(-0.1205, -0.01, -0.07, 63)
+instance_shader_parameters/bake_r = Vector4(0.6796875, 0.26367188, 0.1640625, 0.109375)
+instance_shader_parameters/bake_s = Vector4(0.241, 0.089999996, 0.14, 1)
 mesh = SubResource("ArrayMesh_13fd2")
 
 [node name="Rotor2" type="Node3D" parent="Model" unique_id=1562372378]
@@ -109,6 +115,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.16970563, 0.33, -0.1697056
 metadata/rotor_axis = "y"
 
 [node name="RotorMesh" type="MeshInstance3D" parent="Model/Rotor2" unique_id=1646224812]
+instance_shader_parameters/bake_o = Vector4(-0.1205, -0.01, -0.07, 63)
+instance_shader_parameters/bake_r = Vector4(0.50390625, 0.3828125, 0.1640625, 0.109375)
+instance_shader_parameters/bake_s = Vector4(0.241, 0.089999996, 0.14, 1)
 mesh = SubResource("ArrayMesh_621l1")
 
 [node name="Rotor3" type="Node3D" parent="Model" unique_id=44570032]
@@ -117,9 +126,15 @@ metadata/rotor_axis = "y"
 metadata/rotor_dir = -1.0
 
 [node name="RotorMesh" type="MeshInstance3D" parent="Model/Rotor3" unique_id=245397317]
+instance_shader_parameters/bake_o = Vector4(-0.1205, -0.01, -0.07, 63)
+instance_shader_parameters/bake_r = Vector4(0.6796875, 0.3828125, 0.1640625, 0.109375)
+instance_shader_parameters/bake_s = Vector4(0.241, 0.089999996, 0.14, 1)
 mesh = SubResource("ArrayMesh_q5w30")
 
 [node name="Hull" type="MeshInstance3D" parent="Model" unique_id=1306200475]
+instance_shader_parameters/bake_o = Vector4(-0.20470564, 0.2, -0.20470564, 63)
+instance_shader_parameters/bake_r = Vector4(0.50390625, 0.00390625, 0.375, 0.25)
+instance_shader_parameters/bake_s = Vector4(0.40941128, 0.168, 0.40941128, 1)
 mesh = SubResource("ArrayMesh_d6acw")
 metadata/moves = true
 

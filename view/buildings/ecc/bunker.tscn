@@ -141,19 +141,31 @@ is_structure = true
 [node name="Model" type="Node3D" parent="." unique_id=202382075]
 
 [node name="Foundation" type="MeshInstance3D" parent="Model" unique_id=963196580]
+instance_shader_parameters/bake_o = Vector4(-0.98, -0.01, -0.98, 5)
+instance_shader_parameters/bake_r = Vector4(0.00390625, 0.00390625, 0.6621094, 0.44140625)
+instance_shader_parameters/bake_s = Vector4(1.96, 0.12099999, 1.96, 1)
 mesh = SubResource("ArrayMesh_idaa7")
 
 [node name="Hull" type="MeshInstance3D" parent="Model" unique_id=1702986085]
+instance_shader_parameters/bake_o = Vector4(-0.86800003, 0.07, -0.96, 5)
+instance_shader_parameters/bake_r = Vector4(0.00390625, 0.45507813, 0.6035156, 0.40234375)
+instance_shader_parameters/bake_s = Vector4(1.7360001, 0.62, 1.8280001, 1)
 mesh = SubResource("ArrayMesh_ww4cn")
 
 [node name="DoorL" type="MeshInstance3D" parent="Model" unique_id=182075469]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.42, 0.18, 0.1)
+instance_shader_parameters/bake_o = Vector4(-0.01, -0.01, -0.37, 5)
+instance_shader_parameters/bake_r = Vector4(0.6171875, 0.45507813, 0.19335938, 0.12890625)
+instance_shader_parameters/bake_s = Vector4(0.43999997, 0.066, 0.74, 1)
 mesh = SubResource("ArrayMesh_kc7dv")
 metadata/anim = "door"
 metadata/open_deg = 105.0
 
 [node name="DoorR" type="MeshInstance3D" parent="Model" unique_id=1458098545]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.42, 0.18, 0.1)
+instance_shader_parameters/bake_o = Vector4(-0.42999998, -0.01, -0.37, 5)
+instance_shader_parameters/bake_r = Vector4(0.00390625, 0.8671875, 0.19335938, 0.12890625)
+instance_shader_parameters/bake_s = Vector4(0.43999997, 0.066, 0.74, 1)
 mesh = SubResource("ArrayMesh_uv4f5")
 metadata/anim = "door"
 metadata/open_deg = -105.0

@@ -111,9 +111,15 @@ is_structure = true
 [node name="Model" type="Node3D" parent="." unique_id=1630985168]
 
 [node name="Foundation" type="MeshInstance3D" parent="Model" unique_id=372275223]
+instance_shader_parameters/bake_o = Vector4(-1.48, -0.01, -1.48, 65)
+instance_shader_parameters/bake_r = Vector4(0.00390625, 0.00390625, 0.75, 0.5)
+instance_shader_parameters/bake_s = Vector4(2.96, 0.12099999, 2.96, 1)
 mesh = SubResource("ArrayMesh_w2vsk")
 
 [node name="Hull" type="MeshInstance3D" parent="Model" unique_id=1996847006]
+instance_shader_parameters/bake_o = Vector4(-1.4840001, 0.059999995, -1.4151961, 65)
+instance_shader_parameters/bake_r = Vector4(0.00390625, 0.51171875, 0.7265625, 0.484375)
+instance_shader_parameters/bake_s = Vector4(2.8974643, 2.48, 2.8303921, 1)
 mesh = SubResource("ArrayMesh_4kino")
 
 [node name="Scaffold" type="MeshInstance3D" parent="Model" unique_id=1921663854]
