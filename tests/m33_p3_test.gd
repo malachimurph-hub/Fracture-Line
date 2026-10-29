@@ -7,6 +7,7 @@ static func run(t: Node) -> void:
 	_mine_moves(t)
 	_civilians(t)
 	_night(t)
+	_headlights(t)
 	_elevation(t)
 	_ground_variety(t)
 	_new_maps(t)
@@ -322,3 +323,91 @@ static func _new_maps(t: Node) -> void:
 		var r2 := _runner_on(mid, ["tpla", "ecc"])
 		_adv(r2, 300)
 		t._check(not r2.sim.game_over and r2.sim.players.size() == 2, "%s: a 1v1 runs" % mid)
+
+# ------------------------------------------------------------------ headlights point forward
+## Malachi: beams pointed to the rear. Every ground vehicle of every faction, facing four ways,
+## must have its beam starting at its front and running along its forward vector; also tilted on a hill.
+static func _beam_check(wv: WorldView, w: SimWorld, def: StringName, at: Vector2i, face: int) -> String:
+	var u := w.spawn_unit(def, 0, null, FX.tile_center(at))
+	u.face = face
+	u.dir = FX.dir_of(face)
+	wv._ensure_view(u)
+	wv.cur[u.id] = wv._world_pos(u)
+	wv.prev[u.id] = wv.cur[u.id]
+	wv.yaw.erase(u.id)
+	for k in 8:
+		wv.frame(0.05, 1.0)
+	wv._update_night()
+	var v: Node3D = wv.views[u.id]
+	var fwd := Vector3(float(u.dir.x), 0, float(u.dir.y)).normalized()
+	var ends: Array = wv.night.beam_ends
+	var best := -1
+	var bd := 1e9
+	for k in ends.size():
+		var d := Vector2(ends[k][0].x - v.position.x, ends[k][0].z - v.position.z).length()
+		if d < bd:
+			bd = d
+			best = k
+	var err := ""
+	if best < 0 or bd > 4.0:
+		err = "%s face %d: no beam at the vehicle" % [def, face]
+	else:
+		var near_end: Vector3 = ends[best][0]
+		var far_end: Vector3 = ends[best][1]
+		var run := Vector3(far_end.x - near_end.x, 0, far_end.z - near_end.z).normalized()
+		var off := Vector3(near_end.x - v.position.x, 0, near_end.z - v.position.z)
+		var hull := Vector3(v.global_transform.basis.z.x, 0, v.global_transform.basis.z.z).normalized()
+		if run.dot(fwd) < 0.95 or off.dot(fwd) <= 0.2 or hull.dot(fwd) < 0.95:
+			err = "%s face %d: beam run %s, start offset %s, hull %s, forward %s" % [def, face, run, off, hull, fwd]
+	w.ents.erase(u.id)
+	w.ids.erase(u.id)
+	wv.views[u.id].queue_free()
+	wv.views.erase(u.id)
+	return err
+
+static func _headlights(t: Node) -> void:
+	var src := FileAccess.get_file_as_string("res://view/env/light_pool.gdshader")
+	t._check(src.contains("along_v") and not src.contains("float along = UV.y"), "the beam fades from the lamps outwards (mesh-space, not UV)")
+	var r := _runner_on("riverside_metro_night", ["us", "eu"])
+	var wv := WorldView.new()
+	t.add_child(wv)
+	wv.setup(r, 0)
+	var w := r.sim
+	var bad: Array = []
+	var n := 0
+	var at := FX.to_tile(M33._hq(w, 0).pos) + Vector2i(10, 0)
+	for id in Content.units:
+		var ud: UnitDef = Content.units[id]
+		if ud.move_layer != &"vehicle" or ud.view_scene == "" or not ResourceLoader.exists(ud.view_scene):
+			continue
+		for face in [0, FX.ANG / 4, FX.ANG / 2, FX.ANG * 3 / 4]:
+			var e := _beam_check(wv, w, id, at, face)
+			n += 1
+			if e != "":
+				bad.append(e)
+	t._check(bad.is_empty() and n > 40, "headlights shine forward from the front of every vehicle (%d vehicle / facing checks)%s" % [n, "" if bad.is_empty() else ": " + str(bad.slice(0, 3))])
+	t.remove_child(wv)
+	wv.free()
+	# tilted on a hill (no night map has hills: the lights are set up on a hilly map just for this)
+	var r2 := _runner_on("harvest_valley", ["us", "eu"])
+	var wv2 := WorldView.new()
+	t.add_child(wv2)
+	wv2.setup(r2, 0)
+	if wv2.night == null:
+		wv2.night = NightLights.new()
+		wv2.add_child(wv2.night)
+		wv2.night.setup(wv2.terrain.fog_texture, Vector2(r2.sim.map.w, r2.sim.map.h))
+	var m := r2.sim.map
+	var steep := Vector2i(-1, -1)
+	for y in m.h:
+		for x in m.w:
+			if steep.x < 0 and m.slope[y * m.w + x] >= 12 and m.ttype(Vector2i(x, y)) == SimMap.T.GRASS:
+				steep = Vector2i(x, y)
+	var eh := ""
+	for face in [0, FX.ANG / 4, FX.ANG / 2, FX.ANG * 3 / 4]:
+		var e2 := _beam_check(wv2, r2.sim, &"us_halberd", steep, face)
+		if e2 != "":
+			eh = e2
+	t._check(eh == "", "on a hillside the beams still point forward from the tilted vehicle %s" % eh)
+	t.remove_child(wv2)
+	wv2.free()

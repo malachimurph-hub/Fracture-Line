@@ -15,6 +15,8 @@ func _ready() -> void:
 		await run_civ()
 	elif p == "mine":
 		await run_mine()
+	elif p == "headlights":
+		await run_headlights()
 	elif p == "hills":
 		await run_hills()
 	elif p.begins_with("map:"):
@@ -125,3 +127,22 @@ func run_hills() -> void:
 	m.cam.target_dist = 34.0
 	await frames(50)
 	await shot("hills_fields2")
+
+## Malachi: headlight beams pointed backwards. Vehicles of all four factions driving in four
+## directions at night; each beam must be in front of its vehicle.
+func run_headlights() -> void:
+	await _start("varno_crossing_night", ["us", "eu"], false)
+	var c := Vector2i(40, 40)
+	var defs := [&"us_halberd", &"eu_leopold", &"tpla_pickup", &"ecc_t90", &"us_lynx", &"eu_boxer"]
+	var plan := [[Vector2i(-7, -3), Vector2i(1, 0)], [Vector2i(5, 1), Vector2i(-1, 0)], [Vector2i(-3, -7), Vector2i(0, 1)],
+		[Vector2i(3, 5), Vector2i(0, -1)], [Vector2i(-7, 3), Vector2i(1, 0)], [Vector2i(5, -5), Vector2i(-1, 0)]]
+	for k in defs.size():
+		var st: Vector2i = c + plan[k][0]
+		var dv: Vector2i = plan[k][1]
+		var u := _unit(defs[k], st, 0, k % 2)
+		u.orders = [{"o": "move", "pos": FX.tile_center(st + dv * 40)}]
+	_look(Vector2(c.x - 1, c.y + 1), 0)
+	m.cam.dist = 22.0
+	m.cam.target_dist = 22.0
+	await frames(28)
+	await shot("night_headlights_fixed")

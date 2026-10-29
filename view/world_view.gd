@@ -836,9 +836,33 @@ func _update_night() -> void:
 		elif e.kind == SimEntity.Kind.UNIT and not v is InfantryView:
 			var ud: UnitDef = Content.unit(e.def_id)
 			if ud.move_layer == &"vehicle":
-				vehs.append([v.position, v.rotation.y, minf(2.0, v.selection_radius * 1.2)])
+				# M3.3 (Malachi): beams start at the vehicle's front and point where its hull points
+				# (the view's own +Z, tilt included, flattened onto the ground)
+				var fw: Vector3 = v.global_transform.basis.z
+				fw.y = 0.0
+				if fw.length_squared() < 1e-6:
+					fw = Vector3(sin(v.rotation.y), 0, cos(v.rotation.y))
+				vehs.append([v.position, fw.normalized(), _front_of(v), minf(2.0, v.selection_radius * 1.2)])
 	night.set_buildings(blds)
 	night.set_vehicles(vehs)
+
+## Distance (m) from a vehicle view's origin to the front of its hull (largest local +Z of its
+## meshes), cached per view.
+func _front_of(v: EntityView) -> float:
+	if v.has_meta("_front"):
+		return float(v.get_meta("_front"))
+	var fz := 0.0
+	var inv := v.global_transform.affine_inverse()
+	for n in v.find_children("*", "MeshInstance3D", true, false):
+		var mi := n as MeshInstance3D
+		if mi.mesh == null or not mi.visible or mi.visibility_range_begin > 0.0:
+			continue
+		var bb: AABB = (inv * mi.global_transform) * mi.get_aabb()
+		if bb.size.is_finite() and bb.size.length() < 30.0:
+			fz = maxf(fz, bb.end.z)
+	fz = clampf(fz, 0.3, 4.0) if fz > 0.0 else v.selection_radius * 0.8
+	v.set_meta("_front", fz)
+	return fz
 
 ## M3.3 P3 (17): a structure on a slope sits level at the highest corner of its footprint, on a
 ## concrete plinth that reaches down to the lowest corner (classic RTS foundation).

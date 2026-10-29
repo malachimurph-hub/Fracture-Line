@@ -94,17 +94,29 @@ func set_buildings(items: Array) -> void:
 		bld_mm.set_instance_color(i, Color(c, 0.75))
 	bld_mm.visible_instance_count = n
 
-## items: [[Vector3 position, float yaw (+Z forward), float size], ...]
+## items: [[Vector3 position, Vector3 forward (flat, unit), float front distance, float size], ...]
+## Each beam starts at the vehicle's front and runs `len` metres along its forward vector, laid on
+## the ground (following the slope between its two ends on hilly maps). The quad's local -Z end is
+## the vehicle end (the shader's `along` = 0 there), so the bright narrow part sits at the lamps.
+var beam_ends: Array = []   ## [vehicle end, far end] per beam (read back by the tests)
 func set_vehicles(items: Array) -> void:
 	var n := mini(items.size(), MAX_VEH)
+	beam_ends.resize(n)
 	for i in n:
 		var it: Array = items[i]
-		var yaw: float = it[1]
-		var sz: float = it[2]
+		var p: Vector3 = it[0]
+		var fw: Vector3 = it[1]
+		var sz: float = it[3]
 		var len := 3.2 + sz
-		var b := Basis(Vector3.UP, yaw)
-		var c := (it[0] as Vector3) + b * Vector3(0, 0, sz * 0.5 + len * 0.5) + Vector3(0, 0.05, 0)
-		# quad: UV.y runs along +Z after this rotation; flip so UV.y = 0 is at the vehicle
-		veh_mm.set_instance_transform(i, Transform3D(b * Basis(Vector3.UP, PI) * Basis.from_scale(Vector3(1.6 + sz * 0.6, 1, len)), c))
+		var a := p + fw * float(it[2])
+		var b := a + fw * len
+		a.y = FX.ground_y(a.x, a.z) + 0.06
+		b.y = FX.ground_y(b.x, b.z) + 0.06
+		var z := (b - a).normalized()
+		var x := Vector3.UP.cross(z).normalized()
+		var y := z.cross(x)
+		var bs := Basis(x * (1.6 + sz * 0.6), y, z * (b - a).length())
+		veh_mm.set_instance_transform(i, Transform3D(bs, (a + b) * 0.5))
+		beam_ends[i] = [a, b]
 		veh_mm.set_instance_color(i, Color(BEAM_COL, 0.7))
 	veh_mm.visible_instance_count = n

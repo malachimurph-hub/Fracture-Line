@@ -6,11 +6,13 @@ shader_type spatial;
 render_mode blend_add, unshaded, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
 uniform sampler2D fog_tex : hint_default_white, filter_linear, repeat_disable;
 uniform vec2 map_size = vec2(256.0, 256.0);
-uniform float cone = 0.0;     // 1 = headlight beam (bright near the vehicle, fans out along +UV.y)
+uniform float cone = 0.0;     // 1 = headlight beam (bright near the vehicle, fans out along the quad's local +Z)
 uniform float strength = 1.0;
 varying vec3 wpos;
 varying vec4 col;
+varying float along_v;   // beams: 0 at the vehicle end (local -Z of the quad), 1 at the far end
 void vertex() {
+	along_v = VERTEX.z + 0.5;
 	wpos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	col = COLOR;
 }
@@ -18,7 +20,7 @@ void fragment() {
 	vec2 d = UV * 2.0 - 1.0;
 	float a;
 	if (cone > 0.5) {
-		float along = UV.y;                       // 0 at the vehicle, 1 at the far end
+		float along = along_v;                    // 0 at the vehicle, 1 at the far end (mesh-space, not UV)
 		float half_w = mix(0.18, 1.0, along);
 		a = (1.0 - smoothstep(0.0, 1.0, abs(d.x) / half_w)) * (1.0 - along) * smoothstep(0.0, 0.12, along);
 	} else {
