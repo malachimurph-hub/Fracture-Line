@@ -88,8 +88,20 @@ func _air_view(id: int, e: SimEntity, ud: UnitDef, v: Node3D, p: Vector3, delta:
 		if home != null and e.phase == 0:   # M3.1: glide slope down to the touchdown point
 			var td := FX.to_world(AirSys.local_pos(home, AirSys.RWY_X0, AirSys.RWY_Z))
 			want = clampf(FX.to_world(e.pos).distance_to(td) * 0.6, 0.0, JET_ALT)
+	var dive := ud.tags.has("suicide") and want > 0.0
+	if dive:
+		# M3.3 (Malachi: bomb drone dives onto its target): over the last ~4 tiles before it is in
+		# detonation range the drone drops from cruise height to just above the target
+		var tid := e.target
+		if tid == 0 and not e.orders.is_empty():
+			tid = int(e.orders[0].get("target", 0))
+		var tgt := sim.get_ent(tid) if tid != 0 else null
+		if tgt != null and not ud.weapons.is_empty():
+			var dist_fx := sqrt(float(FX.dist2(e.pos, tgt.pos)))
+			var reach := float(FX.mt_to_fx(Content.weapon(ud.weapons[0]).range_mt))
+			want = lerpf(0.3, want, clampf((dist_fx - reach) / float(FX.ONE * 4), 0.0, 1.0))
 	var alt: float = air_alt.get(id, want)
-	alt = move_toward(alt, want, delta * (3.0 if jet else 2.0))
+	alt = move_toward(alt, want, delta * (3.0 if jet else (4.0 if dive else 2.0)))
 	air_alt[id] = alt
 	var spin := alt > 0.2 or not jet
 	var rotors: Array = v.get_meta("_rotors", [])
@@ -753,8 +765,9 @@ func frame(a: float, delta: float) -> void:
 					v.turret.rotation.y = lerp_angle(v.turret.rotation.y, ang, minf(1.0, delta * 10.0))
 				else:
 					v.turret.rotation.y = lerp_angle(v.turret.rotation.y, 0.0, minf(1.0, delta * 3.0))
-			# dust behind moving vehicles
-			if v.scale.x < 1.2 and not icon_mode:
+			# dust behind moving vehicles (M3.3: not behind aircraft - drones trailed a dust "vapour
+			# trail" at altitude)
+			if v.scale.x < 1.2 and not icon_mode and ud.move_layer != &"air":
 				var spd: float = p.distance_to(v.get_meta("lastp", p)) / maxf(delta, 0.001)
 				v.set_meta("lastp", p)
 				var acc: float = fx_acc.get(id, 0.0) + delta

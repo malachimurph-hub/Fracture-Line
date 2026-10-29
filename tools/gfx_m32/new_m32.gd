@@ -3,8 +3,8 @@ extends RefCounted
 ##   <fac>_sandbags  - 2 x 1 sandbag wall: three staggered courses, slight arc, loose bags
 ##   <fac>_barricade - 2 x 1 line of concrete Jersey barriers with lifting loops and chips
 ##   us_firebase     - M777A2 pad now ringed by concrete Jersey barriers (was sandbags)
-##   us_bomb_drone   - fixed-wing loitering munition (tube body, mid wing, X tail, pusher prop)
-##   us_scout_drone  - quadcopter (4 spinning rotors, camera gimbal)
+##   us_bomb_drone   - M3.3: heavy quadcopter, slung warhead, red lamps (was a fixed-wing munition)
+##   us_scout_drone  - quadcopter (4 spinning rotors, camera gimbal, M3.3 green lamps)
 const K := preload("res://tools/gfx_m7/kit8.gd")
 const Geo := preload("res://tools/gfx_m3/geo.gd")
 const VK := preload("res://tools/gfx_m3/vehicle_kit.gd")
@@ -112,28 +112,46 @@ const DR := "#7a7f72"
 const DR_D := "#5d6258"
 const DR_S := "#33363a"
 
+## M3.3 (Malachi: "make the bomb drone a quadcopter with red lights"): a heavier quadcopter
+## than the scout, olive body, a warhead slung under the belly (yellow HE band) and red
+## navigation lamps on the four motor pods.
 static func _bomb_drone() -> void:
 	var mat: Material = load(VK.MAT_PATH)
 	var root := VK._root({"selection_radius": 0.5, "bar_height": 0.6, "recoil": 0.0, "wreck_s": 2.0})
 	var model := VK._n3(root, root, "Model")
 	var h = K.new()
-	h.color(DR, Geo.PAINT)
-	h.tube(Vector3(0, 0.3, 0.42), Vector3(0, 0.3, -0.36), 0.055, 10, 0.045)   # body
 	h.color(DR_D, Geo.PAINT)
-	h.lathe([[0.0, 0.055], [0.05, 0.045], [0.1, 0.0]], 10, Transform3D(Basis(Vector3.RIGHT, PI * 0.5), Vector3(0, 0.3, 0.42)))   # warhead nose
-	h.color("#c9a227", Geo.PAINT)
-	h.tube(Vector3(0, 0.3, 0.33), Vector3(0, 0.3, 0.3), 0.057, 10)   # HE band
-	h.color("#2a3a46", Geo.GLASS)
-	h.box(Vector3(0, 0.25, 0.32), Vector3(0.04, 0.02, 0.05))   # seeker window
+	h.cbox(Vector3(0, 0.31, 0), Vector3(0.17, 0.07, 0.26), 0.022)   # body
 	h.color(DR, Geo.PAINT)
-	V8()._surf(h, [Vector3(-0.42, 0.33, 0.06), Vector3(0.42, 0.33, 0.06), Vector3(0.42, 0.33, -0.04), Vector3(-0.42, 0.33, -0.04)], Vector3(0, 1, 0), 0.012, 0.008)
-	for k in 4:   # X tail
+	h.cbox(Vector3(0, 0.355, -0.02), Vector3(0.12, 0.03, 0.17), 0.014)   # battery lid
+	for k in 4:   # X arms with motor pods
 		var a := PI * 0.25 + PI * 0.5 * k
-		var d := Vector3(cos(a), sin(a), 0)
-		V8()._surf(h, [Vector3(0, 0.3, -0.24) + d * 0.04, Vector3(0, 0.3, -0.24) + d * 0.16, Vector3(0, 0.3, -0.33) + d * 0.16, Vector3(0, 0.3, -0.33) + d * 0.04], Vector3(-d.y, d.x, 0), 0.008, 0.006)
+		var tip := Vector3(cos(a) * 0.27, 0.32, sin(a) * 0.27)
+		h.color(DR_S, Geo.STEEL)
+		h.tube(Vector3(0, 0.32, 0), tip, 0.017, 6)
+		h.cyl(0.03, 0.03, 0.045, 8, Transform3D(Basis.IDENTITY, tip + Vector3(0, -0.01, 0)))
+		h.tube(tip, tip + Vector3(0, -0.11, 0), 0.007, 4)   # landing leg
+		h.color("#ff2a1a", Geo.LAMP)
+		h.box(tip + Vector3(0, -0.04, 0), Vector3(0.022, 0.018, 0.022))   # red lamp under the pod
+	# slung warhead: tube with a blunt nose, HE band, stub fins
+	h.color(DR_D, Geo.PAINT)
+	h.tube(Vector3(0, 0.215, 0.13), Vector3(0, 0.215, -0.11), 0.04, 10, 0.03)
+	h.lathe([[0.0, 0.04], [0.035, 0.032], [0.065, 0.0]], 10, Transform3D(Basis(Vector3.RIGHT, PI * 0.5), Vector3(0, 0.215, 0.13)))
+	h.color("#c9a227", Geo.PAINT)
+	h.tube(Vector3(0, 0.215, 0.07), Vector3(0, 0.215, 0.045), 0.042, 10)
+	h.color(DR_S, Geo.STEEL)
+	h.box(Vector3(0, 0.255, 0.0), Vector3(0.03, 0.04, 0.1))   # release clamp
+	for k in 4:
+		var a2 := PI * 0.5 * k
+		var d := Vector3(cos(a2), sin(a2), 0)
+		h.box(Vector3(0, 0.215, -0.1) + d * 0.05, Vector3(0.006 + absf(d.y) * 0.04, 0.006 + absf(d.x) * 0.04, 0.05))
 	h.color("#ffffff", Geo.TEAM)
-	h.box(Vector3(0, 0.335, -0.0), Vector3(0.3, 0.004, 0.03))
-	V8()._rotor(model, root, mat, "Rotor", Vector3(0, 0.3, -0.38), 0.16, 2, true)
+	h.box(Vector3(0, 0.372, -0.02), Vector3(0.07, 0.004, 0.07))
+	for k in 4:
+		var a := PI * 0.25 + PI * 0.5 * k
+		V8()._rotor(model, root, mat, "Rotor" if k == 0 else ("TailRotor" if k == 1 else "Rotor%d" % k), Vector3(cos(a) * 0.27, 0.345, sin(a) * 0.27), 0.15, 2)
+		if k % 2 == 1:
+			(model.get_node("TailRotor" if k == 1 else "Rotor%d" % k) as Node3D).set_meta("rotor_dir", -1.0)
 	U()._vfinish(root, model, h, mat, "bomb_drone", [], 0.6, "us")
 
 static func _scout_drone() -> void:
@@ -152,6 +170,8 @@ static func _scout_drone() -> void:
 		h.tube(Vector3(0, 0.31, 0), tip, 0.014, 6)
 		h.cyl(0.025, 0.025, 0.04, 8, Transform3D(Basis.IDENTITY, tip + Vector3(0, -0.01, 0)))
 		h.tube(tip, tip + Vector3(0, -0.1, 0), 0.006, 4)   # landing leg
+		h.color("#2aff5a", Geo.LAMP)   # M3.3: green navigation lamp under each pod
+		h.box(tip + Vector3(0, -0.035, 0), Vector3(0.018, 0.015, 0.018))
 	h.color("#1d1f1e", Geo.DARK)
 	h.cyl(0.03, 0.03, 0.04, 8, Transform3D(Basis.IDENTITY, Vector3(0, 0.23, 0.08)))   # gimbal
 	h.color("#2a3a46", Geo.GLASS)
