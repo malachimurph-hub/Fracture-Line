@@ -223,6 +223,11 @@ func get_ent(id: int) -> SimEntity:
 	var e = ents.get(id)
 	return e if e != null and e.alive else null
 
+## M3.3 Phase 3 (19): civilian houses and blocks (garrisonable neutrals) can be destroyed: blast
+## damage hits them, and units can be ordered to demolish an empty one (force attack).
+func is_civilian(e: SimEntity) -> bool:
+	return e != null and e.kind == SimEntity.Kind.NEUTRAL and bdef(e).garrison_capacity > 0
+
 func enemies(a: int, b: int) -> bool:
 	## a, b are team ids; -1 = neutral (never hostile)
 	return a >= 0 and b >= 0 and a != b

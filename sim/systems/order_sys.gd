@@ -28,10 +28,17 @@ static func max_range(w: SimWorld, u: SimEntity, t: SimEntity = null) -> int:
 static func can_attack(w: SimWorld, u: SimEntity) -> bool:
 	return w.udef(u).weapons.size() > 0
 
+## M3.3 P3 (19): the unit's current order is to knock down this empty civilian building.
+static func demolishing(w: SimWorld, u: SimEntity, t: SimEntity) -> bool:
+	if t.team >= 0 or u.orders.is_empty() or not w.is_civilian(t):
+		return false
+	var o: Dictionary = u.orders[0]
+	return o.get("o", "") == "attack" and int(o.get("target", 0)) == t.id and bool(o.get("force", false))
+
 static func valid_target(w: SimWorld, u: SimEntity, t: SimEntity) -> bool:
 	if t == null or not t.alive or t.kind == SimEntity.Kind.RESOURCE:
 		return false
-	if t.kind == SimEntity.Kind.CRATE or not w.enemies(u.team, t.team):
+	if t.kind == SimEntity.Kind.CRATE or not (w.enemies(u.team, t.team) or demolishing(w, u, t)):
 		return false
 	if t.kind == SimEntity.Kind.UNIT and t.res_id < 0:
 		return false
@@ -202,7 +209,8 @@ static func _think(w: SimWorld, u: SimEntity) -> void:
 			_amove(w, u, o)
 		"attack":
 			var t := w.get_ent(int(o["target"]))
-			if t == null or not t.alive or (not w.fog.is_visible_ent(w, u.team, t)) or not w.enemies(u.team, t.team):
+			var demolish: bool = t != null and bool(o.get("force", false)) and t.team < 0 and w.is_civilian(t)   # M3.3 P3: knock an empty house down
+			if t == null or not t.alive or (not w.fog.is_visible_ent(w, u.team, t)) or not (w.enemies(u.team, t.team) or demolish):
 				_pop(u)
 				return
 			if not can_attack(w, u):

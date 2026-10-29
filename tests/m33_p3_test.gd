@@ -5,6 +5,7 @@ const M33 := preload("res://tests/m33_test.gd")
 
 static func run(t: Node) -> void:
 	_mine_moves(t)
+	_civilians(t)
 
 static func _adv(r: MatchRunner, n: int) -> void:
 	for i in n:
@@ -73,3 +74,83 @@ static func _mine_moves(t: Node) -> void:
 	_adv(r, 3)
 	t._check(not MineSys.unpacking(mob2) and mob2.alive, "a move order calls the set-up off")
 	t._check(MineSys.can_unpack_at(w, mob2, hq.tile) != "", "it cannot set up on top of a building")
+
+# ------------------------------------------------------------------ 19: destructible civilian buildings and cars
+static func _runner_on(map_id: String, facs: Array) -> MatchRunner:
+	var cfg: Dictionary = load("res://tests/test_runner.gd").make_cfg("1v1", 7, [], facs)
+	cfg["map"] = map_id
+	var r := MatchRunner.new()
+	r.record_replay = false
+	r.start(cfg)
+	return r
+
+static func _civilians(t: Node) -> void:
+	var r := M33._runner(["us", "ecc"])
+	var w := r.sim
+	var house: SimEntity = null
+	for id in w.ids:
+		var e: SimEntity = w.ents[id]
+		if w.is_civilian(e) and e.owner < 0:
+			house = e
+			break
+	if house == null:
+		t._check(false, "the test map has an empty civilian building")
+		return
+	# a tank round that lands next to an empty house damages it (collateral), and a direct demolition order levels it
+	var tank := w.spawn_unit(&"us_halberd", 0, null, house.pos + Vector2i(0, (house.fp.y + 5) * FX.ONE))
+	var foe := w.spawn_unit(&"ecc_rifleman", 1, null, house.pos + Vector2i(0, (house.fp.y / 2 + 1) * FX.ONE))
+	var hp0 := house.hp
+	var wd := Content.weapon(Content.unit(&"us_halberd").weapons[0])
+	CombatSys.fire(w, tank, foe, wd, 100)
+	t._check(wd.splash_mt > 0 and house.hp < hp0, "a tank round landing next to an empty house damages it (%d -> %d)" % [hp0, house.hp])
+	foe.alive = false
+	_adv(r, 2)
+	r.issue({"p": 0, "t": "attack", "ids": [tank.id], "target": house.id, "flag": true})
+	var fp0 := house.tile
+	for i in 120 * 20:
+		r.advance()
+		if not house.alive:
+			break
+	t._check(not house.alive and w.map.occ[w.map.idx(fp0)] == 0, "a force-attack order demolishes an empty civilian building and frees its ground")
+	# without the force flag (a plain attack) an empty house is not a target
+	var r2 := M33._runner(["us", "ecc"])
+	var w2 := r2.sim
+	var h2: SimEntity = null
+	for id in w2.ids:
+		if w2.is_civilian(w2.ents[id]) and w2.ents[id].owner < 0:
+			h2 = w2.ents[id]
+			break
+	var t2 := w2.spawn_unit(&"us_halberd", 0, null, h2.pos + Vector2i(0, (h2.fp.y + 4) * FX.ONE))
+	r2.issue({"p": 0, "t": "attack", "ids": [t2.id], "target": h2.id})
+	_adv(r2, 200)
+	t._check(h2.hp == h2.max_hp, "a plain attack order does not touch an empty house")
+	# view: blasts wreck parked cars, tanks crush them, a destroyed house leaves rubble
+	var r3 := _runner_on("riverside_metro", ["us", "ecc"])
+	var wv := WorldView.new()
+	t.add_child(wv)
+	wv.setup(r3, 0)
+	var keys: Array = wv.terrain._cars.keys()
+	t._check(wv.terrain.has_cars() and not keys.is_empty(), "the city map has parked cars (%d tiles)" % keys.size())
+	if not keys.is_empty():
+		var c: Array = wv.terrain._cars[keys[0]][0]
+		var n0: int = wv.terrain.wrecked_count
+		wv._wreck_cars(Vector3((c[2] as Vector2).x, 0, (c[2] as Vector2).y), 0.6)
+		var wrecks := 0
+		for ch in wv.terrain.get_children():
+			if ch.name.begins_with("CarWreck"):
+				wrecks += 1
+		t._check(wv.terrain.wrecked_count > n0 and wrecks > 0, "a blast turns parked cars into wrecks (%d)" % (wv.terrain.wrecked_count - n0))
+		var n1: int = wv.terrain.wrecked_count
+		wv._wreck_cars(Vector3((c[2] as Vector2).x, 0, (c[2] as Vector2).y), 0.6)
+		t._check(wv.terrain.wrecked_count == n1, "a wrecked car is not wrecked twice")
+	t._check(wv._crushers.has(&"us_halberd") and not wv._crushers.has(&"us_lynx"), "tanks crush cars, light vehicles do not")
+	var hv: SimEntity = null
+	for id in r3.sim.ids:
+		if r3.sim.is_civilian(r3.sim.ents[id]):
+			hv = r3.sim.ents[id]
+			break
+	if hv != null:
+		var v: EntityView = wv._ensure_view(hv)
+		wv._on_death({"t": "death", "id": hv.id, "kind": hv.kind, "def": hv.def_id, "pos": hv.pos, "owner": -1})
+		t._check(wv.rubble_count == 1, "a destroyed civilian building leaves a rubble heap")
+	wv.queue_free()

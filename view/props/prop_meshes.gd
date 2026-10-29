@@ -487,6 +487,28 @@ static func make(kind: String) -> Mesh:
 		_cache[kind] = tm
 		return tm
 	match kind:
+		"rubble_civ":   # M3.3 P3 (19): a destroyed civilian building, 1 x 1 tile (scaled to the footprint)
+			var rng := RandomNumberGenerator.new()
+			rng.seed = 3301
+			var wall := Color("#b9ab92")
+			var brick := Color("#9a6a52")
+			var dark := Color("#5a534b")
+			box(st, Vector3(0, 0.02, 0), Vector3(0.96, 0.04, 0.96), Color("#8a8070"))
+			for i in 4:   # jagged wall stubs along the old outline
+				var a := i * PI * 0.5
+				var d := Vector3(sin(a), 0, cos(a)) * 0.4
+				for k in 3:
+					var off := Vector3(cos(a), 0, -sin(a)) * (k - 1) * 0.28
+					var hgt := rng.randf_range(0.06, 0.3)
+					box(st, d + off + Vector3(0, hgt * 0.5, 0), Vector3(0.26 if i % 2 == 0 else 0.06, hgt, 0.06 if i % 2 == 0 else 0.26), wall if k != 1 else brick, Vector3(0, 0, rng.randf_range(-6, 6)))
+			for i in 26:  # debris heap: broken slabs, bricks, beams
+				var p := Vector3(rng.randf_range(-0.36, 0.36), 0, rng.randf_range(-0.36, 0.36))
+				var hh := 0.16 * (1.0 - p.length() / 0.55)
+				var sz := Vector3(rng.randf_range(0.06, 0.2), rng.randf_range(0.03, 0.08), rng.randf_range(0.06, 0.2))
+				var col: Color = [wall, brick, dark, Color("#7d7468")][i % 4]
+				box(st, p + Vector3(0, maxf(0.03, hh * rng.randf_range(0.4, 1.0)), 0), sz, col, Vector3(rng.randf_range(-25, 25), rng.randf_range(0, 90), rng.randf_range(-25, 25)))
+			for i in 3:
+				box(st, Vector3(rng.randf_range(-0.2, 0.2), 0.12, rng.randf_range(-0.2, 0.2)), Vector3(0.04, 0.04, 0.5), Color("#4a3a2c"), Vector3(rng.randf_range(-20, 20), rng.randf_range(0, 180), 12))
 		"fence":
 			for fx in [-0.9, -0.3, 0.3, 0.9]:
 				box(st, Vector3(fx, 0.3, 0), Vector3(0.08, 0.6, 0.08), Color("#6e5a42"))

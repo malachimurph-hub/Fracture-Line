@@ -819,11 +819,63 @@ func _multimesh(items: Array, mesh: Mesh, mat: Material, kind: String, suffix: S
 	mmi.material_override = mat
 	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if kind.begins_with("car_") else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	add_child(mmi)
+	if kind.begins_with("car_"):
+		for i in items.size():
+			var it3: Array = items[i]
+			var ct := Vector2i(int(it3[0]), int(it3[1]))
+			if not _cars.has(ct):
+				_cars[ct] = []
+			_cars[ct].append([mmi, i, Vector2(float(it3[0]), float(it3[1])), mm.get_instance_transform(i)])
 	if not PropMeshes.FOOTPRINT.has(kind):
 		var org := PackedVector2Array()
 		for it2 in items:
 			org.append(Vector2(float(it2[0]), float(it2[1])))
 		_clearable(mmi, org)   # M3.3: trees, rocks, cars ... make way for structures
+
+# ---------------------------------------------------------------- M3.3 Phase 3 (19) cars can be wrecked
+## Parked civilian cars are view-only decor. A blast that lands on them (or a heavy vehicle that
+## drives over them) swaps the car for a burnt-out wreck. View only, like the rest of the decor:
+## wrecks are not part of the save, so cars are back after loading a game.
+var _cars := {}          ## tile -> [[MultiMeshInstance3D, index, origin (tiles), transform], ...]
+var wrecked_count := 0
+var _wreck_mesh: Mesh = null
+
+func has_cars() -> bool:
+	return not _cars.is_empty()
+
+## Wreck every intact car within r tiles of c (tile space). crushed = flattened, no fire.
+## Returns the wrecked cars' world positions (for fire / smoke effects).
+func wreck_cars(c: Vector2, r: float, crushed := false) -> Array:
+	var out: Array = []
+	if _cars.is_empty():
+		return out
+	var r2 := r * r
+	for ty in range(floori(c.y - r), floori(c.y + r) + 1):
+		for tx in range(floori(c.x - r), floori(c.x + r) + 1):
+			var lst: Array = _cars.get(Vector2i(tx, ty), [])
+			for k in range(lst.size() - 1, -1, -1):
+				var car: Array = lst[k]
+				if (car[2] as Vector2).distance_squared_to(c) > r2:
+					continue
+				var mmi: MultiMeshInstance3D = car[0]
+				if not is_instance_valid(mmi):
+					continue
+				var tr0: Transform3D = car[3]
+				mmi.multimesh.set_instance_transform(int(car[1]), Transform3D(Basis().scaled(Vector3.ZERO), tr0.origin))
+				lst.remove_at(k)
+				if _wreck_mesh == null:
+					_wreck_mesh = PropMeshes.make("wreck_car")
+				var wm := MeshInstance3D.new()
+				wm.mesh = _wreck_mesh
+				wm.material_override = mmi.material_override
+				var sq := Vector3(0.72, 0.42 if crushed else 0.72, 0.72)
+				wm.transform = Transform3D(tr0.basis.orthonormalized().rotated(Vector3.UP, (_h(tx, ty) - 0.5) * 0.5).scaled(sq), tr0.origin)
+				wm.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+				wm.name = "CarWreck"
+				add_child(wm)
+				wrecked_count += 1
+				out.append(tr0.origin)
+	return out
 
 # ---------------------------------------------------------------- M3.3 construction clears props
 ## Malachi: "Building construction should clear trees and rocks". Decor is view-only (MultiMesh

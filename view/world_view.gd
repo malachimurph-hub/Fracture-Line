@@ -43,6 +43,7 @@ func setup(r: MatchRunner, pid: int) -> void:
 	sim = r.sim
 	local_pid = pid
 	local_team = sim.players[pid].team if pid >= 0 else -1
+	_init_crushers()
 	terrain = TerrainView.new()
 	add_child(terrain)
 	terrain.decor_override = (Content.maps[sim.map_id] as MapDef).decor
@@ -474,6 +475,7 @@ func on_tick(events: Array) -> void:
 				if _visible_pos(ev["pos"]):
 					vfx.big_blast(FX.to_world(ev["pos"]), float(ev["r"]) / FX.ONE)
 					AudioDirector.sfx("expl_huge", FX.to_world(ev["pos"]))
+				_wreck_cars(FX.to_world(ev["pos"]), float(ev["r"]) / FX.ONE)
 			"rust_zone":
 				if _visible_pos(ev["pos"]) or local_team < 0:
 					vfx.rust_cloud(FX.to_world(ev["pos"]), float(ev["r"]) / FX.ONE, float(ev["ticks"]) / FX.TICK_HZ)
@@ -564,6 +566,9 @@ func _on_fire(ev: Dictionary) -> void:
 		v.on_fire()
 	var aim: Vector3 = (to + off) - (muzzles[0] as Vector3)
 	wfx.fire(cls, muzzles, aim, to, tgt.id if tgt != null else 0, hitk, off)
+	var wd0: WeaponDef = Content.weapon(StringName(ev.get("w", &"")))
+	if wd0 != null and wd0.splash_mt > 0 and terrain.has_cars():   # M3.3 P3 (19): blasts wreck parked cars
+		get_tree().create_timer(0.25, false).timeout.connect(_wreck_cars.bind(to, maxf(0.5, wd0.splash_mt / 1000.0)))
 	var is_struct := src.kind != SimEntity.Kind.UNIT or garrison != null
 	var snd: String = AudioDirector.weapon_sfx(_faction_of(src), kind, is_struct)
 	if cls == "flame":
@@ -654,6 +659,7 @@ func _on_death(ev: Dictionary) -> void:
 				vfx.wreck(pos, 18.0, 0.45)   # M3.2: scorch + tall burning-wreck smoke column
 		else:
 			vfx.building_destroyed(pos, v.footprint if v != null else Vector2(3, 3))
+			_wreck_cars(pos, (maxf(v.footprint.x, v.footprint.y) if v != null else 3.0) * 0.5 + 0.6)
 			AudioDirector.sfx("collapse", pos)
 			AudioDirector.sfx("expl_large", pos, 0.0, 0.1)
 	_forget_view(id)
@@ -665,6 +671,8 @@ func _on_death(ev: Dictionary) -> void:
 	else:
 		# M2.2 views can play a death (squad falls, vehicle wreck, building rubble) and free
 		# themselves after it; everything else disappears at once as before
+		if ev["kind"] == SimEntity.Kind.NEUTRAL and not v.has_method("play_death"):
+			_civ_rubble(v)   # M3.3 P3 (19): civilian buildings leave a rubble heap
 		if seen and not ev.get("silent", false) and v.has_method("play_death"):
 			var linger: float = v.play_death()
 			if linger > 0.0:
@@ -781,6 +789,35 @@ func _update_crashes(delta: float) -> void:
 	crashes = keep
 
 ## Called every rendered frame.
+## M3.3 Phase 3 (19): parked cars hit by a blast become burning wrecks.
+func _wreck_cars(at: Vector3, r: float) -> void:
+	if not is_instance_valid(terrain):
+		return
+	for p in terrain.wreck_cars(Vector2(at.x, at.z), r):
+		if _visible_pos(FX.from_world(p)):
+			vfx.explosion(p + Vector3(0, 0.15, 0), 0.45)
+			vfx.wreck(p, 10.0, 0.25)
+
+func _civ_rubble(v: EntityView) -> void:
+	var mi := MeshInstance3D.new()
+	mi.name = "CivRubble"
+	mi.mesh = PropMeshes.make("rubble_civ")
+	if TerrainView.shared_house_material != null:
+		mi.material_override = TerrainView.shared_house_material
+	mi.transform = Transform3D(Basis(Vector3.UP, v.rotation.y).scaled(Vector3(v.footprint.x, 1.0 + v.footprint.x * 0.2, v.footprint.y)), v.position)
+	add_child(mi)
+	rubble_count += 1
+
+var rubble_count := 0
+
+## Tanks and other heavy tracked vehicles crush cars they drive over.
+var _crushers := {}
+func _init_crushers() -> void:
+	for id in Content.units:
+		var ud: UnitDef = Content.units[id]
+		if ud.move_layer == &"vehicle" and ud.armor_type == &"heavy":
+			_crushers[id] = true
+
 func frame(a: float, delta: float) -> void:
 	_update_stacks(delta)
 	alpha = a
@@ -812,6 +849,8 @@ func frame(a: float, delta: float) -> void:
 			if v is InfantryView:
 				(v as InfantryView).set_braced(not man.is_empty())
 			v.position = p
+			if e.moving and _crushers.has(e.def_id) and (Engine.get_process_frames() + id) % 6 == 0 and terrain.has_cars():
+				terrain.wreck_cars(Vector2(p.x, p.z), 0.42, true)   # M3.3 P3 (19): tanks flatten parked cars
 			# M2.5 sniper stealth: own (or spectated) hidden units draw translucent
 			v.set_ghosted(e.stealthy and (e.team == local_team or local_team < 0))
 			var want := atan2(float(e.dir.x), float(e.dir.y))
