@@ -21,6 +21,7 @@ var _last_pos := Vector3.INF
 var _speed := 0.0
 var _alive := 0
 var dying := false
+var braced := false               ## M3.3 item 10: manning a barricade (line up, lean over it)
 
 func _ready() -> void:
 	super._ready()
@@ -69,6 +70,20 @@ func set_team_material(mat: Material) -> void:
 		mmi = get_node("Model/Squad")
 	mmi.set_instance_shader_parameter(&"team_color", c)
 
+## WorldView: the squad mans a barricade - soldiers stand in a tight line behind the wall and
+## lean over it with their rifles ("lean" clip; older bakes fall back to the shooting pose).
+func set_braced(on := true) -> void:
+	if braced == on or mmi == null:
+		return
+	braced = on
+	var mm := mmi.multimesh
+	for i in _n:
+		var yaw := sin(i * 12.9898) * 0.25
+		var xf := Transform3D(Basis(Vector3.UP, yaw), formation[i])
+		if on:
+			xf = Transform3D(Basis(Vector3.UP, yaw * 0.3), Vector3((i - (_n - 1) * 0.5) * 0.17, 0, sin(i * 4.1) * 0.03))
+		mm.set_instance_transform(i, xf)
+
 ## WorldView: a shot was fired by this squad.
 func on_fire() -> void:
 	_fire_left = FIRE_HOLD
@@ -109,6 +124,8 @@ func _process(delta: float) -> void:
 			_dead_t[i] += delta
 		else:
 			var s := 1 if moving else (2 if _fire_left > 0.0 else 0)
+			if braced and not moving:
+				s = 4
 			if s != _state[i]:
 				_state[i] = s
 				_t[i] = _phase[i] if s != 2 else _phase[i] * 0.3
@@ -118,7 +135,10 @@ func _process(delta: float) -> void:
 func _apply() -> void:
 	var mm := mmi.multimesh
 	for i in _n:
-		var clip: Array = vat.anims[["idle", "run", "fire", "die"][_state[i]]]
+		var cn: String = ["idle", "run", "fire", "die", "lean"][_state[i]]
+		if not vat.anims.has(cn):
+			cn = "fire"
+		var clip: Array = vat.anims[cn]
 		var first: int = clip[0]
 		var count: int = clip[1]
 		var fps: float = clip[2]

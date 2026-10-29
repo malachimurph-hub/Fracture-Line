@@ -25,7 +25,8 @@ var shield_domes: Dictionary = {}  ## aegis id -> MeshInstance3D
 var dome_mat: StandardMaterial3D
 var rally_nodes: Array = []
 var alpha: float = 0.0
-var unit_scale: float = 1.0      ## readability scale; infantry squads render ~1.4x (GDD 14.2)
+var unit_scale: float = 1.0      ## readability scale
+const INF_SCALE := 1.0           ## M3.3 item 16: infantry at vehicle scale (was 1.4x, GDD 14.2)
 var icon_mode: bool = false      ## far zoom: models hidden, overlay draws role icons
 var deferred_deaths: Dictionary = {}   ## unit id -> true while its killing round is in flight
 var rigs: Dictionary = {}        ## building id -> ConstructionRig while under construction
@@ -328,6 +329,43 @@ func _stack_points(v: EntityView, def_id: StringName) -> Array:
 	_stack_cache[def_id] = pts
 	return pts
 
+## M3.3 item 10: where a squad manning a barricade stands: [world pos, yaw] on the side away
+## from what it is shooting at (or behind the wall's front), squads spread along the wall.
+## [] when the unit is not on a barricade.
+func _barricade_slot(e: SimEntity) -> Array:
+	var host := sim.get_ent(-e.res_id)
+	if host == null or host.kind != SimEntity.Kind.BUILDING or not CommandSys.is_barricade(sim, host):
+		return []
+	var crew: Array = []
+	for id in sim.ids:
+		var u: SimEntity = sim.ents[id]
+		if u.kind == SimEntity.Kind.UNIT and u.res_id == -host.id:
+			crew.append(id)
+	var k := maxi(0, crew.find(e.id))
+	var n := maxi(1, crew.size())
+	var c := FX.to_world(host.pos)
+	var along := Vector3.RIGHT if host.fp.x >= host.fp.y else Vector3.BACK
+	var nrm := Vector3(-along.z, 0, along.x)
+	var front := Vector3(sin(host.rot * PI * 0.5), 0, cos(host.rot * PI * 0.5))
+	var side: float = -1.0 if nrm.dot(front) > 0.0 else 1.0   # default: behind the wall's front
+	var tgt := sim.get_ent(e.target)
+	if tgt != null and tgt.alive:
+		side = -1.0 if nrm.dot(FX.to_world(tgt.pos) - c) > 0.0 else 1.0
+	if views.has(host.id):
+		var last: float = views[host.id].get_meta("crew_side", side)
+		if tgt == null or not tgt.alive:
+			side = last
+		views[host.id].set_meta("crew_side", side)
+	var length := float(maxi(host.fp.x, host.fp.y))
+	var depth := float(mini(host.fp.x, host.fp.y)) * 0.25 + 0.12   # just behind the wall line
+	var pos := c + along * ((k - (n - 1) * 0.5) * length / float(n) * 0.9) + nrm * side * depth
+	var face := -nrm * side
+	if tgt != null and tgt.alive:
+		var d := FX.to_world(tgt.pos) - pos
+		if d.length() > 0.1 and d.normalized().dot(face) > 0.2:
+			face = d.normalized()
+	return [pos, atan2(face.x, face.z)]
+
 ## M3.3: the builder stands at an unfinished site it is building (OrderSys "build", in reach).
 func _builder_working(e: SimEntity) -> bool:
 	var o: Dictionary = e.head()
@@ -384,7 +422,7 @@ func _ensure_view(e: SimEntity) -> EntityView:
 	elif e.kind == SimEntity.Kind.UNIT:
 		var d: UnitDef = Content.unit(e.def_id)
 		if d.tags.has("infantry"):
-			v.scale = Vector3.ONE * 1.4
+			v.scale = Vector3.ONE * INF_SCALE   # M3.3 item 16: at vehicle scale (was 1.4x)
 		if e.tier > 0:
 			v.set_tier(e.tier)
 		if d.shield_aura_radius > 0:
@@ -494,6 +532,8 @@ func _on_fire(ev: Dictionary) -> void:
 	var garrison: SimEntity = null
 	if src.res_id < 0:
 		garrison = sim.get_ent(-src.res_id)
+		if garrison != null and v != null and v.visible and CommandSys.is_barricade(sim, garrison):
+			garrison = null   # M3.3 item 10: a barricade crew shoots from its own soldiers
 	var kind: String = String(ev["vfx"])
 	var cls := WeaponFx.class_of(StringName(ev.get("w", &"")), kind)
 	if cls == "none":
@@ -605,7 +645,7 @@ func _on_death(ev: Dictionary) -> void:
 		return
 	if seen and not ev.get("silent", false):
 		if ev["kind"] == SimEntity.Kind.UNIT:
-			var inf := v != null and v.scale.x > 1.2
+			var inf := v != null and v is InfantryView
 			AudioDirector.sfx("body_fall" if inf else "expl_large", pos, -4.0 if inf else -2.0)
 			if inf:
 				vfx.impact(pos + Vector3(0, 0.2, 0), 0.4)
@@ -766,10 +806,17 @@ func frame(a: float, delta: float) -> void:
 			var ud: UnitDef = Content.unit(e.def_id)
 			if ud.move_layer == &"air":
 				p = _air_view(id, e, ud, v, p, delta)
+			var man := _barricade_slot(e) if e.res_id < 0 else []
+			if not man.is_empty():
+				p = man[0]
+			if v is InfantryView:
+				(v as InfantryView).set_braced(not man.is_empty())
 			v.position = p
 			# M2.5 sniper stealth: own (or spectated) hidden units draw translucent
 			v.set_ghosted(e.stealthy and (e.team == local_team or local_team < 0))
 			var want := atan2(float(e.dir.x), float(e.dir.y))
+			if not man.is_empty():
+				want = man[1]
 			var y0: float = yaw.get(id, want)
 			var ny := lerp_angle(y0, want, minf(1.0, delta * 8.0))
 			yaw[id] = ny
@@ -794,7 +841,7 @@ func frame(a: float, delta: float) -> void:
 			if v is VehicleView and not (v as VehicleView).work_parts.is_empty():
 				(v as VehicleView).working = _builder_working(e)
 			# dust behind moving vehicles (M3.3: drones leave no trail; helicopters and jets keep theirs)
-			if v.scale.x < 1.2 and not icon_mode and not ud.tags.has("drone"):
+			if not v is InfantryView and not icon_mode and not ud.tags.has("drone"):
 				var spd: float = p.distance_to(v.get_meta("lastp", p)) / maxf(delta, 0.001)
 				v.set_meta("lastp", p)
 				var acc: float = fx_acc.get(id, 0.0) + delta
@@ -879,7 +926,11 @@ func _is_visible(e: SimEntity, _mem: Dictionary) -> bool:
 		return true
 	if e.kind == SimEntity.Kind.UNIT:
 		if e.res_id < 0:
-			return false
+			# M3.3 item 10: troops manning a barricade stand behind it in plain view
+			var host := sim.get_ent(-e.res_id)
+			if host == null or host.kind != SimEntity.Kind.BUILDING or not CommandSys.is_barricade(sim, host):
+				return false
+			return host.team == local_team or sim.fog.is_visible_ent(sim, local_team, host)
 		return e.team == local_team or sim.fog.is_visible_ent(sim, local_team, e)
 	if e.team == local_team:
 		return true
@@ -909,7 +960,7 @@ func _update_rings() -> void:
 			add_child(ring)
 			rings[id] = ring
 		ring.visible = v.visible
-		var r := v.selection_radius * (1.4 if (e.kind == SimEntity.Kind.UNIT and Content.unit(e.def_id).tags.has("infantry")) else 1.0) + 0.15
+		var r := v.selection_radius * (INF_SCALE if (e.kind == SimEntity.Kind.UNIT and Content.unit(e.def_id).tags.has("infantry")) else 1.0) + 0.15
 		ring.position = v.position + Vector3(0, 0.05, 0)
 		ring.scale = Vector3(r, 1, r)
 

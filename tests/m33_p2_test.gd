@@ -7,6 +7,8 @@ static func run(t: Node) -> void:
 	_builders(t)
 	_garrison_flag(t)
 	_props(t)
+	_barricade_crew(t)
+	_infantry_scale(t)
 
 # ------------------------------------------------------------------ builders at work (45 / 33 / 36)
 static func _builders(t: Node) -> void:
@@ -65,3 +67,38 @@ static func _props(t: Node) -> void:
 		var m: Mesh = PropMeshes.make(k)
 		counts.append(m.surface_get_array_index_len(0) if m.surface_get_array_index_len(0) > 0 else m.surface_get_array_len(0))
 	t._check(counts[0] != counts[1] and counts[1] != counts[2] and counts.max() < 1200, "rocks are irregular stone clusters, different per variant and phone-light (%s)" % str(counts))
+
+# ------------------------------------------------------------------ barricade crews (10)
+static func _barricade_crew(t: Node) -> void:
+	var r := M33._runner(["us", "ecc"])
+	var w := r.sim
+	var wv := WorldView.new()
+	t.add_child(wv)
+	wv.setup(r, 0)
+	var hq := M33._hq(w, 0)
+	var st := M33.spot(w, 0, &"us_sandbags", hq.tile + Vector2i(6, 0))
+	var b := w._place_building(Content.building(&"us_sandbags"), 0, st, 0, true)
+	var units := []
+	for k in 2:
+		var u := w.spawn_unit(&"us_grunt", 0, null, b.pos)
+		u.res_id = -b.id
+		units.append(u)
+		wv._ensure_view(u)
+	wv._ensure_view(b)
+	wv.frame(1.0, 1.0 / 15.0)
+	var v0: InfantryView = wv.views[units[0].id]
+	var v1: InfantryView = wv.views[units[1].id]
+	var c := FX.to_world(b.pos)
+	t._check(v0.visible and v0.braced and v1.braced, "troops manning a barricade are shown (not hidden inside it) and lean over it")
+	t._check(v0.position.distance_to(c) < 1.6 and v0.position.distance_to(v1.position) > 0.4, "they stand behind the wall, spread along it (%.2f from the centre, %.2f apart)" % [v0.position.distance_to(c), v0.position.distance_to(v1.position)])
+	t._check(v0.vat.anims.has("lean"), "soldier bakes carry the barricade lean pose")
+	units[0].res_id = 0
+	wv.frame(1.0, 1.0 / 15.0)
+	t._check(not v0.braced, "a soldier who steps out stands normally again")
+	wv.queue_free()
+
+# ------------------------------------------------------------------ infantry scale (16)
+static func _infantry_scale(t: Node) -> void:
+	t._check(is_equal_approx(WorldView.INF_SCALE, 1.0), "infantry draw at vehicle scale (x%.1f, was x1.4)" % WorldView.INF_SCALE)
+	var src: String = FileAccess.get_file_as_string("res://tools/bake_infantry.gd")
+	t._check(src.contains("TARGET_TRIS := 1800") and src.contains('"Head": Vector3(0.6,'), "soldiers re-baked with more detail and adult proportions")
