@@ -97,9 +97,12 @@ func run_mine() -> void:
 func run_map_view(mid: String) -> void:
 	await _start(mid, ["us", "eu"], false)
 	var md: MapDef = Content.maps[StringName(mid)]
-	_look(Vector2(md.size.x * 0.5, md.size.y * 0.5), 0)
-	m.cam.dist = 30.0
-	m.cam.target_dist = 30.0
+	var at := Vector2(md.size.x * 0.5, md.size.y * 0.5)
+	if not md.hills.is_empty():   # M3.3 P3: frame the first hill between a base and the centre
+		at = Vector2(float(md.hills[0][0]), float(md.hills[0][1]) + 4.0)
+	_look(at, 0)
+	m.cam.dist = 40.0
+	m.cam.target_dist = 40.0
 	await frames(50)
 	await shot("map_" + mid)
 
