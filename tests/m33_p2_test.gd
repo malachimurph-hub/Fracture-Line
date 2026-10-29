@@ -9,6 +9,7 @@ static func run(t: Node) -> void:
 	_props(t)
 	_barricade_crew(t)
 	_infantry_scale(t)
+	_new_models(t)
 
 # ------------------------------------------------------------------ builders at work (45 / 33 / 36)
 static func _builders(t: Node) -> void:
@@ -102,3 +103,47 @@ static func _infantry_scale(t: Node) -> void:
 	t._check(is_equal_approx(WorldView.INF_SCALE, 1.0), "infantry draw at vehicle scale (x%.1f, was x1.4)" % WorldView.INF_SCALE)
 	var src: String = FileAccess.get_file_as_string("res://tools/bake_infantry.gd")
 	t._check(src.contains("TARGET_TRIS := 1800") and src.contains('"Head": Vector3(0.6,'), "soldiers re-baked with more detail and adult proportions")
+
+# ------------------------------------------------------------------ new models, Iran power, silo, insignia (25-29, 31, 37, 42, 43, 34)
+static func _scene_has(path: String, names: Array) -> bool:
+	var v: Node = load(path).instantiate()
+	var ok := true
+	for n in names:
+		if v.find_child(n, true, false) == null:
+			ok = false
+	v.free()
+	return ok
+
+static func _new_models(t: Node) -> void:
+	var gp := Content.building(&"tpla_gas_plant")
+	t._check(gp != null and gp.power == 8 and gp.cost == 600 and gp.footprint == Vector2i(3, 3) and Content.faction(&"tpla")["buildings"].has(&"tpla_gas_plant"),
+		"Iran builds a 3x3 Gas Turbine Plant ($600, +8 power)")
+	t._check(Content.building(&"us_drop_zone").footprint == Vector2i(4, 4) and Content.building(&"tpla_bazaar").footprint == Vector2i(2, 2),
+		"Data Center is 4x4 and the Oil Derrick 2x2")
+	var er := Content.weapon(&"ecc_eng_rocket")
+	t._check(Content.unit(&"ecc_engineer").weapons.has("ecc_eng_rocket") and er.damage == 60 and er.cooldown_ms == 8000,
+		"the ECC engineer carries a slow rocket launcher (60 dmg / 8 s)")
+	var sm := Content.weapon(&"ecc_silo_missile")
+	t._check(Content.building(&"ecc_bunker").weapons.has("ecc_silo_missile") and sm.damage == 240 and sm.range_mt == 9500,
+		"the missile silo fires a 240-damage missile at 9.5 tiles")
+	t._check(_scene_has("res://view/buildings/ecc/bunker.tscn", ["DoorL", "DoorR"]), "the silo has two hatch doors")
+	t._check(_scene_has("res://view/buildings/ecc/black_market.tscn", ["BucketWheel"]), "the excavator has a bucket wheel")
+	t._check(_scene_has("res://view/buildings/tpla/bazaar.tscn", ["Beam"]), "the oil derrick has a walking beam")
+	t._check(_scene_has("res://view/buildings/us/reactor.tscn", ["Stack0", "Stack1"]) and _scene_has("res://view/buildings/tpla/gas_plant.tscn", ["Stack0", "Stack1"]),
+		"reactor towers and gas-plant stacks carry steam/smoke emitters")
+	var crossed := true
+	for b in ["hq", "barracks", "motor_pool", "heavy_factory"]:
+		if not _scene_has("res://view/buildings/eu/%s.tscn" % b, ["Insignia"]):
+			crossed = false
+	t._check(crossed, "eu HQ, barracks, motor pool and heavy factory carry the cross insignia")
+	var modern := true
+	for b in ["den", "camp", "chop_shop", "workshop", "stash", "airfield", "tunnel", "wasp_nest", "bazaar"]:
+		var v: Node = load("res://view/buildings/tpla/%s.tscn" % b).instantiate()
+		var hit := false
+		for mi in v.find_children("*", "MeshInstance3D", true, false):
+			if (mi as MeshInstance3D).mesh != null and (mi as MeshInstance3D).mesh.has_meta("tpla_modern"):
+				hit = true
+		if not hit:
+			modern = false
+		v.free()
+	t._check(modern, "Iran buildings use the modern paint pass")
