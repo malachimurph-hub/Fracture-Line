@@ -42,6 +42,17 @@ static func free_rect(w: SimWorld, t: Vector2i, fp: Vector2i, off: Vector2i = Ve
 				return false
 	return true
 
+## Every tile of the rect (except the site footprint) is drivable.
+static func open_rect(w: SimWorld, t: Vector2i, sz: Vector2i, site: Vector2i, fp: Vector2i) -> bool:
+	for yy in sz.y:
+		for xx in sz.x:
+			var c := t + Vector2i(xx, yy)
+			if c.x >= site.x and c.y >= site.y and c.x < site.x + fp.x and c.y < site.y + fp.y:
+				continue
+			if not w.map.passable(c, true):
+				return false
+	return true
+
 static func place(w: SimWorld, pid: int, def_id: StringName, near: Vector2i, skip: int = 0) -> SimEntity:
 	var t := spot(w, pid, def_id, near, skip)
 	return null if t.x < 0 else w._place_building(Content.building(def_id), pid, t, 0, true)
@@ -51,6 +62,7 @@ static func run(t: Node) -> void:
 	_economy(t)
 	_generals(t)
 	_sell(t)
+	_dozer(t)
 	_germany(t)
 
 # ------------------------------------------------------------------ combat balance
@@ -275,3 +287,53 @@ static func _sell(t: Node) -> void:
 	p.set_replay_feed(a.replay)
 	_ticks(p, 60)
 	t._check(p.sim.state_hash() == a.sim.state_hash(), "a replay with a sell plays back identically")
+
+# ------------------------------------------------------------------ dozer pathing
+## A site whose side facing the dozer is a closed-off pocket: the dozer used to aim at that side,
+## stop short and drop the job as "unreachable". It now walks round to an open side and builds.
+static func _dozer(t: Node) -> void:
+	var r := _runner(["us", "eu"])
+	var w := r.sim
+	var hq := _hq(w, 0)
+	var fp := Content.building(&"us_barracks").footprint
+	var st := Vector2i(-1, -1)
+	for k in 40:
+		var c := spot(w, 0, &"us_barracks", hq.tile + Vector2i(4, 4), k)
+		if c.x >= 0 and open_rect(w, c + Vector2i(-11, -3), Vector2i(11 + fp.x + 4, fp.y + 6), c, fp):
+			st = c
+			break
+	t._check(st.x >= 0, "test setup: open ground for the site")
+	if st.x < 0:
+		return
+	var site := w._place_building(Content.building(&"us_barracks"), 0, st, 0, false)
+	# a closed 3-tile-deep pocket on the west side (the side facing the dozer)
+	for yy in range(-1, fp.y + 1):
+		w.map.stamp(st + Vector2i(-4, yy), Vector2i.ONE, 999999)
+	for xx in range(-4, 0):
+		w.map.stamp(st + Vector2i(xx, -1), Vector2i.ONE, 999999)
+		w.map.stamp(st + Vector2i(xx, fp.y), Vector2i.ONE, 999999)
+	var dz := w.spawn_unit(&"us_dozer", 0, null, FX.tile_center(st + Vector2i(-9, 1)))
+	dz.orders = [{"o": "build", "target": site.id}]
+	var ok := false
+	for i in 1600:
+		r.advance()
+		if site.built:
+			ok = true
+			break
+	t._check(ok, "a dozer facing a walled-off pocket side drives round and finishes the build (%s, %d%%)" % [str(dz.orders), site.hp * 100 / maxi(1, site.max_hp)])
+	# a site with no open side at all is given up (not driven at forever)
+	var st2 := spot(w, 0, &"us_barracks", hq.tile + Vector2i(-10, 10))
+	var s2 := w._place_building(Content.building(&"us_barracks"), 0, st2, 0, false)
+	for yy in range(-4, fp.y + 4):   # a closed fence 4 tiles out: too far to build across
+		for xx in range(-4, fp.x + 4):
+			if xx == -4 or yy == -4 or xx == fp.x + 3 or yy == fp.y + 3:
+				w.map.stamp(st2 + Vector2i(xx, yy), Vector2i.ONE, 999999)
+	var dz2 := w.spawn_unit(&"us_dozer", 0, null, FX.tile_center(st2 + Vector2i(-9, 0)))
+	dz2.orders = [{"o": "build", "target": s2.id}]
+	var gave_up := false
+	for i in 4000:
+		r.advance()
+		if dz2.orders.is_empty():
+			gave_up = true
+			break
+	t._check(gave_up and not s2.built, "a fully boxed-in site is given up (%s built=%s pos=%s site=%s)" % [str(dz2.orders), s2.built, FX.to_tile(dz2.pos), st2])
