@@ -6,6 +6,7 @@ const M33 := preload("res://tests/m33_test.gd")
 static func run(t: Node) -> void:
 	_builders(t)
 	_garrison_flag(t)
+	_props(t)
 
 # ------------------------------------------------------------------ builders at work (45 / 33 / 36)
 static func _builders(t: Node) -> void:
@@ -54,3 +55,13 @@ static func _garrison_flag(t: Node) -> void:
 	v.queue_free()
 	var src: String = FileAccess.get_file_as_string("res://view/world_view.gd")
 	t._check(src.count("GarrisonMark.apply(") >= 3, "WorldView raises the flag on garrison, on empty-out and on load")
+
+# ------------------------------------------------------------------ trees and rocks (18)
+static func _props(t: Node) -> void:
+	var sh: String = FileAccess.get_file_as_string("res://view/terrain/prop.gdshader")
+	t._check(sh.contains("BACKLIGHT") and sh.contains("leaf cards flutter"), "leaves let light through and flutter in the wind")
+	var counts := []
+	for k in ["rock", "rock:1", "rock:2"]:
+		var m: Mesh = PropMeshes.make(k)
+		counts.append(m.surface_get_array_index_len(0) if m.surface_get_array_index_len(0) > 0 else m.surface_get_array_len(0))
+	t._check(counts[0] != counts[1] and counts[1] != counts[2] and counts.max() < 1200, "rocks are irregular stone clusters, different per variant and phone-light (%s)" % str(counts))
