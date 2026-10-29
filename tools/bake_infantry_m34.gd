@@ -29,7 +29,7 @@ const GUNS := {
 	"ak": {"butt": Vector3(0, 0.02, -0.4), "grip": Vector3(0, -0.04, -0.03), "support": Vector3(0, 0.03, 0.28)},
 	"ak74": {"butt": Vector3(0, 0.03, -0.35), "grip": Vector3(0, -0.04, -0.03), "support": Vector3(0, 0.03, 0.28)},
 	"ak12": {"butt": Vector3(0, 0.03, -0.35), "grip": Vector3(0, -0.04, -0.03), "support": Vector3(0, 0.03, 0.28)},
-	"svd": {"butt": Vector3(0, 0.0, -0.37), "grip": Vector3(0, -0.03, -0.05), "support": Vector3(0, 0.03, 0.33)},
+	"svd": {"butt": Vector3(0, 0.0, -0.37), "grip": Vector3(0, -0.03, -0.05), "support": Vector3(0, 0.03, 0.29)},
 	"eu_rifle_gl": {"butt": Vector3(0, 0.03, -0.33), "grip": Vector3(0, -0.04, -0.03), "support": Vector3(0, -0.03, 0.3)},
 	"pkm": {"butt": Vector3(0, 0.0, -0.39), "grip": Vector3(0, -0.04, -0.02), "support": Vector3(0, 0.02, 0.28)},
 	"shotgun": {"butt": Vector3(0, 0.03, -0.36), "grip": Vector3(0, -0.04, -0.03), "support": Vector3(0, 0.0, 0.33)},
