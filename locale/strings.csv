@@ -515,6 +515,10 @@ MAP_CRESCENT,Crescent City
 MAP_CRESCENT_DESC,"Desert metropolis. A dense downtown of glass and office towers fills the ground between the four bases: a street grid choked with parked cars, a wide central boulevard, plazas with supplies and garrisonable blocks."
 MAP_RIVERSIDE,Riverside Metro
 MAP_RIVERSIDE_DESC,"Temperate city split by a river. Four avenue bridges and two edge fords link north and south; apartment towers, shop rows and parked cars line every street."
+MAP_RIVERSIDE_NIGHT,Riverside Metro by Night
+MAP_RIVERSIDE_NIGHT_DESC,"Riverside Metro after dark. Street lamps light the avenues, windows glow and every vehicle drives with its headlights on."
+MAP_VARNO_NIGHT,Varno Crossing by Night
+MAP_VARNO_NIGHT_DESC,"Varno Crossing under a desert moon. Bases are floodlit and headlights give away moving columns."
 UNIT_ECC_ENGINEER,Engineer Vehicle
 UNIT_ECC_ENGINEER_DESC,"Tracked combat engineering vehicle with a dozer blade, a crane and a single-shot anti-tank rocket launcher. Builds and repairs structures."
 UNIT_ECC_MINE_MOBILE,Minerals Mining (on the move)

@@ -75,6 +75,11 @@ file_logging/max_log_files=3
 
 [shader_globals]
 
+fl_night={
+"type": "float",
+"value": 0.0
+}
+
 fl_tex_quality={
 "type": "float",
 "value": 1.0

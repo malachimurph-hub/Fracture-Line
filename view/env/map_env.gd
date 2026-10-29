@@ -46,4 +46,23 @@ static func of(id: StringName) -> Dictionary:
 
 static func for_map(map_id: StringName) -> Dictionary:
 	var md: MapDef = Content.maps.get(map_id)
-	return of(md.env if md != null else &"desert")
+	var e := of(md.env if md != null else &"desert")
+	return night_of(e) if md != null and md.night else e
+
+## M3.3 Phase 3 (20): the same biome by moonlight - a low, cold, dim key light, deep blue
+## ambient, darker haze, less saturation. "night" = 1 drives lamps, windows and light pools.
+static func night_of(e: Dictionary) -> Dictionary:
+	var n := e.duplicate()
+	n["sun_rot"] = Vector3(-38, (e["sun_rot"] as Vector3).y + 140.0, 0)
+	n["sun_energy"] = 0.5
+	n["sun_col"] = Color("#a9c0ff")
+	n["ambient"] = Color("#4a5f96")
+	n["ambient_energy"] = 0.5
+	n["fog_col"] = Color("#1d2436")
+	n["fog_density"] = float(e["fog_density"]) * 1.4
+	n["saturation"] = float(e["saturation"]) * 0.82
+	n["contrast"] = float(e["contrast"]) * 1.04
+	n["exposure"] = float(e["exposure"]) * 1.08
+	n["prop_tint"] = (e["prop_tint"] as Color) * Color(0.8, 0.85, 1.0)
+	n["night"] = 1.0
+	return n

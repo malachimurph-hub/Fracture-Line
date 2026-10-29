@@ -6,6 +6,7 @@ const M33 := preload("res://tests/m33_test.gd")
 static func run(t: Node) -> void:
 	_mine_moves(t)
 	_civilians(t)
+	_night(t)
 
 static func _adv(r: MatchRunner, n: int) -> void:
 	for i in n:
@@ -154,3 +155,35 @@ static func _civilians(t: Node) -> void:
 		wv._on_death({"t": "death", "id": hv.id, "kind": hv.kind, "def": hv.def_id, "pos": hv.pos, "owner": -1})
 		t._check(wv.rubble_count == 1, "a destroyed civilian building leaves a rubble heap")
 	wv.queue_free()
+
+# ------------------------------------------------------------------ 20: night maps
+static func _night(t: Node) -> void:
+	var nm: Array = []
+	for id in Content.maps:
+		if (Content.maps[id] as MapDef).night:
+			nm.append(id)
+	t._check(nm.size() >= 2, "there are night versions of chosen maps (%s)" % str(nm))
+	var day := MapEnv.for_map(&"riverside_metro")
+	var nt := MapEnv.for_map(&"riverside_metro_night")
+	t._check(not day.has("night") and float(nt["night"]) == 1.0 and float(nt["sun_energy"]) < float(day["sun_energy"]) * 0.5, "the night map is lit by a dim moon")
+	t._check(Content.maps[&"riverside_metro_night"].tiles_path == Content.maps[&"riverside_metro"].tiles_path, "it plays on the same ground as the day map")
+	var r := _runner_on("riverside_metro_night", ["us", "eu"])
+	var wv := WorldView.new()
+	t.add_child(wv)
+	wv.setup(r, 0)
+	t._check(wv.night != null and wv.night.lamp_count > 100, "street lamps light the avenues (%d)" % (wv.night.lamp_count if wv.night != null else 0))
+	var w := r.sim
+	var tank := w.spawn_unit(&"us_halberd", 0, null, M33._hq(w, 0).pos + Vector2i(6 * FX.ONE, 0))
+	for e in [M33._hq(w, 0), tank]:
+		wv._ensure_view(e)
+	wv.frame(1.0, 0.2)
+	t._check(wv.night.bld_mm.visible_instance_count >= 1 and wv.night.veh_mm.visible_instance_count >= 1, "structures are floodlit and vehicles drive with headlights")
+	var src: String = FileAccess.get_file_as_string("res://view/materials/model_m3.gdshaderinc")
+	t._check(src.contains("fl_night"), "lamps and lit windows glow brighter at night")
+	wv.queue_free()
+	var r2 := M33._runner(["us", "eu"])
+	var wv2 := WorldView.new()
+	t.add_child(wv2)
+	wv2.setup(r2, 0)
+	t._check(wv2.night == null, "day maps have no night lights")
+	wv2.queue_free()

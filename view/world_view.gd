@@ -8,6 +8,8 @@ var sim: SimWorld
 var local_pid: int = 0
 var local_team: int = 0
 var terrain: TerrainView
+var night: NightLights = null   ## M3.3 P3 (20): light pools on night maps
+var _night_t := 0.0
 var vfx: Vfx
 var wfx: WeaponFx                ## M2.4 weapon effects (travelling rounds, no beams)
 var views: Dictionary = {}       ## id -> EntityView
@@ -51,6 +53,12 @@ func setup(r: MatchRunner, pid: int) -> void:
 	vfx = Vfx.new()
 	add_child(vfx)
 	vfx.set_fog(terrain.fog_texture, Vector2(sim.map.w, sim.map.h))
+	if float(MapEnv.for_map(sim.map_id).get("night", 0.0)) > 0.0:   # M3.3 P3 (20) night maps
+		night = NightLights.new()
+		night.name = "NightLights"
+		add_child(night)
+		night.setup(terrain.fog_texture, Vector2(sim.map.w, sim.map.h))
+		night.add_lamps(terrain.lamps, func(x: float, z: float) -> float: return 0.0)
 	wfx = WeaponFx.new()
 	add_child(wfx)
 	wfx.setup(self, vfx)
@@ -810,6 +818,25 @@ func _civ_rubble(v: EntityView) -> void:
 
 var rubble_count := 0
 
+## M3.3 P3 (20): floodlit aprons round visible structures, headlight beams for ground vehicles.
+func _update_night() -> void:
+	var blds: Array = []
+	var vehs: Array = []
+	for id in views:
+		var v: EntityView = views[id]
+		var e: SimEntity = sim.ents.get(id)
+		if e == null or not v.visible:
+			continue
+		if e.kind == SimEntity.Kind.BUILDING and e.built:
+			var col: Color = Palette.color(sim.players[e.owner].color) if e.owner >= 0 else Color(1, 1, 1)
+			blds.append([v.position, v.footprint, col])
+		elif e.kind == SimEntity.Kind.UNIT and not v is InfantryView:
+			var ud: UnitDef = Content.unit(e.def_id)
+			if ud.move_layer == &"vehicle":
+				vehs.append([v.position, v.rotation.y, minf(2.0, v.selection_radius * 1.2)])
+	night.set_buildings(blds)
+	night.set_vehicles(vehs)
+
 ## Tanks and other heavy tracked vehicles crush cars they drive over.
 var _crushers := {}
 func _init_crushers() -> void:
@@ -820,6 +847,11 @@ func _init_crushers() -> void:
 
 func frame(a: float, delta: float) -> void:
 	_update_stacks(delta)
+	if night != null:
+		_night_t -= delta
+		if _night_t <= 0.0:
+			_night_t = 0.12
+			_update_night()
 	alpha = a
 	_update_crashes(delta)
 	if terrain.has_towers:

@@ -710,6 +710,7 @@ func _box(st: SurfaceTool, c: Vector3, s: Vector3, col: Color) -> void:
 	PropMeshes.box(st, c, s, col)
 
 # ---------------------------------------------------------------- props
+var lamps: Array = []   ## [[x, z, rot90, double], ...] street lamps (night maps)
 func _build_props(tiles_path: String) -> void:
 	var by_kind := {}
 	var dp := tiles_path.replace(".txt", ".decor.txt")
@@ -758,6 +759,10 @@ func _build_props(tiles_path: String) -> void:
 					by_kind[_tree_kind].append([x + 0.5, y + 0.5, 0])
 				elif tt == SimMap.T.CLIFF and _h(x, y) < 0.2:
 					by_kind["rock"].append([x + 0.5, y + 0.5, 0])
+	lamps.clear()   # M3.3 P3 (20): street lamps light the ground on night maps
+	for lk in ["streetlight", "streetlight_double"]:
+		for it in by_kind.get(lk, []):
+			lamps.append([float(it[0]), float(it[1]), int(it[2]), lk == "streetlight_double"])
 	var urban := false
 	for kind in by_kind:
 		urban = urban or (PropMeshes.FOOTPRINT.has(kind) and not kind in PropMeshes.HOUSES and by_kind[kind].size() >= 8)

@@ -8,7 +8,10 @@ extends Resource
 @export var resources: Array[Dictionary] = [] ## {kind: seam|cache, tile: Vector2i, amount: int}
 @export var neutrals: Array[Dictionary] = []  ## {kind, tile}
 @export var description_key: String = ""
-@export var env: StringName = &"desert"   ## M2.5 view environment (MapEnv): desert | winter | temperate
+@export var env: StringName = &"desert"
+## M3.3 Phase 3 (20): night version of a map (view only: moonlight, lit windows, street lamps,
+## floodlights and headlights). Same tiles as its day map.
+@export var night: bool = false   ## M2.5 view environment (MapEnv): desert | winter | temperate
 ## M2.8 map builder: optional pre-placed units / buildings, {kind, spawn, tile}. Each belongs to
 ## the player who starts on spawn slot `spawn`; skipped when no player uses that slot.
 @export var prebuilt: Array[Dictionary] = []
