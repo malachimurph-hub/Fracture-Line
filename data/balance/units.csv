@@ -45,7 +45,7 @@ us_longreach,UNIT_US_LONGREACH,1400,15000,3,us_strategy,vehicle|artillery|spg,42
 us_thunderlance,UNIT_US_THUNDERLANCE,2500,20000,4,us_strategy,air|jet|bomber,900,air,us_bomb_bay,4800,air,10,800,0,0,0,air_strike,,jet,110,1500,0,0,0,4
 us_wraith,UNIT_US_WRAITH,1500,13000,3,,air|jet|fighter|aa,520,air,us_aam|us_gbu,5600,air,11,650,0,0,0,air_strike,,jet,160,1200,0,0,0,2
 us_harrier,UNIT_US_HARRIER,1600,15000,3,,air|helicopter,540,air,us_hellfire|us_chaingun,3200,air,10,650,0,0,0,air_strike,,heli,200,900,180,0,0,0
-ecc_engineer,UNIT_ECC_ENGINEER,1000,10000,2,,vehicle|builder,520,light,,1500,vehicle,7,500,0,0,0,builder,,,0,0,0,0,0,0
+ecc_engineer,UNIT_ECC_ENGINEER,1000,10000,2,,vehicle|builder,520,light,ecc_eng_rocket,1500,vehicle,7,500,0,0,0,builder,,,0,0,0,0,0,0
 ecc_cargo_truck,UNIT_ECC_CARGO_TRUCK,700,9000,1,,vehicle|harvester,650,light,,1900,vehicle,7,500,0,0,350,harvester,,,0,0,0,0,0,0
 ecc_rifleman,UNIT_ECC_RIFLEMAN,225,5000,1,,infantry|garrison,180,infantry,ecc_ak74,1150,foot,7,360,0,0,0,infantry,,,0,0,0,0,0,0
 ecc_machine_gunner,UNIT_ECC_MACHINE_GUNNER,300,6000,1,,infantry|garrison,190,infantry,ecc_pkm,1050,foot,7,380,0,0,0,infantry,,,0,0,0,0,0,0

@@ -318,6 +318,8 @@ BLD_TPLA_CAMP,Basij Barracks
 BLD_TPLA_CHOP_SHOP,Vehicle Factory
 BLD_TPLA_TUNNEL,Tunnel Network
 BLD_TPLA_WORKSHOP,Defence Workshop
+BLD_TPLA_GAS_PLANT,Gas Turbine Plant
+BLD_TPLA_GAS_PLANT_DESC,"Natural gas turbine power station. Cheaper than a nuclear plant, with less output. Supplies power to the base."
 BLD_TPLA_BAZAAR,Oil Derrick
 BLD_TPLA_BAZAAR_DESC,Oil well with a pumpjack that brings in $185 a minute.
 BLD_TPLA_DEMO_TRAP,Anti-Tank Mine
@@ -504,7 +506,7 @@ MAP_CRESCENT_DESC,"Desert metropolis. A dense downtown of glass and office tower
 MAP_RIVERSIDE,Riverside Metro
 MAP_RIVERSIDE_DESC,"Temperate city split by a river. Four avenue bridges and two edge fords link north and south; apartment towers, shop rows and parked cars line every street."
 UNIT_ECC_ENGINEER,Engineer Vehicle
-UNIT_ECC_ENGINEER_DESC,Tracked combat engineering vehicle with a dozer blade and crane. Builds and repairs structures.
+UNIT_ECC_ENGINEER_DESC,"Tracked combat engineering vehicle with a dozer blade, a crane and a single-shot anti-tank rocket launcher. Builds and repairs structures."
 UNIT_ECC_CARGO_TRUCK,Cargo Truck
 UNIT_ECC_CARGO_TRUCK_DESC,Six-wheel military cargo truck. Hauls supplies from supply sources to a Supply Depot.
 UNIT_ECC_RIFLEMAN,Rifleman
@@ -543,8 +545,8 @@ BLD_ECC_BARRACKS,Barracks
 BLD_ECC_BARRACKS_DESC,"Trains Riflemen, Machine Gunners, RPG Men and Infiltrators."
 BLD_ECC_FACTORY,Vehicle Factory
 BLD_ECC_FACTORY_DESC,"Builds Tiger-M, BTR, Typhoon, T-90M, Zeus, 2S Msta and Engineer Vehicles."
-BLD_ECC_BUNKER,Kornet Nest
-BLD_ECC_BUNKER_DESC,"Sandbag ring with two 9M133 Kornet anti-tank missile launchers. Defends against ground vehicles. Needs power."
+BLD_ECC_BUNKER,Missile Silo
+BLD_ECC_BUNKER_DESC,"Fixed in-ground missile launcher. The hatch opens to fire one heavy missile at a time: slow, but hits hard. Defends against ground targets. Needs power."
 BLD_ECC_AA_SITE,ZAK-30 Citadel
 BLD_ECC_AA_SITE_DESC,"Twin 30 mm rotary anti-aircraft turret. Shreds aircraft, cannot hit ground targets. Needs power."
 BLD_ECC_AIRFIELD,Airfield

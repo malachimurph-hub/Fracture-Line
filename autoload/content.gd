@@ -30,7 +30,7 @@ const US_BUILDING_ORDER := [&"us_command", &"us_reactor", &"us_supply_center", &
 ## single soldiers). Engineer, Cargo Truck and every building are stand-ins until his list covers them.
 const ECC_UNIT_ORDER := [&"ecc_engineer", &"ecc_cargo_truck", &"ecc_rifleman", &"ecc_machine_gunner", &"ecc_rpg", &"ecc_infiltrator", &"ecc_saboteur", &"ecc_tigr", &"ecc_btr", &"ecc_typhoon", &"ecc_t90", &"ecc_zeus", &"ecc_msta", &"ecc_ka52", &"ecc_su57", &"ecc_tu160"]
 const ECC_BUILDING_ORDER := [&"ecc_hq", &"ecc_power", &"ecc_depot", &"ecc_barracks", &"ecc_factory", &"ecc_airfield", &"ecc_ministry", &"ecc_black_market", &"ecc_bunker", &"ecc_aa_site", &"ecc_sandbags", &"ecc_barricade"]
-const TPLA_BUILDING_ORDER := [&"tpla_den", &"tpla_stash", &"tpla_camp", &"tpla_chop_shop", &"tpla_tunnel", &"tpla_workshop", &"tpla_bazaar", &"tpla_demo_trap", &"tpla_camo_net", &"tpla_wasp_nest", &"tpla_airfield", &"tpla_sandbags", &"tpla_barricade"]
+const TPLA_BUILDING_ORDER := [&"tpla_den", &"tpla_gas_plant", &"tpla_stash", &"tpla_camp", &"tpla_chop_shop", &"tpla_tunnel", &"tpla_workshop", &"tpla_bazaar", &"tpla_demo_trap", &"tpla_camo_net", &"tpla_wasp_nest", &"tpla_airfield", &"tpla_sandbags", &"tpla_barricade"]
 
 ## Playable factions (skirmish). "power": whether the faction uses the power economy.
 const FACTIONS := {
@@ -40,7 +40,8 @@ const FACTIONS := {
 	# M2.8: "home_stash_pct" scales the supply stashes by this faction's spawn so they last ~17 min
 	# against its AI opening economy. M2.9: TPLA builds with a Backhoe and gathers with Pickups (separate jobs)
 	&"tpla": {"name_key": "FACTION_TPLA", "home_stash_pct": 120, "hq": &"tpla_den", "builder": &"tpla_backhoe", "start_units": [&"tpla_backhoe", &"tpla_pickup"],
-		"units": TPLA_UNIT_ORDER, "buildings": TPLA_BUILDING_ORDER, "power": false, "personality": &"tpla_scrapjack",
+		"units": TPLA_UNIT_ORDER, "buildings": TPLA_BUILDING_ORDER, "power": true,   # M3.3: Gas Turbine Plants
+		 "personality": &"tpla_scrapjack",
 		"powers": [&"tpla_ambush", &"tpla_scrap_rain", &"tpla_blight_shells", &"tpla_uprising"]},
 	# M2.5: United States (Malachi's roster; unspecified slots are ZH USA equivalents, placeholders)
 	&"us": {"name_key": "FACTION_US", "hq": &"us_command", "builder": &"us_dozer", "start_units": [&"us_dozer"],

@@ -1191,12 +1191,15 @@ func test_tpla() -> void:
 	_check(den != null and w.faction_of(0) == &"tpla" and w.has_tpla, "TPLA player starts with a Den")
 	var base := FX.to_tile(den.pos)
 	w.players[0].supply = 20000
-	# --- no power needed
+	# --- M3.3: TPLA (Iran) runs on Gas Turbine Plants like the other factions' power plants
 	var camp := _tpla_place(w, 0, &"tpla_camp", base)
 	_tpla_place(w, 0, &"tpla_chop_shop", base)
 	_ticks(r, 2)
 	var p0: SimPlayer = w.players[0]
-	_check(not Content.faction(&"tpla")["power"] and p0.power_prod == 0 and not p0.low_power, "TPLA needs no power (prod=%d used=%d low=%s)" % [p0.power_prod, p0.power_used, p0.low_power])
+	_check(Content.faction(&"tpla")["power"] and p0.low_power, "TPLA goes into low power without a Gas Turbine Plant (prod=%d used=%d)" % [p0.power_prod, p0.power_used])
+	_tpla_place(w, 0, &"tpla_gas_plant", base)
+	_ticks(r, 12)
+	_check(not p0.low_power and p0.power_prod == 5 + 8, "a Gas Turbine Plant powers the base (prod=%d used=%d low=%s)" % [p0.power_prod, p0.power_used, p0.low_power])
 	r.issue({"p": 0, "t": "queue", "target": camp.id, "def": "tpla_militia", "n": 3})
 	_ticks(r, 20 * 20)
 	var mil: Array = []
@@ -1204,7 +1207,7 @@ func test_tpla() -> void:
 		var e2: SimEntity = w.ents[id]
 		if e2.alive and e2.owner == 0 and e2.def_id == &"tpla_militia":
 			mil.append(e2)
-	_check(mil.size() == 3, "camp trains militia at full speed without any power plant (%d)" % mil.size())
+	_check(mil.size() == 3, "camp trains militia at full speed on gas power (%d)" % mil.size())
 	# --- M2.9: Pickups gather, the Backhoe builds (separate jobs)
 	var lab: SimEntity = null
 	var hoe: SimEntity = null
