@@ -61,6 +61,8 @@ static func _material(v: VatModel) -> ShaderMaterial:
 	m.set_shader_parameter("vat_w", v.width)
 	m.set_shader_parameter("vat_rows", v.rows)
 	m.set_shader_parameter("vat_fmt", v.fmt)
+	m.set_shader_parameter("vat_min", v.pos_min)
+	m.set_shader_parameter("vat_max", v.pos_max)
 	_mats[v] = m
 	return m
 

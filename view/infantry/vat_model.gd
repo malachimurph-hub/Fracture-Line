@@ -22,3 +22,7 @@ extends Resource
 @export var fire_kneel: int = 0
 ## vertex colour packing: 1 = M2.6 (B + 1000 * team), 2 = M3.4 (B + 256 * (flags + 16 * mask))
 @export var fmt: int = 1
+## fmt 3 (M3.4 compact VAT): pos_tex RGBA8 = position packed 11/11/10 bits over pos_min..pos_max,
+## nrm_tex RG8 = octahedral normal
+@export var pos_min: Vector3 = Vector3.ZERO
+@export var pos_max: Vector3 = Vector3.ONE

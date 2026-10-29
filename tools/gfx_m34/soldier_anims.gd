@@ -5,7 +5,7 @@ extends RefCounted
 ## handguard / front grip / tube) in every clip but the deaths.
 const Rig := preload("res://tools/gfx_m34/soldier_rig.gd")
 ## clip: [length s, loop]
-const CLIPS := {"idle": [2.4, true], "walk": [1.0, true], "run": [0.66, true], "fire": [0.4, true],
+const CLIPS := {"idle": [2.0, true], "walk": [1.0, true], "run": [0.66, true], "fire": [0.4, true],
 	"fire_kneel": [0.4, true], "lean": [0.4, true], "die": [1.4, false], "die2": [1.4, false]}
 
 static func _e(t: float) -> float:
@@ -84,7 +84,7 @@ static func _carry(p: Dictionary, style: String, k: String, bob := 0.0) -> void:
 				p["gun"] = Transform3D(_basis_dir(Vector3(0.5, -0.6, 0.62), Vector3(0, 1, 0)), Vector3(-0.15, 0.05, 0.22))
 
 static func _idle(p: Dictionary, t: float, style: String) -> void:
-	var ph := _ph(t, 2.4)
+	var ph := _ph(t, 2.0)
 	var br := sin(ph)
 	p["pelvis"] = Vector3(0.0, 0.985 + br * 0.003, 0.0)
 	p["pelvis_r"] = Vector3(0, -14, 0)

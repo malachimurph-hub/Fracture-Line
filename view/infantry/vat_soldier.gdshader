@@ -12,6 +12,8 @@ uniform int vat_w = 1;
 uniform int vat_rows = 1;
 // M3.4: 2 = flags / variant masks packed in UV.y (see tools/bake_infantry_m34.gd)
 uniform int vat_fmt = 1;
+uniform vec3 vat_min = vec3(0.0);
+uniform vec3 vat_max = vec3(1.0);
 // M3.4 per soldier: look variant (0..3: head gear / packs), skin tone, uniform tint
 instance uniform float variant = 0.0;
 instance uniform float skin_tone = 1.0;
@@ -31,15 +33,44 @@ vec3 srgb_to_linear(vec3 c) {
 	return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c));
 }
 
+// M3.4 compact VAT (fmt 3): position = 11 / 11 / 10 bits in RGBA8 over vat_min..vat_max
+vec3 vat_unpack(vec4 c) {
+	ivec4 b = ivec4(round(c * 255.0));
+	int x = b.r | ((b.g & 7) << 8);
+	int y = (b.g >> 3) | ((b.b & 63) << 5);
+	int z = (b.b >> 6) | (b.a << 2);
+	vec3 q = vec3(float(x) / 2047.0, float(y) / 2047.0, float(z) / 1023.0);
+	return vat_min + q * (vat_max - vat_min);
+}
+vec3 oct_decode(vec2 e) {
+	vec2 f = e * 2.0 - 1.0;
+	vec3 n = vec3(f.x, 1.0 - abs(f.x) - abs(f.y), f.y);
+	float t = max(-n.y, 0.0);
+	n.x += n.x >= 0.0 ? -t : t;
+	n.z += n.z >= 0.0 ? -t : t;
+	return normalize(n);
+}
+
 void vertex() {
 	int vid = int(UV2.x + 0.5) + int(UV2.y + 0.5) * 256;
 	int fa = int(INSTANCE_CUSTOM.x + 0.5);
 	int fb = int(INSTANCE_CUSTOM.y + 0.5);
 	ivec2 base = ivec2(vid % vat_w, vid / vat_w);
-	vec3 pa = texelFetch(vat_pos, base + ivec2(0, fa * vat_rows), 0).xyz;
-	vec3 pb = texelFetch(vat_pos, base + ivec2(0, fb * vat_rows), 0).xyz;
-	vec3 na = texelFetch(vat_nrm, base + ivec2(0, fa * vat_rows), 0).xyz * 2.0 - 1.0;
-	vec3 nb = texelFetch(vat_nrm, base + ivec2(0, fb * vat_rows), 0).xyz * 2.0 - 1.0;
+	vec3 pa;
+	vec3 pb;
+	vec3 na;
+	vec3 nb;
+	if (vat_fmt >= 3) {
+		pa = vat_unpack(texelFetch(vat_pos, base + ivec2(0, fa * vat_rows), 0));
+		pb = vat_unpack(texelFetch(vat_pos, base + ivec2(0, fb * vat_rows), 0));
+		na = oct_decode(texelFetch(vat_nrm, base + ivec2(0, fa * vat_rows), 0).rg);
+		nb = oct_decode(texelFetch(vat_nrm, base + ivec2(0, fb * vat_rows), 0).rg);
+	} else {
+		pa = texelFetch(vat_pos, base + ivec2(0, fa * vat_rows), 0).xyz;
+		pb = texelFetch(vat_pos, base + ivec2(0, fb * vat_rows), 0).xyz;
+		na = texelFetch(vat_nrm, base + ivec2(0, fa * vat_rows), 0).xyz * 2.0 - 1.0;
+		nb = texelFetch(vat_nrm, base + ivec2(0, fb * vat_rows), 0).xyz * 2.0 - 1.0;
+	}
 	rest = VERTEX;
 	VERTEX = mix(pa, pb, INSTANCE_CUSTOM.z);
 	NORMAL = normalize(mix(na, nb, INSTANCE_CUSTOM.z));
@@ -93,9 +124,9 @@ void fragment() {
 			float fq = fl_camo > 1.5 ? 70.0 : 38.0;
 			float n1 = vnoise(rest * fq + vec3(3.1, 0.0, 1.7));
 			float n2 = vnoise(rest * fq * 1.3 + vec3(-7.0, 2.0, 5.0));
-			float dark = smoothstep(0.52, 0.6, n1);
+			float dark = smoothstep(0.5, 0.58, n1);
 			float lite = smoothstep(0.6, 0.68, n2) * (1.0 - dark);
-			vec3 dk = fl_camo > 1.5 ? base * vec3(0.55, 0.62, 0.5) : base * vec3(0.7, 0.68, 0.6);
+			vec3 dk = fl_camo > 1.5 ? base * vec3(0.5, 0.58, 0.46) : base * vec3(0.6, 0.6, 0.5);
 			vec3 lt = base * vec3(1.16, 1.12, 1.02);
 			if (fl_camo > 1.5) {
 				float n3 = vnoise(rest * 95.0 + vec3(11.0, 4.0, -2.0));

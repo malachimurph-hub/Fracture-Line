@@ -18,6 +18,7 @@ const J := {
 	"hip_L": Vector3(0.1, 0.95, 0), "kn_L": Vector3(0.11, 0.52, 0.01), "an_L": Vector3(0.11, 0.09, -0.01),
 	"hip_R": Vector3(-0.1, 0.95, 0), "kn_R": Vector3(-0.11, 0.52, 0.01), "an_R": Vector3(-0.11, 0.09, -0.01)}
 const HAND_LEN := 0.085   ## wrist to palm centre
+const SEG_K := 0.8        ## mobile budget: radial segment scale for all round parts
 
 # ------------------------------------------------------------------ mesh buffers
 var P := PackedVector3Array()
@@ -88,6 +89,7 @@ func tris() -> int:
 ## with rx across `side` and rz across the third axis; ends closed. blend: [parent bone, child
 ## bone] - vertices near the ends lean into the neighbouring bone so joints bend smoothly.
 func loft(a: Vector3, b: Vector3, rings: Array, side: Vector3, seg := 10, blend := [-1, -1], ofs := Vector3.ZERO) -> void:
+	seg = maxi(4, int(round(seg * SEG_K)))
 	var ax := (b - a)
 	var L := ax.length()
 	var z := ax / L
@@ -151,6 +153,8 @@ func limb(a: Vector3, b: Vector3, r0: float, r1: float, side: Vector3, seg := 8,
 	loft(a, b, rings, side, seg, blend)
 
 func ellipsoid(c: Vector3, r: Vector3, basis := Basis(), rings := 6, seg := 10, b1 := -1, w := 0.0) -> void:
+	seg = maxi(4, int(round(seg * SEG_K)))
+	rings = maxi(3, int(round(rings * 0.85)))
 	var base := P.size()
 	for i in rings + 1:
 		var th := PI * i / rings
@@ -192,6 +196,7 @@ func box(c: Vector3, s: Vector3, basis := Basis(), soft := 0.3) -> void:
 
 ## upper part of an ellipsoid (helmets, caps): polar angle 0..th_max
 func dome(c: Vector3, r: Vector3, th_max := 1.75, rings := 5, seg := 12, basis := Basis()) -> void:
+	seg = maxi(4, int(round(seg * SEG_K)))
 	var base := P.size()
 	for i in rings + 1:
 		var th := th_max * i / rings

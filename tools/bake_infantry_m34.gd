@@ -12,7 +12,10 @@ const Anims := preload("res://tools/gfx_m34/soldier_anims.gd")
 const Kit := preload("res://tools/gfx_m34/kit34.gd")
 const VatModelScript := preload("res://view/infantry/vat_model.gd")
 const OUT := "res://assets/models/infantry/"
-const FPS := 15.0
+const FPS := 10.0           ## the shader blends between frames
+## packed position range (model units): 11 / 11 / 10 bits over these bounds
+const PMIN := Vector3(-0.6, -0.1, -0.7)
+const PMAX := Vector3(0.6, 0.7, 0.7)
 const HEIGHT := 0.5
 const TALL := 1.84            ## metres mapped to HEIGHT (helmet top)
 const CLIP_ORDER := ["idle", "walk", "run", "fire", "fire_kneel", "lean", "die", "die2"]
@@ -113,13 +116,18 @@ func bake(key: String, out_key := "") -> Dictionary:
 		out_key = key
 	var rs := build_rig(key)
 	var r = rs[0]
+	# the builders emit counter-clockwise front faces; Godot's front faces are clockwise
+	for t in range(0, r.I.size(), 3):
+		var tmp: int = r.I[t + 1]
+		r.I[t + 1] = r.I[t + 2]
+		r.I[t + 2] = tmp
 	var spec: Dictionary = rs[1]
 	var gun: Dictionary = GUNS[spec["gun"]]
 	var style: String = STYLE.get(spec["gun"], "rifle")
 	var scale := HEIGHT / TALL
 	var ref: Array = r.skin(r.solve(Anims.pose("idle", 0.0, style), gun))
 	var nv: int = r.P.size()
-	var width := mini(nv, 2048)
+	var width := mini(nv, 4096)   # M3.4: one texel row per frame (phones take 4096-wide textures)
 	var rows := int(ceil(nv / float(width)))
 	var plan := []
 	var frames_total := 0
@@ -130,21 +138,37 @@ func bake(key: String, out_key := "") -> Dictionary:
 		anim_info[cn] = [frames_total, n, FPS, 1 if cl[1] else 0]
 		plan.append([cn, n, cl[0], cl[1]])
 		frames_total += n
-	var pimg := Image.create_empty(width, rows * frames_total, false, Image.FORMAT_RGBAH)
-	var nimg := Image.create_empty(width, rows * frames_total, false, Image.FORMAT_RGBA8)
+	# M3.4 compact VAT: position packed in RGBA8 (x 11 bits, y 11, z 10 over PMIN..PMAX),
+	# normal octahedral-encoded in RG8: 6 bytes per vertex per frame (was 12)
+	var pb := PackedByteArray()
+	pb.resize(width * rows * frames_total * 4)
+	var nb := PackedByteArray()
+	nb.resize(width * rows * frames_total * 2)
 	var f := 0
 	var max_y := 0.0
+	var span := PMAX - PMIN
 	for pl in plan:
 		for k in pl[1]:
 			var t: float = (float(k) / pl[1] * pl[2]) if pl[3] else minf(pl[2], float(k) / FPS)
 			var sk: Array = r.skin(r.solve(Anims.pose(pl[0], t, style), gun))
 			for j in nv:
 				var p: Vector3 = (sk[0][j] as Vector3) * scale
-				var n3: Vector3 = sk[1][j]
 				max_y = maxf(max_y, p.y)
-				pimg.set_pixel(j % width, j / width + f * rows, Color(p.x, p.y, p.z, 1.0))
-				nimg.set_pixel(j % width, j / width + f * rows, Color(n3.x * 0.5 + 0.5, n3.y * 0.5 + 0.5, n3.z * 0.5 + 0.5, 1.0))
+				var q := ((p - PMIN) / span).clamp(Vector3.ZERO, Vector3.ONE)
+				var xi := int(round(q.x * 2047.0))
+				var yi := int(round(q.y * 2047.0))
+				var zi := int(round(q.z * 1023.0))
+				var o := ((j / width + f * rows) * width + j % width)
+				pb[o * 4] = xi & 255
+				pb[o * 4 + 1] = (xi >> 8) | ((yi & 31) << 3)
+				pb[o * 4 + 2] = (yi >> 5) | ((zi & 3) << 6)
+				pb[o * 4 + 3] = zi >> 2
+				var e := oct_encode(sk[1][j])
+				nb[o * 2] = int(round(e.x * 255.0))
+				nb[o * 2 + 1] = int(round(e.y * 255.0))
 			f += 1
+	var pimg := Image.create_from_data(width, rows * frames_total, false, Image.FORMAT_RGBA8, pb)
+	var nimg := Image.create_from_data(width, rows * frames_total, false, Image.FORMAT_RG8, nb)
 	var V2 := PackedVector3Array()
 	var N2 := PackedVector3Array()
 	var C2 := PackedColorArray()
@@ -186,7 +210,9 @@ func bake(key: String, out_key := "") -> Dictionary:
 	vm.height = HEIGHT
 	vm.variants = 4
 	vm.fire_kneel = int(spec.get("kneel", 1))
-	vm.fmt = 2
+	vm.fmt = 3
+	vm.pos_min = PMIN
+	vm.pos_max = PMAX
 	vm.source = "Original procedural soldier (tools/gfx_m34, M3.4): %s, %s" % [key, spec["gun"]]
 	DirAccess.make_dir_recursive_absolute(OUT)
 	var path := OUT + out_key + ".res"
@@ -197,3 +223,12 @@ func bake(key: String, out_key := "") -> Dictionary:
 		if m0 == 0 or (m0 & 1) != 0:
 			vis += 1
 	return {"verts": nv, "tris": r.I.size() / 3, "tris_v0": vis, "lods": lods.keys(), "frames": frames_total, "tex": "%dx%d" % [width, rows * frames_total], "top": max_y, "path": path}
+
+## unit normal -> octahedral 0..1 pair
+static func oct_encode(n: Vector3) -> Vector2:
+	n = n.normalized()
+	var d := absf(n.x) + absf(n.y) + absf(n.z)
+	var o := Vector2(n.x, n.z) / d
+	if n.y < 0.0:
+		o = Vector2((1.0 - absf(o.y)) * signf(o.x if o.x != 0.0 else 1.0), (1.0 - absf(o.x)) * signf(o.y if o.y != 0.0 else 1.0))
+	return o * 0.5 + Vector2(0.5, 0.5)
