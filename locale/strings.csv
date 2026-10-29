@@ -320,6 +320,8 @@ BLD_TPLA_TUNNEL,Tunnel Network
 BLD_TPLA_WORKSHOP,Defence Workshop
 BLD_TPLA_GAS_PLANT,Gas Turbine Plant
 BLD_TPLA_GAS_PLANT_DESC,"Natural gas turbine power station. Cheaper than a nuclear plant, with less output. Supplies power to the base."
+BLD_TPLA_CC_PLANT,Combined-Cycle Gas Plant
+BLD_TPLA_CC_PLANT_DESC,"Large natural gas power station. Turbine exhaust heat raises steam for a second turbine, so it gives much more power than a Gas Turbine Plant. Needs a Defence Workshop."
 BLD_TPLA_BAZAAR,Oil Derrick
 BLD_TPLA_BAZAAR_DESC,Oil well with a pumpjack that brings in $185 a minute.
 BLD_TPLA_DEMO_TRAP,Anti-Tank Mine

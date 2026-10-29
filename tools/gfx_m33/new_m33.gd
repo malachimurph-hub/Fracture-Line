@@ -3,6 +3,8 @@ extends RefCounted
 ##   us_drop_zone     - Data Center, 4 x 4: two server halls, roof chillers, generator row, substation
 ##   us_reactor       - Nuclear Power Plant: containment dome, turbine hall, two cooling towers (steam)
 ##   tpla_gas_plant   - Iran Gas Turbine Plant (new): turbine hall, twin exhaust stacks, gas train
+##   tpla_cc_plant    - Iran Combined-Cycle Gas Plant, 4 x 4: two turbine halls, heat-recovery boilers
+##                      with tall stacks, steam-turbine hall, air-cooled condenser, pipework
 ##   tpla_bazaar      - Iran Oil Derrick, 2 x 2: nodding pumpjack, drilling mast, tanks, manifold
 ##   eu_exchange      - Germany Automotive Plant: sawtooth assembly hall, paint shop, finished-car lot
 ##   ecc_black_market - Russia Minerals Mining: giant bucket-wheel excavator (wheel turns)
@@ -31,6 +33,7 @@ static func jobs() -> Dictionary:
 		"us_drop_zone": func() -> void: _make("drop_zone", Vector2(4, 4), 1.0, "us", _data_center4),
 		"us_reactor": func() -> void: _make("reactor", Vector2(3, 3), 2.4, "us", _nuclear, Callable(), [Vector3(0.78, 2.42, -0.62), Vector3(-0.42, 2.42, -0.82)]),
 		"tpla_gas_plant": func() -> void: _make("gas_plant", Vector2(3, 3), 1.9, "tpla", _gas_plant, Callable(), [Vector3(0.95, 1.92, -0.85), Vector3(0.45, 1.92, -0.85)]),
+		"tpla_cc_plant": func() -> void: _make("cc_plant", Vector2(4, 4), 2.6, "tpla", _cc_plant, _cc_fans, [Vector3(-0.95, 2.62, -1.2), Vector3(0.15, 2.62, -1.2)]),
 		"tpla_bazaar": func() -> void: _make("bazaar", Vector2(2, 2), 1.5, "tpla", _derrick, _pumpjack),
 		"eu_exchange": func() -> void: _make("exchange", Vector2(3, 3), 1.0, "eu", _auto_plant, Callable(), [Vector3(1.05, 1.15, -0.95)]),
 		"ecc_black_market": func() -> void: _make("black_market", Vector2(3, 3), 2.0, "ecc", _excavator, _bucket_wheel),
@@ -361,6 +364,130 @@ static func _gas_plant(g) -> void:
 		g.insulator(p + Vector3(0, 0.2, 0), 0.08)
 	_fence(g, 1.4, 1.4, 0.35)
 	UM._roof_lights(g, [Vector3(0.95, Y0 + 1.9, -0.85), Vector3(0.45, Y0 + 1.9, -0.85)])
+
+# ================================================================== Iran Combined-Cycle Gas Plant (4 x 4)
+## Malachi 2026-10-29: Iran's advanced natural-gas power. Two gas-turbine halls (front), each
+## feeding a tall heat-recovery steam generator with its own exhaust stack (back), a steam
+## turbine hall between them, an air-cooled condenser bank on steel legs (fans spin) on the
+## east side, steam and gas pipework, a switchyard and a fence - same clean Iran finish.
+const CC_X := [-0.95, 0.15]
+static func _cc_plant(g) -> void:
+	for k in 2:
+		var x: float = CC_X[k]
+		# gas turbine hall
+		g.color(IR_S, Geo.CONCRETE)
+		g.cbox(Vector3(x, Y0 + 0.28, 0.85), Vector3(0.92, 0.56, 0.8), 0.02)
+		g.color(IR_S2, Geo.CONCRETE)
+		g.cbox(Vector3(x, Y0 + 0.58, 0.85), Vector3(0.96, 0.05, 0.84), 0.01)
+		_ir_band(g, Vector3(x, Y0 + 0.47, 1.256), 0.92, 0)
+		g.color(GLASS_C, Geo.GLASS)
+		UM._win_grid(g, Vector3(x + 0.12, Y0 + 0.27, 1.258), 0.6, 0.13, 5, 1, UM._face_t(0, Vector3.ZERO), 37 + k * 11, 0.45)
+		g.color("#6a6e6c", Geo.STEEL)
+		g.rollup(Vector3(x - 0.33, Y0 + 0.15, 1.258), 0.22, 0.28)
+		# intake filter house on the roof
+		g.color("#b9bcb8", Geo.STEEL)
+		g.cbox(Vector3(x, Y0 + 0.72, 0.95), Vector3(0.5, 0.24, 0.42), 0.01)
+		g.color("#5d6163", Geo.STEEL)
+		g.vent(Vector3(x, Y0 + 0.72, 1.161), 0.42, 0.16, 6)
+		# transition duct into the boiler
+		g.color("#8f9490", Geo.STEEL)
+		g.cbox(Vector3(x, Y0 + 0.42, 0.28), Vector3(0.5, 0.44, 0.36), 0.015)
+		# heat-recovery steam generator: tall casing with stiffener bands and platforms
+		g.color("#a7aba7", Geo.STEEL)
+		g.cbox(Vector3(x, Y0 + 0.65, -0.38), Vector3(0.62, 1.3, 0.95), 0.02)
+		g.color("#7f8481", Geo.STEEL)
+		for y in [0.3, 0.62, 0.94, 1.22]:
+			g.box(Vector3(x, Y0 + y, -0.38), Vector3(0.635, 0.025, 0.965))
+		g.color(IR_S2, Geo.PAINT)
+		g.cbox(Vector3(x, Y0 + 1.33, -0.38), Vector3(0.66, 0.05, 0.99), 0.01)
+		g.color(STEEL, Geo.STEEL)
+		g.ladder(Vector3(x + 0.32, Y0, 0.0), 1.3, Vector3.RIGHT)
+		# steam drum on top
+		g.color("#c9ccc8", Geo.STEEL)
+		g.tube(Vector3(x - 0.22, Y0 + 1.45, -0.38), Vector3(x + 0.22, Y0 + 1.45, -0.38), 0.07, 10)
+		# exhaust stack (tall, banded, with a platform ring)
+		var sp := Vector3(x, 0, -1.2)
+		g.color("#8f9490", Geo.STEEL)
+		g.cbox(Vector3(x, Y0 + 0.9, -0.95), Vector3(0.3, 0.3, 0.3), 0.01)
+		g.color("#c9ccc8", Geo.STEEL)
+		g.cyl(0.15, 0.12, 2.5, 14, Transform3D(Basis.IDENTITY, sp + Vector3(0, Y0 + 1.25, 0)))
+		g.color("#d8503c", Geo.PAINT)
+		for y in [2.2, 2.42]:
+			g.band(0.125, Y0 + y, 0.07, 0.004, 14, Transform3D(Basis.IDENTITY, sp))
+		g.color(STEEL, Geo.STEEL)
+		g.rail_ring(0.18, Y0 + 1.9, 12, 0.06, Transform3D(Basis.IDENTITY, sp))
+		g.ladder(sp + Vector3(0.14, Y0 + 0.3, 0), 1.6, Vector3.RIGHT)
+	# steam turbine hall (between and behind the gas halls)
+	g.color(IR_S, Geo.CONCRETE)
+	g.cbox(Vector3(-0.4, Y0 + 0.36, -1.45), Vector3(1.7, 0.72, 0.5), 0.02)
+	g.color(IR_S2, Geo.CONCRETE)
+	g.cbox(Vector3(-0.4, Y0 + 0.74, -1.45), Vector3(1.74, 0.05, 0.54), 0.01)
+	g.color("#ffffff", Geo.TEAM)
+	g.box(Vector3(-0.4, Y0 + 0.62, -1.705), Vector3(0.6, 0.06, 0.006))
+	# air-cooled condenser: raised fan deck on legs, A-frame coil roof, fan rings (fans are parts)
+	g.color(STEEL, Geo.STEEL)
+	for ix in 3:
+		for iz in 4:
+			var lp := Vector3(1.05 + ix * 0.32, Y0, -1.35 + iz * 0.6)
+			g.tube(lp, lp + Vector3(0, 0.78, 0), 0.02, 5)
+	g.color("#9a9f9b", Geo.STEEL)
+	g.cbox(Vector3(1.37, Y0 + 0.82, -0.45), Vector3(0.78, 0.08, 2.0), 0.01)
+	for iz in 4:
+		var c := Vector3(1.37, Y0 + 0.87, -1.2 + iz * 0.5)
+		g.color("#6f7471", Geo.STEEL)
+		g.cyl(0.17, 0.17, 0.05, 16, Transform3D(Basis.IDENTITY, c + Vector3(-0.18, 0.025, 0)))
+		g.cyl(0.17, 0.17, 0.05, 16, Transform3D(Basis.IDENTITY, c + Vector3(0.18, 0.025, 0)))
+	g.color("#b4b8b4", Geo.STEEL)
+	g.rbox(Vector3(1.2, Y0 + 1.05, -0.45), Vector3(0.38, 0.01, 2.0), Vector3(0, 0, 35))
+	g.rbox(Vector3(1.54, Y0 + 1.05, -0.45), Vector3(0.38, 0.01, 2.0), Vector3(0, 0, -35))
+	g.color(STEEL, Geo.STEEL)
+	g.box(Vector3(1.37, Y0 + 1.16, -0.45), Vector3(0.1, 0.06, 2.0))
+	# steam pipework: boilers -> turbine hall -> condenser header
+	g.color("#d4d6d2", Geo.STEEL)
+	for k in 2:
+		var x: float = CC_X[k]
+		g.pipe([Vector3(x + 0.2, Y0 + 1.45, -0.38), Vector3(x + 0.2, Y0 + 1.6, -0.38), Vector3(x + 0.2, Y0 + 1.6, -1.45), Vector3(x + 0.2, Y0 + 0.8, -1.45)], 0.03)
+	g.pipe([Vector3(0.45, Y0 + 0.55, -1.45), Vector3(0.95, Y0 + 0.55, -1.45), Vector3(0.95, Y0 + 0.95, -1.45), Vector3(0.95, Y0 + 0.95, 0.55)], 0.05)
+	# gas pipeline (yellow) along the front into both turbine halls, valves
+	g.color(IR_G, Geo.PAINT)
+	g.pipe([Vector3(-1.85, Y0 + 0.07, 0.15), Vector3(-1.5, Y0 + 0.07, 0.15), Vector3(-1.5, Y0 + 0.07, 0.4), Vector3(0.7, Y0 + 0.07, 0.4)], 0.04)
+	for k in 2:
+		g.tube(Vector3(CC_X[k], Y0 + 0.07, 0.4), Vector3(CC_X[k], Y0 + 0.07, 0.45), 0.035, 8)
+	g.color("#c0392b", Geo.PAINT)
+	for x in [-1.3, -0.4, 0.5]:
+		g.cyl(0.035, 0.035, 0.04, 8, Transform3D(Basis.IDENTITY, Vector3(x, Y0 + 0.14, 0.4)))
+		g.tube(Vector3(x, Y0 + 0.11, 0.4), Vector3(x, Y0 + 0.2, 0.4), 0.008, 4)
+	# switchyard (front right) with transformers and a gantry
+	for i in 2:
+		var p := Vector3(0.95 + i * 0.42, Y0, 1.25)
+		g.color("#7a7f7a", Geo.STEEL)
+		g.cbox(p + Vector3(0, 0.11, 0), Vector3(0.28, 0.22, 0.3), 0.01)
+		g.color("#5d6163", Geo.STEEL)
+		for kk in 3:
+			g.box(p + Vector3(0.145, 0.11, -0.09 + kk * 0.09), Vector3(0.012, 0.17, 0.012))
+		g.insulator(p + Vector3(0, 0.22, 0), 0.08)
+	g.color(STEEL_L, Geo.STEEL)
+	for x in [0.85, 1.57]:
+		g.tube(Vector3(x, Y0, 1.6), Vector3(x, Y0 + 0.55, 1.6), 0.012, 4)
+	g.tube(Vector3(0.85, Y0 + 0.55, 1.6), Vector3(1.57, Y0 + 0.55, 1.6), 0.01, 4)
+	_fence(g, 1.9, 1.9, 0.4)
+	UM._roof_lights(g, [Vector3(CC_X[0], Y0 + 2.52, -1.2), Vector3(CC_X[1], Y0 + 2.52, -1.2)])
+
+## Condenser fans: 8 spinning rotors on the fan deck.
+static func _cc_fans(model: Node3D, root: Node3D, mat: Material) -> int:
+	var tris := 0
+	var i := 0
+	for iz in 4:
+		for sx in [-0.18, 0.18]:
+			var f = K.new()
+			f.color("#3a3d3c", Geo.STEEL)
+			for b in 3:
+				f.rbox(Vector3.ZERO, Vector3(0.3, 0.008, 0.05), Vector3(0, b * 60.0, 0))
+			f.cyl(0.03, 0.03, 0.03, 8, Transform3D.IDENTITY)
+			tris += f.tris
+			_part(model, root, mat, "Fan%d" % i, f, Vector3(1.37 + sx, Y0 + 0.9, -1.2 + iz * 0.5), "spin", {"speed": 5.0, "axis": "y"})
+			i += 1
+	return tris
 
 # ================================================================== Iran Oil Derrick (2 x 2)
 ## Replaces the Trade Exchange; smaller footprint, new design. A drilling mast over the well

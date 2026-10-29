@@ -145,7 +145,10 @@ func _animate(delta: float) -> void:
 		match a[1]:
 			"spin":
 				if live:
-					n.rotation.x = wrapf(n.rotation.x + delta * float(n.get_meta("speed", 1.0)), -PI, PI)
+					if n.get_meta("axis", "x") == "y":   # M3.3: fan rotors (combined-cycle condenser)
+						n.rotation.y = wrapf(n.rotation.y + delta * float(n.get_meta("speed", 1.0)), -PI, PI)
+					else:
+						n.rotation.x = wrapf(n.rotation.x + delta * float(n.get_meta("speed", 1.0)), -PI, PI)
 			"nod":
 				if live:
 					n.rotation.x = base.x + sin(_anim_t * float(n.get_meta("speed", 1.5))) * float(n.get_meta("amp", 0.2))

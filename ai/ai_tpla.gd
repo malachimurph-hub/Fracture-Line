@@ -143,8 +143,12 @@ func _next_building() -> StringName:
 		counts[b.def_id] = counts.get(b.def_id, 0) + 1
 	# M3.3: Iran runs on power now (Gas Turbine Plants): keep a little headroom ahead of the build list
 	var pw := me()
-	if counts.get(&"tpla_den", 0) > 0 and pw.power_prod - pw.power_used < 3 and pw.supply >= Content.building(&"tpla_gas_plant").cost:
-		return &"tpla_gas_plant"
+	if counts.get(&"tpla_den", 0) > 0 and pw.power_prod - pw.power_used < 3:
+		# M3.3: once the Defence Workshop is up and money allows, the Combined-Cycle Gas Plant
+		if counts.get(&"tpla_workshop", 0) > 0 and pw.supply >= Content.building(&"tpla_cc_plant").cost + 400:
+			return &"tpla_cc_plant"
+		if pw.supply >= Content.building(&"tpla_gas_plant").cost:
+			return &"tpla_gas_plant"
 	var desired := {}
 	for item in persona.opening:
 		var id := StringName(item)

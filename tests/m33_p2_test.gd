@@ -10,6 +10,7 @@ static func run(t: Node) -> void:
 	_barricade_crew(t)
 	_infantry_scale(t)
 	_new_models(t)
+	_cc_plant(t)
 
 # ------------------------------------------------------------------ builders at work (45 / 33 / 36)
 static func _builders(t: Node) -> void:
@@ -147,3 +148,44 @@ static func _new_models(t: Node) -> void:
 			modern = false
 		v.free()
 	t._check(modern, "Iran buildings use the modern paint pass")
+
+# ------------------------------------------------------------------ Iran Combined-Cycle Gas Plant (Malachi 2026-10-29)
+static func _cc_plant(t: Node) -> void:
+	var cc := Content.building(&"tpla_cc_plant")
+	var gt := Content.building(&"tpla_gas_plant")
+	var nuc := Content.building(&"us_reactor")
+	t._check(cc != null and cc.power == 19 and cc.cost == 1600 and cc.footprint == Vector2i(4, 4) and cc.prereqs.has("tpla_workshop"),
+		"Iran Combined-Cycle Gas Plant: $1,600, +19 power, 4x4, needs the Defence Workshop")
+	t._check(cc.power > gt.power and cc.cost > gt.cost and float(cc.power) / cc.cost < float(nuc.power) / nuc.cost
+		and float(cc.power) / (cc.footprint.x * cc.footprint.y) < float(nuc.power) / (nuc.footprint.x * nuc.footprint.y),
+		"it out-powers the Gas Turbine Plant but is less efficient than the US nuclear plant (per $ and per tile)")
+	var order: Array = Content.faction(&"tpla")["buildings"]
+	t._check(order.has(&"tpla_cc_plant") and order.find(&"tpla_cc_plant") == order.find(&"tpla_gas_plant") + 1, "it sits next to the Gas Turbine Plant in Iran's build list")
+	t._check(TranslationServer.translate(cc.name_key) == "Combined-Cycle Gas Plant" and TranslationServer.translate(cc.desc_key) != cc.desc_key, "it has a name and an info-card description")
+	var v: Node = load(cc.view_scene).instantiate()
+	var fans := 0
+	for n in v.find_children("Fan*", "MeshInstance3D", true, false):
+		if n.get_meta("anim", "") == "spin":
+			fans += 1
+	t._check(fans == 8 and v.find_child("Stack0", true, false) != null and v.find_child("Stack1", true, false) != null and v.get("footprint") == Vector2(4, 4),
+		"its model has two smoking stacks and 8 spinning condenser fans (%d)" % fans)
+	v.free()
+	# in a match: locked until the workshop, then +19 power; the AI picks it when it can
+	var r := M33._runner(["tpla", "ecc"])
+	var w := r.sim
+	var hq := M33._hq(w, 0)
+	w.players[0].supply = 20000
+	t._check(w.prereqs_met(0, cc.prereqs) == "tpla_workshop", "locked until a Defence Workshop is built")
+	for id in [&"tpla_camp", &"tpla_chop_shop", &"tpla_workshop"]:
+		w._place_building(Content.building(id), 0, M33.spot(w, 0, id, hq.tile), 0, true)
+	for i in 3:
+		r.advance()
+	var ai := AITpla.new()
+	ai.init(r, 0, "normal", &"tpla_scrapjack")
+	t._check(w.prereqs_met(0, cc.prereqs) == "" and ai._next_building() == &"tpla_cc_plant", "the Iran AI builds it once the workshop is up and power runs short")
+	var p0: SimPlayer = w.players[0]
+	var before := p0.power_prod
+	w._place_building(cc, 0, M33.spot(w, 0, &"tpla_cc_plant", hq.tile), 0, true)
+	for i in 12:
+		r.advance()
+	t._check(p0.power_prod - before == 19 and not p0.low_power, "a Combined-Cycle plant adds 19 power (%d -> %d)" % [before, p0.power_prod])

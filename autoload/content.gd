@@ -30,7 +30,7 @@ const US_BUILDING_ORDER := [&"us_command", &"us_reactor", &"us_supply_center", &
 ## single soldiers). Engineer, Cargo Truck and every building are stand-ins until his list covers them.
 const ECC_UNIT_ORDER := [&"ecc_engineer", &"ecc_cargo_truck", &"ecc_rifleman", &"ecc_machine_gunner", &"ecc_rpg", &"ecc_infiltrator", &"ecc_saboteur", &"ecc_tigr", &"ecc_btr", &"ecc_typhoon", &"ecc_t90", &"ecc_zeus", &"ecc_msta", &"ecc_ka52", &"ecc_su57", &"ecc_tu160"]
 const ECC_BUILDING_ORDER := [&"ecc_hq", &"ecc_power", &"ecc_depot", &"ecc_barracks", &"ecc_factory", &"ecc_airfield", &"ecc_ministry", &"ecc_black_market", &"ecc_bunker", &"ecc_aa_site", &"ecc_sandbags", &"ecc_barricade"]
-const TPLA_BUILDING_ORDER := [&"tpla_den", &"tpla_gas_plant", &"tpla_stash", &"tpla_camp", &"tpla_chop_shop", &"tpla_tunnel", &"tpla_workshop", &"tpla_bazaar", &"tpla_demo_trap", &"tpla_camo_net", &"tpla_wasp_nest", &"tpla_airfield", &"tpla_sandbags", &"tpla_barricade"]
+const TPLA_BUILDING_ORDER := [&"tpla_den", &"tpla_gas_plant", &"tpla_cc_plant", &"tpla_stash", &"tpla_camp", &"tpla_chop_shop", &"tpla_tunnel", &"tpla_workshop", &"tpla_bazaar", &"tpla_demo_trap", &"tpla_camo_net", &"tpla_wasp_nest", &"tpla_airfield", &"tpla_sandbags", &"tpla_barricade"]
 
 ## Playable factions (skirmish). "power": whether the faction uses the power economy.
 const FACTIONS := {
