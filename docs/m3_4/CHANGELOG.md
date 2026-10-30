@@ -127,3 +127,9 @@ From Malachi's play-test of 0.3.5.
   If the frame rate stays under 22 fps for 4 s it fades out and the static key art stays for the
   rest of the session; the Low preset and the compatibility renderer always use the key art.
 - A subtle dark vignette behind the buttons keeps them and the emblem readable.
+
+## Campaign (coming soon)
+
+- New **Campaign** entry on the main menu, under Skirmish and styled like the other buttons
+  (dimmed), with a small "Coming soon" line under it. Tapping it shows a "Campaign: coming soon"
+  toast; nothing else happens yet.

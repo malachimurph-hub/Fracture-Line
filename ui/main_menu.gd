@@ -1,6 +1,6 @@
 extends ScreenBase
-## Main menu: Skirmish, Continue (suspended match), Settings, Credits/About,
-## Quit. M3.4: a live battle plays behind it (ui/menu_battle.gd) over the key art.
+## Main menu: Skirmish, Continue (suspended match), Campaign (coming soon), Settings,
+## Credits/About, Quit. M3.4: a live battle plays behind it (ui/menu_battle.gd) over the key art.
 
 func build() -> void:
 	get_tree().set_auto_accept_quit(true)
@@ -38,6 +38,21 @@ func build() -> void:
 			lb.name = "Load"
 			lb.pressed.connect(func(): GameSession.goto("res://ui/load_screen.tscn"))
 			row.add_child(lb)
+	# M3.4: Campaign, styled like the others, with a small "Coming soon" line; a tap says so
+	var camp := VBoxContainer.new()
+	camp.name = "CampaignEntry"
+	camp.add_theme_constant_override("separation", 0)
+	right.add_child(camp)
+	var cb := UiTheme.button(tr("MENU_CAMPAIGN"), Vector2(260, 52))
+	cb.name = "Campaign"
+	cb.modulate = Color(1, 1, 1, 0.72)
+	cb.pressed.connect(_campaign_soon)
+	camp.add_child(cb)
+	var soon := _shadowed(UiTheme.label(tr("MENU_COMING_SOON"), 11, UiTheme.GOLD), 3)
+	soon.name = "CampaignSoon"
+	soon.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	soon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	camp.add_child(soon)
 	var mb := UiTheme.button(tr("MENU_MAP_BUILDER"), Vector2(260, 52))   # M2.8
 	mb.pressed.connect(func(): GameSession.goto("res://ui/map_builder.tscn"))
 	right.add_child(mb)
@@ -350,6 +365,26 @@ func _exit_tree() -> void:
 	if _old_fps >= 0:
 		Engine.max_fps = _old_fps
 		_old_fps = -1
+
+## M3.4: "Coming soon" toast for the Campaign entry.
+var _toast: Label
+func _campaign_soon() -> void:
+	if _toast == null:
+		_toast = _shadowed(UiTheme.label(tr("MENU_CAMPAIGN_SOON_TOAST"), 16, UiTheme.GOLD.lightened(0.1)), 6)
+		_toast.name = "Toast"
+		_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_toast.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_toast.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+		_toast.anchor_left = 0.0
+		_toast.anchor_right = 1.0
+		_toast.offset_top = -72
+		_toast.offset_bottom = -40
+		add_child(_toast)
+	_toast.modulate.a = 1.0
+	_toast.visible = true
+	var tw := create_tween()
+	tw.tween_interval(1.6)
+	tw.tween_property(_toast, "modulate:a", 0.0, 0.5)
 
 func _continue() -> void:
 	var d := SaveSystem.load_suspend()

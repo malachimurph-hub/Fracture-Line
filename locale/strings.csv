@@ -6,6 +6,9 @@ MENU_SKIRMISH,Skirmish
 MENU_CONTINUE,Continue suspended match
 MENU_SETTINGS,Settings
 MENU_MAP_BUILDER,Map Builder
+MENU_CAMPAIGN,Campaign
+MENU_COMING_SOON,Coming soon
+MENU_CAMPAIGN_SOON_TOAST,Campaign: coming soon
 LOBBY_CUSTOM_TAG,  · custom
 MENU_CREDITS,Credits / About
 MENU_QUIT,Quit

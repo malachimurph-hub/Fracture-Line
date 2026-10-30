@@ -1,7 +1,7 @@
 ## M3.4 (Malachi's 0.3.5 play-test): night lights that follow the vehicles' real headlights every
 ## frame, floodlights on buildings instead of a glow round them, and the infantry overhaul.
 ## Also the Minerals Mining excavator's pack-up animation (_mine_packup), income popups, the live
-## menu battle (_menu_battle).
+## menu battle (_menu_battle) and the Campaign 'Coming soon' entry (_menu_campaign).
 extends RefCounted
 const M33 := preload("res://tests/m33_test.gd")
 
@@ -13,6 +13,7 @@ static func run(t: Node) -> void:
 	_mine_packup(t)
 	_income_popups(t)
 	await _menu_battle(t)
+	await _menu_campaign(t)
 	if ResourceLoader.exists("res://tests/m34_inf_test.gd"):
 		await load("res://tests/m34_inf_test.gd").run(t)
 
@@ -458,6 +459,26 @@ static func _menu_battle(t: Node) -> void:
 	var src := FileAccess.get_file_as_string("res://ui/main_menu.gd")
 	t._check(src.contains("Engine.max_fps = 30") and src.contains("scaling_3d_scale = 0.67") and src.contains("drop_live_battle") and src.contains("live_off = true"), "phones: 30 fps cap, 67% render scale, and a fall-back to the key art when the frame rate drops")
 	t._check(MenuBattle.FX_MUL < 1.0 and MenuBattle.MAX_SIDE <= 16, "lighter effects and a unit cap behind the menu")
+
+# ------------------------------------------------------------------ Campaign "Coming soon"
+static func _menu_campaign(t: Node) -> void:
+	var menu: Control = (load("res://ui/main_menu.tscn") as PackedScene).instantiate()
+	t.add_child(menu)
+	await t.get_tree().process_frame
+	var cb := menu.find_child("Campaign", true, false) as Button
+	var soon := menu.find_child("CampaignSoon", true, false) as Label
+	t._check(cb != null and soon != null and soon.text == "Coming soon", "the menu has a Campaign entry with a small 'Coming soon' line")
+	if cb != null:
+		t._check(cb.text == "Campaign" and cb.custom_minimum_size == Vector2(260, 52), "Campaign is styled like the other menu buttons")
+		var scene0 := t.get_tree().current_scene
+		cb.pressed.emit()
+		await t.get_tree().process_frame
+		var toast := menu.find_child("Toast", true, false) as Label
+		t._check(toast != null and toast.visible and toast.text.contains("coming soon"), "tapping Campaign says it is coming soon")
+		t._check(menu.is_inside_tree() and t.get_tree().current_scene == scene0, "and starts nothing")
+	t._check(menu.find_child("BattleBackdrop", true, false) == null and menu.find_child("KeyArt", true, false) != null, "headless: the static key art backdrop")
+	menu.queue_free()
+	await t.get_tree().process_frame
 
 ## fl_night as set (the headless renderer keeps no globals: then the menu battle's own flag is used)
 static func _gnight_is(v: float) -> bool:
