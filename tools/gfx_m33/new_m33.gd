@@ -36,7 +36,7 @@ static func jobs() -> Dictionary:
 		"tpla_cc_plant": func() -> void: _make("cc_plant", Vector2(4, 4), 2.6, "tpla", _cc_plant, _cc_fans, [Vector3(-0.95, 2.62, -1.2), Vector3(0.15, 2.62, -1.2)]),
 		"tpla_bazaar": func() -> void: _make("bazaar", Vector2(2, 2), 1.5, "tpla", _derrick, _pumpjack),
 		"eu_exchange": func() -> void: _make("exchange", Vector2(3, 3), 1.0, "eu", _auto_plant, Callable(), [Vector3(1.05, 1.15, -0.95)]),
-		"ecc_black_market": func() -> void: _make("black_market", Vector2(3, 3), 2.0, "ecc", _excavator, _bucket_wheel),
+		"ecc_black_market": func() -> void: _make("black_market", Vector2(3, 3), 2.0, "ecc", _excavator, _excavator_parts),
 		"ecc_bunker": func() -> void: _make("bunker", Vector2(2, 2), 0.45, "ecc", _silo, _silo_doors),
 	}
 
@@ -647,6 +647,13 @@ static func _auto_plant(g) -> void:
 const BW_Y := "#d9a42c"
 const BW_O := "#c8742a"
 const BW_G := "#6d716f"
+## M3.4 pack-up rig (Malachi: "Pack up animation for Russian minerals mining"): pivots in model space.
+const EXC_HUB := Vector3(0, Y0 + 1.3, 1.62)
+const EXC_FOOT := Vector3(0, Y0 + 0.95, 0.35)
+const EXC_CW := Vector3(0, Y0 + 1.15, -1.45)
+const EXC_TOP := Vector3(0, Y0 + 2.05, -0.25)
+const EXC_D0 := Vector3(0.45, Y0 + 0.9, -0.3)
+const EXC_D1 := Vector3(1.55, Y0 + 0.6, -0.95)
 ## Box girder from a to b (w wide, h deep), the long axis along a->b.
 static func _beam(g, a: Vector3, b: Vector3, w: float, h: float, ch := 0.01) -> void:
 	var d := b - a
@@ -691,9 +698,39 @@ static func _excavator(g) -> void:
 		g.box(Vector3(s * 0.453, Y0 + 0.72, -0.1), Vector3(0.006, 0.08, 0.7))
 	g.color("#5d6163", Geo.STEEL)
 	g.vent(Vector3(0, Y0 + 0.75, -0.605), 0.6, 0.25, 6)
+	# counterweight boom + ballast box (the main boom, A-frame mast, stays, discharge conveyor,
+	# spoil heaps and stabiliser jacks are separate pack-up parts: _excavator_parts)
+	var cw := EXC_CW
+	g.color(BW_Y, Geo.PAINT)
+	for s in [-1.0, 1.0]:
+		g.tube(Vector3(s * 0.2, Y0 + 1.0, -0.5), cw + Vector3(s * 0.2, 0, 0.1), 0.03, 6)
+		g.tube(Vector3(s * 0.2, Y0 + 0.8, -0.55), cw + Vector3(s * 0.2, -0.15, 0.1), 0.02, 6)
+	g.color("#7d7a6f", Geo.CONCRETE)
+	g.cbox(cw + Vector3(0, -0.08, 0), Vector3(0.5, 0.3, 0.32), 0.02)
+	# walkways + handrails on the house roof
+	g.color("#e8d34a", Geo.PAINT)
+	g.rail([Vector3(-0.44, Y0 + 1.05, -0.58), Vector3(0.44, Y0 + 1.05, -0.58), Vector3(0.44, Y0 + 1.05, 0.38), Vector3(-0.44, Y0 + 1.05, 0.38), Vector3(-0.44, Y0 + 1.05, -0.58)], 0.08)
+	g.color("#ff9a2a", Geo.LAMP)
+	g.cbox(Vector3(0.4, Y0 + 1.1, 0.35), Vector3(0.04, 0.04, 0.04), 0.01)
+
+## M3.4: the moving parts of the excavator, each its own mesh in model space (node at the
+## origin, so the baked surface box still lines up) with pack-up metadata for PackRig:
+##   pack_pivot / pack_axis / pack_deg: rotation about the pivot when fully packed
+##   pack_move: extra offset when packed; pack_t: (start, end) of its phase in 0..1
+##   pack_hide: hidden from this pack fraction on (the stay cables are unhooked first)
+## Packing order (reverse of setting up): wheel spins down, stays unhooked, discharge conveyor
+## swings in along the house, the bucket-wheel boom lowers and draws in, the A-frame mast folds
+## back over the counterweight, the spoil is levelled and the stabiliser jacks lift and retract.
+static func _excavator_parts(model: Node3D, root: Node3D, mat: Material) -> int:
+	var tris := _bucket_wheel(model, root, mat)
+	_pack(model.get_node("BucketWheel"), EXC_FOOT, Vector3.RIGHT, 12.0, Vector3(0, 0, -0.22), 0.22, 0.58)
+	model.get_node("BucketWheel").set_meta("pack_spin", true)
+	var hub := EXC_HUB
+	var foot := EXC_FOOT
+	var cw := EXC_CW
+	var top := EXC_TOP
 	# main boom: two heavy box girders from the house up to the wheel hub, cross-braced
-	var hub := Vector3(0, Y0 + 1.3, 1.62)
-	var foot := Vector3(0, Y0 + 0.95, 0.35)
+	var g = K.new()
 	var hb := hub + Vector3(0, 0, -0.32)
 	g.color(BW_Y, Geo.PAINT)
 	for s in [-1.0, 1.0]:
@@ -707,45 +744,83 @@ static func _excavator(g) -> void:
 	g.color(BW_G, Geo.STEEL)   # boom conveyor belt down the middle
 	g.box((foot + hub) * 0.5 + Vector3(0, 0.06, -0.15), Vector3(0.14, 0.02, foot.distance_to(hub) - 0.2))
 	g.cbox(hub + Vector3(0, 0, -0.22), Vector3(0.36, 0.2, 0.2), 0.02)   # wheel drive housing
-	# counterweight boom + ballast box
-	var cw := Vector3(0, Y0 + 1.15, -1.45)
-	g.color(BW_Y, Geo.PAINT)
+	tris += g.tris
+	_pack(VK._mi(model, root, "Boom", g.commit(mat)), foot, Vector3.RIGHT, 12.0, Vector3(0, 0, -0.22), 0.22, 0.58)
+	# A-frame mast (folds back about its rear feet)
+	var m = K.new()
+	m.color(BW_O, Geo.PAINT)
 	for s in [-1.0, 1.0]:
-		g.tube(Vector3(s * 0.2, Y0 + 1.0, -0.5), cw + Vector3(s * 0.2, 0, 0.1), 0.03, 6)
-		g.tube(Vector3(s * 0.2, Y0 + 0.8, -0.55), cw + Vector3(s * 0.2, -0.15, 0.1), 0.02, 6)
-	g.color("#7d7a6f", Geo.CONCRETE)
-	g.cbox(cw + Vector3(0, -0.08, 0), Vector3(0.5, 0.3, 0.32), 0.02)
-	# A-frame mast with stay cables to both booms
-	var top := Vector3(0, Y0 + 2.05, -0.25)
-	g.color(BW_O, Geo.PAINT)
+		m.tube(Vector3(s * 0.32, Y0 + 1.02, 0.1), top + Vector3(s * 0.05, 0, 0), 0.028, 6)
+		m.tube(Vector3(s * 0.32, Y0 + 1.02, -0.5), top + Vector3(s * 0.05, 0, 0), 0.028, 6)
+	m.color(STEEL, Geo.STEEL)
+	m.cyl(0.035, 0.035, 0.7, 8, Transform3D(Basis(Vector3.FORWARD, PI * 0.5), Vector3(0, Y0 + 1.04, -0.5)))   # hinge pin
+	m.color("#ff3020", Geo.LAMP)
+	m.cbox(top + Vector3(0, 0.04, 0), Vector3(0.05, 0.04, 0.05), 0.01)
+	tris += m.tris
+	_pack(VK._mi(model, root, "Mast", m.commit(mat)), Vector3(0, Y0 + 1.04, -0.5), Vector3.RIGHT, -76.0, Vector3(0, -0.04, 0), 0.45, 0.78)
+	# stay cables from the mast head to both booms (unhooked before anything moves)
+	var c2 = K.new()
+	c2.color("#2b2d2c", Geo.STEEL)
 	for s in [-1.0, 1.0]:
-		g.tube(Vector3(s * 0.32, Y0 + 1.02, 0.1), top + Vector3(s * 0.05, 0, 0), 0.028, 6)
-		g.tube(Vector3(s * 0.32, Y0 + 1.02, -0.5), top + Vector3(s * 0.05, 0, 0), 0.028, 6)
-	g.color("#2b2d2c", Geo.STEEL)
-	for s in [-1.0, 1.0]:
-		g.tube(top + Vector3(s * 0.05, 0, 0), hub + Vector3(s * 0.15, 0.25, -0.35), 0.006, 3)
-		g.tube(top + Vector3(s * 0.05, 0, 0), foot.lerp(hub, 0.5) + Vector3(s * 0.16, 0.25, 0), 0.006, 3)
-		g.tube(top + Vector3(s * 0.05, 0, 0), cw + Vector3(s * 0.2, 0.1, 0), 0.006, 3)
-	g.color("#ff3020", Geo.LAMP)
-	g.cbox(top + Vector3(0, 0.04, 0), Vector3(0.05, 0.04, 0.05), 0.01)
-	# discharge conveyor boom to the right, ending over a spoil heap
-	var d0 := Vector3(0.45, Y0 + 0.9, -0.3)
-	var d1 := Vector3(1.55, Y0 + 0.6, -0.95)
-	g.color(BW_Y, Geo.PAINT)
+		c2.tube(top + Vector3(s * 0.05, 0, 0), hub + Vector3(s * 0.15, 0.25, -0.35), 0.006, 3)
+		c2.tube(top + Vector3(s * 0.05, 0, 0), foot.lerp(hub, 0.5) + Vector3(s * 0.16, 0.25, 0), 0.006, 3)
+		c2.tube(top + Vector3(s * 0.05, 0, 0), cw + Vector3(s * 0.2, 0.1, 0), 0.006, 3)
+	tris += c2.tris
+	var st := VK._mi(model, root, "Stays", c2.commit(mat))
+	_pack(st, Vector3.ZERO, Vector3.UP, 0.0, Vector3.ZERO, 0.0, 0.2)
+	st.set_meta("pack_hide", 0.2)
+	# discharge conveyor boom to the right, swings in along the house side
+	var d = K.new()
+	var d0 := EXC_D0
+	var d1 := EXC_D1
+	d.color(BW_Y, Geo.PAINT)
 	for s in [-0.06, 0.06]:
-		g.tube(d0 + Vector3(0, 0, s), d1 + Vector3(0, 0, s), 0.02, 5)
-	g.color(BW_G, Geo.STEEL)
-	g.box((d0 + d1) * 0.5 + Vector3(0, 0.04, 0), Vector3(0.1, 0.015, 0.1))
-	g.tube(d0 + Vector3(0, 0.04, 0), d1 + Vector3(0, 0.04, 0), 0.04, 6)
-	g.color("#3b3428", Geo.SANDBAG)
-	g.lathe([[Y0, 0.42], [Y0 + 0.22, 0.18], [Y0 + 0.3, 0.0]], 10, Transform3D(Basis.IDENTITY, Vector3(1.5, 0, -1.0)))
-	g.color("#2c271f", Geo.SANDBAG)
-	g.lathe([[Y0, 0.3], [Y0 + 0.14, 0.12], [Y0 + 0.2, 0.0]], 9, Transform3D(Basis.IDENTITY, Vector3(-1.2, 0, 1.25)))
-	# walkways + handrails on the house roof
-	g.color("#e8d34a", Geo.PAINT)
-	g.rail([Vector3(-0.44, Y0 + 1.05, -0.58), Vector3(0.44, Y0 + 1.05, -0.58), Vector3(0.44, Y0 + 1.05, 0.38), Vector3(-0.44, Y0 + 1.05, 0.38), Vector3(-0.44, Y0 + 1.05, -0.58)], 0.08)
-	g.color("#ff9a2a", Geo.LAMP)
-	g.cbox(Vector3(0.4, Y0 + 1.1, 0.35), Vector3(0.04, 0.04, 0.04), 0.01)
+		d.tube(d0 + Vector3(0, 0, s), d1 + Vector3(0, 0, s), 0.02, 5)
+	d.color(BW_G, Geo.STEEL)
+	d.box((d0 + d1) * 0.5 + Vector3(0, 0.04, 0), Vector3(0.1, 0.015, 0.1))
+	d.tube(d0 + Vector3(0, 0.04, 0), d1 + Vector3(0, 0.04, 0), 0.04, 6)
+	d.cbox(d0 + Vector3(-0.02, 0.0, 0), Vector3(0.12, 0.1, 0.16), 0.015)   # slew joint
+	tris += d.tris
+	_pack(VK._mi(model, root, "Conveyor", d.commit(mat)), d0, Vector3.UP, 58.0, Vector3(0, 0.06, 0), 0.06, 0.32)
+	# spoil heaps (levelled into the pad as it leaves; not carried by the vehicle)
+	var sp = K.new()
+	sp.color("#3b3428", Geo.SANDBAG)
+	sp.lathe([[Y0, 0.42], [Y0 + 0.22, 0.18], [Y0 + 0.3, 0.0]], 10, Transform3D(Basis.IDENTITY, Vector3(1.5, 0, -1.0)))
+	sp.color("#2c271f", Geo.SANDBAG)
+	sp.lathe([[Y0, 0.3], [Y0 + 0.14, 0.12], [Y0 + 0.2, 0.0]], 9, Transform3D(Basis.IDENTITY, Vector3(-1.2, 0, 1.25)))
+	tris += sp.tris
+	_pack(VK._mi(model, root, "Spoil", sp.commit(mat)), Vector3.ZERO, Vector3.UP, 0.0, Vector3(0, -0.34, 0), 0.6, 1.0)
+	# four stabiliser jacks: box outrigger, hydraulic ram, ground pad; retracted last
+	var jacks := [[Vector3(0.48, 0, -0.35), Vector3(1.3, 0, -0.35)], [Vector3(-0.48, 0, -0.35), Vector3(-1.3, 0, -0.35)],
+		[Vector3(0.25, 0, 0.62), Vector3(0.25, 0, 1.3)], [Vector3(-0.25, 0, 0.62), Vector3(-0.25, 0, 1.3)]]
+	for i in jacks.size():
+		var a: Vector3 = jacks[i][0] + Vector3(0, Y0 + 0.3, 0)
+		var b: Vector3 = jacks[i][1] + Vector3(0, Y0 + 0.3, 0)
+		var dir: Vector3 = (b - a).normalized()
+		var j = K.new()
+		j.color(BW_G, Geo.STEEL)
+		_beam(j, a, b, 0.11, 0.09)
+		j.cbox(a, Vector3(0.14, 0.14, 0.14), 0.02)   # hinge block
+		j.color(BW_O, Geo.PAINT)
+		j.cbox(b, Vector3(0.13, 0.12, 0.13), 0.015)   # ram housing
+		j.color(STEEL_L, Geo.STEEL)
+		j.tube(b, Vector3(b.x, Y0 + 0.05, b.z), 0.03, 8)   # ram
+		j.color("#3a3c3a", Geo.STEEL)
+		j.cbox(Vector3(b.x, Y0 + 0.03, b.z), Vector3(0.22, 0.05, 0.22), 0.012)   # pad
+		j.color("#e8d34a", Geo.PAINT)
+		j.box(a.lerp(b, 0.6) + Vector3(0, 0.046, 0), Vector3(0.1 if absf(dir.x) < 0.5 else 0.12, 0.004, 0.12 if absf(dir.x) < 0.5 else 0.1))
+		tris += j.tris
+		var ax := Vector3.UP.cross(dir).normalized()   # pad lifts (outer end up a little) ...
+		# ... and the outrigger telescopes in under the turntable
+		_pack(VK._mi(model, root, "Jack%d" % i, j.commit(mat)), a, ax, -12.0, -dir * 0.52 + Vector3(0, 0.07, 0), 0.72 + 0.04 * float(i % 2), 0.95)
+	return tris
+
+static func _pack(n: Node3D, pivot: Vector3, axis: Vector3, deg: float, move: Vector3, t0: float, t1: float) -> void:
+	n.set_meta("pack_pivot", pivot)
+	n.set_meta("pack_axis", axis)
+	n.set_meta("pack_deg", deg)
+	n.set_meta("pack_move", move)
+	n.set_meta("pack_t", Vector2(t0, t1))
 
 static func _bucket_wheel(model: Node3D, root: Node3D, mat: Material) -> int:
 	var w = K.new()

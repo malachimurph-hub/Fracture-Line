@@ -30,6 +30,10 @@ var under_construction := false
 var anim_parts: Array = []      ## M3.3: [node, kind, base rotation] - "spin" / "nod" / "door"
 var _anim_t := 0.0
 var _door_t := 0.0              ## seconds the silo hatch stays open after a launch
+var pack_rig: PackRig           ## M3.4: Minerals Mining excavator pack-up parts (null elsewhere)
+var pack_target := 0.0          ## WorldView: MineSys pack-up progress 0..1
+var pack_k := -1.0              ## shown pose (eases after the target; -1 = not posed yet)
+var _spin := 0.0
 
 func _ready() -> void:
 	super._ready()
@@ -45,6 +49,24 @@ func _ready() -> void:
 	for c in get_node("Model").get_children():
 		if c is Node3D and c.has_meta("anim"):
 			anim_parts.append([c, String(c.get_meta("anim")), (c as Node3D).rotation])
+	pack_rig = PackRig.from(get_node("Model"))
+	if pack_rig != null:
+		pack_rig.pose(0.0)
+
+## M3.4: pack-up progress from the sim (0 = set up, 1 = about to drive off). The pose follows
+## it smoothly (a cancelled pack-up eases back out); the first call snaps (a loaded save).
+func set_pack(k: float) -> void:
+	pack_target = clampf(k, 0.0, 1.0)
+	if pack_k < 0.0:
+		pack_k = pack_target
+		if pack_rig != null:
+			pack_rig.pose(pack_k, _spin)
+
+func _pack_step(delta: float) -> void:
+	if pack_k < 0.0:
+		pack_k = pack_target
+	pack_k = move_toward(pack_k, pack_target, delta * 0.6)
+	pack_rig.pose(pack_k, _spin)
 
 func _gather(n: Node) -> void:
 	for c in n.get_children():
@@ -144,7 +166,9 @@ func _animate(delta: float) -> void:
 		var base: Vector3 = a[2]
 		match a[1]:
 			"spin":
-				if live:
+				if live and pack_rig != null and n.has_meta("pack_pivot"):   # M3.4: the rig places the wheel
+					_spin = wrapf(_spin + delta * float(n.get_meta("speed", 1.0)) * PackRig.spin_factor(maxf(pack_k, 0.0)), -PI, PI)
+				elif live:
 					if n.get_meta("axis", "x") == "y":   # M3.3: fan rotors (combined-cycle condenser)
 						n.rotation.y = wrapf(n.rotation.y + delta * float(n.get_meta("speed", 1.0)), -PI, PI)
 					else:
@@ -155,6 +179,8 @@ func _animate(delta: float) -> void:
 			"door":
 				var want := deg_to_rad(float(n.get_meta("open_deg", 90.0))) if _door_t > 0.0 else 0.0
 				n.rotation.z = move_toward(n.rotation.z, base.z + want, delta * (5.0 if _door_t > 0.0 else 1.6))
+	if pack_rig != null:
+		_pack_step(delta)
 
 func _process(delta: float) -> void:
 	if not anim_parts.is_empty() and _state < 3 and is_visible_in_tree():

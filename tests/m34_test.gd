@@ -1,5 +1,6 @@
 ## M3.4 (Malachi's 0.3.5 play-test): night lights that follow the vehicles' real headlights every
 ## frame, floodlights on buildings instead of a glow round them, and the infantry overhaul.
+## Also the Minerals Mining excavator's pack-up animation (_mine_packup).
 extends RefCounted
 const M33 := preload("res://tests/m33_test.gd")
 
@@ -8,6 +9,7 @@ static func run(t: Node) -> void:
 	_beams_every_frame(t)
 	_floodlights(t)
 	_structure_fill(t)
+	_mine_packup(t)
 	if ResourceLoader.exists("res://tests/m34_inf_test.gd"):
 		await load("res://tests/m34_inf_test.gd").run(t)
 
@@ -181,3 +183,126 @@ static func _structure_fill(t: Node) -> void:
 	t._check(ProjectSettings.has_setting("shader_globals/fl_fill"), "fl_fill is a project shader global")
 	var mt := FileAccess.get_file_as_string("res://match/match.gd")
 	t._check(mt.contains("MapEnv.model_fill(menv)") and mt.contains("\"fl_fill\", Vector4.ZERO"), "the match sets the fill for its map and clears it on the way out")
+
+# ------------------------------------------------------------------ Minerals Mining pack-up animation
+## Malachi: "Pack up animation for Russian minerals mining". The sim already has a 10 s pack-up
+## (and a 10 s set-up); the view now plays it: wheel stops, stays unhooked, conveyor swings in,
+## boom lowers and draws in, mast folds, spoil levelled, stabiliser jacks retract. View only.
+static func _aabb_of(n: Node3D) -> AABB:
+	return n.transform * (n as MeshInstance3D).mesh.get_aabb()
+
+static func _mine_packup(t: Node) -> void:
+	t._check(MineSys.PACK_MS == 10000 and FX.ms_to_ticks(MineSys.PACK_MS) == 200, "the sim's pack-up stays 10 s (200 ticks): the animation is timed to it, no sim change")
+	var r := M33._runner(["ecc", "us"])
+	var w := r.sim
+	var ref := M33._runner(["ecc", "us"])   # the same match without a view: the animation must not touch the sim
+	var wv := WorldView.new()
+	t.add_child(wv)
+	wv.setup(r, 0)
+	var hq := M33._hq(w, 0)
+	var st := M33.spot(w, 0, &"ecc_black_market", hq.tile + Vector2i(6, 0))
+	var b := w._place_building(Content.building(&"ecc_black_market"), 0, st, 0, true)
+	var b2 := ref.sim._place_building(Content.building(&"ecc_black_market"), 0, st, 0, true)
+	wv._ensure_view(b)
+	var v := wv.views[b.id] as BuildingView
+	var rig: PackRig = v.pack_rig if v != null else null
+	t._check(rig != null, "the excavator view has a pack-up rig")
+	if rig == null:
+		t.remove_child(wv)
+		wv.free()
+		return
+	var names := {}
+	for p in rig.parts:
+		names[String((p[0] as Node).name)] = p[0]
+	var want := ["BucketWheel", "Boom", "Mast", "Stays", "Conveyor", "Spoil", "Jack0", "Jack1", "Jack2", "Jack3"]
+	var missing: Array = want.filter(func(n): return not names.has(n))
+	t._check(missing.is_empty(), "rig parts: wheel, boom, mast, stays, conveyor, spoil and four stabiliser jacks%s" % ("" if missing.is_empty() else " (missing %s)" % str(missing)))
+	if not missing.is_empty():
+		t.remove_child(wv)
+		wv.free()
+		return
+	wv.frame(0.0, 0.05)
+	t._check(v.pack_target == 0.0 and v.pack_k == 0.0, "set up: the rig rests in the digging pose")
+	rig.pose(0.0)
+	var rest := {}
+	for n in names:
+		rest[n] = _aabb_of(names[n])
+	# packed pose: every part where it should be
+	rig.pose(1.0)
+	# reference points on the parts (model space, as the generator built them)
+	var top := Vector3(0, 2.13, -0.25)          # mast head
+	var hub := Vector3(0, 1.38, 1.62)           # wheel hub, boom tip
+	var dend := Vector3(1.55, 0.68, -0.95)      # discharge conveyor end
+	var mast_drop: float = top.y - ((names["Mast"] as Node3D).transform * top).y
+	var hub1: Vector3 = (names["Boom"] as Node3D).transform * hub
+	var wheel1: Vector3 = (names["BucketWheel"] as Node3D).position
+	var conv_x: float = ((names["Conveyor"] as Node3D).transform * dend).x
+	var spoil_down: bool = _aabb_of(names["Spoil"]).end.y < 0.1
+	var jacks_in := true
+	for i in 4:
+		var c0: Vector3 = (rest["Jack%d" % i] as AABB).get_center()
+		var c1: Vector3 = _aabb_of(names["Jack%d" % i]).get_center()
+		jacks_in = jacks_in and Vector2(c1.x, c1.z).length() < Vector2(c0.x, c0.z).length() - 0.4 and _aabb_of(names["Jack%d" % i]).position.y > (rest["Jack%d" % i] as AABB).position.y + 0.04
+	t._check(mast_drop > 0.4 and hub1.y < hub.y - 0.15 and hub1.z < hub.z - 0.1 and wheel1.distance_to(hub1) < 0.01,
+		"packed: mast folded (head %.2f lower), boom lowered and drawn in (tip %s), the wheel stays on it" % [mast_drop, hub1])
+	t._check(conv_x < dend.x - 0.6 and spoil_down and not (names["Stays"] as Node3D).visible, "packed: conveyor swung in (end x %.2f), spoil levelled, stays unhooked" % conv_x)
+	t._check(jacks_in, "packed: the stabiliser jacks lift off the ground and retract under the turntable")
+	# the reverse of setting up: conveyor first, boom, mast, jacks last
+	rig.pose(0.15)
+	var early_ok: bool = ((names["Conveyor"] as Node3D).transform * dend).x < dend.x - 0.05 and _aabb_of(names["Jack0"]).is_equal_approx(rest["Jack0"]) and _aabb_of(names["Mast"]).is_equal_approx(rest["Mast"]) and _aabb_of(names["Boom"]).is_equal_approx(rest["Boom"])
+	rig.pose(0.6)
+	var mid_ok: bool = ((names["Boom"] as Node3D).transform * hub).y < hub.y - 0.15 and _aabb_of(names["Jack0"]).is_equal_approx(rest["Jack0"])
+	t._check(early_ok and mid_ok, "pack-up order: conveyor swings in first, the boom lowers next, the jacks retract last (%s %s)" % [early_ok, mid_ok])
+	t._check(PackRig.spin_factor(0.0) == 1.0 and PackRig.spin_factor(0.1) == 0.0, "the bucket wheel stops turning as packing starts")
+	rig.pose(0.0)
+	# the trigger: Pack Up drives the pose from the sim's own timer
+	r.issue({"p": 0, "t": "pack", "target": b.id})
+	ref.issue({"p": 0, "t": "pack", "target": b2.id})
+	for i in 100:
+		r.advance()
+		ref.advance()
+		if i % 4 == 0:
+			wv.frame(0.0, 0.05)
+			v._pack_step(0.05)
+	wv.frame(0.0, 0.05)
+	v._pack_step(0.05)
+	var pr := MineSys.progress(w, b)
+	t._check(MineSys.packing(w, b) and absf(pr - 0.5) < 0.03 and absf(v.pack_target - pr) < 0.001 and absf(v.pack_k - pr) < 0.05,
+		"Pack Up starts the animation; half way through the 10 s it is half packed (sim %.2f, shown %.2f)" % [pr, v.pack_k])
+	t._check(b.alive and b.tile == st and w.map.occ[w.map.idx(st)] != 0, "the excavator stays put on its site while it packs")
+	t._check(w.state_hash() == ref.sim.state_hash(), "the animation is view only: same sim state as a match without a view")
+	# a save in the middle of packing comes back at the same point of the animation
+	var w2 := SimWorld.new()
+	w2.deserialize(w.serialize())
+	t._check(absf(MineSys.progress(w2, w2.get_ent(b.id)) - pr) < 0.001, "a save mid pack-up restores the same pack-up progress")
+	# cancelling eases back out (no snap)
+	r.issue({"p": 0, "t": "pack", "target": b.id})
+	r.advance()
+	wv.frame(0.0, 0.05)
+	var k0 := v.pack_k
+	v._pack_step(0.25)
+	t._check(v.pack_target == 0.0 and v.pack_k < k0 and v.pack_k > 0.0, "a cancelled pack-up unfolds again smoothly (%.2f -> %.2f)" % [k0, v.pack_k])
+	# pack all the way: the vehicle carries on in the packed pose and unfolds on Set Up
+	r.issue({"p": 0, "t": "pack", "target": b.id})
+	for i in 205:
+		r.advance()
+	var mob: SimEntity = null
+	for id in w.ids:
+		if w.ents[id].def_id == &"ecc_mine_mobile" and w.ents[id].alive:
+			mob = w.ents[id]
+	t._check(mob != null and not b.alive, "after the 10 s it drives off as the vehicle")
+	if mob != null:
+		wv._ensure_view(mob)
+		var mv := wv.views[mob.id] as VehicleView
+		t._check(mv != null and mv.pack_rig != null and mv.find_child("Spoil", true, false) == null, "the vehicle has the same parts, packed (the spoil stays behind)")
+		if mv != null and mv.pack_rig != null:
+			wv.frame(0.0, 0.05)
+			t._check(mv.pack_k == 1.0 and mv.pack_target == 1.0, "the vehicle drives in the packed pose")
+			r.issue({"p": 0, "t": "unpack", "ids": [mob.id]})
+			for i in 101:
+				r.advance()
+			wv.frame(0.0, 0.05)
+			t._check(MineSys.unpacking(mob) and absf(mv.pack_target - (1.0 - MineSys.progress(w, mob))) < 0.001 and mv.pack_target < 0.55,
+				"Set Up plays it in reverse, in step with the set-up timer (%.2f)" % mv.pack_target)
+	t.remove_child(wv)
+	wv.free()

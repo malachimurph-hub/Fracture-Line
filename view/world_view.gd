@@ -1119,6 +1119,9 @@ func frame(a: float, delta: float) -> void:
 			# M3.3: builders animate (blade / backhoe arm / crane boom) while they work at a site
 			if v is VehicleView and not (v as VehicleView).work_parts.is_empty():
 				(v as VehicleView).working = _builder_working(e)
+			# M3.4: the packed excavator unfolds in step with its set-up timer
+			if v is VehicleView and (v as VehicleView).pack_rig != null:
+				(v as VehicleView).set_pack(1.0 - MineSys.progress(sim, e) if MineSys.unpacking(e) else 1.0)
 			# dust behind moving vehicles (M3.3: drones leave no trail; helicopters and jets keep theirs)
 			if not v is InfantryView and not icon_mode and not ud.tags.has("drone"):
 				var spd: float = p.distance_to(v.get_meta("lastp", p)) / maxf(delta, 0.001)
@@ -1165,6 +1168,8 @@ func frame(a: float, delta: float) -> void:
 				if v.has_method("set_build_progress"):
 					v.set_build_progress(bk)
 					v.set_damage(hpk, not e.built)
+				if v is BuildingView and (v as BuildingView).pack_rig != null:   # M3.4: pack-up pose
+					(v as BuildingView).set_pack(MineSys.progress(sim, e) if MineSys.packing(sim, e) else 0.0)
 				if rig != null:
 					rig.update(bk, delta, vfx, vis and not icon_mode)
 				if vis and not icon_mode:

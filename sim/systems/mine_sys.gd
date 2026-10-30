@@ -24,6 +24,14 @@ static func unpacking(e: SimEntity) -> bool:
 static func ticks_left(w: SimWorld, e: SimEntity) -> int:
 	return maxi(0, e.aux_t - w.tick) if e.aux_t > 0 else 0
 
+## M3.4 (view only): how far a pack-up (structure) or set-up (vehicle) has got, 0..1; 0 when
+## neither is running. PackRig turns it into the excavator's pose.
+static func progress(w: SimWorld, e: SimEntity) -> float:
+	if e == null or e.aux_t <= 0:
+		return 0.0
+	var n := FX.ms_to_ticks(PACK_MS)
+	return clampf(1.0 - float(ticks_left(w, e)) / float(maxi(1, n)), 0.0, 1.0)
+
 ## Footprint (top-left tile) a mobile mine would unpack onto, centred on where it stands.
 static func site_tile(w: SimWorld, u: SimEntity) -> Vector2i:
 	var fp: Vector2i = Content.building(SITE).footprint

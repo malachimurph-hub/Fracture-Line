@@ -78,3 +78,16 @@ From Malachi's play-test of 0.3.5.
   of the ambient so shadowed walls keep their detail. Civilian buildings and other solid props
   get the same fill. No lights are added (floodlights and lamps are still the only light
   sources), no glow, and the infantry shader is unchanged. A few ALU per pixel.
+
+## Minerals Mining pack-up animation (Malachi: "Pack up animation for Russian minerals mining")
+
+- The Russian Minerals Mining bucket-wheel excavator already took 10 s (sim ticks) to pack up and
+  10 s to set up again, but it just stood still and then turned into the vehicle. It now
+  animates in step with those timers (no sim timing change, saves and replays unaffected):
+  the bucket wheel spins down, the mast stays are unhooked, the discharge conveyor swings in
+  along the house, the bucket-wheel boom lowers and draws in, the A-frame mast folds back over the
+  counterweight, the spoil heaps are levelled and four new stabiliser jacks lift and retract
+  under the turntable. The vehicle drives in the packed pose and Set Up plays the sequence in
+  reverse. A cancelled pack-up eases back out.
+- Model split into separately posed parts (`tools/gfx_m33/new_m33.gd`, re-baked in its old atlas
+  slot); `view/buildings/pack_rig.gd` poses them (a node transform each, no extra draw calls).

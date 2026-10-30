@@ -2,7 +2,7 @@ extends "res://tests/m33_shots.gd"
 ## M3.4 screenshots (no release build):
 ##   xvfb-run -a -s "-screen 0 1600x900x24" godot --path . --resolution 1600x900 \
 ##     --rendering-method mobile res://tests/m34_shots.tscn -- <out_dir> <part>
-## part: night | headlights | shade (night base + city + the same base by day) | inf:<fac> (infantry close-ups: idle, firing, running)
+## part: packup (Minerals Mining pack-up strip) | night | headlights | shade (night base + city + the same base by day) | inf:<fac> (infantry close-ups: idle, firing, running)
 func _ready() -> void:
 	var args := OS.get_cmdline_user_args()
 	out_dir = args[0] if args.size() > 0 else "/tmp/m34"
@@ -18,6 +18,8 @@ func _ready() -> void:
 		await run_day_base()
 	elif p.begins_with("inf:"):
 		await run_inf_close(p.substr(4))
+	elif p == "packup":
+		await run_packup()
 	print("=== M34 SHOTS DONE")
 	get_tree().quit(0)
 
@@ -102,3 +104,38 @@ func run_day_base() -> void:
 	m.cam.target_dist = 24.0
 	await frames(50)
 	await shot("day_base")
+
+## M3.4 (Malachi: "Pack up animation for Russian minerals mining"): the excavator packing up,
+## shot at sim pack-up progress 0 (digging), 20, 40, 60, 80 % and as the vehicle it became.
+func run_packup() -> void:
+	await _start("ochre_wells", ["ecc", "us"], false)
+	var t := _bld(&"ecc_black_market", Vector2i(44, 40))
+	var b: SimEntity = null
+	for id in sim.ids:
+		if sim.ents[id].def_id == &"ecc_black_market" and sim.ents[id].alive and sim.ents[id].tile == t:
+			b = sim.ents[id]
+	var v: Node3D = m.world.views[b.id]
+	_look(Vector2(t.x + 1.5, t.y + 1.5), 0)
+	m.cam.dist = 14.0
+	m.cam.target_dist = 14.0
+	var cam := Camera3D.new()
+	add_child(cam)
+	cam.fov = 38
+	var c0 := v.global_position + Vector3(0, 0.7, 0)
+	cam.global_position = c0 + Vector3(4.2, 2.9, 4.6)
+	cam.look_at(c0)
+	cam.current = true
+	await frames(40)
+	await shot("packup_0_digging")
+	MineSys.pack(sim, 0, b)
+	var k := 1
+	for want in [0.2, 0.4, 0.6, 0.8]:
+		while MineSys.packing(sim, b) and MineSys.progress(sim, b) < want:
+			await get_tree().process_frame
+		await frames(3)
+		await shot("packup_%d_%02d" % [k, int(want * 100)])
+		k += 1
+	while b.alive:
+		await get_tree().process_frame
+	await frames(20)
+	await shot("packup_5_packed_vehicle")
