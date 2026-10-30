@@ -1,4 +1,4 @@
-# M3.4 (in progress, not released)
+# M3.4 (0.3.6, versionCode 20)
 
 From Malachi's play-test of 0.3.5.
 
