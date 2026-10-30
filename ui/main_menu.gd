@@ -139,8 +139,8 @@ func _title_block() -> Control:
 	rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	rule.visible = _logo == null
 	col.add_child(rule)
-	_subs = [_shadowed(UiTheme.label(tr("MENU_SUBTITLE"), 15, UiTheme.CYAN), 5),
-		_shadowed(UiTheme.label(tr("MENU_BUILD") % ProjectSettings.get_setting("application/config/version", "M1"), 11, Color(0.78, 0.78, 0.78)), 4)]
+	# M3.5: the stale MENU_SUBTITLE line is gone (the emblem already reads MODERN CONFLICT); only the build line stays.
+	_subs = [_shadowed(UiTheme.label(tr("MENU_BUILD") % ProjectSettings.get_setting("application/config/version", "M1"), 11, Color(0.78, 0.78, 0.78)), 4)]
 	for l in _subs:
 		col.add_child(l)
 	panel.resized.connect(_fit_title.bind(panel))

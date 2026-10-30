@@ -731,6 +731,10 @@ func test_audio() -> void:
 			_check(ad.stream(files[-1]) != null, "sniper %s_%d loads" % [ev, files.size()])
 	_check(own >= 4, "Malachi recorded %d sniper events" % own)
 	_check(tr("CREDITS_BODY").contains("US Scout Sniper voiced by Malachi Murphy"), "credits name Malachi as the US Scout Sniper voice")
+	# M3.5: credits name all four factions, carry no hard-coded milestone, credit Malachi's music; no stale menu subtitle
+	var cb := tr("CREDITS_BODY")
+	_check(cb.contains("United States, Russia, Germany and Iran") and not cb.contains("Milestone") and cb.contains("original music by Malachi Murphy"), "credits list all four factions, no milestone, Malachi's music")
+	_check(tr("MENU_SUBTITLE") == "MENU_SUBTITLE", "stale MENU_SUBTITLE string is gone")
 	_check(ad.unit_voice("us", "us_sniper", "select") and String(ad._unit_voice.stream.resource_path).begins_with("res://audio/voice/us/sniper/"), "sniper select plays Malachi's voice")
 	ad._unit_voice.stop()
 	ad._unit_prio = 0
