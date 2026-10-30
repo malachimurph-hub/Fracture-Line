@@ -15,6 +15,11 @@
 // lines, chipped paint, rust, grime, ground dirt, stencils, plus damage soot / scorch.
 global uniform float fl_tex_quality;
 global uniform float fl_night;   // M3.3 P3 (20): 1 on night maps - lamps and lit windows glow brighter
+// M3.4: sky fill for models (rgb = linear colour x energy). The colour-ambient alone leaves
+// buildings and hulls near-black by moonlight (and walls murky on a day's shadow side): this
+// is a cheap hemisphere ambient - brighter facing up, a little on walls, none from below -
+// scaled by albedo, so it lights the paint, not a glow. MapEnv "model_fill"; 0 = off.
+global uniform vec4 fl_fill;
 uniform sampler2D weather_tex : hint_default_white, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D rust_tex : source_color, hint_default_white, filter_linear_mipmap_anisotropic, repeat_enable;
 // M3.1: 2048 px detail normal map (plate seams, rivets, hatches, grain), object-space triplanar.
@@ -324,6 +329,12 @@ void fragment() {
 	float edge = 1.0 - smoothstep(0.0, 0.035, reveal_y - opos.y);
 	emit += reveal_edge.rgb * reveal_edge.a * edge;
 #endif
+	// M3.4 sky fill (see fl_fill). Metal gets the diffuse part too: with a colour background
+	// its reflections are black, so painted metal at night read as a silhouette.
+	float hemi = 0.7 + 0.3 * clamp(onrm.y, -1.0, 1.0);
+	if (cls != 5 && cls != 15 && cls != 19)
+		emit += col * fl_fill.rgb * hemi * (1.0 - 0.4 * metal);
+	metal *= 1.0 - 0.45 * fl_fill.a;
 	ALBEDO = col;
 	METALLIC = metal;
 	ROUGHNESS = rough;

@@ -35,6 +35,11 @@ var work_parts: Array = []   ## [node, kind, rest rotation, [dirt nodes], [tele 
 var _work_t := 0.0
 var _work_k := 0.0           ## 0 = stowed .. 1 = fully working (eases in / out)
 var _dumped := false
+## M3.4: the packed Minerals Mining excavator (PackRig parts): rests packed (k = 1); while it
+## sets up WorldView feeds 1 - MineSys progress so it unfolds in step with the sim's timer.
+var pack_rig: PackRig
+var pack_target := 1.0
+var pack_k := -1.0
 
 func _ready() -> void:
 	super._ready()
@@ -50,6 +55,9 @@ func _ready() -> void:
 					if d.has_meta("tele"):
 						tele.append([d, (d as Node3D).position.z])
 				work_parts.append([c, String(c.get_meta("work")), (c as Node3D).rotation, dirt, tele])
+	pack_rig = PackRig.from(m)
+	if pack_rig != null:
+		pack_rig.pose(1.0)
 	barrel = find_child("Barrel", true, false)
 	if barrel != null:
 		_barrel_z = barrel.position.z
@@ -75,6 +83,13 @@ func set_team_material(mat: Material) -> void:
 	elif mat is StandardMaterial3D:
 		c = (mat as StandardMaterial3D).albedo_color
 	_each(&"team_color", c)
+
+func set_pack(k: float) -> void:
+	pack_target = clampf(k, 0.0, 1.0)
+	if pack_k < 0.0:
+		pack_k = pack_target
+		if pack_rig != null:
+			pack_rig.pose(pack_k)
 
 func on_fire() -> void:
 	_recoil = 1.0
@@ -182,6 +197,9 @@ func _process(delta: float) -> void:
 		if _dead_t > wreck_s - 1.5:   # sink into the ground before it vanishes
 			position.y -= delta * 0.25
 		return
+	if pack_rig != null and pack_k != pack_target:
+		pack_k = move_toward(maxf(pack_k, 0.0) if pack_k >= 0.0 else pack_target, pack_target, delta * 0.6)
+		pack_rig.pose(pack_k)
 	var p := global_position
 	if _last_pos != Vector3.INF:
 		var mv := p - _last_pos

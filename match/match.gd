@@ -60,6 +60,7 @@ func _build_scene() -> void:
 	# slightly saturated filmic grade.
 	var menv := MapEnv.for_map(runner.sim.map_id)   # M2.5: per-map lighting
 	RenderingServer.global_shader_parameter_set(&"fl_night", float(menv.get("night", 0.0)))   # M3.3 P3 (20)
+	RenderingServer.global_shader_parameter_set(&"fl_fill", MapEnv.model_fill(menv))   # M3.4
 	var env := WorldEnvironment.new()
 	var e := Environment.new()
 	e.background_mode = Environment.BG_COLOR
@@ -154,6 +155,7 @@ func _build_scene() -> void:
 func _exit_tree() -> void:
 	AudioDirector.on_match_end()
 	RenderingServer.global_shader_parameter_set(&"fl_night", 0.0)   # M3.3 P3: menus and the next day map are lit normally
+	RenderingServer.global_shader_parameter_set(&"fl_fill", Vector4.ZERO)
 
 func _process(delta: float) -> void:
 	if not paused and not runner.sim.game_over:
@@ -179,7 +181,15 @@ func _process(delta: float) -> void:
 	if runner.sim.game_over:
 		_game_over(delta)
 
+var _income := IncomePopups.new()   ## M3.4: popups over every passive income structure
+
 func _income_floaters(evs: Array) -> void:
+	if local_pid >= 0:
+		for pu in _income.step(runner.sim, local_pid):
+			var b: SimEntity = pu[0]
+			var bv: EntityView = world.views.get(b.id)
+			if bv != null and bv.visible:
+				overlay.floater(FX.to_world(b.pos) + Vector3(0, maxf(0.0, bv.bar_height - 1.0), 0), "+$%d" % int(pu[1]), Color("#ffd166"))
 	for ev in evs:
 		if ev["t"] == "unload":
 			var u := runner.sim.get_ent(int(ev["id"]))

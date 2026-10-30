@@ -10,6 +10,9 @@ uniform float detail_amount = 0.0;
 uniform sampler2D leaf_tex : source_color, filter_linear_mipmap, repeat_disable, hint_default_white;
 uniform float sway = 0.0;
 uniform vec2 map_size = vec2(128.0, 128.0);
+// M3.4: the models' sky fill (see model_m3.gdshaderinc) on the solid props - civilian
+// buildings, walls, trunks, rocks - so a city block reads by moonlight
+global uniform vec4 fl_fill;
 // M2.9 tall towers: dither out the parts that stand between the camera and a unit
 uniform int occl_n = 0;
 uniform vec4 occl_pts[24];
@@ -71,6 +74,8 @@ void fragment() {
 	float expl = smoothstep(0.08, 0.42, f);
 	vec3 grey = vec3(dot(c, vec3(0.3, 0.59, 0.11)));
 	ALBEDO = mix(vec3(0.0), mix(mix(grey, c, 0.45) * 0.5, c, vis), expl);
+	if (vkind > 0.9)
+		EMISSION = ALBEDO * fl_fill.rgb * (0.7 + 0.3 * clamp(wn.y, -1.0, 1.0));
 	if (vkind < 0.5) {
 		float on = vkind < 0.15 ? 1.0 : step(0.55, fract(TIME * 0.7 + vphase));
 		EMISSION = c * (vkind < 0.15 ? 0.55 : 2.6) * on * mix(0.25, 1.0, vis) * expl;

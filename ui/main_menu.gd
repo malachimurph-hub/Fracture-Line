@@ -1,5 +1,6 @@
 extends ScreenBase
-## Main menu: Skirmish, Continue (suspended match), Settings, Credits/About, Quit.
+## Main menu: Skirmish, Continue (suspended match), Campaign (coming soon), Settings,
+## Credits/About, Quit. M3.4: a live battle plays behind it (ui/menu_battle.gd) over the key art.
 
 func build() -> void:
 	get_tree().set_auto_accept_quit(true)
@@ -37,9 +38,30 @@ func build() -> void:
 			lb.name = "Load"
 			lb.pressed.connect(func(): GameSession.goto("res://ui/load_screen.tscn"))
 			row.add_child(lb)
-	var mb := UiTheme.button(tr("MENU_MAP_BUILDER"), Vector2(260, 52))   # M2.8
+	# M3.4: Campaign beside Map Builder (so the column still fits a phone in landscape), styled like
+	# the others, with a small "Coming soon" line inside it; a tap says so
+	var row2 := HBoxContainer.new()
+	row2.name = "CampaignRow"
+	row2.add_theme_constant_override("separation", 4)
+	right.add_child(row2)
+	var cb := UiTheme.button(tr("MENU_CAMPAIGN"), Vector2(128, 52))
+	cb.name = "Campaign"
+	cb.modulate = Color(1, 1, 1, 0.78)
+	cb.ready.connect(_lift_campaign_text.bind(cb))   # the menu theme's styles, text lifted for the label
+	cb.pressed.connect(_campaign_soon)
+	row2.add_child(cb)
+	var soon := _shadowed(UiTheme.label(tr("MENU_COMING_SOON"), 11, UiTheme.GOLD), 3)
+	soon.name = "CampaignSoon"
+	soon.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	soon.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+	soon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	soon.set_anchors_preset(Control.PRESET_FULL_RECT)
+	soon.offset_bottom = -5
+	cb.add_child(soon)
+	var mb := UiTheme.button(tr("MENU_MAP_BUILDER"), Vector2(128, 52))   # M2.8
+	mb.name = "MapBuilder"
 	mb.pressed.connect(func(): GameSession.goto("res://ui/map_builder.tscn"))
-	right.add_child(mb)
+	row2.add_child(mb)
 	var s := UiTheme.button(tr("MENU_SETTINGS"), Vector2(260, 52))
 	s.pressed.connect(func(): GameSession.goto("res://ui/settings_screen.tscn"))
 	right.add_child(s)
@@ -97,7 +119,7 @@ func _title_block() -> Control:
 		_title.add_theme_font_override("font", f)
 	_title.add_theme_constant_override("shadow_offset_x", 3)
 	_title.add_theme_constant_override("shadow_offset_y", 4)
-	# M2.7: Malachi's title badge (M3.2.2: FRACTURE LINE / GLOBAL CONFLICT) replaces the text title (the label stays as
+	# M2.7: Malachi's title badge (M3.2.2: FRACTURE LINE / MODERN CONFLICT) replaces the text title (the label stays as
 	# the fallback if the texture is missing, and keeps the fit/test logic working).
 	var tex := load(LOGO) as Texture2D
 	if tex != null:
@@ -198,6 +220,7 @@ func _add_backdrop() -> void:
 	art.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(art)
 	move_child(art, 1)               # above the flat background, below the menu
+	_add_live_battle()               # M3.4: the live battle fades in over the key art
 	# readability: light veil, darker on the button side, soft backing behind the title column
 	var veil := ColorRect.new()
 	veil.color = Color(0.03, 0.035, 0.045, 0.12)
@@ -234,6 +257,148 @@ func _add_backdrop() -> void:
 	back.anchor_bottom = 0.88
 	add_child(back)
 	move_child(back, 4)
+	# M3.4: subtle dark vignette behind the buttons (right side) so they read over the battle
+	var vg := Gradient.new()
+	vg.set_color(0, Color(0.02, 0.025, 0.035, 0.0))
+	vg.set_color(1, Color(0.02, 0.025, 0.035, 0.5))
+	var vt := GradientTexture2D.new()
+	vt.gradient = vg
+	vt.fill_from = Vector2(0.45, 0.5)
+	vt.fill_to = Vector2(1.0, 0.5)
+	vt.width = 256
+	vt.height = 4
+	var vig := TextureRect.new()
+	vig.name = "ButtonVignette"
+	vig.texture = vt
+	vig.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	vig.stretch_mode = TextureRect.STRETCH_SCALE
+	vig.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vig.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(vig)
+	move_child(vig, 5)
+
+## M3.4 live battle behind the menu. Off on the compatibility renderer, the Low preset, headless
+## runs, and for the rest of the session once the frame rate has dropped (then the key art stays).
+static var live_off := false
+static var force_live := false   ## tests/screenshots on the box (no Vulkan -> compatibility renderer)
+const LOW_FPS := 22
+const LOW_FPS_SECONDS := 4.0
+var live: SubViewportContainer
+var battle: MenuBattle
+var _old_fps := -1
+var _low_t := 0.0
+var _shown_t := 0.0
+
+static func live_allowed() -> bool:
+	if live_off or DisplayServer.get_name() == "headless":
+		return false
+	if force_live:
+		return true
+	if RenderingServer.get_current_rendering_method() == "gl_compatibility":
+		return false
+	return String(Settings.g("graphics_preset")) != "low"
+
+func _add_live_battle() -> void:
+	if not live_allowed():
+		return
+	live = SubViewportContainer.new()
+	live.name = "BattleBackdrop"
+	live.stretch = true
+	live.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	live.set_anchors_preset(Control.PRESET_FULL_RECT)
+	live.modulate.a = 0.0
+	add_child(live)
+	move_child(live, 2)
+	var vp := SubViewport.new()
+	vp.own_world_3d = true
+	vp.audio_listener_enable_3d = false
+	vp.msaa_3d = Viewport.MSAA_DISABLED
+	vp.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
+	vp.scaling_3d_scale = 0.67
+	vp.positional_shadow_atlas_size = 0
+	live.add_child(vp)
+	battle = MenuBattle.new()
+	battle.name = "MenuBattle"
+	battle.battle_ready.connect(_live_in)
+	battle.wants_rebuild.connect(_live_next)
+	vp.add_child(battle)
+	_old_fps = Engine.max_fps
+	Engine.max_fps = 30
+
+func _live_in() -> void:
+	if live == null:
+		return
+	_shown_t = 0.0
+	_low_t = 0.0
+	create_tween().tween_property(live, "modulate:a", 1.0, 0.8)
+
+func _live_next() -> void:
+	if live == null:
+		return
+	var tw := create_tween()
+	tw.tween_property(live, "modulate:a", 0.0, 0.6)
+	tw.tween_callback(func(): if battle != null and is_instance_valid(battle): battle.next_map())
+
+## Frame-rate watchdog: below LOW_FPS for LOW_FPS_SECONDS while the battle is shown -> key art.
+func _process(delta: float) -> void:
+	if live == null or battle == null or battle.building or live.modulate.a < 0.99 or force_live:
+		return
+	_shown_t += delta
+	if _shown_t < 3.0:
+		return
+	if Engine.get_frames_per_second() < LOW_FPS:
+		_low_t += delta
+		if _low_t > LOW_FPS_SECONDS:
+			drop_live_battle()
+	else:
+		_low_t = maxf(0.0, _low_t - delta)
+
+func drop_live_battle() -> void:
+	live_off = true
+	if live == null:
+		return
+	var l := live
+	live = null
+	battle = null
+	var tw := create_tween()
+	tw.tween_property(l, "modulate:a", 0.0, 0.6)
+	tw.tween_callback(l.queue_free)
+	if _old_fps >= 0:
+		Engine.max_fps = _old_fps
+		_old_fps = -1
+
+func _exit_tree() -> void:
+	if _old_fps >= 0:
+		Engine.max_fps = _old_fps
+		_old_fps = -1
+
+func _lift_campaign_text(cb: Button) -> void:
+	for st in ["normal", "hover", "pressed", "focus", "disabled"]:
+		var sb := cb.get_theme_stylebox(st)
+		if sb != null:
+			sb = sb.duplicate()
+			sb.content_margin_bottom = maxf(sb.content_margin_bottom, 0.0) + 14.0
+			cb.add_theme_stylebox_override(st, sb)
+
+## M3.4: "Coming soon" toast for the Campaign entry.
+var _toast: Label
+func _campaign_soon() -> void:
+	if _toast == null:
+		_toast = _shadowed(UiTheme.label(tr("MENU_CAMPAIGN_SOON_TOAST"), 16, UiTheme.GOLD.lightened(0.1)), 6)
+		_toast.name = "Toast"
+		_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_toast.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_toast.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+		_toast.anchor_left = 0.0
+		_toast.anchor_right = 1.0
+		_toast.offset_top = -72
+		_toast.offset_bottom = -40
+		add_child(_toast)
+	_toast.modulate.a = 1.0
+	_toast.visible = true
+	var tw := create_tween()
+	tw.tween_interval(1.6)
+	tw.tween_property(_toast, "modulate:a", 0.0, 0.5)
 
 func _continue() -> void:
 	var d := SaveSystem.load_suspend()

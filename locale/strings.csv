@@ -1,11 +1,14 @@
 keys,en
-APP_TITLE,FRACTURE LINE: GLOBAL CONFLICT
+APP_TITLE,FRACTURE LINE: MODERN CONFLICT
 MENU_SUBTITLE,Skirmish command — Germany
 MENU_BUILD,"Milestone %s · original game, not affiliated with any other RTS"
 MENU_SKIRMISH,Skirmish
 MENU_CONTINUE,Continue suspended match
 MENU_SETTINGS,Settings
 MENU_MAP_BUILDER,Map Builder
+MENU_CAMPAIGN,Campaign
+MENU_COMING_SOON,Coming soon
+MENU_CAMPAIGN_SOON_TOAST,Campaign: coming soon
 LOBBY_CUSTOM_TAG,  · custom
 MENU_CREDITS,Credits / About
 MENU_QUIT,Quit
@@ -301,11 +304,12 @@ POWER_OVERCHARGE,Smoke Screen
 POWER_OVERCHARGE_DESC,Smoke and decoys: your units in the area are much harder to hit (a strong temporary damage shield).
 POWER_BLACKOUT,Artillery Barrage
 POWER_BLACKOUT_DESC,Three heavy 155 mm shells hit the target area.
-CREDITS_BODY,"FRACTURE LINE: GLOBAL CONFLICT — Milestone 2.9 (skirmish: Germany, Iran and United States).
+CREDITS_BODY,"FRACTURE LINE: MODERN CONFLICT — Milestone 2.9 (skirmish: Germany, Iran and United States).
 Design, code, procedural 3D models (M2.6 model upgrade with automatic LODs), weathering and surface-detail shaders, decals, effects, maps, faction HUD themes, UI and text: original work made for Malachi Murphy with Grok Bot. US unit names are original and only inspired by real equipment roles.
 Textures: ambientCG (ambientcg.com), CC0 1.0 public domain — Ground097, Ground109, Grass004, Rock063, Asphalt033, Gravel035, Concrete034, CorrugatedSteel005, Rust004; winter: Snow006, Ground054, Snow004, Rock035, Ice002, Snow010A; temperate: Grass001, Ground037, Rock023, PavingStones130; arid: Ground090, Ground102, Rock061, Ground079S.
 Soldier models and animations: Quaternius, ""Toon Shooter Game Kit"" (quaternius.com), CC0 1.0 public domain — recoloured and re-equipped per faction, re-proportioned, decimated and baked to vertex animation.
-Sound effects and music (menu ""Breach Point""; battle shuffle ""Iron Convoy"", ""Dust Devils"", ""Last Light Rising"", ""Steel Rain""): original, synthesized for this game (no samples, no third-party audio).
+Sound effects and the Russia, Germany and Iran music: original, synthesized for this game (no samples, no third-party audio).
+Menu and United States music (""Base Command"", ""Defend the Border"", ""Mission Accomplished"", ""Zero Hour Background""): by Malachi Murphy.
 Voices (AI-generated, original lines, no real person's voice cloned):
 • Germany and US: Kokoro-82M speech model (hexgrad, Apache-2.0) via kokoro-onnx (MIT); phonemes by eSpeak NG (GPL-3.0 build tool, only audio ships).
 • Iran (English with Persian accents): Chatterbox Multilingual (Resemble AI, MIT; output carries Resemble's Perth audio watermark), prompted with synthetic speakers derived from Piper Persian voices amir, ganji and reza_ibrahim (CC0 datasets, but fine-tuned from Piper's research-only ""lessac"" voice — licence not clearly permissive; these Iran voices will be replaced in a later update; Piper GPL-3.0 build tool only). Checked with faster-whisper / Whisper (MIT).

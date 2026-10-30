@@ -30,6 +30,8 @@ func on_hold(p: Vector2, k: float) -> void:
 
 func floater(world_pos: Vector3, text: String, col: Color) -> void:
 	floaters.append({"p": world_pos, "s": text, "t": 0.0, "c": col})
+	if floaters.size() > IncomePopups.MAX_FLOATERS:   # M3.4: cap (oldest go first)
+		floaters.pop_front()
 
 func _process(delta: float) -> void:
 	var keep: Array = []
@@ -103,7 +105,9 @@ func _draw() -> void:
 			var a: float = 1.0 - f["t"] / 1.6
 			var col: Color = f["c"]
 			col.a = a
-			draw_string(font, cam.cam.unproject_position(p3) - Vector2(16, 0), f["s"], HORIZONTAL_ALIGNMENT_LEFT, -1, 13, col)
+			var sp := cam.cam.unproject_position(p3) - Vector2(16, 0)
+			draw_string_outline(font, sp, f["s"], HORIZONTAL_ALIGNMENT_LEFT, -1, 13, 3, Color(0, 0, 0, a * 0.6))   # M3.4: readable on bright ground
+			draw_string(font, sp, f["s"], HORIZONTAL_ALIGNMENT_LEFT, -1, 13, col)
 	if vs.x <= 0:
 		return
 

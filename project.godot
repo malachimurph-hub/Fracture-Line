@@ -5,15 +5,15 @@ config_version=5
 
 config/quit_on_go_back=false
 
-config/name="Fracture Line: Global Conflict"
-config/description="FRACTURE LINE: GLOBAL CONFLICT - original mobile RTS"
-config/version="0.3.5"
+config/name="Fracture Line: Modern Conflict"
+config/description="FRACTURE LINE: MODERN CONFLICT - original mobile RTS"
+config/version="0.3.6"
 run/main_scene="res://ui/main_menu.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 boot_splash/bg_color=Color(0.07, 0.08, 0.1, 1)
 boot_splash/show_image=true
 boot_splash/image="res://ui/logo/fl_splash.png"
-config/icon="res://icon.svg"
+config/icon="res://assets/icons/fl_icon_512.png"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="godot/app_userdata/Fracture Line"
 
@@ -78,6 +78,11 @@ file_logging/max_log_files=3
 fl_night={
 "type": "float",
 "value": 0.0
+}
+
+fl_fill={
+"type": "vec4",
+"value": Vector4(0, 0, 0, 0)
 }
 
 fl_tex_quality={

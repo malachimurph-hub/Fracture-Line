@@ -1,10 +1,10 @@
-# Fracture Line: Global Conflict
+# Fracture Line: Modern Conflict
 
 Original mobile RTS for Android, made in Godot 4.7.2 for Malachi Murphy. Main scene: `res://ui/main_menu.tscn`.
 
 ## Title (M3.2.2)
 
-The player-visible name is **Fracture Line: Global Conflict** (M3.2.2; the M2.7-M3.2.1 builds were
+The player-visible name is **Fracture Line: Modern Conflict** (M3.4; M3.2.2-M3.3 used "Global Conflict"; the M2.7-M3.2.1 builds were
 called "Rules of Engagement", a title that is a registered trademark of another company for video
 games, so it was dropped). Main-menu badge and title text, boot splash, credits, error screen,
 window title (`application/config/name`) and Play listing use the full title; the Android launcher

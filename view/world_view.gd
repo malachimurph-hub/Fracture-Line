@@ -435,6 +435,8 @@ func _ensure_view(e: SimEntity) -> EntityView:
 		var d: UnitDef = Content.unit(e.def_id)
 		if d.tags.has("infantry"):
 			v.scale = Vector3.ONE * INF_SCALE   # M3.3 item 16: at vehicle scale (was 1.4x)
+			if v is InfantryView:
+				(v as InfantryView).set_variant(e.id)   # M3.4: per-soldier look
 		if e.tier > 0:
 			v.set_tier(e.tier)
 		if d.shield_aura_radius > 0:
@@ -821,30 +823,166 @@ func _civ_rubble(v: EntityView) -> void:
 
 var rubble_count := 0
 
-## M3.3 P3 (20): floodlit aprons round visible structures, headlight beams for ground vehicles.
+## M3.3 P3 (20) / M3.4: night lights. Every 0.12 s: the visible structures' floodlights (nearest
+## the camera first) and the list of visible ground vehicles; every rendered frame (end of
+## frame()): the headlight beams, from each vehicle's interpolated transform.
+var _night_vehs: Array = []   ## [[EntityView, lamps (local)], ...]
 func _update_night() -> void:
-	var blds: Array = []
-	var vehs: Array = []
+	var fixtures: Array = []
+	_night_vehs.clear()
+	var cam := get_viewport().get_camera_3d() if is_inside_tree() else null
+	var cpos := cam.global_position if cam != null else Vector3.ZERO
 	for id in views:
 		var v: EntityView = views[id]
 		var e: SimEntity = sim.ents.get(id)
 		if e == null or not v.visible:
 			continue
-		if e.kind == SimEntity.Kind.BUILDING and e.built:
-			var col: Color = Palette.color(sim.players[e.owner].color) if e.owner >= 0 else Color(1, 1, 1)
-			blds.append([v.position, v.footprint, col])
+		if e.kind == SimEntity.Kind.BUILDING and e.built and e.owner >= 0:   # civilian blocks: windows only
+			var fac: StringName = sim.players[e.owner].faction
+			for f in _floodlights_of(v, fac):
+				fixtures.append(f)
 		elif e.kind == SimEntity.Kind.UNIT and not v is InfantryView:
 			var ud: UnitDef = Content.unit(e.def_id)
 			if ud.move_layer == &"vehicle":
-				# M3.3 (Malachi): beams start at the vehicle's front and point where its hull points
-				# (the view's own +Z, tilt included, flattened onto the ground)
-				var fw: Vector3 = v.global_transform.basis.z
-				fw.y = 0.0
-				if fw.length_squared() < 1e-6:
-					fw = Vector3(sin(v.rotation.y), 0, cos(v.rotation.y))
-				vehs.append([v.position, fw.normalized(), _front_of(v), minf(2.0, v.selection_radius * 1.2)])
-	night.set_buildings(blds)
-	night.set_vehicles(vehs)
+				var hl := headlights_of(v)
+				_night_vehs.append([v, hl, float(_beam_start_cache.get(_lamp_key(v), 0.0))])
+	if fixtures.size() > NightLights.MAX_FLOOD and cam != null:
+		fixtures.sort_custom(func(p: Array, q: Array) -> bool: return (p[0] as Vector3).distance_squared_to(cpos) < (q[0] as Vector3).distance_squared_to(cpos))
+	night.set_floodlights(fixtures)
+	_night_vehicle_frame()
+
+## headlight beams follow the drawn (interpolated) vehicles, so they move as smoothly as the hull
+func _night_vehicle_frame() -> void:
+	var items: Array = []
+	for nv in _night_vehs:
+		var v: EntityView = nv[0]
+		if not is_instance_valid(v) or not v.visible:
+			continue
+		items.append([v.global_transform, nv[1], minf(2.0, v.selection_radius * 1.2), nv[2]])
+	night.set_vehicle_lamps(items)
+
+## Headlight lenses (view-local) of a vehicle model, found from its own geometry: the warm white
+## LAMP-class vertices (model_m3 vertex alpha = 5/20) at the front of the hull, grouped left /
+## right of the centre line. Models without lamp geometry fall back to two points on the front
+## face. Cached per model scene.
+static var _lamp_cache := {}
+static var _beam_start_cache := {}   ## local z where the light reaches the ground clear of the hull
+static func _lamp_key(v: EntityView) -> String:
+	return v.scene_file_path if v.scene_file_path != "" else String(v.name)
+static func headlights_of(v: EntityView) -> Array:
+	var key := _lamp_key(v)
+	if _lamp_cache.has(key):
+		return _lamp_cache[key]
+	var pts: Array = []
+	var fz := -1e9
+	var hb := AABB()
+	var first := true
+	var inv := v.global_transform.affine_inverse()
+	var low: Array = []   # [y, z] of every vertex, to find the front of the lower hull (blade, nose)
+	for n in v.find_children("*", "MeshInstance3D", true, false):
+		var mi := n as MeshInstance3D
+		if mi.mesh == null or mi.visibility_range_begin > 0.0 or not mi.is_visible_in_tree():
+			continue
+		var xf := inv * mi.global_transform
+		var bb: AABB = xf * mi.get_aabb()
+		if not bb.size.is_finite() or bb.size.length() > 30.0:
+			continue
+		hb = bb if first else hb.merge(bb)
+		first = false
+		for si in mi.mesh.get_surface_count():
+			var arr: Array = mi.mesh.surface_get_arrays(si)
+			var cols = arr[Mesh.ARRAY_COLOR]
+			var vv: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
+			for i in range(0, vv.size(), 3):
+				var q := xf * vv[i]
+				low.append(Vector2(q.y, q.z))
+			if cols == null or (cols as PackedColorArray).is_empty():
+				continue
+			for i in vv.size():
+				var c: Color = cols[i]
+				if absf(c.a - 0.25) < 0.02 and c.r > 0.8 and c.g > 0.7 and c.b > 0.4:
+					var p := xf * vv[i]
+					if p.z > 0.0:
+						pts.append(p)
+						fz = maxf(fz, p.z)
+	var lamps: Array = []
+	var front := pts.filter(func(p: Vector3) -> bool: return p.z > fz - 0.2)
+	for side in [-1.0, 1.0]:
+		var grp := front.filter(func(p: Vector3) -> bool: return p.x * side > 0.04)
+		if grp.is_empty():
+			continue
+		var c := Vector3.ZERO
+		for p: Vector3 in grp:
+			c += p
+		lamps.append(c / grp.size())
+	if lamps.is_empty() and not front.is_empty():
+		var c2 := Vector3.ZERO
+		for p: Vector3 in front:
+			c2 += p
+		lamps.append(c2 / front.size())
+	if lamps.is_empty():   # no lamp geometry: two points low on the front face
+		var w := hb.size.x * 0.32 if not first else 0.3
+		var y := hb.position.y + hb.size.y * 0.35 if not first else 0.35
+		var z := hb.end.z if not first else 0.8
+		lamps = [Vector3(-w, y, z), Vector3(w, y, z)]
+	_lamp_cache[key] = lamps
+	# the beam meets the ground just past the lower hull: the front of the geometry below the
+	# lamps (a dozer blade, a bumper) but not a gun barrel up on the turret
+	var ly := 0.0
+	var lz := -1e9
+	for l: Vector3 in lamps:
+		ly = maxf(ly, l.y)
+		lz = maxf(lz, l.z)
+	var sz := lz
+	for q: Vector2 in low:
+		if q.x < ly + 0.12 and q.y > sz:
+			sz = q.y
+	_beam_start_cache[key] = sz
+	return lamps
+
+## M3.4 floodlights on a structure: wall-mounted fixtures at the front corners pointing out and
+## down, plus roof-edge ones on the big buildings (3 tiles and up): 2 to 4 per structure, none on
+## walls, sandbags and other 1-tile pieces. View-local layout cached per model scene.
+static var _flood_cache := {}
+func _floodlights_of(v: EntityView, fac: StringName) -> Array:
+	if v.footprint.x < 2 or v.footprint.y < 2:
+		return []
+	var key := "%s|%s" % [v.scene_file_path, v.footprint]
+	var lay: Array = _flood_cache.get(key, [])
+	if not _flood_cache.has(key):
+		var top := 0.0
+		var inv := v.global_transform.affine_inverse()
+		for n in v.find_children("*", "MeshInstance3D", true, false):
+			var mi := n as MeshInstance3D
+			if mi.mesh == null or mi.visibility_range_begin > 0.0:
+				continue
+			var bb: AABB = (inv * mi.global_transform) * mi.get_aabb()
+			if bb.size.is_finite() and bb.size.length() < 40.0:
+				top = maxf(top, bb.end.y)
+		var hx := v.footprint.x * 0.5
+		var hz := v.footprint.y * 0.5
+		var wall := clampf(top * 0.55, 0.9, 2.4)    # fixture height on the wall
+		var roof := clampf(top, 1.2, 4.0)
+		lay = []
+		for sx in [-1.0, 1.0]:   # front corners (+Z is the front)
+			var at := Vector3(sx * (hx - 0.25), wall, hz - 0.05)
+			lay.append([at, Vector3(sx * 0.6, 0, 1.0).normalized(), 2.2 + wall * 0.6])
+		if v.footprint.x >= 3 and v.footprint.y >= 3:   # roof edge, rear corners, aimed out sideways
+			for sx in [-1.0, 1.0]:
+				var at2 := Vector3(sx * (hx - 0.35), roof + 0.1, -hz + 0.4)
+				lay.append([at2, Vector3(sx, 0, -0.35).normalized(), 2.6 + roof * 0.5])
+		_flood_cache[key] = lay
+	var out: Array = []
+	var gx := v.global_transform
+	var col: Color = NightLights.FLOOD_COLS.get(fac, NightLights.FLOOD_COL)
+	for f in lay:
+		var lens: Vector3 = gx * (f[0] as Vector3)
+		var dir: Vector3 = gx.basis * (f[1] as Vector3)
+		dir.y = 0.0
+		var aim := lens + dir.normalized() * float(f[2])
+		aim.y = FX.ground_y(aim.x, aim.z)
+		out.append([lens, aim, col])
+	return out
 
 ## Distance (m) from a vehicle view's origin to the front of its hull (largest local +Z of its
 ## meshes), cached per view.
@@ -981,6 +1119,9 @@ func frame(a: float, delta: float) -> void:
 			# M3.3: builders animate (blade / backhoe arm / crane boom) while they work at a site
 			if v is VehicleView and not (v as VehicleView).work_parts.is_empty():
 				(v as VehicleView).working = _builder_working(e)
+			# M3.4: the packed excavator unfolds in step with its set-up timer
+			if v is VehicleView and (v as VehicleView).pack_rig != null:
+				(v as VehicleView).set_pack(1.0 - MineSys.progress(sim, e) if MineSys.unpacking(e) else 1.0)
 			# dust behind moving vehicles (M3.3: drones leave no trail; helicopters and jets keep theirs)
 			if not v is InfantryView and not icon_mode and not ud.tags.has("drone"):
 				var spd: float = p.distance_to(v.get_meta("lastp", p)) / maxf(delta, 0.001)
@@ -1027,6 +1168,8 @@ func frame(a: float, delta: float) -> void:
 				if v.has_method("set_build_progress"):
 					v.set_build_progress(bk)
 					v.set_damage(hpk, not e.built)
+				if v is BuildingView and (v as BuildingView).pack_rig != null:   # M3.4: pack-up pose
+					(v as BuildingView).set_pack(MineSys.progress(sim, e) if MineSys.packing(sim, e) else 0.0)
 				if rig != null:
 					rig.update(bk, delta, vfx, vis and not icon_mode)
 				if vis and not icon_mode:
@@ -1061,6 +1204,8 @@ func frame(a: float, delta: float) -> void:
 			ghosts[gid].queue_free()
 			ghosts.erase(gid)
 	_update_rings()
+	if night != null:
+		_night_vehicle_frame()   # M3.4: headlights move with the interpolated hulls every frame
 
 func _is_visible(e: SimEntity, _mem: Dictionary) -> bool:
 	if local_team < 0:

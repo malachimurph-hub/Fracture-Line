@@ -1,6 +1,6 @@
 # Music sources and licences
 
-All music in this folder is ORIGINAL, composed and rendered for Fracture Line: Global Conflict by the
+All music in this folder is ORIGINAL, composed and rendered for Fracture Line: Modern Conflict by the
 project's own synthesis scripts (numpy additive/subtractive synthesis + tanh overdrive, no
 samples, no loops or recordings from anyone else). No CC0/CC-BY or paid/unlicensed material.
 Licence: project-owned original work (same terms as the rest of the game).
@@ -37,3 +37,20 @@ Regenerate: `python3 tools/gen_music_m32.py [us ru de ir] [--sample OUTDIR]`.
 
 Original composition (melodies and harmony written for this game; no folk tunes, anthems or other
 existing works quoted). Pure synthesis, no samples. Regenerate: `python3 tools/gen_music_m33_ru.py [--sample OUTDIR]`.
+
+## M3.4 United States music (Malachi's own tracks)
+
+Supplied by Malachi (his "USA MUSIC" Google Drive folder, made with Suno under his account; used
+with his permission as the game's owner). Converted from MP3 to OGG Vorbis 44.1 kHz (first 128 kbps; 56 kbps for the 0.3.6 release so the
+APK stays under 100 MB, together with the four Russia/Germany/Iran tracks, re-encoded to 56 kbps).
+
+| File | Title | Use |
+|---|---|---|
+| us_base_command.ogg | Base Command | Main menu (loops); opens every US match, then in the US shuffle |
+| us_defend_the_border.ogg | Defend the Border | US in-match shuffle |
+| us_mission_accomplished.ogg | Mission Accomplished | US in-match shuffle |
+| us_zero_hour.ogg | Zero Hour Background | US in-match shuffle |
+
+The M2.9 rock tracks (Breach Point, Iron Convoy, Dust Devils, Last Light Rising, Steel Rain) and
+M3.2 Liberty Steel are retired to `superseded/` (`.gdignore`, not packaged; still reproducible
+with their generators). Other factions' music is unchanged.

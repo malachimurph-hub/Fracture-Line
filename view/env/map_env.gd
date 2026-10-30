@@ -65,4 +65,15 @@ static func night_of(e: Dictionary) -> Dictionary:
 	n["exposure"] = float(e["exposure"]) * 1.08
 	n["prop_tint"] = (e["prop_tint"] as Color) * Color(0.8, 0.85, 1.0)
 	n["night"] = 1.0
+	n["model_fill"] = Color("#8796c0")   # M3.4: moonlit sky fill on structures / hulls
+	n["model_fill_energy"] = 1.8
+	n["model_metal_ease"] = 1.0
 	return n
+
+## M3.4: the models' sky fill (MapEnv "model_fill" x energy; by day a little of the ambient so
+## shadowed walls keep their detail) as the fl_fill global: rgb linear, a = metal ease.
+static func model_fill(e: Dictionary) -> Vector4:
+	var c: Color = e.get("model_fill", e["ambient"])
+	var k := float(e.get("model_fill_energy", 0.3))
+	var l := c.srgb_to_linear()
+	return Vector4(l.r * k, l.g * k, l.b * k, float(e.get("model_metal_ease", 0.3)))

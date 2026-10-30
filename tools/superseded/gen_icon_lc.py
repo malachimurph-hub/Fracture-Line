@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""FRACTURE LINE: GLOBAL CONFLICT logo + app icon (M2.7; retitled M3.2.2, was Rules of Engagement), recreated from Malachi's own concept
+"""FRACTURE LINE: MODERN CONFLICT logo + app icon (M2.7; retitled M3.2.2, was Rules of Engagement), recreated from Malachi's own concept
 (builds/m2_7_rename/logo_concepts/concept4_tank_hex.jpg): a front-on Abrams-style tank in
 worn bronze, inside a rounded-square bronze frame (app icon) or a bronze hexagon badge with
-'FRACTURE / LINE / GLOBAL CONFLICT' and a small red diamond (menu logo, splash).
+'FRACTURE / LINE / MODERN CONFLICT' and a small red diamond (menu logo, splash).
 
 Writes:
   icon.svg                          project icon (also rasterised to the 192 px launcher icon)
@@ -160,7 +160,7 @@ def badge(Hout=1024):
         ad.text(((W - (x1 - x0)) / 2 - x0, cy * H - (y1 + y0) / 2), s, font=f, fill=255)
     text("FRACTURE", 0.50, 0.80, 0.15)
     text("LINE", 0.622, 0.34, 0.08)
-    text("GLOBAL CONFLICT", 0.725, 0.76, 0.07)
+    text("MODERN CONFLICT", 0.722, 0.6, 0.052)   # M3.4: smaller subtitle under FRACTURE LINE
     # drop shadow under the artwork
     sh = art.filter(ImageFilter.GaussianBlur(S * 5))
     img = Image.alpha_composite(img, Image.merge("RGBA", (*[Image.new("L", (W, H), 0)] * 3, sh.point(lambda v: int(v * 0.8)))).transform((W, H), Image.AFFINE, (1, 0, -S * 3, 0, 1, -S * 5)))

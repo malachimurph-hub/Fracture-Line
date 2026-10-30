@@ -1,0 +1,170 @@
+extends "res://tests/m33_shots.gd"
+## M3.4 screenshots (no release build):
+##   xvfb-run -a -s "-screen 0 1600x900x24" godot --path . --resolution 1600x900 \
+##     --rendering-method mobile res://tests/m34_shots.tscn -- <out_dir> <part>
+## part: packup (Minerals Mining pack-up strip) | night | headlights | shade (night base + city + the same base by day) | inf:<fac> (infantry close-ups: idle, firing, running)
+func _ready() -> void:
+	var args := OS.get_cmdline_user_args()
+	out_dir = args[0] if args.size() > 0 else "/tmp/m34"
+	var p: String = args[1] if args.size() > 1 else "inf:us"
+	DirAccess.make_dir_recursive_absolute(out_dir)
+	await get_tree().process_frame
+	if p == "night":
+		await run_night()
+	elif p == "headlights":
+		await run_headlights()
+	elif p == "shade":
+		await run_night()
+		await run_day_base()
+	elif p.begins_with("inf:"):
+		await run_inf_close(p.substr(4))
+	elif p == "packup":
+		await run_packup()
+	elif p == "income":
+		await run_income()
+	print("=== M34 SHOTS DONE")
+	get_tree().quit(0)
+
+func run_inf_close(fac: String) -> void:
+	await _start("riverside_metro", [fac, "us" if fac != "us" else "eu"], false)
+	var defs: Array = []
+	for id in Content.units:
+		var ud: UnitDef = Content.units[id]
+		if ud.faction == StringName(fac) and ud.view_scene != "" and FileAccess.file_exists(ud.view_scene) and FileAccess.get_file_as_string(ud.view_scene).contains("infantry_view.gd"):
+			defs.append(id)
+	defs.sort()
+	defs = defs.slice(0, 5)
+	var hq := FX.to_tile(sim.ents[sim.ids[0]].pos)
+	var c := _open_spot(Vector2i(8, 6), hq + Vector2i(10, 6))
+	var base := FX.tile_center(c)
+	# front row idle, second row (half a tile behind) firing, three running past behind them
+	var units: Array = []
+	var firing: Array = []
+	for k in defs.size():
+		units.append(_place(defs[k], base + Vector2i(k * 520, 0), 0))
+		firing.append(_place(defs[k], base + Vector2i(k * 520 + 260, -700), 0))
+	for k in 3:
+		var r := _place(defs[0], base + Vector2i(k * 700, -1900), FX.ANG / 4)
+		r.orders = [{"o": "move", "pos": base + Vector2i(k * 700 + 30 * FX.ONE, -1900)}]
+	var cam := Camera3D.new()
+	add_child(cam)
+	await frames(2)
+	var w0 := (m.world.views[units[0].id] as Node3D).global_position
+	var w1 := (m.world.views[units[units.size() - 1].id] as Node3D).global_position
+	var mid := (w0 + w1) * 0.5 + Vector3(0, 0, -0.3)
+	cam.fov = 40
+	cam.current = true
+	for i in 40:
+		_fire_all(firing)
+		cam.global_position = mid + Vector3(0.2, 1.1, 3.4)
+		cam.look_at(mid + Vector3(0, 0.2, 0))
+		await get_tree().process_frame
+	await shot("inf_%s_wide" % fac)
+	var c0 := w0 + Vector3(0.35, 0, -0.3)
+	for i in 8:
+		_fire_all(firing)
+		cam.global_position = c0 + Vector3(0.25, 0.42, 1.45)
+		cam.look_at(c0 + Vector3(0, 0.24, 0))
+		await get_tree().process_frame
+	await shot("inf_%s_close" % fac)
+	var f0 := (m.world.views[firing[0].id] as Node3D).global_position
+	for i in 8:
+		_fire_all(firing)
+		cam.global_position = f0 + Vector3(-1.2, 0.4, 0.55)
+		cam.look_at(f0 + Vector3(0, 0.25, 0.1))
+		await get_tree().process_frame
+	await shot("inf_%s_aim" % fac)
+
+func _place(def: StringName, pos: Vector2i, face: int) -> SimEntity:
+	var u := _unit(def, FX.to_tile(pos), face)
+	u.pos = pos
+	u.home = pos
+	m.world.cur[u.id] = m.world._world_pos(u)
+	m.world.prev[u.id] = m.world.cur[u.id]
+	return u
+
+func _fire_all(firing: Array) -> void:
+	for f in firing:
+		var v: Node = m.world.views.get(f.id)
+		if v != null and v.has_method("on_fire"):
+			v.on_fire()
+			v._last_pos = Vector3.INF   # shots only: hold the firing pose even if the crowd shuffles
+			v._speed = 0.0
+
+
+## M3.4 shading check: the night_base_f layout on the daytime Riverside Metro (shadowed sides)
+func run_day_base() -> void:
+	await _start("riverside_metro", ["us", "eu"], false)
+	var hq := Vector2i(30, 30)
+	_bld(&"us_barracks", hq + Vector2i(6, 0))
+	_bld(&"us_reactor", hq + Vector2i(0, 6))
+	_bld(&"us_garage", hq + Vector2i(6, 6))
+	for k in 4:
+		_unit([&"us_halberd", &"us_bradley", &"us_lynx", &"us_halberd"][k], hq + Vector2i(12, 2 + k * 3), FX.ANG / 4)
+	_look(Vector2(hq.x + 8, hq.y + 7), 0)
+	m.cam.dist = 24.0
+	m.cam.target_dist = 24.0
+	await frames(50)
+	await shot("day_base")
+
+## M3.4 (Malachi: "Pack up animation for Russian minerals mining"): the excavator packing up,
+## shot at sim pack-up progress 0 (digging), 20, 40, 60, 80 % and as the vehicle it became.
+func run_packup() -> void:
+	await _start("ochre_wells", ["ecc", "us"], false)
+	var t := _bld(&"ecc_black_market", Vector2i(44, 40))
+	var b: SimEntity = null
+	for id in sim.ids:
+		if sim.ents[id].def_id == &"ecc_black_market" and sim.ents[id].alive and sim.ents[id].tile == t:
+			b = sim.ents[id]
+	var v: Node3D = m.world.views[b.id]
+	_look(Vector2(t.x + 1.5, t.y + 1.5), 0)
+	m.cam.dist = 14.0
+	m.cam.target_dist = 14.0
+	var cam := Camera3D.new()
+	add_child(cam)
+	cam.fov = 38
+	var c0 := v.global_position + Vector3(0, 0.7, 0)
+	cam.global_position = c0 + Vector3(4.2, 2.9, 4.6)
+	cam.look_at(c0)
+	cam.current = true
+	await frames(40)
+	await shot("packup_0_digging")
+	MineSys.pack(sim, 0, b)
+	var k := 1
+	for want in [0.2, 0.4, 0.6, 0.8]:
+		while MineSys.packing(sim, b) and MineSys.progress(sim, b) < want:
+			await get_tree().process_frame
+		await frames(3)
+		await shot("packup_%d_%02d" % [k, int(want * 100)])
+		k += 1
+	while b.alive:
+		await get_tree().process_frame
+	await frames(20)
+	await shot("packup_5_packed_vehicle")
+
+## M3.4: "+$N" popups over passive income structures (same floater as the supply trucks).
+func run_income() -> void:
+	await _start("ochre_wells", ["us", "eu"], false)
+	var hq := FX.to_tile(sim.ents[sim.ids[0]].pos)
+	var c := hq + Vector2i(8, 2)
+	for k in 2:
+		_bld(&"us_reactor", c + Vector2i(-4, 6 + k * 4))
+	var spots := [Vector2i(0, 0), Vector2i(5, 0), Vector2i(0, 5), Vector2i(5, 5)]
+	var defs := [&"us_drop_zone", &"eu_hub", &"tpla_bazaar", &"eu_exchange"]
+	for k in 4:
+		_bld(defs[k], c + spots[k])
+	_look(Vector2(c.x + 3.5, c.y + 4.5), 0)
+	m.cam.dist = 15.0
+	m.cam.target_dist = 15.0
+	await frames(30)
+	# one frame per structure as its popup rises (they are staggered over the 10 s window)
+	var seen := {}
+	var t0 := Time.get_ticks_msec()
+	while seen.size() < 4 and Time.get_ticks_msec() - t0 < 400000:
+		await get_tree().process_frame
+		for f in m.overlay.floaters:
+			var key := "%.1f,%.1f" % [f["p"].x, f["p"].z]
+			if float(f["t"]) > 0.35 and not seen.has(key):
+				seen[key] = true
+				await shot("income_popup_%d" % seen.size())
+				break
