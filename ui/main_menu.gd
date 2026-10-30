@@ -38,24 +38,30 @@ func build() -> void:
 			lb.name = "Load"
 			lb.pressed.connect(func(): GameSession.goto("res://ui/load_screen.tscn"))
 			row.add_child(lb)
-	# M3.4: Campaign, styled like the others, with a small "Coming soon" line; a tap says so
-	var camp := VBoxContainer.new()
-	camp.name = "CampaignEntry"
-	camp.add_theme_constant_override("separation", 0)
-	right.add_child(camp)
-	var cb := UiTheme.button(tr("MENU_CAMPAIGN"), Vector2(260, 52))
+	# M3.4: Campaign beside Map Builder (so the column still fits a phone in landscape), styled like
+	# the others, with a small "Coming soon" line inside it; a tap says so
+	var row2 := HBoxContainer.new()
+	row2.name = "CampaignRow"
+	row2.add_theme_constant_override("separation", 4)
+	right.add_child(row2)
+	var cb := UiTheme.button(tr("MENU_CAMPAIGN"), Vector2(128, 52))
 	cb.name = "Campaign"
-	cb.modulate = Color(1, 1, 1, 0.72)
+	cb.modulate = Color(1, 1, 1, 0.78)
+	cb.ready.connect(_lift_campaign_text.bind(cb))   # the menu theme's styles, text lifted for the label
 	cb.pressed.connect(_campaign_soon)
-	camp.add_child(cb)
+	row2.add_child(cb)
 	var soon := _shadowed(UiTheme.label(tr("MENU_COMING_SOON"), 11, UiTheme.GOLD), 3)
 	soon.name = "CampaignSoon"
 	soon.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	soon.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 	soon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	camp.add_child(soon)
-	var mb := UiTheme.button(tr("MENU_MAP_BUILDER"), Vector2(260, 52))   # M2.8
+	soon.set_anchors_preset(Control.PRESET_FULL_RECT)
+	soon.offset_bottom = -5
+	cb.add_child(soon)
+	var mb := UiTheme.button(tr("MENU_MAP_BUILDER"), Vector2(128, 52))   # M2.8
+	mb.name = "MapBuilder"
 	mb.pressed.connect(func(): GameSession.goto("res://ui/map_builder.tscn"))
-	right.add_child(mb)
+	row2.add_child(mb)
 	var s := UiTheme.button(tr("MENU_SETTINGS"), Vector2(260, 52))
 	s.pressed.connect(func(): GameSession.goto("res://ui/settings_screen.tscn"))
 	right.add_child(s)
@@ -365,6 +371,14 @@ func _exit_tree() -> void:
 	if _old_fps >= 0:
 		Engine.max_fps = _old_fps
 		_old_fps = -1
+
+func _lift_campaign_text(cb: Button) -> void:
+	for st in ["normal", "hover", "pressed", "focus", "disabled"]:
+		var sb := cb.get_theme_stylebox(st)
+		if sb != null:
+			sb = sb.duplicate()
+			sb.content_margin_bottom = maxf(sb.content_margin_bottom, 0.0) + 14.0
+			cb.add_theme_stylebox_override(st, sb)
 
 ## M3.4: "Coming soon" toast for the Campaign entry.
 var _toast: Label

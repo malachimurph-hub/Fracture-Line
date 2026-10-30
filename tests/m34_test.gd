@@ -469,7 +469,7 @@ static func _menu_campaign(t: Node) -> void:
 	var soon := menu.find_child("CampaignSoon", true, false) as Label
 	t._check(cb != null and soon != null and soon.text == "Coming soon", "the menu has a Campaign entry with a small 'Coming soon' line")
 	if cb != null:
-		t._check(cb.text == "Campaign" and cb.custom_minimum_size == Vector2(260, 52), "Campaign is styled like the other menu buttons")
+		t._check(cb.text == "Campaign" and (menu.find_child("MapBuilder", true, false) as Button).custom_minimum_size == cb.custom_minimum_size, "Campaign is styled like the other menu buttons (beside Map Builder)")
 		var scene0 := t.get_tree().current_scene
 		cb.pressed.emit()
 		await t.get_tree().process_frame

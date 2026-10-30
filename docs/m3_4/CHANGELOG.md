@@ -130,6 +130,6 @@ From Malachi's play-test of 0.3.5.
 
 ## Campaign (coming soon)
 
-- New **Campaign** entry on the main menu, under Skirmish and styled like the other buttons
+- New **Campaign** entry on the main menu, beside Map Builder under Skirmish, styled like the other buttons
   (dimmed), with a small "Coming soon" line under it. Tapping it shows a "Campaign: coming soon"
   toast; nothing else happens yet.
