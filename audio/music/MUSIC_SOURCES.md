@@ -41,7 +41,8 @@ existing works quoted). Pure synthesis, no samples. Regenerate: `python3 tools/g
 ## M3.4 United States music (Malachi's own tracks)
 
 Supplied by Malachi (his "USA MUSIC" Google Drive folder, made with Suno under his account; used
-with his permission as the game's owner). Converted from MP3 to OGG Vorbis 128 kbps, 44.1 kHz.
+with his permission as the game's owner). Converted from MP3 to OGG Vorbis 44.1 kHz (first 128 kbps; 56 kbps for the 0.3.6 release so the
+APK stays under 100 MB, together with the four Russia/Germany/Iran tracks, re-encoded to 56 kbps).
 
 | File | Title | Use |
 |---|---|---|
