@@ -608,7 +608,17 @@ func test_audio() -> void:
 	ad.battle_faction = &"ecc"
 	fac_ok = fac_ok and ad.battle_playlist()[0].contains("ru_steppe_march")
 	ad.battle_faction = &""
-	_check(fac_ok, "M3.2 faction battle music: US rock / Russia hard bass / Germany club / Iran war drums load")
+	_check(fac_ok, "M3.2 faction battle music: US / Russia hard bass / Germany club / Iran war drums load")
+	# M3.4: Malachi's US tracks; "Base Command" is the menu music and leads the US shuffle
+	ad.battle_faction = &"us"
+	var us_pl: Array = ad.battle_playlist()
+	ad.battle_faction = &""
+	_check(us_pl.size() == 4 and us_pl[0] == ad.MUSIC["menu"] and String(ad.MUSIC["menu"]).ends_with("us_base_command.ogg") and us_pl.all(func(x): return String(x).contains("/us_")),
+		"M3.4: US plays Malachi's four tracks, Base Command first and as the menu music")
+	var old_in := false
+	for d in [ad.MUSIC, ad.FACTION_PLAYLISTS]:
+		old_in = old_in or str(d).contains("liberty_steel") or str(d).contains("breach_point") or str(d).contains("iron_convoy")
+	_check(not old_in and FileAccess.file_exists("res://audio/music/superseded/.gdignore"), "M3.4: the old US rock tracks are out of the build")
 	var missing: Array = []
 	var units := 0
 	for fac in ad.manifest["factions"]:

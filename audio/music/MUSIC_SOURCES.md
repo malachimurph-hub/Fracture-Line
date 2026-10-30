@@ -37,3 +37,19 @@ Regenerate: `python3 tools/gen_music_m32.py [us ru de ir] [--sample OUTDIR]`.
 
 Original composition (melodies and harmony written for this game; no folk tunes, anthems or other
 existing works quoted). Pure synthesis, no samples. Regenerate: `python3 tools/gen_music_m33_ru.py [--sample OUTDIR]`.
+
+## M3.4 United States music (Malachi's own tracks)
+
+Supplied by Malachi (his "USA MUSIC" Google Drive folder, made with Suno under his account; used
+with his permission as the game's owner). Converted from MP3 to OGG Vorbis 128 kbps, 44.1 kHz.
+
+| File | Title | Use |
+|---|---|---|
+| us_base_command.ogg | Base Command | Main menu (loops); opens every US match, then in the US shuffle |
+| us_defend_the_border.ogg | Defend the Border | US in-match shuffle |
+| us_mission_accomplished.ogg | Mission Accomplished | US in-match shuffle |
+| us_zero_hour.ogg | Zero Hour Background | US in-match shuffle |
+
+The M2.9 rock tracks (Breach Point, Iron Convoy, Dust Devils, Last Light Rising, Steel Rain) and
+M3.2 Liberty Steel are retired to `superseded/` (`.gdignore`, not packaged; still reproducible
+with their generators). Other factions' music is unchanged.

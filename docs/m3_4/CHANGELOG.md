@@ -103,3 +103,12 @@ From Malachi's play-test of 0.3.5.
   own structures, only when on view; spectators see none.
 - Floaters (trucks too) get a thin dark outline so they read on bright ground; at most 40 alive
   (drawn text, no nodes).
+
+## United States music (Malachi's own tracks)
+
+- Malachi's four USA tracks from his Drive "USA MUSIC" folder, converted to OGG Vorbis 128 kbps
+  (10.8 MB total): **Base Command** is now the main-menu music (loops) and opens every US match;
+  the US in-match shuffle is Base Command, Defend the Border, Mission Accomplished and Zero Hour
+  Background. The old synthesized US/menu rock tracks (Breach Point, Iron Convoy, Dust Devils,
+  Last Light Rising, Steel Rain, Liberty Steel) are retired to `audio/music/superseded` and no
+  longer packaged. Russia, Germany and Iran music unchanged. Credits updated.

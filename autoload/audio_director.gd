@@ -32,16 +32,19 @@ const VARIANTS := {
 }
 const UI := {"click": "res://audio/ui/click.ogg", "select": "res://audio/ui/select.ogg", "error": "res://audio/ui/error.ogg",
 	"confirm": "res://audio/ui/confirm.ogg", "alert": "res://audio/ui/alert.ogg", "build_ready": "res://audio/ui/build_ready.ogg"}
-const MUSIC := {"menu": "res://audio/music/menu_breach_point.ogg", "battle": "res://audio/music/battle_iron_convoy.ogg"}
-## M2.9: in-match rock shuffle (original synthesized tracks, tools/gen_music_m29.py + gen_music.py)
-const BATTLE_PLAYLIST := ["res://audio/music/battle_iron_convoy.ogg", "res://audio/music/battle_dust_devils.ogg",
-	"res://audio/music/battle_last_light.ogg", "res://audio/music/battle_steel_rain.ogg"]
-## M3.2: battle music follows the local player's faction (tools/gen_music_m32.py): US rock,
-## Russia hard-bass techno, Germany Berlin club techno, Iran war drums + Persian instruments.
-## Unknown factions fall back to BATTLE_PLAYLIST. Menu stays rock (Breach Point).
+## M3.4: Malachi's own United States tracks (audio/music/us_*.ogg, from his "USA MUSIC" Drive
+## folder, OGG Vorbis 128 kbps). "Base Command" is the menu music (loops) and opens every US match.
+## The old synthesized rock tracks are kept in audio/music/superseded (not packaged).
+const MUSIC := {"menu": "res://audio/music/us_base_command.ogg", "battle": "res://audio/music/us_defend_the_border.ogg"}
+const US_PLAYLIST := ["res://audio/music/us_base_command.ogg", "res://audio/music/us_defend_the_border.ogg",
+	"res://audio/music/us_mission_accomplished.ogg", "res://audio/music/us_zero_hour.ogg"]
+## Fallback shuffle for a faction without its own list.
+const BATTLE_PLAYLIST := US_PLAYLIST
+## M3.2: battle music follows the local player's faction (tools/gen_music_m32.py): Russia
+## hard-bass techno + march, Germany Berlin club techno, Iran war drums + Persian instruments;
+## M3.4: the United States plays Malachi's tracks.
 const FACTION_PLAYLISTS := {
-	&"us": ["res://audio/music/battle_us_liberty_steel.ogg", "res://audio/music/battle_iron_convoy.ogg",
-		"res://audio/music/battle_dust_devils.ogg", "res://audio/music/battle_last_light.ogg"],
+	&"us": US_PLAYLIST,
 	&"ecc": ["res://audio/music/battle_ru_steppe_march.ogg", "res://audio/music/battle_ru_red_bounce.ogg"],
 	&"eu": ["res://audio/music/battle_de_tiefgarage.ogg"],
 	&"tpla": ["res://audio/music/battle_ir_zagros.ogg"],
@@ -220,6 +223,8 @@ func play_music(track: String) -> void:
 	if s == null:
 		_music.stop()
 		return
+	if s is AudioStreamOggVorbis:
+		(s as AudioStreamOggVorbis).loop = true   # M3.4: the menu track is also in the US shuffle (which unloops it)
 	_music.stream = s
 	_music.volume_db = -4.0
 	_music.play()
