@@ -1,6 +1,6 @@
 ## M3.4 (Malachi's 0.3.5 play-test): night lights that follow the vehicles' real headlights every
 ## frame, floodlights on buildings instead of a glow round them, and the infantry overhaul.
-## Also the Minerals Mining excavator's pack-up animation (_mine_packup).
+## Also the Minerals Mining excavator's pack-up animation (_mine_packup) and income popups.
 extends RefCounted
 const M33 := preload("res://tests/m33_test.gd")
 
@@ -10,6 +10,7 @@ static func run(t: Node) -> void:
 	_floodlights(t)
 	_structure_fill(t)
 	_mine_packup(t)
+	_income_popups(t)
 	if ResourceLoader.exists("res://tests/m34_inf_test.gd"):
 		await load("res://tests/m34_inf_test.gd").run(t)
 
@@ -306,3 +307,78 @@ static func _mine_packup(t: Node) -> void:
 				"Set Up plays it in reverse, in step with the set-up timer (%.2f)" % mv.pack_target)
 	t.remove_child(wv)
 	wv.free()
+
+# ------------------------------------------------------------------ passive income popups
+## Malachi: "For all passive income buildings, have the amount it generates pop up and fade like
+## supply trucks do". IncomePopups works out each structure's earnings from the sim (view only)
+## and match.gd shows them with the truck's "+$N" floater every 10 s per structure.
+static func _income_popups(t: Node) -> void:
+	var r := M33._runner(["us", "eu"])
+	var w := r.sim
+	var placed := {}
+	for pid in 2:
+		var hq := M33._hq(w, pid)
+		var k := 0
+		for did in [&"us_reactor", &"us_reactor", &"us_drop_zone", &"eu_hub", &"eu_exchange", &"tpla_bazaar", &"eu_hub"]:
+			var st := M33.spot(w, pid, did, hq.tile + Vector2i(6, 4), k)
+			var b := w._place_building(Content.building(did), pid, st, 0, true)
+			placed[b.id] = did
+			k += 1
+	var pops := IncomePopups.new()
+	pops.step(w, 0)   # the snapshot before the first economy second
+	var got := {}        ## id -> [count, total]
+	var bad: Array = []
+	var seconds := 0
+	var ref := r.sim.state_hash()
+	for i in 61 * 20:
+		var h0: int = w.players[0].stats["harvested"]
+		r.advance()
+		var unl := 0
+		for ev in w.events:
+			if ev["t"] == "unload" and ev.has("amount"):
+				var u := w.get_ent(int(ev["id"]))
+				if u != null and u.owner == 0:
+					unl += int(ev["amount"])
+		var due := pops.step(w, 0)
+		if IncomePopups.econ_ran(w):
+			seconds += 1
+			var sum := 0.0
+			for id in pops.last:
+				sum += float(pops.last[id])
+			var real: int = w.players[0].stats["harvested"] - h0 - unl
+			if absf(sum - real) > 0.01 and bad.size() < 4:
+				bad.append("t=%d: popups %.2f, sim paid %d" % [w.tick, sum, real])
+		for pu in due:
+			var e: SimEntity = pu[0]
+			var g: Array = got.get(e.id, [0, 0])
+			g[0] += 1
+			g[1] += int(pu[1])
+			got[e.id] = g
+	t._check(seconds == 61 and bad.is_empty(), "income popups add up to what the sim actually paid, every second (%d s)%s" % [seconds, "" if bad.is_empty() else ": " + str(bad)])
+	var mine := 0
+	var theirs := 0
+	var kinds := {}
+	for id in got:
+		var e := w.get_ent(id)
+		if e.owner == 0:
+			mine += 1
+			kinds[e.def_id] = true
+		else:
+			theirs += 1
+	t._check(theirs == 0 and mine >= 4 and kinds.size() == 4, "every kind of income structure the player owns pops its payout (%s), never the enemy's" % str(kinds.keys()))
+	var each_ok := true
+	for id in got:
+		each_ok = each_ok and int(got[id][0]) >= 5 and int(got[id][0]) <= 7 and int(got[id][1]) > 0
+	t._check(each_ok, "each structure pops about every 10 s (%s)" % str(got.values().slice(0, 5)))
+	# a Data Center ($500 / min) shows about $500 a minute in its popups
+	var dz := 0
+	for id in got:
+		if w.get_ent(id).def_id == &"us_drop_zone":
+			dz += int(got[id][1])
+	t._check(w.players[0].low_power or (dz >= 400 and dz <= 600), "a Data Center's popups add up to about its $500 a minute ($%d in 61 s, low power %s)" % [dz, w.players[0].low_power])
+	t._check(IncomePopups.shares(w, -1).is_empty(), "no popups for a spectator")
+	var src := FileAccess.get_file_as_string("res://match/match.gd")
+	t._check(src.contains("_income.step(runner.sim, local_pid)") and src.contains("\"+$%d\" % int(pu[1]), Color(\"#ffd166\"))") and src.contains("bv.visible"),
+		"the match shows them with the supply-truck floater (same text, colour, rise and fade), only for structures on view")
+	var ov := FileAccess.get_file_as_string("res://ui/hud/world_overlay.gd")
+	t._check(ov.contains("IncomePopups.MAX_FLOATERS"), "floaters are capped (drawn text, no nodes)")

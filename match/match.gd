@@ -181,7 +181,15 @@ func _process(delta: float) -> void:
 	if runner.sim.game_over:
 		_game_over(delta)
 
+var _income := IncomePopups.new()   ## M3.4: popups over every passive income structure
+
 func _income_floaters(evs: Array) -> void:
+	if local_pid >= 0:
+		for pu in _income.step(runner.sim, local_pid):
+			var b: SimEntity = pu[0]
+			var bv: EntityView = world.views.get(b.id)
+			if bv != null and bv.visible:
+				overlay.floater(FX.to_world(b.pos) + Vector3(0, maxf(0.0, bv.bar_height - 1.0), 0), "+$%d" % int(pu[1]), Color("#ffd166"))
 	for ev in evs:
 		if ev["t"] == "unload":
 			var u := runner.sim.get_ent(int(ev["id"]))

@@ -91,3 +91,15 @@ From Malachi's play-test of 0.3.5.
   reverse. A cancelled pack-up eases back out.
 - Model split into separately posed parts (`tools/gfx_m33/new_m33.gd`, re-baked in its old atlas
   slot); `view/buildings/pack_rig.gd` poses them (a node transform each, no extra draw calls).
+
+## Income popups (Malachi: "For all passive income buildings, have the amount it generates pop up and fade like supply trucks do")
+
+- Every passive income structure you own (Data Center, EU Hub, Automotive Plant, Oil Derrick,
+  captured pumps; the Russian mine already popped its $400 lump sum) now shows a "+$N" popup
+  with the supply trucks' floater (same colour, rise and fade) every 10 s: what that structure
+  earned in those 10 s (it pays every second, which would be too noisy). Staggered per
+  structure. Worked out on the view side from the same rules as the economy (up to four copies
+  pay, low power halves, Logistics doubles); exactly what the sim paid, no sim change. Only your
+  own structures, only when on view; spectators see none.
+- Floaters (trucks too) get a thin dark outline so they read on bright ground; at most 40 alive
+  (drawn text, no nodes).

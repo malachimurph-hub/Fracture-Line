@@ -20,6 +20,8 @@ func _ready() -> void:
 		await run_inf_close(p.substr(4))
 	elif p == "packup":
 		await run_packup()
+	elif p == "income":
+		await run_income()
 	print("=== M34 SHOTS DONE")
 	get_tree().quit(0)
 
@@ -139,3 +141,30 @@ func run_packup() -> void:
 		await get_tree().process_frame
 	await frames(20)
 	await shot("packup_5_packed_vehicle")
+
+## M3.4: "+$N" popups over passive income structures (same floater as the supply trucks).
+func run_income() -> void:
+	await _start("ochre_wells", ["us", "eu"], false)
+	var hq := FX.to_tile(sim.ents[sim.ids[0]].pos)
+	var c := hq + Vector2i(8, 2)
+	for k in 2:
+		_bld(&"us_reactor", c + Vector2i(-4, 6 + k * 4))
+	var spots := [Vector2i(0, 0), Vector2i(5, 0), Vector2i(0, 5), Vector2i(5, 5)]
+	var defs := [&"us_drop_zone", &"eu_hub", &"tpla_bazaar", &"eu_exchange"]
+	for k in 4:
+		_bld(defs[k], c + spots[k])
+	_look(Vector2(c.x + 3.5, c.y + 4.5), 0)
+	m.cam.dist = 15.0
+	m.cam.target_dist = 15.0
+	await frames(30)
+	# one frame per structure as its popup rises (they are staggered over the 10 s window)
+	var seen := {}
+	var t0 := Time.get_ticks_msec()
+	while seen.size() < 4 and Time.get_ticks_msec() - t0 < 400000:
+		await get_tree().process_frame
+		for f in m.overlay.floaters:
+			var key := "%.1f,%.1f" % [f["p"].x, f["p"].z]
+			if float(f["t"]) > 0.35 and not seen.has(key):
+				seen[key] = true
+				await shot("income_popup_%d" % seen.size())
+				break
