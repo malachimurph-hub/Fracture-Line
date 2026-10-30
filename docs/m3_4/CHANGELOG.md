@@ -1,5 +1,26 @@
 # M3.4 (0.3.6, versionCode 20)
 
+## Build
+- APK: `FractureLine-M3.4.apk`, 97,856,295 bytes (93.3 MiB, under the 100 MB limit). arm64-v8a.
+- SHA256: `c2737db6491ecafaa0dbd77a8fabe89ac68938cd82ef6e74dda2006d99615fef`
+- Package com.malachimurphy.fractureline, label "Fracture Line", versionName 0.3.6, versionCode 20,
+  same key as the earlier test APKs (certificate SHA-256 7e96c70a…ce54), so it installs over 0.3.5.
+  `apksigner verify` passes (v2 and v3).
+- Size: the first export was 107.0 MB, so all eight music tracks were re-encoded to 56 kbps OGG.
+- Built from master d1008a7 (merge of m34 492d438) plus bd0e3a1 (APK export path).
+- Release-engine checks (LinuxVerify, same stripped engine profile): the UI flow passes 162 of 162;
+  content, map_builder and wb pass; m34 passes its live menu battle and Campaign checks. No
+  `Image.create` in game code. The only misses are checks that read script source, tools or
+  `.gdignore` files, which the export does not ship (m33 4, m34 4 plus the infantry bake test,
+  audio 1).
+- The "Too many instances using shader instance variables" error shows up 17 times in the release UI flow on the box.
+  The 0.3.5 (M3.3) build shows the same 17. It comes from the box's software OpenGL limit of 4096
+  items. Phones use the Vulkan Mobile renderer with a 262,144-item buffer, so it is not new and
+  does not apply there.
+- Uploaded to Google Drive (My Drive root), file id `1YaDQFSmzB7e2TfAMOn1NtZdT2CiB2rTX`.
+- Play bundle: `builds/play/FractureLine.aab`, 93,066,127 bytes, versionCode 20, upload-key signed.
+  Not uploaded. The 0.3.5 bundle is kept in `builds/play/superseded/`.
+
 From Malachi's play-test of 0.3.5.
 
 ## Night lights
