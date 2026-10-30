@@ -112,3 +112,18 @@ From Malachi's play-test of 0.3.5.
   Background. The old synthesized US/menu rock tracks (Breach Point, Iron Convoy, Dust Devils,
   Last Light Rising, Steel Rain, Liberty Steel) are retired to `audio/music/superseded` and no
   longer packaged. Russia, Germany and Iran music unchanged. Credits updated.
+
+## Live battle behind the main menu
+
+- The main menu plays a live battle again (`ui/menu_battle.gd`, a rewrite of the M2.6 to M3.0.1
+  backdrop that was removed in 0.3.1): big vehicle battles only (tanks, IFVs, self-propelled
+  guns, helicopters and jets flying from each side's airfield, no infantry) between two random
+  factions in front of their bases, with explosions, smoke and burning wrecks. Four slow
+  high, wide camera moves (pan along the front, orbit, crane over a base, diagonal fly-over),
+  each about 16 s; three per map, then it fades to the key art and moves to the next map,
+  alternating day and night (night: headlights, floodlights, street lamps, muzzle flashes).
+- Phone budget: at most 16 units a side, lighter effects, no shadows, 67% render scale, the
+  menu capped at 30 fps, the sim at most 2 steps a frame (it slows down rather than bursting).
+  If the frame rate stays under 22 fps for 4 s it fades out and the static key art stays for the
+  rest of the session; the Low preset and the compatibility renderer always use the key art.
+- A subtle dark vignette behind the buttons keeps them and the emblem readable.
