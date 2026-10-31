@@ -79,3 +79,10 @@ used with his permission as the game's owner). Converted from MP3 (48 kHz stereo
 
 Russia keeps the M3.3 "Steppe March"; Iran keeps "Zagros". The synthesized Russian hard bass
 "Red Bounce" is superseded by "Moscow Techno" and moved to `superseded/` (not packaged).
+
+## 0.4.0 size fit (Malachi approved lower music quality)
+All 20 packaged tracks re-encoded from their best sources (Malachi's original MP3s; the
+synthesized Tiefgarage / Zagros / Steppe March from their 128 kbps OGGs) to OGG Vorbis **mono,
+16 kHz, 17 kbps nominal** (~20 kbps actual), so the full-soundtrack APK stays under 99 MB
+(music 21.3 MB -> 8.8 MB). Stereo at 44.1 kHz cannot go below ~45 kbps in libvorbis, and mono
+22 kHz below ~29 kbps; both would not fit.
