@@ -29,7 +29,8 @@ const RETIRED_UNITS := {&"eu_aegis": &"eu_heavy_factory", &"eu_brennus": &"eu_he
 	&"tpla_militia": &"tpla_camp", &"tpla_rocket_cell": &"tpla_camp", &"ecc_rifleman": &"ecc_barracks",
 	&"ecc_machine_gunner": &"ecc_barracks", &"ecc_rpg": &"ecc_barracks", &"eu_spectre": &"eu_motor_pool", &"eu_sentinel": &"eu_motor_pool"}
 ## M3.5: Germany's Heavy Factory merged into the Motor Pool (def kept, not buildable: old saves).
-const RETIRED_BUILDINGS := [&"eu_heavy_factory"]
+## M3.7: Iran has one power plant (the Gas Processing Plant); the Gas Turbine Plant is retired the same way.
+const RETIRED_BUILDINGS := [&"eu_heavy_factory", &"tpla_gas_plant"]
 
 ## M3.5 Combat Squads (Malachi: "3 Rifleman 1 Machine Gunner 1 anti Tank troop 1 grenadier").
 ## One selectable unit of six soldiers with one pooled HP bar. Members are listed leader first:
@@ -63,7 +64,7 @@ const US_BUILDING_ORDER := [&"us_command", &"us_reactor", &"us_supply_center", &
 ## single soldiers). Engineer, Cargo Truck and every building are stand-ins until his list covers them.
 const ECC_UNIT_ORDER := [&"ecc_engineer", &"ecc_cargo_truck", &"ecc_squad", &"ecc_infiltrator", &"ecc_saboteur", &"ecc_drone_operator", &"ecc_tigr", &"ecc_btr", &"ecc_typhoon", &"ecc_t90", &"ecc_zeus", &"ecc_msta", &"ecc_ka52", &"ecc_su57", &"ecc_tu160"]
 const ECC_BUILDING_ORDER := [&"ecc_hq", &"ecc_power", &"ecc_depot", &"ecc_barracks", &"ecc_factory", &"ecc_airfield", &"ecc_ministry", &"ecc_black_market", &"ecc_bunker", &"ecc_aa_site", &"ecc_sandbags", &"ecc_barricade"]
-const TPLA_BUILDING_ORDER := [&"tpla_den", &"tpla_gas_plant", &"tpla_cc_plant", &"tpla_stash", &"tpla_camp", &"tpla_chop_shop", &"tpla_tunnel", &"tpla_workshop", &"tpla_bazaar", &"tpla_demo_trap", &"tpla_camo_net", &"tpla_wasp_nest", &"tpla_airfield", &"tpla_sandbags", &"tpla_barricade"]
+const TPLA_BUILDING_ORDER := [&"tpla_den", &"tpla_cc_plant", &"tpla_stash", &"tpla_camp", &"tpla_chop_shop", &"tpla_tunnel", &"tpla_workshop", &"tpla_bazaar", &"tpla_demo_trap", &"tpla_camo_net", &"tpla_wasp_nest", &"tpla_airfield", &"tpla_sandbags", &"tpla_barricade"]
 
 ## Playable factions (skirmish). "power": whether the faction uses the power economy.
 const FACTIONS := {

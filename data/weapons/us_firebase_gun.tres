@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_s")
 id = &"us_firebase_gun"
-damage = 90
+damage = 144
 range_mt = 10000
 min_range_mt = 1500
 cooldown_ms = 2500

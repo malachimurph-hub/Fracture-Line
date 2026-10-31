@@ -5,11 +5,11 @@
 [resource]
 script = ExtResource("1_s")
 id = &"ecc_zak30_gnd"
-damage = 7
+damage = 11
 range_mt = 7000
 min_range_mt = 0
 cooldown_ms = 120
-damage_type = &"quad"
+damage_type = &"aa_ground"
 splash_mt = 0
 targets_air = false
 targets_ground = true

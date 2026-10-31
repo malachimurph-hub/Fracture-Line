@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_s")
 id = &"tpla_tunnel_mg"
-damage = 15
+damage = 24
 range_mt = 6000
 min_range_mt = 0
 cooldown_ms = 450

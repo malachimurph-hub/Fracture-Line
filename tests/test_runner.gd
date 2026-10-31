@@ -104,6 +104,8 @@ func _ready() -> void:
 			await load("res://tests/m34_test.gd").run(self)   # M3.4 night lights + infantry
 		"m35":
 			await load("res://tests/m35_test.gd").run(self)   # M3.5 menu, squads, poses, factions
+		"m37":
+			await load("res://tests/m37_test.gd").run(self)   # M3.7 balance update
 		"stall":
 			var r2 := MatchRunner.new()
 			r2.record_replay = false
@@ -1221,9 +1223,9 @@ func test_tpla() -> void:
 	_ticks(r, 2)
 	var p0: SimPlayer = w.players[0]
 	_check(Content.faction(&"tpla")["power"] and p0.low_power, "TPLA goes into low power without a Gas Turbine Plant (prod=%d used=%d)" % [p0.power_prod, p0.power_used])
-	_tpla_place(w, 0, &"tpla_gas_plant", base)
+	_tpla_place(w, 0, &"tpla_cc_plant", base)   # M3.7: Iran's one power plant
 	_ticks(r, 12)
-	_check(not p0.low_power and p0.power_prod == 5 + 8, "a Gas Turbine Plant powers the base (prod=%d used=%d low=%s)" % [p0.power_prod, p0.power_used, p0.low_power])
+	_check(not p0.low_power and p0.power_prod == 5 + 10, "a Gas Processing Plant powers the base (prod=%d used=%d low=%s)" % [p0.power_prod, p0.power_used, p0.low_power])
 	r.issue({"p": 0, "t": "queue", "target": camp.id, "def": "tpla_militia", "n": 3})
 	_ticks(r, 20 * 20)
 	var mil: Array = []

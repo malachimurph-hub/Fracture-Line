@@ -69,9 +69,9 @@ us_up_drones,UNIT_US_UP_DRONES,1500,30000,0,,upgrade,1,infantry,,0,foot,0,100,0,
 us_breacher,UNIT_US_BREACHER,350,6000,1,,infantry|capturer,120,infantry,sidearm,1250,foot,7,360,0,0,0,infantry,,,0,0,0,0,0,0
 eu_sturmtrupp,UNIT_EU_STURMTRUPP,350,6000,1,,infantry|capturer,120,infantry,sidearm,1250,foot,7,360,0,0,0,infantry,,,0,0,0,0,0,0
 ecc_saboteur,UNIT_ECC_SABOTEUR,350,6000,1,,infantry|capturer,120,infantry,sidearm,1250,foot,7,360,0,0,0,infantry,,,0,0,0,0,0,0
-us_squad,UNIT_US_SQUAD,900,11000,3,,infantry|garrison|squad,660,infantry,us_m16|us_m240b|us_javelin|us_m203,1100,foot,8,520,0,0,0,infantry,,,0,0,0,0,0,0
-eu_squad,UNIT_EU_SQUAD,900,11000,3,,infantry|garrison|squad,640,infantry,eu_rifle|eu_mg3|eu_lancer_missile|eu_ag36,1100,foot,8,520,0,0,0,infantry,,,0,0,0,0,0,0
-tpla_squad,UNIT_TPLA_SQUAD,800,11000,3,,infantry|garrison|squad,560,infantry,tpla_carbine|tpla_pkm|tpla_rpg|tpla_gp25,1200,foot,8,520,0,0,0,infantry,,,0,0,0,0,0,0
-ecc_squad,UNIT_ECC_SQUAD,900,11000,3,,infantry|garrison|squad,660,infantry,ecc_ak74|ecc_pkm|ecc_rpg7|ecc_gp25,1100,foot,8,520,0,0,0,infantry,,,0,0,0,0,0,0
+us_squad,UNIT_US_SQUAD,900,11000,3,,infantry|garrison|squad,440,infantry,us_m16|us_m240b|us_javelin|us_m203,1100,foot,8,520,0,0,0,infantry,,,0,0,0,0,0,0
+eu_squad,UNIT_EU_SQUAD,900,11000,3,,infantry|garrison|squad,430,infantry,eu_rifle|eu_mg3|eu_lancer_missile|eu_ag36,1100,foot,8,520,0,0,0,infantry,,,0,0,0,0,0,0
+tpla_squad,UNIT_TPLA_SQUAD,800,11000,3,,infantry|garrison|squad,375,infantry,tpla_carbine|tpla_pkm|tpla_rpg|tpla_gp25,1200,foot,8,520,0,0,0,infantry,,,0,0,0,0,0,0
+ecc_squad,UNIT_ECC_SQUAD,900,11000,3,,infantry|garrison|squad,440,infantry,ecc_ak74|ecc_pkm|ecc_rpg7|ecc_gp25,1100,foot,8,520,0,0,0,infantry,,,0,0,0,0,0,0
 ecc_drone_operator,UNIT_ECC_DRONE_OPERATOR,600,9000,1,ecc_ministry,infantry|garrison|drone_operator,180,infantry,ecc_ak74,1150,foot,9,360,0,0,0,infantry,,,0,0,0,0,0,0
 ecc_bomb_drone,UNIT_ECC_BOMB_DRONE,0,1000,0,,air|helicopter|drone|suicide,70,air,us_drone_bomb,6500,air,6,300,0,0,0,air_strike,,heli,360,300,0,0,0,0

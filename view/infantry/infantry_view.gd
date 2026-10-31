@@ -8,7 +8,7 @@ extends EntityView
 ## carry the weapon that fired take the shooting pose. Machine gunners whose bake has the
 ## prone clips drop prone to fire (and get up again after a pause or to move); anti-tank
 ## gunners kneel (bake fire_kneel = 2). Members fall from the end of the list first, as the sim's
-## pool drains. A dug-in squad sits in a foxhole (dirt berm, soldiers a little lower).
+## pool drains.
 @export var vat: VatModel
 @export var formation: PackedVector3Array = PackedVector3Array([Vector3(-0.2, 0, -0.16), Vector3(0.2, 0, -0.14), Vector3(-0.16, 0, 0.2), Vector3(0.2, 0, 0.2)])
 @export var squad_id: StringName = &""
@@ -16,7 +16,6 @@ const SHADER := preload("res://view/infantry/vat_soldier.gdshader")
 const FIRE_HOLD := 0.7          ## seconds a soldier keeps the shooting pose after a shot
 const PRONE_HOLD := 2.5         ## M3.5: a machine gunner stays down this long after his last burst
 const CORPSE_S := 3.0           ## fallen soldiers fade over this long, then vanish
-const FOX_SINK := 0.05          ## M3.5: dug-in soldiers stand this much lower (in the hole)
 ## states: 0 idle 1 run 2 fire 3 dead 4 lean 5 walk 6 going prone 7 prone fire 8 getting up
 const ST_CLIPS := ["idle", "run", "fire", "die", "lean", "walk", "prone_down", "fire_prone", "prone_up"]
 static var _mats: Dictionary = {}
@@ -40,9 +39,17 @@ var dying := false
 var braced := false               ## M3.3 item 10: manning a barricade (line up, lean over it)
 var variant := 0                  ## M3.4: look variant (head gear / packs) of this soldier
 var _scale := 1.0                 ## M3.4: slight per-soldier size variation
-var dig := 0.0                    ## M3.5: foxhole 0 none .. 1 dug in
-var _fox: MeshInstance3D
 const SKIN_TONES := [1.0, 0.72, 0.88, 1.08]
+## M3.7 (Malachi: wider squad spacing, members scatter): a Combat Squad's formation is spread
+## SQUAD_SPREAD times wider and every soldier stands off his slot by up to SCATTER (re-rolled
+## each time the squad stops, eased in), never closer than MIN_GAP to a mate. View only.
+const SQUAD_SPREAD := 1.6
+const SCATTER := 0.14
+const MIN_GAP := 0.26
+var _base_form := PackedVector3Array()
+var _goal_form := PackedVector3Array()
+var _was_moving := false
+var _rng := RandomNumberGenerator.new()
 
 func _ready() -> void:
 	super._ready()
@@ -97,8 +104,36 @@ func _ready() -> void:
 		_phase[i] = fposmod(i * 0.37, 1.0)
 		_t[i] = _phase[i]
 		_fire_left[i] = -99.0
+	if squad_id != &"" and _n > 1:
+		_base_form = formation.duplicate()
+		for i in _n:
+			_base_form[i] = Vector3(_base_form[i].x, 0.0, _base_form[i].z) * SQUAD_SPREAD
+		_rng.seed = hash(get_instance_id())
+		_goal_form = _scattered()
+		formation = _goal_form.duplicate()
+		for inst in mmis:
+			(inst as MultiMeshInstance3D).custom_aabb = AABB(Vector3(-1.3, -0.1, -1.3), Vector3(2.6, (inst as MultiMeshInstance3D).custom_aabb.size.y, 2.6))
 	_place_all()
 	_apply()
+
+## M3.7: a fresh loose spread around the widened formation (rejection-sampled for MIN_GAP).
+func _scattered() -> PackedVector3Array:
+	var out := PackedVector3Array()
+	out.resize(_n)
+	for i in _n:
+		var best := _base_form[i]
+		for attempt in 8:
+			var c := _base_form[i] + Vector3(_rng.randf_range(-SCATTER, SCATTER), 0.0, _rng.randf_range(-SCATTER, SCATTER))
+			var ok := true
+			for j in i:
+				if Vector2(c.x - out[j].x, c.z - out[j].z).length() < MIN_GAP:
+					ok = false
+					break
+			if ok:
+				best = c
+				break
+		out[i] = best
+	return out
 
 static func _material(v: VatModel) -> ShaderMaterial:
 	if _mats.has(v):
@@ -122,7 +157,7 @@ func _mm(i: int) -> MultiMesh:
 func _place_all() -> void:
 	if mmis.is_empty():
 		return
-	var sink := -FOX_SINK * dig if dig >= 1.0 else 0.0
+	var sink := 0.0
 	for i in _n:
 		if _state.size() > i and _state[i] == 3 and _dead_t[i] > CORPSE_S:
 			continue
@@ -199,36 +234,6 @@ func set_braced(on := true) -> void:
 	braced = on
 	_place_all()
 
-## M3.5 WorldView: foxhole progress (0 = none, 0..1 digging, 1 = dug in). A low dirt berm rings
-## the squad, growing while they dig; dug in, the soldiers stand a little lower, in the hole.
-func set_dig(k: float) -> void:
-	if absf(k - dig) < 0.01:
-		return
-	var was_in := dig >= 1.0
-	dig = k
-	if k > 0.0 and _fox == null:
-		_fox = MeshInstance3D.new()
-		_fox.name = "Foxhole"
-		var tm := TorusMesh.new()
-		tm.inner_radius = 0.34
-		tm.outer_radius = 0.5
-		tm.rings = 24
-		tm.ring_segments = 8
-		_fox.mesh = tm
-		var mat := StandardMaterial3D.new()
-		mat.albedo_color = Color("#5e4a35")
-		mat.roughness = 1.0
-		_fox.material_override = mat
-		_fox.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		add_child(_fox)
-	if _fox != null:
-		_fox.visible = k > 0.0 and not dying
-		var s := clampf(k, 0.0, 1.0)
-		_fox.scale = Vector3(1.0, 0.04 + 0.2 * s, 1.0) * (0.75 + 0.25 * s)
-		_fox.position = Vector3(0, -0.01, 0)
-	if was_in != (dig >= 1.0):
-		_place_all()
-
 ## WorldView: a shot was fired by this squad. M3.5: with a weapon id only its carriers shoot.
 func on_fire(wid: StringName = &"") -> void:
 	for i in _n:
@@ -272,8 +277,6 @@ func play_death() -> float:
 	dying = true
 	while _alive > 0:
 		_kill_one()
-	if _fox != null:
-		_fox.visible = false
 	return CORPSE_S + 0.2
 
 func _process(delta: float) -> void:
@@ -285,6 +288,18 @@ func _process(delta: float) -> void:
 	_last_pos = p
 	var moving := _speed > 0.25 and not dying
 	var slow := _speed < 0.7
+	if not _goal_form.is_empty():
+		if moving != _was_moving:
+			_goal_form = _base_form.duplicate() if moving else _scattered()
+			_was_moving = moving
+		var k := minf(1.0, delta * 1.5)
+		var changed := false
+		for i in _n:
+			if formation[i].distance_squared_to(_goal_form[i]) > 0.00001:
+				formation[i] = formation[i].lerp(_goal_form[i], k)
+				changed = true
+		if changed:
+			_place_all()
 	for i in _n:
 		_fire_left[i] = maxf(-99.0, _fire_left[i] - delta)
 		if _state[i] == 3:

@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_s")
 id = &"tpla_wasp_missile"
-damage = 30
+damage = 48
 range_mt = 7000
 min_range_mt = 0
 cooldown_ms = 500

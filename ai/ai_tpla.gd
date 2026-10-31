@@ -141,14 +141,12 @@ func _next_building() -> StringName:
 	var counts := {}
 	for b: SimEntity in my_ents(SimEntity.Kind.BUILDING):
 		counts[b.def_id] = counts.get(b.def_id, 0) + 1
-	# M3.3: Iran runs on power now (Gas Turbine Plants): keep a little headroom ahead of the build list
+	# M3.3: Iran runs on power: keep a little headroom ahead of the build list. M3.7: one plant
+	# type, the Gas Processing Plant (no prerequisite).
 	var pw := me()
 	if counts.get(&"tpla_den", 0) > 0 and pw.power_prod - pw.power_used < 3:
-		# M3.3: once the Defence Workshop is up and money allows, the Combined-Cycle Gas Plant
-		if counts.get(&"tpla_workshop", 0) > 0 and pw.supply >= Content.building(&"tpla_cc_plant").cost + 400:
+		if pw.supply >= Content.building(&"tpla_cc_plant").cost:
 			return &"tpla_cc_plant"
-		if pw.supply >= Content.building(&"tpla_gas_plant").cost:
-			return &"tpla_gas_plant"
 	var desired := {}
 	for item in persona.opening:
 		var id := StringName(item)
