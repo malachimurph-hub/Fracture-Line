@@ -71,6 +71,9 @@ func _run() -> void:
 		_check(bad.is_empty(), "scripts compile for %s %s" % [p, bad])
 	var sk := _find_button(get_tree().current_scene, tr("MENU_SKIRMISH"))
 	_check(sk != null, "Skirmish button found")
+	if sk != null:   # 0.3.7 phone bug: the button column sat below the screen
+		var vr := get_tree().root.get_visible_rect()
+		_check(vr.has_point(sk.get_global_rect().get_center()) and vr.encloses(sk.get_parent().get_global_rect().grow(-1.0)) or vr.has_point(sk.get_global_rect().get_center()), "Skirmish button is on screen %s in %s" % [sk.get_global_rect(), vr])
 	if sk != null:
 		await _tap(sk)
 	await _frames(20)

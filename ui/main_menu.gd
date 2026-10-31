@@ -175,6 +175,7 @@ func _logo_block() -> VBoxContainer:
 	ver.name = "Build"
 	ver.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	ver.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART   # wraps under the logo (never widens the corner)
+	ver.custom_minimum_size.x = 120.0   # 0.3.7 fix: never wrap per letter before _fit_title runs (that made the body far too tall)
 	_ver = ver
 	ver.size_flags_horizontal = Control.SIZE_SHRINK_END
 	v.add_child(ver)

@@ -20,7 +20,13 @@ func _ready() -> void:
 	body = MarginContainer.new()
 	add_child(body)
 	UiScale.changed.connect(_fit)
+	# 0.3.7 fix: body grew to a stale, too-tall size when a child's minimum size spiked during the
+	# first layout (the main menu's centred button column then sat below the screen on phones).
+	# Re-fit on our own resize, when body's minimum size changes, and once after the first frame.
+	resized.connect(_fit)
+	body.minimum_size_changed.connect(_fit, CONNECT_DEFERRED)   # a container never shrinks back by itself
 	_fit()
+	_fit.call_deferred()
 	build()
 
 func _fit() -> void:
