@@ -1127,6 +1127,8 @@ func frame(a: float, delta: float) -> void:
 					v.turret.rotation.y = lerp_angle(v.turret.rotation.y, ang, minf(1.0, delta * 10.0))
 				else:
 					v.turret.rotation.y = lerp_angle(v.turret.rotation.y, 0.0, minf(1.0, delta * 3.0))
+			if ud.harvest_capacity > 0 and not v is InfantryView:
+				OilLoad.update(v, e.carry, ud.harvest_capacity)   # M3.5: oil drums for export in the bed
 			if v is VehicleView and ud.tags.has("artillery"):   # M3.5: raise before the shot, lower after
 				(v as VehicleView).aiming = e.target != 0 and not e.moving and sim.get_ent(e.target) != null
 			# M3.3: builders animate (blade / backhoe arm / crane boom) while they work at a site

@@ -799,7 +799,10 @@ func _refresh_selection_info() -> void:
 	_fill_types([])
 	sel_name.text = ent_name(e)
 	var lines: Array = []
-	if e.kind == SimEntity.Kind.RESOURCE:
+	if e.kind == SimEntity.Kind.RESOURCE and e.def_id == &"cache":
+		lines.append(tr("HUD_OIL_LEFT") % e.amount)   # M3.5: crude oil reserve, sold for export
+		lines.append(tr("RES_CACHE_TIP"))
+	elif e.kind == SimEntity.Kind.RESOURCE:
 		lines.append(tr("HUD_SUPPLY_LEFT") % e.amount)
 	elif e.kind == SimEntity.Kind.CRATE:
 		lines.append(tr("HUD_CRATE_VALUE") % e.amount)

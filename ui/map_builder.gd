@@ -328,7 +328,7 @@ func asset_categories() -> Array:
 	for si in SkirmishConfig.SLOTS:
 		starts.append({"t": "spawn", "slot": si, "label": "Start %d" % (si + 1)})
 	cats.append(["Start positions", starts])
-	cats.append(["Supplies", [{"t": "res", "kind": "seam", "label": "Supply seam"}, {"t": "res", "kind": "cache", "label": "Supply cache"}]])
+	cats.append(["Supplies", [{"t": "res", "kind": "seam", "label": "Supply seam"}, {"t": "res", "kind": "cache", "label": "Crude oil reserve"}]])
 	var neu: Array = []
 	var nids: Array = Content.buildings.keys()
 	nids.sort()

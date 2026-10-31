@@ -248,7 +248,7 @@ REASON_TERRAIN,Can't build on that ground
 UNIT_EU_CRAWLER,Engineer Crane
 UNIT_EU_CRAWLER_DESC,"Wheeled mobile site crane. Builds and repairs German structures."
 UNIT_EU_HARVESTER,Logistics Truck
-UNIT_EU_HARVESTER_DESC,Heavy 6x6 military logistics truck. Hauls supplies to a Supply Hub; a roof machine gun for self-defence.
+UNIT_EU_HARVESTER_DESC,Heavy 6x6 military logistics truck. Loads surplus crude oil in drums and hauls it to a Supply Hub for export; a roof machine gun for self-defence.
 UNIT_EU_GRENADIER,Infanterie
 UNIT_EU_GRENADIER_DESC,Standard infantry rifleman with rifle grenades. Can garrison.
 UNIT_EU_LANCER,Panzerfaust
@@ -440,7 +440,7 @@ ROLE_FIGHTER,Fighter
 UNIT_US_DOZER,Dozer
 UNIT_US_DOZER_DESC,Armoured bulldozer. Builds and repairs base structures.
 UNIT_US_SUPPLY_TRUCK,M1083A1P2 Supply Truck
-UNIT_US_SUPPLY_TRUCK_DESC,5-ton FMTV cargo truck. Hauls supplies from piles and derricks to a Supply Depot.
+UNIT_US_SUPPLY_TRUCK_DESC,5-ton FMTV cargo truck. Loads surplus crude oil in drums at oil reserves and derricks and hauls it to a Supply Depot for export.
 UNIT_US_GRUNT,Marine Rifleman
 UNIT_US_GRUNT_DESC,"One Marine with a service rifle. Cheap, flexible, can garrison buildings."
 UNIT_US_JAVELIN,Anti Armor Soldier
@@ -501,7 +501,7 @@ MAP_OCHRE_DESC,"Arid. A walled market town in a dry basin, ringed by a sandy wad
 UNIT_TPLA_BACKHOE,Backhoe
 UNIT_TPLA_BACKHOE_DESC,Construction backhoe. Builds and repairs Iranian structures. Does not gather supplies.
 UNIT_TPLA_PICKUP,Supply Pickup
-UNIT_TPLA_PICKUP_DESC,Civilian pickup that hauls supplies to a Supply Depot. Cannot build.
+UNIT_TPLA_PICKUP_DESC,Civilian pickup that loads crude oil drums and hauls them to a Supply Depot for export. Cannot build.
 UNIT_TPLA_MILITIA_DESC,"Iranian Army rifleman. Cheap, single soldier, can garrison."
 UNIT_TPLA_ROCKET_CELL_DESC,IRGC soldier with an RPG-7. Strong against vehicles.
 UNIT_TPLA_MARKSMAN,Marksman
@@ -534,7 +534,7 @@ UNIT_ECC_ENGINEER_DESC,"Tracked combat engineering vehicle with a dozer blade, a
 UNIT_ECC_MINE_MOBILE,Minerals Mining (on the move)
 UNIT_ECC_MINE_MOBILE_DESC,"The bucket-wheel excavator, packed up and crawling to a new site. It earns nothing until it sets up again. Tap Set Up on open ground; it takes 10 seconds."
 UNIT_ECC_CARGO_TRUCK,Cargo Truck
-UNIT_ECC_CARGO_TRUCK_DESC,Six-wheel military cargo truck. Hauls supplies from supply sources to a Supply Depot.
+UNIT_ECC_CARGO_TRUCK_DESC,Six-wheel military cargo truck. Loads surplus crude oil in drums and hauls it to a Supply Depot for export.
 UNIT_ECC_RIFLEMAN,Rifleman
 UNIT_ECC_RIFLEMAN_DESC,"One soldier with an AK-74. Standard infantry, can garrison buildings."
 UNIT_ECC_MACHINE_GUNNER,Machine Gunner
