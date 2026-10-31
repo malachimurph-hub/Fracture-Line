@@ -11,7 +11,7 @@ func build() -> void:
 	back.pressed.connect(go_back)
 	head.add_child(back)
 	head.add_child(UiTheme.label("  " + tr("MENU_SETTINGS"), 22, UiTheme.GOLD))
-	var sc := ScrollContainer.new()
+	var sc := TouchScroll.new()
 	sc.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	v.add_child(sc)

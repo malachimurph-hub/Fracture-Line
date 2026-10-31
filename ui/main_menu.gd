@@ -31,6 +31,7 @@ var _col: VBoxContainer
 var _corner: VBoxContainer
 var _buttons: Array = []
 var _font: Font
+var _ver: Label
 
 func build() -> void:
 	get_tree().set_auto_accept_quit(true)
@@ -173,6 +174,8 @@ func _logo_block() -> VBoxContainer:
 	var ver := _shadowed(UiTheme.label(tr("MENU_BUILD") % ProjectSettings.get_setting("application/config/version", "M1"), 10, Color(0.86, 0.8, 0.7, 0.85)), 3)
 	ver.name = "Build"
 	ver.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	ver.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART   # wraps under the logo (never widens the corner)
+	_ver = ver
 	ver.size_flags_horizontal = Control.SIZE_SHRINK_END
 	v.add_child(ver)
 	return v
@@ -200,6 +203,8 @@ func _fit_title() -> void:
 		var want := Vector2(roundf(hh * ts.x / ts.y), roundf(hh))
 		if not _logo.custom_minimum_size.is_equal_approx(want):
 			_logo.custom_minimum_size = want
+	if _ver != null:
+		_ver.custom_minimum_size.x = maxf(120.0, _logo.custom_minimum_size.x if _logo != null else 160.0)
 	var f := _title.get_theme_font("font")
 	var sz := TITLE_SIZE
 	while sz > TITLE_MIN and f.get_string_size(_title.text, HORIZONTAL_ALIGNMENT_LEFT, -1, sz).x + 12.0 > avail:

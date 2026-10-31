@@ -249,7 +249,7 @@ func _tbtn(p: Control, text: String, group: ButtonGroup, cb: Callable, wmin := 7
 
 var _tool_btns := {}
 func _build_terrain() -> Control:
-	var sc := ScrollContainer.new()
+	var sc := TouchScroll.new()
 	sc.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	var v := VBoxContainer.new()
@@ -292,7 +292,7 @@ func _swatch_tex(t: int) -> ImageTexture:
 
 ## M3.3 Phase 5: sculpting tools (World Builder "height" brushes).
 func _build_height() -> Control:
-	var sc := ScrollContainer.new()
+	var sc := TouchScroll.new()
 	sc.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	var v := VBoxContainer.new()
@@ -366,7 +366,7 @@ func _build_assets() -> Control:
 		canvas.owner_slot = (canvas.owner_slot + 1) % 4
 		_owner_btn.text = "Units/buildings for: Start %d" % (canvas.owner_slot + 1))
 	orow.add_child(_owner_btn)
-	asset_scroll = ScrollContainer.new()
+	asset_scroll = TouchScroll.new()
 	asset_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	asset_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	v0.add_child(asset_scroll)
@@ -501,7 +501,7 @@ func close_overlay() -> void:
 
 func show_message(title: String, lines: PackedStringArray, is_err: bool) -> void:
 	var v := _open_overlay(title, 520)
-	var sc := ScrollContainer.new()
+	var sc := TouchScroll.new()
 	var sr := UiScale.safe_rect if UiScale.safe_rect.size.x > 0 else Rect2(Vector2.ZERO, UiScale.logical_size())
 	sc.custom_minimum_size = Vector2(0, minf(lines.size() * 34.0 + 8.0, sr.size.y - 150))
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -624,7 +624,7 @@ func open_map(id: String) -> bool:
 func show_maps() -> void:
 	var v := _open_overlay("Your maps", 560)
 	var ids := MapStore.list_ids()
-	var sc := ScrollContainer.new()
+	var sc := TouchScroll.new()
 	var sr := UiScale.safe_rect if UiScale.safe_rect.size.x > 0 else Rect2(Vector2.ZERO, UiScale.logical_size())
 	sc.custom_minimum_size = Vector2(0, minf(maxf(1, ids.size()) * 50.0, sr.size.y - 150))
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED

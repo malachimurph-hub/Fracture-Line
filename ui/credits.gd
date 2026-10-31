@@ -13,7 +13,7 @@ func build() -> void:
 	head.add_child(UiTheme.label("  " + tr("MENU_CREDITS"), 22, UiTheme.GOLD))
 	# M2.7: wrap to the panel width and scroll vertically only (a fixed min width overflowed the
 	# safe area and made the text scroll sideways, cutting off the left edge).
-	var sc := ScrollContainer.new()
+	var sc := TouchScroll.new()
 	sc.name = "CreditsScroll"
 	sc.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED

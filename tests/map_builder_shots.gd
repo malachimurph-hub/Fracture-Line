@@ -56,7 +56,7 @@ func _ready() -> void:
 	for i in 6:
 		await get_tree().process_frame
 	var ls: Node = get_tree().current_scene
-	ls.map_option.show_popup()
+	ls._open_map_picker()
 	await _shot(out + "/skirmish_list_custom_map.png")
 	MapStore.delete(mid)
 	get_tree().quit()
