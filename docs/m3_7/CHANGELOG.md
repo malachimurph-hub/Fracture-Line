@@ -3,6 +3,14 @@
 Malachi's balance update (2026-10-31). Malachi's Russia/Iran music is not in this build; it
 follows as 0.4.0 (branch m36-music).
 
+## Build
+- APK: `FractureLine-0.3.9.apk`, 97,564,979 bytes (93.0 MiB), recompressed with tools/apk_recompress.sh.
+- SHA256: `d297d5589c416cbf1acc25de61073696da796d9577b3a7c8e4b6f892c4689f85`
+- versionName 0.3.9, versionCode 23, same certificate (7e96c70a…ce54), installs over 0.3.8. apksigner v2+v3 OK.
+- Built from master 1a265d1 (merge of m37 1786fa3). All 22 suites (incl. m37), board 72/72 and the m26 UI test pass.
+- Uploaded to Google Drive (My Drive root), file id `1U5SU0SH_VNrl_v93ZHKyL_cFGCQ88LtQ`.
+- Play bundle `builds/play/FractureLine.aab` rebuilt (0.3.9), not uploaded; 0.3.8 bundle kept in `builds/play/superseded/`.
+
 ## 1. Combat Squads spread out
 - The six soldiers stand 1.6x wider apart (formation reach 0.34 -> 0.51-0.68 tile) and never
   closer than 0.26 to a mate. Each time a squad stops it scatters: every soldier steps up to 0.14
