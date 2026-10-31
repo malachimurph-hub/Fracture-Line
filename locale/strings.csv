@@ -1,6 +1,5 @@
 keys,en
 APP_TITLE,FRACTURE LINE: MODERN CONFLICT
-MENU_SUBTITLE,Skirmish command — Germany
 MENU_BUILD,"Milestone %s · original game, not affiliated with any other RTS"
 MENU_SKIRMISH,Skirmish
 MENU_CONTINUE,Continue suspended match
@@ -220,7 +219,7 @@ RES_COL_STRUCT,Bldg. kills
 RES_COL_HARVEST,Harvested
 RES_AI,AI %d (%s)
 RES_SEAM,Veridite seam
-RES_CACHE,Supply cache
+RES_CACHE,Crude Oil Reserve
 SET_AUDIO,Audio
 SET_VOL_MASTER,Master volume
 SET_VOL_MUSIC,Music
@@ -249,7 +248,7 @@ REASON_TERRAIN,Can't build on that ground
 UNIT_EU_CRAWLER,Engineer Crane
 UNIT_EU_CRAWLER_DESC,"Wheeled mobile site crane. Builds and repairs German structures."
 UNIT_EU_HARVESTER,Logistics Truck
-UNIT_EU_HARVESTER_DESC,Heavy 6x6 military logistics truck. Hauls supplies to a Supply Hub; a roof machine gun for self-defence.
+UNIT_EU_HARVESTER_DESC,Heavy 6x6 military logistics truck. Loads surplus crude oil in drums and hauls it to a Supply Hub for export; a roof machine gun for self-defence.
 UNIT_EU_GRENADIER,Infanterie
 UNIT_EU_GRENADIER_DESC,Standard infantry rifleman with rifle grenades. Can garrison.
 UNIT_EU_LANCER,Panzerfaust
@@ -304,12 +303,12 @@ POWER_OVERCHARGE,Smoke Screen
 POWER_OVERCHARGE_DESC,Smoke and decoys: your units in the area are much harder to hit (a strong temporary damage shield).
 POWER_BLACKOUT,Artillery Barrage
 POWER_BLACKOUT_DESC,Three heavy 155 mm shells hit the target area.
-CREDITS_BODY,"FRACTURE LINE: MODERN CONFLICT — Milestone 2.9 (skirmish: Germany, Iran and United States).
-Design, code, procedural 3D models (M2.6 model upgrade with automatic LODs), weathering and surface-detail shaders, decals, effects, maps, faction HUD themes, UI and text: original work made for Malachi Murphy with Grok Bot. US unit names are original and only inspired by real equipment roles.
+CREDITS_BODY,"FRACTURE LINE: MODERN CONFLICT — skirmish with four factions: United States, Russia, Germany and Iran.
+Design, code, procedural 3D models (with automatic LODs), weathering and surface-detail shaders, decals, effects, maps, faction HUD themes, UI and text: original work made for Malachi Murphy with Grok Bot. US unit names are original and only inspired by real equipment roles.
 Textures: ambientCG (ambientcg.com), CC0 1.0 public domain — Ground097, Ground109, Grass004, Rock063, Asphalt033, Gravel035, Concrete034, CorrugatedSteel005, Rust004; winter: Snow006, Ground054, Snow004, Rock035, Ice002, Snow010A; temperate: Grass001, Ground037, Rock023, PavingStones130; arid: Ground090, Ground102, Rock061, Ground079S.
 Soldier models and animations: Quaternius, ""Toon Shooter Game Kit"" (quaternius.com), CC0 1.0 public domain — recoloured and re-equipped per faction, re-proportioned, decimated and baked to vertex animation.
 Sound effects and the Russia, Germany and Iran music: original, synthesized for this game (no samples, no third-party audio).
-Menu and United States music (""Base Command"", ""Defend the Border"", ""Mission Accomplished"", ""Zero Hour Background""): by Malachi Murphy.
+Menu and United States music (""Base Command"", ""Defend the Border"", ""Mission Accomplished"", ""Zero Hour Background""): original music by Malachi Murphy.
 Voices (AI-generated, original lines, no real person's voice cloned):
 • Germany and US: Kokoro-82M speech model (hexgrad, Apache-2.0) via kokoro-onnx (MIT); phonemes by eSpeak NG (GPL-3.0 build tool, only audio ships).
 • Iran (English with Persian accents): Chatterbox Multilingual (Resemble AI, MIT; output carries Resemble's Perth audio watermark), prompted with synthetic speakers derived from Piper Persian voices amir, ganji and reza_ibrahim (CC0 datasets, but fine-tuned from Piper's research-only ""lessac"" voice — licence not clearly permissive; these Iran voices will be replaced in a later update; Piper GPL-3.0 build tool only). Checked with faster-whisper / Whisper (MIT).
@@ -335,8 +334,8 @@ BLD_TPLA_TUNNEL,Tunnel Network
 BLD_TPLA_WORKSHOP,Defence Workshop
 BLD_TPLA_GAS_PLANT,Gas Turbine Plant
 BLD_TPLA_GAS_PLANT_DESC,"Natural gas turbine power station. Cheaper than a nuclear plant, with less output. Supplies power to the base."
-BLD_TPLA_CC_PLANT,Combined-Cycle Gas Plant
-BLD_TPLA_CC_PLANT_DESC,"Large natural gas power station. Turbine exhaust heat raises steam for a second turbine, so it gives much more power than a Gas Turbine Plant. Needs a Defence Workshop."
+BLD_TPLA_CC_PLANT,Gas Processing Plant
+BLD_TPLA_CC_PLANT_DESC,"Large natural gas processing plant with columns, spherical tanks and a flare stack. Gives much more power than a Gas Turbine Plant. Needs a Defence Workshop."
 BLD_TPLA_BAZAAR,Oil Derrick
 BLD_TPLA_BAZAAR_DESC,Oil well with a pumpjack that brings in $185 a minute.
 BLD_TPLA_DEMO_TRAP,Anti-Tank Mine
@@ -362,6 +361,10 @@ HUD_CRATE,Salvage crate
 HUD_CRATE_VALUE,Worth $%d or one salvage tier
 FACTION_US,United States
 FACTION_ECC,Russia
+FACTION_JP,Japan
+FACTION_PL,Poland
+FACTION_CN,China
+FACTION_UK,United Kingdom
 HUD_IDLE_BUILDER,Idle %s
 HUD_MENU,Menu
 HUD_EVACUATE_TIP,Everyone in the tunnel network climbs out here
@@ -428,7 +431,7 @@ MAP_KESSEL,Kessel Pass
 MAP_KESSEL_DESC,"Winter. A frozen river splits north from south: two bridges, two ice fords, snowy pine forests and rock ridges. Garrisonable village houses on both banks."
 MAP_HARROW,Harrow Junction
 MAP_HARROW_DESC,"Temperate. A canal runs through a small city: three bridges and a weir, a street grid of garrisonable blocks, farmland and oak woods around the bases."
-MAP_VARNO_DESC,"Desert. A river town with three bridges and two fords, oil derricks and supply piles by the town."
+MAP_VARNO_DESC,"Desert. A river town with three bridges and two fords, oil derricks and crude oil reserves by the town."
 LOBBY_MAP,Map
 AI_VANGUARD,Vanguard
 REASON_AIRFIELD_FULL,Airfield full: no free parking slots
@@ -437,7 +440,7 @@ ROLE_FIGHTER,Fighter
 UNIT_US_DOZER,Dozer
 UNIT_US_DOZER_DESC,Armoured bulldozer. Builds and repairs base structures.
 UNIT_US_SUPPLY_TRUCK,M1083A1P2 Supply Truck
-UNIT_US_SUPPLY_TRUCK_DESC,5-ton FMTV cargo truck. Hauls supplies from piles and derricks to a Supply Depot.
+UNIT_US_SUPPLY_TRUCK_DESC,5-ton FMTV cargo truck. Loads surplus crude oil in drums at oil reserves and derricks and hauls it to a Supply Depot for export.
 UNIT_US_GRUNT,Marine Rifleman
 UNIT_US_GRUNT_DESC,"One Marine with a service rifle. Cheap, flexible, can garrison buildings."
 UNIT_US_JAVELIN,Anti Armor Soldier
@@ -498,7 +501,7 @@ MAP_OCHRE_DESC,"Arid. A walled market town in a dry basin, ringed by a sandy wad
 UNIT_TPLA_BACKHOE,Backhoe
 UNIT_TPLA_BACKHOE_DESC,Construction backhoe. Builds and repairs Iranian structures. Does not gather supplies.
 UNIT_TPLA_PICKUP,Supply Pickup
-UNIT_TPLA_PICKUP_DESC,Civilian pickup that hauls supplies to a Supply Depot. Cannot build.
+UNIT_TPLA_PICKUP_DESC,Civilian pickup that loads crude oil drums and hauls them to a Supply Depot for export. Cannot build.
 UNIT_TPLA_MILITIA_DESC,"Iranian Army rifleman. Cheap, single soldier, can garrison."
 UNIT_TPLA_ROCKET_CELL_DESC,IRGC soldier with an RPG-7. Strong against vehicles.
 UNIT_TPLA_MARKSMAN,Marksman
@@ -531,7 +534,7 @@ UNIT_ECC_ENGINEER_DESC,"Tracked combat engineering vehicle with a dozer blade, a
 UNIT_ECC_MINE_MOBILE,Minerals Mining (on the move)
 UNIT_ECC_MINE_MOBILE_DESC,"The bucket-wheel excavator, packed up and crawling to a new site. It earns nothing until it sets up again. Tap Set Up on open ground; it takes 10 seconds."
 UNIT_ECC_CARGO_TRUCK,Cargo Truck
-UNIT_ECC_CARGO_TRUCK_DESC,Six-wheel military cargo truck. Hauls supplies from supply sources to a Supply Depot.
+UNIT_ECC_CARGO_TRUCK_DESC,Six-wheel military cargo truck. Loads surplus crude oil in drums and hauls it to a Supply Depot for export.
 UNIT_ECC_RIFLEMAN,Rifleman
 UNIT_ECC_RIFLEMAN_DESC,"One soldier with an AK-74. Standard infantry, can garrison buildings."
 UNIT_ECC_MACHINE_GUNNER,Machine Gunner
@@ -560,8 +563,8 @@ UNIT_ECC_TU160,Tu-160
 UNIT_ECC_TU160_DESC,"Huge, slow swing-wing bomber: a four-bomb carpet run, then it lands and rearms (52 s). Uses 4 airfield slots. Needs a Ministry of Defense."
 BLD_ECC_HQ,Kremlin
 BLD_ECC_HQ_DESC,"Russian headquarters: red-brick walls, towers and palace. Engineer Vehicles roll out of its vehicle bay."
-BLD_ECC_POWER,Gas Processing Plant
-BLD_ECC_POWER_DESC,"Natural gas processing plant with columns, spherical tanks and a flare stack. Supplies power to the base."
+BLD_ECC_POWER,Combined-Cycle Gas Plant
+BLD_ECC_POWER_DESC,"Natural gas power station: gas turbines with heat-recovery boilers and a steam turbine, cooled by fan banks. Supplies power to the base."
 BLD_ECC_DEPOT,Supply Depot
 BLD_ECC_DEPOT_DESC,Concrete supply drop-off point. Comes with a Cargo Truck and builds more.
 BLD_ECC_BARRACKS,Barracks
@@ -588,13 +591,13 @@ POWER_ECC_REPAIR,Field Repair
 POWER_ECC_REPAIR_DESC,Vehicles and structures in the area regain half their health.
 AI_STEPPE,Steppe
 BLD_SANDBAGS,Sandbag Barricade
-BLD_SANDBAGS_DESC,"Cheap sandbag wall. Up to 3 infantry can man it: tap it with infantry selected. They are protected and fire from cover until it falls."
+BLD_SANDBAGS_DESC,Cheap sandbag wall. One infantry squad (or one soldier) can man it: tap it with infantry selected. They are protected and fire from cover until it falls.
 BLD_BARRICADE,Concrete Barricade
-BLD_BARRICADE_DESC,"Heavy concrete barrier. Up to 3 infantry can man it and fire from cover; much tougher than sandbags."
+BLD_BARRICADE_DESC,Heavy concrete barrier. One infantry squad (or one soldier) can man it and fire from cover; much tougher than sandbags.
 UNIT_EU_FIELD_ENGINEER,Field Engineer
 UNIT_EU_FIELD_ENGINEER_DESC,"Combat engineer with a rifle. Repairs nearby vehicles while standing still, repairs structures, lays anti-tank minefields and builds barricades."
 UNIT_US_DRONE_OPERATOR,Drone Operator
-UNIT_US_DRONE_OPERATOR_DESC,"Launches a bomb drone (one-way attack) and a scout drone (flying recon). Each drone comes back 60 s after it is used or lost. Needs Drone Warfare from the Strategic Center."
+UNIT_US_DRONE_OPERATOR_DESC,Launches a scout drone (unarmed flying recon with a wide view). The drone comes back 60 s after it is used or lost. Needs Drone Warfare from the Strategic Center.
 UNIT_US_BOMB_DRONE,Bomb Drone
 UNIT_US_BOMB_DRONE_DESC,One-way attack drone. Flies to its target and detonates. Strong against vehicles.
 UNIT_US_SCOUT_DRONE,Scout Drone
@@ -672,3 +675,22 @@ MAP_SUNFALL_BASIN,Sunfall Basin
 MAP_SUNFALL_BASIN_DESC,"Six players. Four corner bases and one on the north and south edges, around a ring of dunes and mesas with an oasis town in the gravel basin."
 MAP_HIGHLAND_CROWN,Highland Crown
 MAP_HIGHLAND_CROWN_DESC,"Eight players. Corner and edge bases around a crown of high hills, with lakes, woods, farmland and a market town in the centre."
+UNIT_US_SQUAD,Combat Squad
+UNIT_US_SQUAD_DESC,"Six Marines as one unit: 3 riflemen, an M240B machine gunner, an anti-armor soldier and a grenadier. Soldiers fall one by one as the squad loses health, and their weapons with them. Tougher than single soldiers; can dig a foxhole, garrison buildings and man a barricade."
+UNIT_EU_SQUAD,Combat Squad
+UNIT_EU_SQUAD_DESC,"Six soldiers as one unit: 3 riflemen, an MG3 machine gunner, a Panzerfaust gunner and a grenadier. Soldiers fall one by one as the squad loses health, and their weapons with them. Tougher than single soldiers; can dig a foxhole, garrison buildings and man a barricade."
+UNIT_TPLA_SQUAD,Combat Squad
+UNIT_TPLA_SQUAD_DESC,"Six soldiers as one unit: 3 riflemen, a PKM machine gunner, a rocket man and a grenadier. Soldiers fall one by one as the squad loses health, and their weapons with them. Tougher than single soldiers; can dig a foxhole, garrison buildings and man a barricade."
+UNIT_ECC_SQUAD,Combat Squad
+UNIT_ECC_SQUAD_DESC,"Six soldiers as one unit: 3 riflemen, a PKM machine gunner, an RPG-7V3 gunner and a grenadier. Soldiers fall one by one as the squad loses health, and their weapons with them. Tougher than single soldiers; can dig a foxhole, garrison buildings and man a barricade."
+UNIT_ECC_DRONE_OPERATOR,Drone Operator
+UNIT_ECC_DRONE_OPERATOR_DESC,Launches an explosive drone (one-way attack). The drone comes back 60 s after it is used or lost. Needs a Ministry of Defense.
+UNIT_ECC_BOMB_DRONE,Explosive Drone
+UNIT_ECC_BOMB_DRONE_DESC,One-way attack drone. Flies to its target and detonates. Strong against vehicles.
+CMD_DIG,Dig foxhole
+CMD_DIG_TIP,"The squad stops and digs in for a few seconds. Dug in, it takes less damage and holds its ground; any move order climbs out."
+CMD_DIGGING,Digging
+CMD_DUG_IN,Dug in
+HUD_SQUAD_MEN,Soldiers: %d / %d
+RES_CACHE_TIP,Surplus crude oil in storage tanks. Trucks load barrels here for export; every load sold earns supply.
+HUD_OIL_LEFT,Oil for export: %d

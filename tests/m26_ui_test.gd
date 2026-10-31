@@ -5,7 +5,7 @@ extends Node
 ##  3 command bar slides out with nothing selected, minimap grows, slides back on selection
 ##  4 top strip ~15% smaller with >= 44 dp touch targets
 ##  5 faction-themed HUD (EU / TPLA / US)
-##  6 main menu live battle background
+##  6 main menu (M3.5: photo backdrop, left button column, small top-right emblem)
 ##   xvfb-run -a -s "-screen 0 2340x1080x24" godot --path . --resolution 2340x1080 \
 ##     --rendering-method mobile res://tests/m26_ui_test.tscn -- <out_dir> --dpi=450
 var out_dir := "/tmp/m26"
@@ -294,9 +294,10 @@ func test_themes() -> void:
 	check("four distinct faction looks", looks["eu"][0] != looks["tpla"][0] and looks["tpla"][0] != looks["us"][0] and looks["eu"][1] != looks["us"][1]
 		and looks["ecc"][1] != looks["eu"][1] and looks["ecc"][1] != looks["tpla"][1] and looks["ecc"][1] != looks["us"][1], looks)
 
-# ------------------------------------------------------------------ 6 main menu battle
-## Menu layout: whatever the title (renamed game, long localisation), every menu button sits
-## fully inside the screen and the title column never pushes the button column off the edge.
+# ------------------------------------------------------------------ 6 main menu (M3.5 photo menu)
+## Menu layout (M3.5): Malachi's photo behind it, the buttons in a LEFT column, the emblem small in
+## the TOP RIGHT. Whatever the title (renamed game, long localisation, emblem missing), every
+## button sits fully inside the screen and nothing overlaps the button column.
 func test_menu_layout(mm: Node) -> void:
 	var orig: String = mm._title.text
 	for t in ["FRACTURE LINE: MODERN CONFLICT", "FRACTURE LINE: MODERN CONFLICT - THE EXTREMELY LONG LOCALISED SUBTITLE EDITION"]:
@@ -306,29 +307,34 @@ func test_menu_layout(mm: Node) -> void:
 		var screen := get_viewport().get_visible_rect().grow(0.5)
 		var bad: Array = []
 		var n := 0
+		var col_right := 0.0
 		for b in mm.find_children("*", "Button", true, false):
 			if (b as Control).is_visible_in_tree():
 				n += 1
-				if not screen.encloses((b as Control).get_global_rect()):
-					bad.append([(b as Button).text, (b as Control).get_global_rect()])
+				var r := (b as Control).get_global_rect()
+				col_right = maxf(col_right, r.end.x)
+				if not screen.encloses(r) or r.end.x > screen.size.x * 0.5:
+					bad.append([(b as Button).text, r])
 		var tr_ok: bool = not mm._title.visible or screen.encloses(mm._title.get_global_rect())
 		if mm._logo != null:
-			tr_ok = tr_ok and screen.encloses(mm._logo.get_global_rect()) and mm._logo.size.y >= 120.0
-		check("menu buttons inside the screen with title '%s'" % t, n >= 3 and bad.is_empty() and tr_ok,
-			"buttons %d outside %s title %s font %d screen %s" % [n, bad, mm._title.get_global_rect(), mm._title.get_theme_font_size("font_size"), screen])
+			tr_ok = tr_ok and screen.encloses(mm._logo.get_global_rect())
+		check("menu buttons in a left column inside the screen with title '%s'" % t, n >= 3 and bad.is_empty() and tr_ok,
+			"buttons %d bad %s title %s font %d screen %s" % [n, bad, mm._title.get_global_rect(), mm._title.get_theme_font_size("font_size"), screen])
 	mm._title.text = orig
 	mm._fit_title()
 	if mm._logo != null:
 		await frames(3)
 		var lr: Rect2 = mm._logo.get_global_rect()
-		var right_x := INF
+		var scr := get_viewport().get_visible_rect()
+		var right_x := 0.0
 		for b in mm.find_children("*", "Button", true, false):
 			if (b as Control).is_visible_in_tree():
-				right_x = minf(right_x, (b as Control).get_global_rect().position.x)
-		check("menu logo shown, fits the left column, clear of the buttons", lr.size.y >= 120.0 and lr.end.x <= right_x and get_viewport().get_visible_rect().grow(0.5).encloses(lr),
-			"logo %s buttons_x %.0f" % [lr, right_x])
+				right_x = maxf(right_x, (b as Control).get_global_rect().end.x)
+		check("menu logo small in the top-right corner, clear of the buttons", lr.size.y >= 60.0 and lr.size.y <= scr.size.y * 0.36 and lr.position.x >= right_x
+			and lr.get_center().x > scr.size.x * 0.7 and lr.position.y < scr.size.y * 0.12 and scr.grow(0.5).encloses(lr),
+			"logo %s buttons_right %.0f screen %s" % [lr, right_x, scr.size])
 
-func test_menu_battle() -> void:   # M3.1: static key art replaced the live battle
+func test_menu_battle() -> void:   # M3.5: Malachi's photo, no live battle, no 3D at all
 	if m != null:
 		m.queue_free()
 		m = null
@@ -340,10 +346,11 @@ func test_menu_battle() -> void:   # M3.1: static key art replaced the live batt
 	var open_ms := Time.get_ticks_msec() - t0
 	await test_menu_layout(mm)
 	var art: TextureRect = mm.find_child("KeyArt", true, false)
-	check("main menu shows the key-art battle image", art != null and art.texture != null and art.texture.get_width() >= 2560, art.texture.get_size() if art != null and art.texture != null else "none")
-	check("no live battle behind the menu", mm.find_children("*", "SubViewport", true, false).is_empty())
-	check("menu opens quickly", open_ms < 1500, "%d ms" % open_ms)
-	await shot("m31_main_menu_keyart")
+	check("main menu shows Malachi's photo, cover-fit", art != null and art.texture != null and art.texture.resource_path.ends_with("menu_photo.jpg")
+		and art.stretch_mode == TextureRect.STRETCH_KEEP_ASPECT_COVERED, art.texture.resource_path if art != null and art.texture != null else "none")
+	check("no live battle behind the menu", mm.find_children("*", "SubViewport", true, false).is_empty() and mm.find_children("*", "Node3D", true, false).is_empty())
+	check("menu opens quickly", open_ms < 1000, "%d ms" % open_ms)
+	await shot("m35_main_menu")
 	mm.queue_free()
 
 ## M2.7: credits wrap inside the panel and scroll only vertically (nothing cut off or sideways).

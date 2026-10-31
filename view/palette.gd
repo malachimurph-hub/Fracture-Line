@@ -59,3 +59,25 @@ static func ring_mesh(shape: String, width: float = 0.14) -> ArrayMesh:
 			st.set_normal(Vector3.UP)
 			st.add_vertex(Vector3(v.x, 0, v.y))
 	return st.commit()
+
+## M3.5 faction vehicle paint (Malachi): USA flat dark earth / tan, Germany dark earthy pine
+## green, Iran coyote brown, Russia dark grey. Team colour stays on the accent parts.
+const FACTION_PAINT := {&"us": Color("#a08a68"), &"eu": Color("#44523a"), &"tpla": Color("#7d5e3c"), &"ecc": Color("#5d6163")}
+## structures restyled with their faction's paint (M3.5 power station swap)
+const PAINT_BUILDINGS := {&"ecc_power": 0.8, &"tpla_cc_plant": 0.8}
+
+## Sets the faction paint on every m3-shaded mesh under n (vehicles, aircraft, drones).
+static func apply_paint(n: Node, fac: StringName, strength := 1.0) -> void:
+	if not FACTION_PAINT.has(fac):
+		return
+	var c: Color = FACTION_PAINT[fac]
+	c.a = strength
+	for g in n.find_children("*", "GeometryInstance3D", true, false):
+		if _is_m3(g):
+			(g as GeometryInstance3D).set_instance_shader_parameter(&"paint_color", c)
+
+static func _is_m3(g: Node) -> bool:
+	var m: Material = (g as GeometryInstance3D).material_override
+	if m == null and g is MeshInstance3D and (g as MeshInstance3D).mesh != null and (g as MeshInstance3D).mesh.get_surface_count() > 0:
+		m = (g as MeshInstance3D).get_active_material(0)
+	return m is ShaderMaterial and (m as ShaderMaterial).shader != null and (m as ShaderMaterial).shader.resource_path.contains("model_m3")

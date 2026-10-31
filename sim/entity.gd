@@ -82,6 +82,8 @@ var air_home: int = 0                   ## aircraft: airfield it parks at (0 = n
 var air_state: int = 0                  ## aircraft: 0 flying, 1 parked/rearming, 2 returning, 3 taxi/take-off roll, 4 landing (phase = step); JTAC: unused
 var air_t: int = 0                      ## aircraft: rearm ticks left; JTAC: next call-in tick
 var still: int = 0                      ## ticks without moving (stealth while stationary)
+## M3.5 Combat Squad foxhole: 0 = none; > tick = digging until that tick; <= tick = dug in.
+var dig: int = 0
 
 func is_unit() -> bool: return kind == Kind.UNIT
 func is_building() -> bool: return kind == Kind.BUILDING
@@ -98,7 +100,7 @@ const _FIELDS := ["id", "kind", "def_id", "owner", "team", "pos", "hp", "max_hp"
 	"progress", "build_ticks", "queue", "q_progress", "q_paid", "rally", "rally_attack", "repeat", "powered", "gridded", "hold_reason",
 	"amount", "max_amount", "tier", "aux_def", "aux_t", "stealthy", "stealth_mask",
 	"face", "spd", "tface", "pre", "pre_ok", "ammo", "air_home", "air_state", "air_t", "still",
-	"firing_tick"]   # M3.3: was not saved - after a load idle units refilled a part-used clip at once (desync)
+	"firing_tick", "dig"]   # M3.3: was not saved - after a load idle units refilled a part-used clip at once (desync)
 
 func to_dict() -> Dictionary:
 	var d := {}

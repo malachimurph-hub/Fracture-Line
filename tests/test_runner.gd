@@ -102,6 +102,8 @@ func _ready() -> void:
 			await load("res://tests/world_builder_test.gd").run(self)   # M3.3 Phase 5 World Builder
 		"m34":
 			await load("res://tests/m34_test.gd").run(self)   # M3.4 night lights + infantry
+		"m35":
+			await load("res://tests/m35_test.gd").run(self)   # M3.5 menu, squads, poses, factions
 		"stall":
 			var r2 := MatchRunner.new()
 			r2.record_replay = false
@@ -609,12 +611,12 @@ func test_audio() -> void:
 	fac_ok = fac_ok and ad.battle_playlist()[0].contains("ru_steppe_march")
 	ad.battle_faction = &""
 	_check(fac_ok, "M3.2 faction battle music: US / Russia hard bass / Germany club / Iran war drums load")
-	# M3.4: Malachi's US tracks; "Base Command" is the menu music and leads the US shuffle
+	# M3.4: Malachi's US tracks; "Base Command" is the menu music (M3.5: it no longer opens matches)
 	ad.battle_faction = &"us"
 	var us_pl: Array = ad.battle_playlist()
 	ad.battle_faction = &""
-	_check(us_pl.size() == 4 and us_pl[0] == ad.MUSIC["menu"] and String(ad.MUSIC["menu"]).ends_with("us_base_command.ogg") and us_pl.all(func(x): return String(x).contains("/us_")),
-		"M3.4: US plays Malachi's four tracks, Base Command first and as the menu music")
+	_check(us_pl.size() == 4 and us_pl.has(ad.MUSIC["menu"]) and String(ad.MUSIC["menu"]).ends_with("us_base_command.ogg") and us_pl.all(func(x): return String(x).contains("/us_")),
+		"M3.4: US plays Malachi's four tracks, Base Command is the menu music")
 	var old_in := false
 	for d in [ad.MUSIC, ad.FACTION_PLAYLISTS]:
 		old_in = old_in or str(d).contains("liberty_steel") or str(d).contains("breach_point") or str(d).contains("iron_convoy")
@@ -666,7 +668,11 @@ func test_audio() -> void:
 				if id.length() < 2 or id[1] != "m":
 					female.append(f)
 	_check(female.is_empty(), "unit voice sets use male voices only (%d female/unknown lines) %s" % [female.size(), female.slice(0, 5)])
-	_check(ad.manifest["factions"]["tpla"]["units"].size() == Content.TPLA_UNIT_ORDER.size(), "manifest has every TPLA unit")
+	var no_voice: Array = []
+	for uid in Content.TPLA_UNIT_ORDER:
+		if not ad.manifest["factions"]["tpla"]["units"].has(String(uid)):
+			no_voice.append(uid)
+	_check(no_voice.is_empty(), "manifest has every TPLA unit %s" % [no_voice])   # M3.5: retired units keep theirs
 	var st: Dictionary = ad.voice_status()
 	print("voice status: %d of %d lines recorded, %d AI, %d placeholder, %d missing" % [st["recorded"], st["total"], st["ai"], st["placeholder"], st["missing"]])
 	_check(st["total"] > 50, "manifest covers %d lines" % st["total"])
@@ -731,6 +737,10 @@ func test_audio() -> void:
 			_check(ad.stream(files[-1]) != null, "sniper %s_%d loads" % [ev, files.size()])
 	_check(own >= 4, "Malachi recorded %d sniper events" % own)
 	_check(tr("CREDITS_BODY").contains("US Scout Sniper voiced by Malachi Murphy"), "credits name Malachi as the US Scout Sniper voice")
+	# M3.5: credits name all four factions, carry no hard-coded milestone, credit Malachi's music; no stale menu subtitle
+	var cb := tr("CREDITS_BODY")
+	_check(cb.contains("United States, Russia, Germany and Iran") and not cb.contains("Milestone") and cb.contains("original music by Malachi Murphy"), "credits list all four factions, no milestone, Malachi's music")
+	_check(tr("MENU_SUBTITLE") == "MENU_SUBTITLE", "stale MENU_SUBTITLE string is gone")
 	_check(ad.unit_voice("us", "us_sniper", "select") and String(ad._unit_voice.stream.resource_path).begins_with("res://audio/voice/us/sniper/"), "sniper select plays Malachi's voice")
 	ad._unit_voice.stop()
 	ad._unit_prio = 0
@@ -2628,11 +2638,11 @@ func _roster_m32() -> void:
 	r.issue({"p": 0, "t": "queue", "target": camp.id, "def": "tpla_militia"})
 	_ticks(r, 2)
 	_check(not camp.queue.is_empty(), "captured structure trains the original faction's units")
-	# --- barricade: max 3, exit
+	# --- barricade: one squad (M3.5), exit
 	var bar := w._place_building(Content.building(&"eu_barricade"), 0, c + Vector2i(3, -3), 0, true)
 	var inf: Array = []
-	for k in 4:
-		var g := w.spawn_unit(&"eu_grenadier", 0, null, FX.tile_center(c + Vector2i(k + 1, -1)))
+	for k in 2:
+		var g := w.spawn_unit(&"eu_squad", 0, null, FX.tile_center(c + Vector2i(k + 1, -1)))
 		g.pos = FX.tile_center(c + Vector2i(k + 1, -1))
 		inf.append(g.id)
 	r.issue({"p": 0, "t": "garrison", "ids": inf, "target": bar.id})
@@ -2641,7 +2651,7 @@ func _roster_m32() -> void:
 	for id in inf:
 		if w.ents[id].res_id == -bar.id:
 			inside += 1
-	_check(inside == 3, "infantry man a concrete barricade, max 3 (%d inside)" % inside)
+	_check(inside == 1, "a Combat Squad mans a concrete barricade, one squad max (%d inside)" % inside)
 	r.issue({"p": 0, "t": "unload", "ids": [bar.id]})
 	_ticks(r, 2)
 	inside = 0
@@ -2666,7 +2676,7 @@ func _roster_m32() -> void:
 	_check(w2.players[0].upgrades.has("us_up_drones") and w2.prereqs_met(0, Content.unit(&"us_drone_operator").prereqs) == "", "Strategic Center research unlocks the Drone Operator")
 	var op := w2.spawn_unit(&"us_drone_operator", 0, null, FX.tile_center(c2))
 	op.pos = FX.tile_center(c2)
-	r2.issue({"p": 0, "t": "drone", "ids": [op.id], "kind": "bomb"})
+	r2.issue({"p": 0, "t": "drone", "ids": [op.id], "kind": "bomb"})   # M3.5: US operators fly scout drones only
 	r2.issue({"p": 0, "t": "drone", "ids": [op.id], "kind": "scout"})
 	_ticks(r2, 4)
 	var drones: Array = []
@@ -2674,7 +2684,7 @@ func _roster_m32() -> void:
 		var e: SimEntity = w2.ents[id]
 		if e.alive and e.kind == SimEntity.Kind.UNIT and Content.unit(e.def_id).tags.has("drone") and e.air_home == op.id:
 			drones.append(e)
-	_check(drones.size() == 2 and w2.drone_wait(op, "bomb") > 0, "operator launches a bomb drone and a scout drone (%d)" % drones.size())
+	_check(drones.size() == 1 and w2.drone_wait(op, "scout") > 0, "US operator launches a scout drone only (%d)" % drones.size())
 	for d: SimEntity in drones:
 		w2._kill(d, null)
 	_ticks(r2, 2)

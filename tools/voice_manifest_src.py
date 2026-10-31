@@ -433,6 +433,11 @@ VOICE_ALIASES = {
     "tpla": {"tpla_junkhammer": "tpla_scrapback", "tpla_sprayer": "tpla_blight", "tpla_earwig": "tpla_rattler",
              "tpla_jackal": "tpla_shrike", "tpla_bus": "tpla_rattler"},
 }
+# M3.5 Combat Squads speak with their riflemen's voices (ecc_squad / ecc_drone_operator are
+# aliased to ecc_rifleman directly in data/audio/voice_manifest.json)
+VOICE_ALIASES["us"] = {"us_squad": "us_grunt"}
+VOICE_ALIASES["eu"]["eu_squad"] = "eu_grenadier"
+VOICE_ALIASES["tpla"]["tpla_squad"] = "tpla_militia"
 
 _RV = ["select", "move", "attack", "under_fire", "created", "veteran"]
 RU_VOICE_UNITS = {"ecc_engineer": ("engineer", ["select", "move", "build", "under_fire", "created"]),

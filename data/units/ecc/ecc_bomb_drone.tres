@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"ecc_bomb_drone"
+faction = &"ecc"
+name_key = "UNIT_ECC_BOMB_DRONE"
+desc_key = "UNIT_ECC_BOMB_DRONE_DESC"
+cost = 0
+build_time_ms = 1000
+pop = 0
+prereqs = PackedStringArray()
+tags = PackedStringArray("air", "helicopter", "drone", "suicide")
+max_hp = 70
+armor_type = &"air"
+weapons = PackedStringArray("us_drone_bomb")
+speed_mtps = 6500
+move_layer = &"air"
+sight = 6
+radius_mt = 300
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 0
+role = &"air_strike"
+view_scene = "res://view/units/ecc/bomb_drone.tscn"
+stubs = PackedStringArray()
+loco = &"heli"
+turn_dps = 360
+accel_ms = 300
+turret_dps = 0
+abilities = PackedStringArray()
+transport_capacity = 0
+detector = false
+air_slots = 0

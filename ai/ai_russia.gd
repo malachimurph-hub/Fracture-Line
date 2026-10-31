@@ -26,8 +26,6 @@ func _unit_allowed(ud: UnitDef) -> bool:
 				inf += 1
 		if inf >= maxi(8, all.size() * 2 / 5):
 			return false
-		if ud.id == &"ecc_machine_gunner" and _count_type(ud.id) >= 2 + all.size() / 8:
-			return false
 	if ud.id == &"ecc_infiltrator":
 		return _count_type(ud.id) < 1 + combat_units().size() / 12
 	if ud.id == &"ecc_msta":
@@ -35,7 +33,7 @@ func _unit_allowed(ud: UnitDef) -> bool:
 	return true
 
 func _is_scout_type(u: SimEntity) -> bool:
-	return u.def_id == &"ecc_tigr" or u.def_id == &"ecc_rifleman"
+	return u.def_id == &"ecc_tigr"
 
 # ------------------------------------------------------------------ general powers
 func _powers() -> void:

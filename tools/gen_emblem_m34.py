@@ -39,10 +39,10 @@ def main():
     src = Image.open(SRC).convert("RGB")
     sh = shield(src)
     os.makedirs(f"{ROOT}/ui/logo", exist_ok=True)
-    fit(sh, 1024, 1024).save(f"{ROOT}/ui/logo/fl_badge.png", optimize=True)
-    sp = Image.new("RGBA", (2340, 1080), (0, 0, 0, 0))
-    b = fit(sh, 2340, 620)
-    sp.alpha_composite(b, ((2340 - b.width) // 2, (1080 - b.height) // 2))
+    fit(sh, 512, 512).save(f"{ROOT}/ui/logo/fl_badge.png", optimize=True)   # M3.5: small top-right logo
+    sp = Image.new("RGBA", (1560, 720), (0, 0, 0, 0))   # M3.5: 2/3 size, quicker to decode at boot
+    b = fit(sh, 1560, 413)
+    sp.alpha_composite(b, ((1560 - b.width) // 2, (720 - b.height) // 2))
     sp.save(f"{ROOT}/ui/logo/fl_splash.png", optimize=True)
     # icons: the full emblem (shield over its battle background), zoomed so the shield fills it
     sq = src.crop((70, 30, 1184, 1144)).resize((512, 512), Image.LANCZOS)

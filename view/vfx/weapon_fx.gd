@@ -32,6 +32,9 @@ const CLASSES := {
 	&"ecc_kornet": "missile", &"ecc_zak30": "quad",
 	# M3.3 Russia: engineer rocket, missile silo
 	&"ecc_eng_rocket": "rocket", &"ecc_silo_missile": "missile",
+	# M3.5 squad machine guns + underbarrel grenade launchers
+	&"us_m240b": "mg", &"eu_mg3": "mg", &"tpla_pkm": "mg",
+	&"us_m203": "grenade", &"eu_ag36": "grenade", &"tpla_gp25": "grenade", &"ecc_gp25": "grenade",
 	# M3.2 part 2: AA ground modes, capture-unit sidearm
 	&"eu_gatling_gnd": "quad", &"tpla_wasp_gnd": "missile", &"us_patriot_gnd": "mg", &"ecc_zak30_gnd": "quad", &"sidearm": "rifle",
 }

@@ -19,6 +19,8 @@ const PMAX := Vector3(0.6, 0.7, 0.7)
 const HEIGHT := 0.5
 const TALL := 1.84            ## metres mapped to HEIGHT (helmet top)
 const CLIP_ORDER := ["idle", "walk", "run", "fire", "fire_kneel", "lean", "die", "die2"]
+## M3.5: machine gunners (spec "prone": true) also bake going prone, prone fire and getting up
+const PRONE_CLIPS := ["prone_down", "fire_prone", "prone_up"]
 
 ## weapon points in the (mirrored) gun frame: butt = stock in the shoulder, shoulder = where a
 ## launcher tube rests on it, grip = right palm, support = left palm
@@ -39,6 +41,12 @@ const GUNS := {
 	"eu_launcher": {"shoulder": Vector3(0, 0.04, -0.22), "grip": Vector3(0, -0.03, 0.0), "support": Vector3(0, -0.03, 0.22)},
 	"javelin": {"shoulder": Vector3(0, 0.035, -0.15), "grip": Vector3(0.15, -0.02, 0.0), "support": Vector3(0, 0.04, 0.38)},
 	"shovel": {"grip": Vector3(0, 0, 0.0), "support": Vector3(0, 0, 0.45)},
+	# M3.5 Combat Squad weapons
+	"m240b": {"butt": Vector3(0, 0.03, -0.41), "grip": Vector3(0, -0.04, -0.02), "support": Vector3(0, 0.03, 0.26)},
+	"mg3": {"butt": Vector3(0, 0.02, -0.41), "grip": Vector3(0, -0.04, -0.02), "support": Vector3(0, 0.03, 0.26)},
+	"m16_gl": {"butt": Vector3(0, 0.03, -0.4), "grip": Vector3(0, -0.04, -0.03), "support": Vector3(0, 0.01, 0.25)},
+	"ak_gl": {"butt": Vector3(0, 0.02, -0.4), "grip": Vector3(0, -0.04, -0.03), "support": Vector3(0, 0.02, 0.28)},
+	"ak74_gl": {"butt": Vector3(0, 0.03, -0.35), "grip": Vector3(0, -0.04, -0.03), "support": Vector3(0, 0.02, 0.28)},
 }
 const STYLE := {"rpg": "launcher", "eu_launcher": "launcher", "javelin": "launcher", "pistol": "pistol", "shovel": "tool"}
 
@@ -60,23 +68,31 @@ const HEADS_RU := ["helmet_ru+goggles", "helmet_ru", "helmet_ru+headset", "helme
 const HEADS_TP := ["shemagh", "cap+beard", "hair+beard", "wrap+beard"]
 const SPECS := {
 	"us_rifleman": {"fac": "us", "gun": "m16", "heads": HEADS_US, "backs": ["pack", "hydration", "pack", "hydration"]},
-	"us_javelin": {"fac": "us", "gun": "javelin", "heads": HEADS_US, "backs": ["bigpack"]},
+	"us_javelin": {"fac": "us", "gun": "javelin", "heads": HEADS_US, "backs": ["bigpack"], "kneel": 2},
+	# M3.5 Combat Squad members: machine gunners go prone to fire, anti-tank gunners kneel
+	"us_machine_gunner": {"fac": "us", "gun": "m240b", "heads": HEADS_US, "backs": ["pack", "hydration", "pack", "hydration"], "chest_extra": ["ammo_belt"], "prone": true},
+	"us_grenadier": {"fac": "us", "gun": "m16_gl", "heads": HEADS_US, "backs": ["hydration", "pack", "hydration", "pack"]},
 	"us_jtac": {"fac": "us", "gun": "m4", "heads": ["helmet+headset+nvg", "boonie+headset", "helmet+headset", "helmet+headset+goggles"], "backs": ["radio"], "chest_extra": ["binoculars"]},
 	"us_sniper": {"fac": "us", "gun": "sniper", "heads": ["boonie"], "backs": ["ghillie"], "armour": "vest", "kneel": 2},
 	"us_drone_operator": {"fac": "us", "gun": "m4", "heads": ["helmet+headset", "boonie+headset", "helmet+headset+goggles", "helmet+headset+nvg"], "backs": ["radio"], "chest_extra": ["controller"]},
 	"us_breacher": {"fac": "us", "gun": "shotgun", "heads": ["helmet+goggles", "helmet+nvg", "helmet+goggles", "helmet+headset"], "backs": ["satchel_back"], "thigh_pouch": true, "carrier": "#4a473c", "pouch": "#3e3d36"},
 	"eu_rifleman": {"fac": "eu", "gun": "eu_rifle_gl", "heads": HEADS_EU, "backs": ["pack", "hydration", "hydration", "pack"]},
-	"eu_lancer": {"fac": "eu", "gun": "eu_launcher", "heads": HEADS_EU, "backs": ["tube"]},
+	"eu_lancer": {"fac": "eu", "gun": "eu_launcher", "heads": HEADS_EU, "backs": ["tube"], "kneel": 2},
+	"eu_machine_gunner": {"fac": "eu", "gun": "mg3", "heads": HEADS_EU, "backs": ["mgbox"], "chest_extra": ["ammo_belt"], "prone": true},
 	"eu_field_engineer": {"fac": "eu", "gun": "eu_rifle_gl", "heads": ["helmet", "helmet+goggles", "helmet+headset", "helmet"], "backs": ["tools"], "armour": "vest", "kneepads": true},
 	"eu_sturmtrupp": {"fac": "eu", "gun": "smg", "heads": ["helmet+goggles", "helmet", "helmet+goggles", "helmet+headset"], "backs": ["hydration"], "armour": "chest_rig", "thigh_pouch": true, "kneepads": true},
 	"tpla_rifleman": {"fac": "tpla", "gun": "ak", "heads": HEADS_TP, "backs": ["", "pack", "", "satchel_back"], "kneel": 1},
-	"tpla_rocket": {"fac": "tpla", "gun": "rpg", "heads": ["shemagh", "wrap+beard", "cap+beard", "hair+beard"], "backs": ["rockets"]},
+	"tpla_rocket": {"fac": "tpla", "gun": "rpg", "heads": ["shemagh", "wrap+beard", "cap+beard", "hair+beard"], "backs": ["rockets"], "kneel": 2},
+	"tpla_machine_gunner": {"fac": "tpla", "gun": "pkm", "heads": ["cap+beard", "shemagh", "hair+beard", "wrap+beard"], "backs": ["mgbox"], "chest_extra": ["ammo_belt"], "prone": true},
+	"tpla_grenadier": {"fac": "tpla", "gun": "ak_gl", "heads": ["wrap+beard", "cap+beard", "shemagh", "hair+beard"], "backs": ["pack", "", "satchel_back", ""]},
 	"tpla_marksman": {"fac": "tpla", "gun": "svd", "heads": ["shemagh", "wrap", "cap+beard", "shemagh"], "backs": ["hydration"], "kneel": 2},
 	"tpla_insurgent": {"fac": "tpla", "gun": "pistol", "heads": ["shemagh", "hair+beard", "cap+beard", "wrap"], "armour": "", "jacket": "#cfc7b2", "trousers": "#4a4a52", "rolled": true, "cargo": false, "boots": "#3a3128", "wrap": "#e2dccb", "wrap2": "#b8ae96"},
 	"tpla_laborer": {"fac": "tpla", "gun": "shovel", "heads": ["cap", "hair+beard", "wrap", "beanie"], "armour": "", "jacket": "#8a7a62", "trousers": "#5e5444", "rolled": true, "backs": ["pack"], "wrap": "#a49680"},
 	"ecc_rifleman": {"fac": "ecc", "gun": "ak74", "heads": HEADS_RU, "backs": ["pack", "hydration", "pack", "hydration"]},
-	"ecc_machine_gunner": {"fac": "ecc", "gun": "pkm", "heads": HEADS_RU, "backs": ["mgbox"], "chest_extra": ["ammo_belt"]},
-	"ecc_rpg": {"fac": "ecc", "gun": "rpg", "heads": HEADS_RU, "backs": ["rockets"]},
+	"ecc_machine_gunner": {"fac": "ecc", "gun": "pkm", "heads": HEADS_RU, "backs": ["mgbox"], "chest_extra": ["ammo_belt"], "prone": true},
+	"ecc_rpg": {"fac": "ecc", "gun": "rpg", "heads": HEADS_RU, "backs": ["rockets"], "kneel": 2},
+	"ecc_grenadier": {"fac": "ecc", "gun": "ak74_gl", "heads": HEADS_RU, "backs": ["hydration", "pack", "hydration", "pack"]},
+	"ecc_drone_operator": {"fac": "ecc", "gun": "ak74", "heads": ["helmet_ru+headset", "helmet_ru+headset", "helmet_ru+headset+goggles", "helmet_ru+headset+nvg"], "backs": ["radio"], "chest_extra": ["controller"]},
 	"ecc_infiltrator": {"fac": "ecc", "gun": "ak12", "heads": ["balaclava+headset", "helmet_ru+balaclava", "balaclava", "helmet_ru+balaclava+nvg"], "backs": ["hydration"],
 		"jacket": "#343734", "trousers": "#2c2e2c", "camo": 0, "carrier": "#2a2c2b", "pouch": "#202221", "helmet": "#2c2e2d", "pack": "#2a2c2b", "gloves": "#1a1a1a", "boots": "#1a1a1a"},
 	"ecc_saboteur": {"fac": "ecc", "gun": "pistol", "heads": ["beanie", "balaclava", "beanie+headset", "balaclava"], "backs": ["satchel_back"], "chest_extra": ["satchel"], "armour": "chest_rig",
@@ -132,7 +148,8 @@ func bake(key: String, out_key := "") -> Dictionary:
 	var plan := []
 	var frames_total := 0
 	var anim_info := {}
-	for cn in CLIP_ORDER:
+	var clips: Array = CLIP_ORDER + (PRONE_CLIPS if spec.get("prone", false) else [])
+	for cn in clips:
 		var cl: Array = Anims.CLIPS[cn]
 		var n: int = maxi(2, int(round(cl[0] * FPS))) if cl[1] else int(ceil(cl[0] * FPS)) + 1
 		anim_info[cn] = [frames_total, n, FPS, 1 if cl[1] else 0]

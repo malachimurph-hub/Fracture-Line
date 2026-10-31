@@ -12,8 +12,8 @@ var combat: CombatTable
 var errors: PackedStringArray = []
 var power_order: Array[StringName] = []
 
-const UNIT_ORDER := [&"eu_crawler", &"eu_harvester", &"eu_grenadier", &"eu_lancer", &"eu_wolfhound", &"eu_boxer", &"eu_flakwerk", &"eu_leopold", &"eu_salamander", &"eu_hearth", &"eu_spectre", &"eu_sentinel", &"eu_thunderhead", &"eu_kestrel", &"eu_corvid", &"eu_field_engineer", &"eu_sturmtrupp"]
-const BUILDING_ORDER := [&"eu_hq", &"eu_reactor", &"eu_hub", &"eu_barracks", &"eu_motor_pool", &"eu_heavy_factory", &"eu_gun_bunker", &"eu_flak_tower", &"eu_minefield", &"eu_signals", &"eu_relay", &"eu_exchange", &"eu_airstrip", &"eu_sandbags", &"eu_barricade"]
+const UNIT_ORDER := [&"eu_crawler", &"eu_harvester", &"eu_squad", &"eu_wolfhound", &"eu_boxer", &"eu_flakwerk", &"eu_leopold", &"eu_salamander", &"eu_hearth", &"eu_thunderhead", &"eu_kestrel", &"eu_corvid", &"eu_field_engineer", &"eu_sturmtrupp"]
+const BUILDING_ORDER := [&"eu_hq", &"eu_reactor", &"eu_hub", &"eu_barracks", &"eu_motor_pool", &"eu_gun_bunker", &"eu_flak_tower", &"eu_minefield", &"eu_signals", &"eu_relay", &"eu_exchange", &"eu_airstrip", &"eu_sandbags", &"eu_barricade"]
 ## M2.9: Malachi's TPLA roster (notes 2026-10-22). Internal ids kept where a unit took over a slot:
 ## militia = Rifleman, rocket_cell = Rocket Man, rattler = Technical, scrapback = Striker (Karrar MBT),
 ## bus = BMP-2 transport, hailstorm = BHX-35 (35 mm AA), blight = Koksan, shrike = Fajr-5.
@@ -22,13 +22,46 @@ const BUILDING_ORDER := [&"eu_hq", &"eu_reactor", &"eu_hub", &"eu_barracks", &"e
 ## the sim still accepts a queue order for them at their old producer (replays), nothing in the
 ## UI, AI or Map Builder offers them, and units already on the field keep working.
 ## M3.3: Germany's heavy tank (eu_brennus) retired the same way (Malachi: "Remove heavy tank").
-const RETIRED_UNITS := {&"eu_aegis": &"eu_heavy_factory", &"eu_brennus": &"eu_heavy_factory"}
-const TPLA_UNIT_ORDER := [&"tpla_backhoe", &"tpla_pickup", &"tpla_militia", &"tpla_rocket_cell", &"tpla_marksman", &"tpla_insurgent", &"tpla_rattler", &"tpla_scrapback", &"tpla_bus", &"tpla_hailstorm", &"tpla_blight", &"tpla_shrike", &"tpla_mirage", &"tpla_mig29", &"tpla_f16"]
-const US_UNIT_ORDER := [&"us_dozer", &"us_supply_truck", &"us_grunt", &"us_javelin", &"us_jtac", &"us_sniper", &"us_lynx", &"us_bradley", &"us_halberd", &"us_picket", &"us_longreach", &"us_harrier", &"us_wraith", &"us_thunderlance", &"us_drone_operator", &"us_breacher"]
+## M3.5: single line infantry (rifleman / machine gunner / anti-tank) gave way to Combat Squads,
+## and Germany's non-lethal Fuchs jammer and Fennek recon left the motor pool, the same way.
+const RETIRED_UNITS := {&"eu_aegis": &"eu_heavy_factory", &"eu_brennus": &"eu_heavy_factory",
+	&"us_grunt": &"us_barracks", &"us_javelin": &"us_barracks", &"eu_grenadier": &"eu_barracks", &"eu_lancer": &"eu_barracks",
+	&"tpla_militia": &"tpla_camp", &"tpla_rocket_cell": &"tpla_camp", &"ecc_rifleman": &"ecc_barracks",
+	&"ecc_machine_gunner": &"ecc_barracks", &"ecc_rpg": &"ecc_barracks", &"eu_spectre": &"eu_motor_pool", &"eu_sentinel": &"eu_motor_pool"}
+## M3.5: Germany's Heavy Factory merged into the Motor Pool (def kept, not buildable: old saves).
+const RETIRED_BUILDINGS := [&"eu_heavy_factory"]
+
+## M3.5 Combat Squads (Malachi: "3 Rifleman 1 Machine Gunner 1 anti Tank troop 1 grenadier").
+## One selectable unit of six soldiers with one pooled HP bar. Members are listed leader first:
+## as the pool drains they fall from the END of the list (the last one listed dies first), and
+## a fallen soldier's weapons stop firing (CombatSys scales each weapon by its live carriers).
+## Each member: [infantry model (assets/models/infantry/<model>.res), [weapon ids]].
+## GRENADIERS are PLACEHOLDERS (no faction grenadier existed): a rifle with an under-barrel
+## grenade launcher. Change the model / weapons here (and the weapon stats in weapons.csv).
+const GRENADIERS := {
+	&"us": ["us_grenadier", [&"us_m16", &"us_m203"]],        # Marine rifleman + M203 (placeholder)
+	&"eu": ["eu_rifleman", [&"eu_rifle", &"eu_ag36"]],   # Infanterie model (rifle + launcher) + AG36 (placeholder)
+	&"tpla": ["tpla_grenadier", [&"tpla_carbine", &"tpla_gp25"]],   # rifleman + GP-25 (placeholder)
+	&"ecc": ["ecc_grenadier", [&"ecc_ak74", &"ecc_gp25"]],   # AK-74M + GP-25 (placeholder)
+}
+const SQUAD_MEMBERS := {
+	&"us_squad": [["us_rifleman", [&"us_m16"]], ["us_machine_gunner", [&"us_m240b"]], ["us_javelin", [&"us_javelin"]],
+		["us_rifleman", [&"us_m16"]], &"us", ["us_rifleman", [&"us_m16"]]],
+	&"eu_squad": [["eu_rifleman", [&"eu_rifle"]], ["eu_machine_gunner", [&"eu_mg3"]], ["eu_lancer", [&"eu_lancer_missile"]],
+		["eu_rifleman", [&"eu_rifle"]], &"eu", ["eu_rifleman", [&"eu_rifle"]]],
+	&"tpla_squad": [["tpla_rifleman", [&"tpla_carbine"]], ["tpla_machine_gunner", [&"tpla_pkm"]], ["tpla_rocket", [&"tpla_rpg"]],
+		["tpla_rifleman", [&"tpla_carbine"]], &"tpla", ["tpla_rifleman", [&"tpla_carbine"]]],
+	&"ecc_squad": [["ecc_rifleman", [&"ecc_ak74"]], ["ecc_machine_gunner", [&"ecc_pkm"]], ["ecc_rpg", [&"ecc_rpg7"]],
+		["ecc_rifleman", [&"ecc_ak74"]], &"ecc", ["ecc_rifleman", [&"ecc_ak74"]]],
+}
+## M3.5 Drone Operators: which drone each operator launches (US: scout only; Russia: explosive only).
+const OPERATOR_DRONES := {&"us_drone_operator": {"scout": &"us_scout_drone"}, &"ecc_drone_operator": {"bomb": &"ecc_bomb_drone"}}
+const TPLA_UNIT_ORDER := [&"tpla_backhoe", &"tpla_pickup", &"tpla_squad", &"tpla_marksman", &"tpla_insurgent", &"tpla_rattler", &"tpla_scrapback", &"tpla_bus", &"tpla_hailstorm", &"tpla_blight", &"tpla_shrike", &"tpla_mirage", &"tpla_mig29", &"tpla_f16"]
+const US_UNIT_ORDER := [&"us_dozer", &"us_supply_truck", &"us_squad", &"us_jtac", &"us_sniper", &"us_lynx", &"us_bradley", &"us_halberd", &"us_picket", &"us_longreach", &"us_harrier", &"us_wraith", &"us_thunderlance", &"us_drone_operator", &"us_breacher"]
 const US_BUILDING_ORDER := [&"us_command", &"us_reactor", &"us_supply_center", &"us_barracks", &"us_garage", &"us_airfield", &"us_strategy", &"us_patriot", &"us_firebase", &"us_drop_zone", &"us_sandbags", &"us_barricade"]
 ## M3.0 F: Russia (Malachi's list 2026-10-23: T-90M, Tiger-M, BTR, Typhoon, 2S Msta, Zeus and four
 ## single soldiers). Engineer, Cargo Truck and every building are stand-ins until his list covers them.
-const ECC_UNIT_ORDER := [&"ecc_engineer", &"ecc_cargo_truck", &"ecc_rifleman", &"ecc_machine_gunner", &"ecc_rpg", &"ecc_infiltrator", &"ecc_saboteur", &"ecc_tigr", &"ecc_btr", &"ecc_typhoon", &"ecc_t90", &"ecc_zeus", &"ecc_msta", &"ecc_ka52", &"ecc_su57", &"ecc_tu160"]
+const ECC_UNIT_ORDER := [&"ecc_engineer", &"ecc_cargo_truck", &"ecc_squad", &"ecc_infiltrator", &"ecc_saboteur", &"ecc_drone_operator", &"ecc_tigr", &"ecc_btr", &"ecc_typhoon", &"ecc_t90", &"ecc_zeus", &"ecc_msta", &"ecc_ka52", &"ecc_su57", &"ecc_tu160"]
 const ECC_BUILDING_ORDER := [&"ecc_hq", &"ecc_power", &"ecc_depot", &"ecc_barracks", &"ecc_factory", &"ecc_airfield", &"ecc_ministry", &"ecc_black_market", &"ecc_bunker", &"ecc_aa_site", &"ecc_sandbags", &"ecc_barricade"]
 const TPLA_BUILDING_ORDER := [&"tpla_den", &"tpla_gas_plant", &"tpla_cc_plant", &"tpla_stash", &"tpla_camp", &"tpla_chop_shop", &"tpla_tunnel", &"tpla_workshop", &"tpla_bazaar", &"tpla_demo_trap", &"tpla_camo_net", &"tpla_wasp_nest", &"tpla_airfield", &"tpla_sandbags", &"tpla_barricade"]
 
@@ -179,6 +212,21 @@ func _validate() -> void:
 			errors.append("Missing AI personality " + FACTIONS[f]["personality"])
 	if buildings.has(&"tpla_tunnel") and not (buildings[&"tpla_tunnel"] as BuildingDef).tags.has("tunnel"):
 		errors.append("Tunnel has no tunnel tag (data lost?)")
+	for sid in SQUAD_MEMBERS:
+		var sd: UnitDef = units.get(sid)
+		if sd == null:
+			errors.append("Squad %s has no unit def" % sid)
+			continue
+		for m in squad_members(sid):
+			if not ResourceLoader.exists("res://assets/models/infantry/%s.res" % m[0]):
+				errors.append("Squad %s member model missing: %s" % [sid, m[0]])
+			for wid in m[1]:
+				if not sd.weapons.has(String(wid)):
+					errors.append("Squad %s member weapon %s not in the unit's weapons" % [sid, wid])
+	for op in OPERATOR_DRONES:
+		for k in OPERATOR_DRONES[op]:
+			if not units.has(OPERATOR_DRONES[op][k]):
+				errors.append("Drone operator %s: missing drone %s" % [op, OPERATOR_DRONES[op][k]])
 	for id in weapons:
 		var wd: WeaponDef = weapons[id]
 		if wd.min_tier < 0 or wd.min_tier > 3:
@@ -202,3 +250,39 @@ func producer_of(unit_id) -> StringName:
 		if b.produces.has(String(unit_id)):
 			return bid
 	return &""
+
+## M3.5 squads: members as [model, [weapon ids]] (grenadier placeholders resolved), [] if not a squad.
+func squad_members(unit_id) -> Array:
+	var l: Array = SQUAD_MEMBERS.get(StringName(unit_id), [])
+	var out: Array = []
+	for m in l:
+		out.append(GRENADIERS[m] if m is StringName else m)
+	return out
+
+func is_squad(unit_id) -> bool:
+	return SQUAD_MEMBERS.has(StringName(unit_id))
+
+## carriers[alive][weapon index]: how many of the first `alive` members carry each of the
+## unit's weapons (cached per unit def; sim-safe, data only).
+var _carriers := {}
+func squad_carriers(ud: UnitDef) -> Array:
+	if _carriers.has(ud.id):
+		return _carriers[ud.id]
+	var ms := squad_members(ud.id)
+	var out: Array = []
+	for alive in ms.size() + 1:
+		var row := PackedInt32Array()
+		row.resize(ud.weapons.size())
+		for wi in ud.weapons.size():
+			var n := 0
+			for j in alive:
+				if (ms[j][1] as Array).has(StringName(ud.weapons[wi])):
+					n += 1
+			row[wi] = n
+		out.append(row)
+	_carriers[ud.id] = out
+	return out
+
+## Drone def an operator launches for kind ("bomb" / "scout"), or &"" if it has none of that kind.
+func operator_drone(op_def, kind: String) -> StringName:
+	return OPERATOR_DRONES.get(StringName(op_def), {}).get(kind, &"")

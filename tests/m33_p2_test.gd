@@ -154,23 +154,29 @@ static func _cc_plant(t: Node) -> void:
 	var cc := Content.building(&"tpla_cc_plant")
 	var gt := Content.building(&"tpla_gas_plant")
 	var nuc := Content.building(&"us_reactor")
-	t._check(cc != null and cc.power == 19 and cc.cost == 1600 and cc.footprint == Vector2i(4, 4) and cc.prereqs.has("tpla_workshop"),
-		"Iran Combined-Cycle Gas Plant: $1,600, +19 power, 4x4, needs the Defence Workshop")
-	t._check(cc.power > gt.power and cc.cost > gt.cost and float(cc.power) / cc.cost < float(nuc.power) / nuc.cost
-		and float(cc.power) / (cc.footprint.x * cc.footprint.y) < float(nuc.power) / (nuc.footprint.x * nuc.footprint.y),
-		"it out-powers the Gas Turbine Plant but is less efficient than the US nuclear plant (per $ and per tile)")
+	# M3.5 item 15: Russia and Iran swapped power-station models; Iran's big plant is now the
+	# 3x3 Gas Processing Plant, the 4x4 combined-cycle model is Russia's; the stats followed the
+	# models (Iran now has Russia's old $800 / +10 plant, Russia the old $1,600 / +19 one)
+	t._check(cc != null and cc.power == 10 and cc.cost == 800 and cc.build_time_ms == 10000 and cc.max_hp == 1000 and cc.footprint == Vector2i(3, 3) and cc.prereqs.has("tpla_workshop"),
+		"Iran Gas Processing Plant: $800, +10 power, 3x3, needs the Defence Workshop")
+	t._check(cc.power > gt.power and cc.cost > gt.cost and nuc != null,
+		"it out-powers the Gas Turbine Plant and costs more")
 	var order: Array = Content.faction(&"tpla")["buildings"]
 	t._check(order.has(&"tpla_cc_plant") and order.find(&"tpla_cc_plant") == order.find(&"tpla_gas_plant") + 1, "it sits next to the Gas Turbine Plant in Iran's build list")
-	t._check(TranslationServer.translate(cc.name_key) == "Combined-Cycle Gas Plant" and TranslationServer.translate(cc.desc_key) != cc.desc_key, "it has a name and an info-card description")
-	var v: Node = load(cc.view_scene).instantiate()
+	t._check(TranslationServer.translate(cc.name_key) == "Gas Processing Plant" and TranslationServer.translate(cc.desc_key) != cc.desc_key, "it has a name and an info-card description")
+	var ru := Content.building(&"ecc_power")
+	t._check(TranslationServer.translate(ru.name_key) == "Combined-Cycle Gas Plant" and ru.footprint == Vector2i(4, 4)
+		and ru.cost == 1600 and ru.power == 19 and ru.build_time_ms == 20000 and ru.max_hp == 1500 and ru.prereqs.is_empty(),
+		"Russia's power station is now the Combined-Cycle Gas Plant (4x4, $1,600, +19 power, no prereq)")
+	var v: Node = load(ru.view_scene).instantiate()
 	var fans := 0
 	for n in v.find_children("Fan*", "MeshInstance3D", true, false):
 		if n.get_meta("anim", "") == "spin":
 			fans += 1
 	t._check(fans == 8 and v.find_child("Stack0", true, false) != null and v.find_child("Stack1", true, false) != null and v.get("footprint") == Vector2(4, 4),
-		"its model has two smoking stacks and 8 spinning condenser fans (%d)" % fans)
+		"the combined-cycle model (Russia) has two smoking stacks and 8 spinning condenser fans (%d)" % fans)
 	v.free()
-	# in a match: locked until the workshop, then +19 power; the AI picks it when it can
+	# in a match: locked until the workshop, then +10 power; the AI picks it when it can
 	var r := M33._runner(["tpla", "ecc"])
 	var w := r.sim
 	var hq := M33._hq(w, 0)
@@ -188,4 +194,4 @@ static func _cc_plant(t: Node) -> void:
 	w._place_building(cc, 0, M33.spot(w, 0, &"tpla_cc_plant", hq.tile), 0, true)
 	for i in 12:
 		r.advance()
-	t._check(p0.power_prod - before == 19 and not p0.low_power, "a Combined-Cycle plant adds 19 power (%d -> %d)" % [before, p0.power_prod])
+	t._check(p0.power_prod - before == 10 and not p0.low_power, "a Gas Processing Plant adds 10 power (%d -> %d)" % [before, p0.power_prod])

@@ -9,6 +9,12 @@ extends EntityView
 @export var steer_max: float = 0.0      ## radians; 0 = no steering wheels
 @export var wreck_s: float = 7.0        ## how long the burnt wreck stays
 @export var elevate: float = 0.0        ## M3.1: radians the barrel lifts while firing (M109A7); 0 = fixed
+## M3.5: every artillery piece (WorldView sets `elevate` for those without one and `aiming` while
+## the unit holds a fire mission): the gun / launcher rises before the shot, holds through the
+## salvo and lowers after. Pods and tubes pivot at the rear-bottom of their mesh. View only.
+var aiming := false
+var _pivot := Vector3.ZERO
+var _barrel_p0 := Vector3.ZERO
 
 var _barrel_rx := 0.0
 var _elev := 0.0
@@ -62,6 +68,12 @@ func _ready() -> void:
 	if barrel != null:
 		_barrel_z = barrel.position.z
 		_barrel_rx = barrel.rotation.x
+		_barrel_p0 = barrel.position
+		for c in barrel.get_children():
+			if c is MeshInstance3D and (c as MeshInstance3D).mesh != null:
+				var bb: AABB = (c as MeshInstance3D).transform * (c as MeshInstance3D).mesh.get_aabb()
+				_pivot = Vector3(0, bb.position.y, minf(0.0, bb.position.z))
+				break
 	_gather(self)
 
 func _gather(n: Node) -> void:
@@ -219,12 +231,19 @@ func _process(delta: float) -> void:
 	else:
 		_last_yaw = global_rotation.y
 	_last_pos = p
-	if barrel != null and elevate > 0.0 and (_elev > 0.0 or _elev_hold > 0.0):
+	var elev_moved := false
+	if barrel != null and elevate > 0.0 and (_elev > 0.0 or _elev_hold > 0.0 or aiming):
 		_elev_hold = maxf(0.0, _elev_hold - delta)
-		_elev = move_toward(_elev, 1.0 if _elev_hold > 0.0 else 0.0, delta * (2.5 if _elev_hold > 0.0 else 0.6))
-		barrel.rotation.x = _barrel_rx - elevate * (_elev * _elev * (3.0 - 2.0 * _elev))
-	if barrel != null and (_recoil > 0.0 or barrel.position.z != _barrel_z):
+		var up := _elev_hold > 0.0 or aiming
+		_elev = move_toward(_elev, 1.0 if up else 0.0, delta * (1.6 if up else 0.6))
+		elev_moved = true
+	if barrel != null and (elev_moved or _recoil > 0.0 or barrel.position.z != _barrel_z):
 		_recoil = maxf(0.0, _recoil - delta * 3.5)
 		# fast kick back, slower return
 		var k := _recoil * _recoil * (3.0 - 2.0 * _recoil) if _recoil < 0.85 else (1.0 - _recoil) / 0.15
-		barrel.position.z = _barrel_z - recoil * k
+		var a := elevate * (_elev * _elev * (3.0 - 2.0 * _elev))
+		var b := Basis(Vector3.RIGHT, _barrel_rx - a)
+		var rb := Basis(Vector3.RIGHT, _barrel_rx)
+		barrel.basis = b
+		# pivot about the rear of the tube / pod, then recoil along the bore
+		barrel.position = _barrel_p0 + rb * _pivot - b * _pivot + b * Vector3(0, 0, -recoil * k)

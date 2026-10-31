@@ -53,6 +53,17 @@ static func passengers(w: SimWorld, t: SimEntity) -> Array:
 			out.append(u)
 	return out
 
+## M3.5: a Combat Squad (six soldiers) takes SQUAD_SEATS of a transport's capacity.
+const SQUAD_SEATS := 3
+static func seats(w: SimWorld, u: SimEntity) -> int:
+	return SQUAD_SEATS if Content.is_squad(u.def_id) else 1
+
+static func load_of(w: SimWorld, t: SimEntity) -> int:
+	var n := 0
+	for u: SimEntity in passengers(w, t):
+		n += seats(w, u)
+	return n
+
 static func can_board(w: SimWorld, u: SimEntity) -> bool:
 	return w.udef(u).tags.has("infantry") and not w.udef(u).tags.has("builder")
 
@@ -72,7 +83,7 @@ static func board(w: SimWorld, u: SimEntity, t: SimEntity) -> int:
 	if capacity(w, t) <= 0 or t.owner != u.owner or t.res_id < 0:
 		return -1
 	if FX.dist(u.pos, t.pos) <= u.radius + t.radius + FX.ONE:
-		if passengers(w, t).size() >= capacity(w, t):
+		if load_of(w, t) + seats(w, u) > capacity(w, t):
 			w.events.append({"t": "reject", "owner": u.owner, "reason": "REASON_TRANSPORT_FULL"})
 			return -1
 		u.res_id = -t.id

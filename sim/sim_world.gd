@@ -258,6 +258,24 @@ static func is_constructor(ud: UnitDef) -> bool:
 const DRONE_RELOAD_TICKS := 1200   ## 60 s at 20 ticks/s
 const DRONE_BUSY := 1 << 40
 
+## M3.5 Combat Squads (Content.SQUAD_MEMBERS): damage taken in %, foxhole (dig) time and cover.
+const SQUAD_DMG_PCT := 67      ## = +50 % resistance (1 / 1.5)
+const FOXHOLE_PCT := 60        ## dug in: 40 % less on top
+const DIG_TICKS := 80          ## 4 s to dig in
+
+## Soldiers still standing in a squad: the pool drains one member at a time (at least 1 alive).
+func squad_alive(e: SimEntity) -> int:
+	var n := Content.squad_members(e.def_id).size()
+	if n == 0:
+		return 1
+	return clampi((e.hp * n + e.max_hp - 1) / maxi(1, e.max_hp), 1, n)
+
+func dug_in(e: SimEntity) -> bool:
+	return e.dig > 0 and e.dig <= tick
+
+func digging(e: SimEntity) -> bool:
+	return e.dig > tick
+
 func drone_wait(op: SimEntity, kind: String) -> int:
 	var t: int = op.air_t if kind == "bomb" else op.aux_t
 	return maxi(0, t - tick)
@@ -501,6 +519,13 @@ func damage(target: SimEntity, amount: int, attacker: SimEntity) -> void:
 	if target.kind == SimEntity.Kind.RESOURCE:
 		return
 	target.last_hit_tick = tick
+	if target.kind == SimEntity.Kind.UNIT and Content.is_squad(target.def_id):
+		# M3.5 Combat Squads: +50 % damage resistance over single soldiers (take 2/3), and
+		# a dug-in squad's foxhole takes off another FOXHOLE_PCT
+		amount = amount * SQUAD_DMG_PCT / 100
+		if dug_in(target):
+			amount = amount * FOXHOLE_PCT / 100
+		amount = maxi(1, amount)
 	if target.shield > 0:
 		var absorbed := mini(target.shield, amount)
 		target.shield -= absorbed

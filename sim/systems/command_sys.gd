@@ -130,9 +130,10 @@ static func apply(w: SimWorld, c: Dictionary) -> void:
 			_place(w, pid, c)
 		"drone":   # M3.2: Drone Operator launches a bomb or scout drone (one of each per operator)
 			var kind := String(c.get("kind", "bomb"))
-			var did := &"us_bomb_drone" if kind == "bomb" else &"us_scout_drone"
 			for u: SimEntity in _own_units(w, pid, c):
-				if not w.udef(u).tags.has("drone_operator") or u.res_id < 0 or w.drone_wait(u, kind) > 0:
+				# M3.5: each operator launches only its own kinds (US: scout; Russia: explosive)
+				var did := Content.operator_drone(u.def_id, kind)
+				if did == &"" or not w.udef(u).tags.has("drone_operator") or u.res_id < 0 or w.drone_wait(u, kind) > 0:
 					continue
 				var dr := w.spawn_unit(did, pid, null, u.pos)
 				dr.air_home = u.id
@@ -141,6 +142,17 @@ static func apply(w: SimWorld, c: Dictionary) -> void:
 				else:
 					u.aux_t = SimWorld.DRONE_BUSY
 				w.events.append({"t": "drone", "id": dr.id, "op": u.id, "owner": pid})
+		"dig":   # M3.5: Combat Squads stop and dig a foxhole (any later move climbs out)
+			for u: SimEntity in _own_units(w, pid, c):
+				if not Content.is_squad(u.def_id) or u.res_id < 0 or u.dig != 0:
+					continue
+				u.orders.clear()
+				u.goal = Vector2i(-1, -1)
+				u.path = []
+				u.path_goal = Vector2i(-1, -1)
+				u.home = u.pos
+				u.dig = w.tick + SimWorld.DIG_TICKS
+				w.events.append({"t": "dig", "id": u.id, "owner": pid})
 		"resume_build":
 			var site := w.get_ent(int(c.get("target", 0)))
 			if site == null or site.owner != pid or site.built:

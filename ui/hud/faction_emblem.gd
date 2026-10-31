@@ -77,7 +77,7 @@ static func draw_flag(ci: CanvasItem, f: StringName, r: Rect2) -> void:
 		ci.draw_circle(r.get_center(), bh * 0.3, bands[2])
 
 ## Small flag icon (texture) for option lists such as the skirmish lobby faction picker.
-static func flag_texture(f: StringName, w: int = 24, h: int = 16) -> ImageTexture:
+static func flag_texture(f: StringName, w: int = 24, h: int = 16, dark := false) -> ImageTexture:
 	var img := Image.create_empty(w, h, false, Image.FORMAT_RGBA8)
 	if f == &"us":
 		for y in h:
@@ -85,6 +85,8 @@ static func flag_texture(f: StringName, w: int = 24, h: int = 16) -> ImageTextur
 			for x in w:
 				img.set_pixel(x, y, col)
 		img.fill_rect(Rect2i(0, 0, w * 2 / 5, h * 4 / 7), Color("#3c3b6e"))
+	elif f in [&"jp", &"pl", &"cn", &"uk"]:
+		_coming_soon_flag(img, f, w, h)   # M3.5: locked "Coming soon" factions
 	else:
 		var bands: Array = BANDS.get(f, BANDS[&"eu"])
 		for y in h:
@@ -92,4 +94,45 @@ static func flag_texture(f: StringName, w: int = 24, h: int = 16) -> ImageTextur
 				img.set_pixel(x, y, bands[mini(2, y * 3 / h)])
 		if f == &"tpla":
 			img.fill_rect(Rect2i(w / 2 - 1, h / 2 - 1, 2, 2), bands[2])
+	if dark:   # M3.5: locked factions show a darkened, desaturated flag
+		for y in h:
+			for x in w:
+				var c := img.get_pixel(x, y)
+				var l := c.get_luminance()
+				img.set_pixel(x, y, Color(lerpf(c.r, l, 0.6) * 0.42, lerpf(c.g, l, 0.6) * 0.42, lerpf(c.b, l, 0.6) * 0.42, c.a))
 	return ImageTexture.create_from_image(img)
+
+## M3.5: simple flags for the factions shown as "Coming soon" (Japan, Poland, China, UK).
+static func _coming_soon_flag(img: Image, f: StringName, w: int, h: int) -> void:
+	match f:
+		&"jp":
+			img.fill(Color.WHITE)
+			var c := Vector2(w * 0.5, h * 0.5)
+			var r := h * 0.3
+			for y in h:
+				for x in w:
+					if Vector2(x + 0.5, y + 0.5).distance_to(c) <= r:
+						img.set_pixel(x, y, Color("#bc002d"))
+		&"pl":
+			img.fill_rect(Rect2i(0, 0, w, h / 2), Color.WHITE)
+			img.fill_rect(Rect2i(0, h / 2, w, h - h / 2), Color("#dc143c"))
+		&"cn":
+			img.fill(Color("#de2910"))
+			img.fill_rect(Rect2i(w / 6, h / 5, maxi(2, w / 6), maxi(2, h / 4)), Color("#ffde00"))
+			for k in 4:
+				img.fill_rect(Rect2i(w / 3 + 1 + (k % 2) * 2, h / 10 + k * h / 8, 1, 1), Color("#ffde00"))
+		&"uk":
+			img.fill(Color("#012169"))
+			for y in h:
+				for x in w:
+					var u := float(x) / w
+					var v := float(y) / h
+					if absf(u - v) < 0.09 or absf(u - (1.0 - v)) < 0.09:
+						img.set_pixel(x, y, Color.WHITE)
+					if absf(u - v) < 0.035 or absf(u - (1.0 - v)) < 0.035:
+						img.set_pixel(x, y, Color("#c8102e"))
+			img.fill_rect(Rect2i(0, h / 2 - h / 5, w, h * 2 / 5), Color.WHITE)
+			img.fill_rect(Rect2i(w / 2 - h / 5, 0, h * 2 / 5, h), Color.WHITE)
+			img.fill_rect(Rect2i(0, h / 2 - h / 9, w, maxi(1, h * 2 / 9)), Color("#c8102e"))
+			img.fill_rect(Rect2i(w / 2 - h / 9, 0, maxi(1, h * 2 / 9), h), Color("#c8102e"))
+

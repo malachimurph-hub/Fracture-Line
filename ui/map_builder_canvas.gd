@@ -674,7 +674,7 @@ static func biome_rows(tiles_text: String) -> PackedStringArray:
 func item_label(it: Dictionary) -> String:
 	match it["t"]:
 		"spawn": return "Start %d" % (int(it["slot"]) + 1)
-		"res": return ("Supply seam" if it["kind"] == "seam" else "Supply cache") + " %d" % int(it["amount"])
+		"res": return ("Supply seam" if it["kind"] == "seam" else "Crude oil reserve") + " %d" % int(it["amount"])
 		"prop": return PROP_LABELS.get(it["kind"], String(it["kind"]))
 	return MapStore._name(it["kind"])
 
