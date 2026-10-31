@@ -1,5 +1,22 @@
 # M3.5 (0.3.7, versionCode 21)
 
+## Build
+- APK: `FractureLine-M3.5.apk`, 97,564,979 bytes (93.0 MiB, under the 100 MB limit). arm64-v8a.
+- SHA256: `82a851e23db44897072ed1012ca591ff3f42f8786f6c64eb87ed3a8545a68bb5`
+- Package com.malachimurphy.fractureline, label "Fracture Line", versionName 0.3.7, versionCode 21,
+  same key as the earlier test APKs (certificate SHA-256 7e96c70a…ce54), so it installs over 0.3.6.
+  `apksigner verify` passes (v2 and v3).
+- Size: the plain export was 103.3 MB (the new infantry models add about 5.4 MB). Godot stores the
+  imported textures and models uncompressed, so `tools/apk_recompress.sh` deflates the stored
+  `.ctex`/`.ctexarray`/`.res` entries, zipaligns and re-signs. Music unchanged (56 kbps).
+- Built from master 97f58c4 (merge of m35 78ba06c).
+- Tests on m35 (0.3.7): all 21 suites plus the board (72/72), m34 and m35 pass; m26 UI test passes.
+- Malachi's new Russia and Iran music (13 tracks, branch `m35-music`, commit e390879) is not in this
+  build; it comes in a separate small follow-up update.
+- Uploaded to Google Drive (My Drive root), file id `1DAyspHHWL1G7GFnVWvzTwv8Q1LE_oCRR`.
+- Play bundle: `builds/play/FractureLine.aab`, 97,697,689 bytes, versionCode 21, upload-key signed.
+  Not uploaded. The 0.3.6 bundle is kept in `builds/play/superseded/`.
+
 Malachi's M3.5 list. Malachi's new Russia and Iran music (branch m35-music) comes in a separate small follow-up update.
 
 ## Menu and startup (items 1–6)
