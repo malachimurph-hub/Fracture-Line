@@ -47,17 +47,38 @@ const BATTLE_PLAYLIST := US_PLAYLIST
 ## M3.2: battle music follows the local player's faction (tools/gen_music_m32.py): Russia
 ## hard-bass techno + march, Germany Berlin club techno, Iran war drums + Persian instruments;
 ## M3.4: the United States plays Malachi's tracks.
+## M3.5: Malachi's own Russia (ru_*) and Iran (ir_*) tracks from his "Russia music" / "Iran Music"
+## Drive folders (OGG Vorbis). Russia keeps the M3.3 "Steppe March"; the synthesized "Red Bounce"
+## hard bass is superseded by "Moscow Techno". Iran keeps "Zagros" alongside its seven new tracks.
+## Both now have 3+ tracks, so they no longer borrow other factions' music (MIN_POOL).
+const RU_PLAYLIST := [
+		"res://audio/music/battle_ru_steppe_march.ogg",
+		"res://audio/music/ru_red_banner_march.ogg",
+		"res://audio/music/ru_forward_comrades.ogg",
+		"res://audio/music/ru_iron_rhythm.ogg",
+		"res://audio/music/ru_moscow_techno_1.ogg",
+		"res://audio/music/ru_moscow_techno_2.ogg",
+		"res://audio/music/ru_desionaries.ogg"]
+const IR_PLAYLIST := [
+		"res://audio/music/ir_defend_the_holy_land.ogg",
+		"res://audio/music/ir_iran_victory.ogg",
+		"res://audio/music/ir_triumph_of_the_dunes.ogg",
+		"res://audio/music/ir_descent_into_dust.ogg",
+		"res://audio/music/ir_dusty_loop.ogg",
+		"res://audio/music/ir_setars_waiting_riff.ogg",
+		"res://audio/music/ir_iron_and_flower.ogg",
+		"res://audio/music/battle_ir_zagros.ogg"]
 const FACTION_PLAYLISTS := {
 	&"us": US_PLAYLIST,
-	&"ecc": ["res://audio/music/battle_ru_steppe_march.ogg", "res://audio/music/battle_ru_red_bounce.ogg"],
+	&"ecc": RU_PLAYLIST,
 	&"eu": ["res://audio/music/battle_de_tiefgarage.ogg"],
-	&"tpla": ["res://audio/music/battle_ir_zagros.ogg"],
+	&"tpla": IR_PLAYLIST,
 }
 var battle_faction: StringName = &""
 var _shuffle: Array = []
 var _last_battle := ""
 ## M3.5: factions with fewer tracks than this also draw on the other factions' battle tracks, so
-## their matches differ too (Germany and Iran have one track of their own so far).
+## their matches differ too (only Germany, with one track of its own, still borrows).
 const MIN_POOL := 3
 var music_rng := RandomNumberGenerator.new()   ## view-only randomness for the music order
 var match_order: Array = []                    ## the order picked for the current match (tests)
