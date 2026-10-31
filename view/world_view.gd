@@ -40,6 +40,8 @@ static func build_relative_health(e: SimEntity) -> float:
 		return clampf(float(e.hp) / float(maxi(1, e.max_hp)), 0.0, 1.0)
 	return clampf(float(e.hp) / float(ProdSys.construction_hp_cap(e.max_hp, e.progress, e.build_ticks)), 0.0, 1.0)
 
+const ARTY_ELEVATE := 0.55   ## M3.5: radians artillery without its own `elevate` lifts to fire
+
 func setup(r: MatchRunner, pid: int) -> void:
 	runner = r
 	sim = r.sim
@@ -417,6 +419,10 @@ func _ensure_view(e: SimEntity) -> EntityView:
 	v.set_team_material(Palette.team_material(sim.players[e.owner].color if e.owner >= 0 else -1))
 	var did := String(e.def_id)
 	Weathering.apply(v, &"tpla" if did.begins_with("tpla_") else (&"eu" if did.begins_with("eu_") else (&"ecc" if did.begins_with("ecc_") else &"neutral")))
+	if e.kind == SimEntity.Kind.UNIT and not v is InfantryView:
+		Palette.apply_paint(v, Content.faction_of_id(e.def_id))   # M3.5 faction vehicle paint
+	elif e.kind == SimEntity.Kind.BUILDING and Palette.PAINT_BUILDINGS.has(e.def_id):
+		Palette.apply_paint(v, Content.faction_of_id(e.def_id), Palette.PAINT_BUILDINGS[e.def_id])
 	v.position = _world_pos(e)
 	if e.kind == SimEntity.Kind.BUILDING or e.kind == SimEntity.Kind.NEUTRAL:
 		v.rotation.y = [0.0, PI * 0.5, PI, -PI * 0.5][e.rot]
@@ -439,6 +445,8 @@ func _ensure_view(e: SimEntity) -> EntityView:
 				(v as InfantryView).set_variant(e.id)   # M3.4: per-soldier look
 		if e.tier > 0:
 			v.set_tier(e.tier)
+		if v is VehicleView and d.tags.has("artillery") and (v as VehicleView).elevate <= 0.0:
+			(v as VehicleView).elevate = ARTY_ELEVATE   # M3.5: every artillery piece raises its gun / launcher
 		if d.shield_aura_radius > 0:
 			var dome := MeshInstance3D.new()
 			var sm := SphereMesh.new()
@@ -1119,6 +1127,8 @@ func frame(a: float, delta: float) -> void:
 					v.turret.rotation.y = lerp_angle(v.turret.rotation.y, ang, minf(1.0, delta * 10.0))
 				else:
 					v.turret.rotation.y = lerp_angle(v.turret.rotation.y, 0.0, minf(1.0, delta * 3.0))
+			if v is VehicleView and ud.tags.has("artillery"):   # M3.5: raise before the shot, lower after
+				(v as VehicleView).aiming = e.target != 0 and not e.moving and sim.get_ent(e.target) != null
 			# M3.3: builders animate (blade / backhoe arm / crane boom) while they work at a site
 			if v is VehicleView and not (v as VehicleView).work_parts.is_empty():
 				(v as VehicleView).working = _builder_working(e)

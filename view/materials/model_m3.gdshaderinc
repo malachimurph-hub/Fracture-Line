@@ -34,6 +34,10 @@ instance uniform float dirt_amt = 0.6;
 instance uniform float wheel_dist = 0.0;   // distance travelled (world units): wheels + tracks
 instance uniform float steer = 0.0;        // radians, wheels flagged as steering
 instance uniform float damage_amt = 0.0;   // 0 pristine .. 1 burnt-out
+// M3.5 faction vehicle paint (sRGB rgb, a = strength; 0 = the model's own colours): repaints
+// the painted-metal and camo classes - low-saturation military paint only, so markings, warning
+// bands and dark fittings keep their colour - keeping the model's light / dark panel tones.
+instance uniform vec4 paint_color = vec4(0.0);
 // M3.2 item 14: per-asset baked surface texture (tools/gfx_m32/tex14): one Texture2DArray layer
 // holds 6 axis views of each mesh's local box. R = AO, G = signed curvature + panel seams,
 // B = grime (<= 0.75) / faction markings (> 0.8). Set per MeshInstance by the bake tool:
@@ -132,6 +136,16 @@ void fragment() {
 	bool hi = fl_tex_quality > 0.5;
 	float bias = hi ? 0.0 : 1.0;
 	vec3 base = srgb_to_linear(COLOR.rgb);
+	bool painted = false;
+	if (paint_color.a > 0.0 && (cls == 0 || cls == 20)) {
+		float mx = max(COLOR.r, max(COLOR.g, COLOR.b));
+		float sat = mx > 0.001 ? (mx - min(COLOR.r, min(COLOR.g, COLOR.b))) / mx : 0.0;
+		if (sat < 0.5 && mx > 0.14) {
+			float l = dot(base, vec3(0.2126, 0.7152, 0.0722));
+			base = mix(base, srgb_to_linear(paint_color.rgb) * clamp(sqrt(l / 0.2), 0.6, 1.2), paint_color.a);
+			painted = true;
+		}
+	}
 	float metal = 0.3;
 	float rough = 0.62;
 	float panel = 0.8;
@@ -160,6 +174,11 @@ void fragment() {
 	} else if (cls == 19) {
 		float pulse = 0.5 + 0.5 * sin(TIME * 2.1 + UV2.x);
 		emit = base * mix(1.6, 4.2, pulse * pulse); panel = 0.0; weather = 0.0; rough = 0.25;
+	} else if (cls == 20 && painted) {
+		// M3.5: solid faction paint, faint low-frequency tone variation (no camo pattern)
+		vec4 cm = tri(weather_tex, opos * 0.35 + vec3(1.3, 0.0, 2.9), onrm, 0.3, bias);
+		base *= mix(0.93, 1.05, cm.r);
+		stencil = stencil_amount * 0.5;
 	} else if (cls == 20) {
 		int pat = int(UV2.x + 0.5);
 		vec3 dk = base * vec3(0.7, 0.68, 0.6);
