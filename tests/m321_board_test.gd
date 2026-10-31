@@ -132,7 +132,7 @@ func _defs(fac: String) -> Dictionary:
 		var ud: UnitDef = Content.unit(id)
 		if ud.faction != StringName(fac) or ud.stubs.size() > 0 and ud.stubs.has("all"):
 			continue
-		if ud.tags.has("infantry") and ud.tags.has("garrison") and not ud.tags.has("builder"):
+		if ud.tags.has("infantry") and ud.tags.has("garrison") and not ud.tags.has("builder") and not ud.tags.has("squad"):
 			if inf == &"" or String(id).contains("rpg"):
 				inf = id
 		elif ud.transport_capacity > 0 and ud.move_layer == &"vehicle" and (tr_ == &"" or String(id).contains("btr")):
@@ -208,12 +208,15 @@ func _run_faction(fac: String) -> void:
 		bt += Vector2i(1, 0)
 	var bar := sim._place_building(Content.building(d["bar"]), 0, bt, 0, true)
 	_ensure(bar)
-	var three: Array = squad.slice(0, 3)
+	# M3.5: one Combat Squad per barricade - two squads tapped onto it, one gets in
+	var three: Array = [_unit(StringName(fac + "_squad"), c + Vector2i(-2, 7)).id, _unit(StringName(fac + "_squad"), c + Vector2i(2, 7)).id]
 	await _adv(2)
 	await _look(FX.to_world(bar.pos))
 	m.ctl.set_selection(three)
 	await _tap_world(m.world.views[bar.id].position + Vector3(0, 0.25, 0))
-	check("%s C: %s manned by 3" % [fac, d["bar"]], await _wait_inside(three, bar, 3) == 3, _inside(three, bar))
+	var n_bar := await _wait_inside(three, bar, 1)
+	await _adv(120)
+	check("%s C: %s manned by one squad" % [fac, d["bar"]], n_bar == 1 and _inside(three, bar) == 1, _inside(three, bar))
 	m.ctl.issue({"t": "unload", "ids": [bar.id]})
 	await _adv(4)
 	check("%s C: troops step out of the barricade" % fac, _inside(three, bar) == 0)

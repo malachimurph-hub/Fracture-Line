@@ -63,7 +63,7 @@ static func _no_floating(t: Node) -> void:
 		v.free()
 	t._check(bad.is_empty(), "gas plant stacks sit on the boilers; reactor and silo parts are grounded (%s)" % (str(bad.slice(0, 3)) if not bad.is_empty() else "no floating parts"))
 	# combined-cycle stacks stand on the ground (they started 1.25 up)
-	var cc: Node = load("res://view/buildings/tpla/cc_plant.tscn").instantiate()
+	var cc: Node = load("res://view/buildings/ecc/power.tscn").instantiate()   # M3.5: Russia's now
 	var low := 99.0
 	for mi in cc.find_children("Hull", "MeshInstance3D", true, false):
 		var a: PackedVector3Array = (mi as MeshInstance3D).mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]

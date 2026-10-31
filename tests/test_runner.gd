@@ -668,7 +668,11 @@ func test_audio() -> void:
 				if id.length() < 2 or id[1] != "m":
 					female.append(f)
 	_check(female.is_empty(), "unit voice sets use male voices only (%d female/unknown lines) %s" % [female.size(), female.slice(0, 5)])
-	_check(ad.manifest["factions"]["tpla"]["units"].size() == Content.TPLA_UNIT_ORDER.size(), "manifest has every TPLA unit")
+	var no_voice: Array = []
+	for uid in Content.TPLA_UNIT_ORDER:
+		if not ad.manifest["factions"]["tpla"]["units"].has(String(uid)):
+			no_voice.append(uid)
+	_check(no_voice.is_empty(), "manifest has every TPLA unit %s" % [no_voice])   # M3.5: retired units keep theirs
 	var st: Dictionary = ad.voice_status()
 	print("voice status: %d of %d lines recorded, %d AI, %d placeholder, %d missing" % [st["recorded"], st["total"], st["ai"], st["placeholder"], st["missing"]])
 	_check(st["total"] > 50, "manifest covers %d lines" % st["total"])
@@ -2634,11 +2638,11 @@ func _roster_m32() -> void:
 	r.issue({"p": 0, "t": "queue", "target": camp.id, "def": "tpla_militia"})
 	_ticks(r, 2)
 	_check(not camp.queue.is_empty(), "captured structure trains the original faction's units")
-	# --- barricade: max 3, exit
+	# --- barricade: one squad (M3.5), exit
 	var bar := w._place_building(Content.building(&"eu_barricade"), 0, c + Vector2i(3, -3), 0, true)
 	var inf: Array = []
-	for k in 4:
-		var g := w.spawn_unit(&"eu_grenadier", 0, null, FX.tile_center(c + Vector2i(k + 1, -1)))
+	for k in 2:
+		var g := w.spawn_unit(&"eu_squad", 0, null, FX.tile_center(c + Vector2i(k + 1, -1)))
 		g.pos = FX.tile_center(c + Vector2i(k + 1, -1))
 		inf.append(g.id)
 	r.issue({"p": 0, "t": "garrison", "ids": inf, "target": bar.id})
@@ -2647,7 +2651,7 @@ func _roster_m32() -> void:
 	for id in inf:
 		if w.ents[id].res_id == -bar.id:
 			inside += 1
-	_check(inside == 3, "infantry man a concrete barricade, max 3 (%d inside)" % inside)
+	_check(inside == 1, "a Combat Squad mans a concrete barricade, one squad max (%d inside)" % inside)
 	r.issue({"p": 0, "t": "unload", "ids": [bar.id]})
 	_ticks(r, 2)
 	inside = 0
@@ -2672,7 +2676,7 @@ func _roster_m32() -> void:
 	_check(w2.players[0].upgrades.has("us_up_drones") and w2.prereqs_met(0, Content.unit(&"us_drone_operator").prereqs) == "", "Strategic Center research unlocks the Drone Operator")
 	var op := w2.spawn_unit(&"us_drone_operator", 0, null, FX.tile_center(c2))
 	op.pos = FX.tile_center(c2)
-	r2.issue({"p": 0, "t": "drone", "ids": [op.id], "kind": "bomb"})
+	r2.issue({"p": 0, "t": "drone", "ids": [op.id], "kind": "bomb"})   # M3.5: US operators fly scout drones only
 	r2.issue({"p": 0, "t": "drone", "ids": [op.id], "kind": "scout"})
 	_ticks(r2, 4)
 	var drones: Array = []
@@ -2680,7 +2684,7 @@ func _roster_m32() -> void:
 		var e: SimEntity = w2.ents[id]
 		if e.alive and e.kind == SimEntity.Kind.UNIT and Content.unit(e.def_id).tags.has("drone") and e.air_home == op.id:
 			drones.append(e)
-	_check(drones.size() == 2 and w2.drone_wait(op, "bomb") > 0, "operator launches a bomb drone and a scout drone (%d)" % drones.size())
+	_check(drones.size() == 1 and w2.drone_wait(op, "scout") > 0, "US operator launches a scout drone only (%d)" % drones.size())
 	for d: SimEntity in drones:
 		w2._kill(d, null)
 	_ticks(r2, 2)
