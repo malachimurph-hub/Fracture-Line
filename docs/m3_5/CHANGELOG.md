@@ -1,6 +1,6 @@
-# M3.5 changelog (branch m35, off 0.3.6)
+# M3.5 (0.3.7, versionCode 21)
 
-Malachi's M3.5 list. Version not bumped, no APK built.
+Malachi's M3.5 list. Malachi's new Russia and Iran music (branch m35-music) comes in a separate small follow-up update.
 
 ## Menu and startup (items 1–6)
 - The live menu battle is gone (`ui/menu_battle.gd` and its wiring). The menu now uses Malachi's dusk photo as a cover-fit backdrop. Buttons sit in a left column of translucent dark plates, and the small emblem is top right.
