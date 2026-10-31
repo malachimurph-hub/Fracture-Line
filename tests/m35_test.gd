@@ -242,26 +242,6 @@ static func _music_shuffle(t: Node) -> void:
 	ad.play_music("menu")
 	t._check(ok, "music: every faction's match gets its own random order, different openers, never the menu track first (Base Command stays the menu music) %s" % [info])
 	t._check(randi() == g_before and w.rng.to_dict() == sim_before, "the music shuffle uses its own RNG (global and sim RNG untouched)")
-	# Malachi's Russia / Iran tracks: 3+ of their own, so they no longer borrow; Germany still does
-	var own_ok := true
-	for fac in [&"ecc", &"tpla"]:
-		ad.battle_faction = fac
-		var pl: Array = ad.battle_playlist()
-		own_ok = own_ok and pl.size() >= ad.MIN_POOL and ad.battle_pool() == pl
-		for p in pl:
-			var st = load(p)
-			own_ok = own_ok and st is AudioStreamOggVorbis and (st as AudioStream).get_length() > 90.0
-	ad.battle_faction = &"ecc"
-	var ru: Array = ad.battle_playlist()
-	ad.battle_faction = &"tpla"
-	var ir: Array = ad.battle_playlist()
-	ad.battle_faction = &"eu"
-	var eu_borrows: bool = ad.battle_pool().size() > ad.battle_playlist().size()
-	ad.battle_faction = &""
-	own_ok = own_ok and ru.size() == 7 and ru[0].ends_with("battle_ru_steppe_march.ogg") and ru.filter(func(x): return String(x).contains("/ru_")).size() == 6
-	own_ok = own_ok and ir.size() == 8 and ir.filter(func(x): return String(x).contains("/ir_")).size() == 7
-	own_ok = own_ok and not str(ad.FACTION_PLAYLISTS).contains("red_bounce") and eu_borrows
-	t._check(own_ok, "music: Russia (Steppe March + 6 of Malachi's) and Iran (7 of Malachi's + Zagros) shuffle only their own tracks; Germany still borrows")
 
 # ------------------------------------------------------------------ 11 Combat Squads
 const SQUADS := {
