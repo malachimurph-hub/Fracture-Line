@@ -239,6 +239,19 @@
       "veteran"
      ],
      "alias_of": "eu_flakwerk"
+    },
+    "eu_squad": {
+     "folder": "grenadier",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran",
+      "garrison"
+     ],
+     "alias_of": "eu_grenadier"
     }
    }
   },
@@ -414,6 +427,19 @@
       "created",
       "veteran"
      ]
+    },
+    "tpla_squad": {
+     "folder": "militia",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran",
+      "garrison"
+     ],
+     "alias_of": "tpla_militia"
     }
    }
   },
@@ -577,6 +603,19 @@
       "created",
       "veteran"
      ]
+    },
+    "us_squad": {
+     "folder": "grunt",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran",
+      "garrison"
+     ],
+     "alias_of": "us_grunt"
     }
    }
   },
@@ -751,6 +790,32 @@
       "created",
       "veteran"
      ]
+    },
+    "ecc_squad": {
+     "folder": "rifleman",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran",
+      "garrison"
+     ],
+     "alias_of": "ecc_rifleman"
+    },
+    "ecc_drone_operator": {
+     "folder": "rifleman",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran",
+      "garrison"
+     ],
+     "alias_of": "ecc_rifleman"
     }
    }
   }

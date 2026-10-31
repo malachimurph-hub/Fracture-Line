@@ -44,9 +44,9 @@ const GUNS := {
 	# M3.5 Combat Squad weapons
 	"m240b": {"butt": Vector3(0, 0.03, -0.41), "grip": Vector3(0, -0.04, -0.02), "support": Vector3(0, 0.03, 0.26)},
 	"mg3": {"butt": Vector3(0, 0.02, -0.41), "grip": Vector3(0, -0.04, -0.02), "support": Vector3(0, 0.03, 0.26)},
-	"m16_gl": {"butt": Vector3(0, 0.03, -0.4), "grip": Vector3(0, -0.04, -0.03), "support": Vector3(0, -0.02, 0.36)},
-	"ak_gl": {"butt": Vector3(0, 0.02, -0.4), "grip": Vector3(0, -0.04, -0.03), "support": Vector3(0, 0.0, 0.34)},
-	"ak74_gl": {"butt": Vector3(0, 0.03, -0.35), "grip": Vector3(0, -0.04, -0.03), "support": Vector3(0, 0.0, 0.34)},
+	"m16_gl": {"butt": Vector3(0, 0.03, -0.4), "grip": Vector3(0, -0.04, -0.03), "support": Vector3(0, 0.01, 0.25)},
+	"ak_gl": {"butt": Vector3(0, 0.02, -0.4), "grip": Vector3(0, -0.04, -0.03), "support": Vector3(0, 0.02, 0.28)},
+	"ak74_gl": {"butt": Vector3(0, 0.03, -0.35), "grip": Vector3(0, -0.04, -0.03), "support": Vector3(0, 0.02, 0.28)},
 }
 const STYLE := {"rpg": "launcher", "eu_launcher": "launcher", "javelin": "launcher", "pistol": "pistol", "shovel": "tool"}
 
