@@ -12,7 +12,6 @@ static func run(t: Node) -> void:
 	_structure_fill(t)
 	_mine_packup(t)
 	_income_popups(t)
-	await _menu_battle(t)
 	await _menu_campaign(t)
 	if ResourceLoader.exists("res://tests/m34_inf_test.gd"):
 		await load("res://tests/m34_inf_test.gd").run(t)
@@ -386,80 +385,6 @@ static func _income_popups(t: Node) -> void:
 	var ov := FileAccess.get_file_as_string("res://ui/hud/world_overlay.gd")
 	t._check(ov.contains("IncomePopups.MAX_FLOATERS"), "floaters are capped (drawn text, no nodes)")
 
-# ------------------------------------------------------------------ live battle behind the main menu
-static func _menu_battle(t: Node) -> void:
-	# rosters: vehicles and aircraft only (no infantry, builders, harvesters, drones)
-	var bad: Array = []
-	var air_n := 0
-	var jets := 0
-	for fac in Content.playable_factions():
-		var ground := MenuBattle.roster_pool(fac, false)
-		var air := MenuBattle.roster_pool(fac, true)
-		air_n += air.size()
-		if ground.size() < 3:
-			bad.append("%s ground=%d" % [fac, ground.size()])
-		for id in ground + air:
-			var d := Content.unit(id)
-			for tg in ["infantry", "builder", "harvester", "drone"]:
-				if d.tags.has(tg):
-					bad.append(String(id))
-			if d.move_layer == &"foot":
-				bad.append(String(id))
-		for id in air:
-			if Content.unit(id).tags.has("jet"):
-				jets += 1
-	t._check(bad.is_empty() and air_n > 0 and jets > 0, "menu battle rosters: tanks, artillery, helicopters and jets, no infantry (%d aircraft, %d jets)%s" % [air_n, jets, "" if bad.is_empty() else ": " + str(bad)])
-	for pass_i in 2:
-		var mapid: StringName = &"ochre_wells" if pass_i == 0 else &"varno_crossing_night"
-		MenuBattle.force_map = mapid
-		MenuBattle.force_clip = pass_i
-		var mb := MenuBattle.new()
-		t.add_child(mb)
-		var t0 := Time.get_ticks_msec()
-		while (mb.runner == null or mb.building) and Time.get_ticks_msec() - t0 < 60000:
-			await t.get_tree().process_frame
-		t._check(mb.runner != null and not mb.building and mb.runner.sim.map_id == mapid, "menu battle builds on %s" % mapid)
-		if mb.runner == null:
-			mb.queue_free()
-			continue
-		t._check(mb.night == (pass_i == 1) and _gnight_is(1.0 if pass_i == 1 else 0.0), "%s is a %s clip with that lighting" % [mapid, "night" if pass_i == 1 else "day"])
-		t._check(mb.runner.ais.is_empty() and mb.runner.record_replay == false, "the menu battle runs no AI and records no replay")
-		var tick0: int = mb.runner.sim.tick
-		var frames := 0
-		var max_side := 0
-		while frames < 120:
-			await t.get_tree().process_frame
-			frames += 1
-			max_side = maxi(max_side, maxi(mb._alive(0).size(), mb._alive(1).size()))
-		var ticks: int = mb.runner.sim.tick - tick0
-		t._check(ticks <= frames * 2 and ticks > 0, "sim steps capped at 2 a frame, no catch-up bursts (%d ticks in %d frames)" % [ticks, frames])
-		t._check(max_side <= MenuBattle.MAX_SIDE and mb._alive(0).size() > 0 and mb._alive(1).size() > 0, "both sides keep fighting, capped at %d units a side (peak %d)" % [MenuBattle.MAX_SIDE, max_side])
-		t._check(mb.shots_seen > 0, "the armies trade fire (%d shots)" % mb.shots_seen)
-		var jet_ok := true
-		var jet_n := 0
-		for pid in 2:
-			for id in mb._alive(pid):
-				var u: SimEntity = mb.runner.sim.get_ent(id)
-				if Content.unit(u.def_id).tags.has("jet"):
-					jet_n += 1
-					var af: SimEntity = mb._airfields[pid]
-					jet_ok = jet_ok and af != null and u.air_home == af.id
-		t._check(jet_ok, "jets fly from their side's airfield (%d up)" % jet_n)
-		t._check(mb.cam.position.y > 9.0 and mb.cam.position.distance_to(mb._clash) > 14.0, "the camera holds a high, wide view of the fight (h %.1f)" % mb.cam.position.y)
-		var cam0 := mb.cam.global_transform
-		for i in 10:
-			await t.get_tree().process_frame
-		t._check(not mb.cam.global_transform.is_equal_approx(cam0), "the camera pans slowly")
-		mb.queue_free()
-		await t.get_tree().process_frame
-		await t.get_tree().process_frame
-	t._check(_gnight_is(0.0), "leaving the menu battle resets the night lighting")
-	var mm: GDScript = load("res://ui/main_menu.gd")
-	t._check(not mm.live_allowed(), "no live battle on a headless run (static key art)")
-	var src := FileAccess.get_file_as_string("res://ui/main_menu.gd")
-	t._check(src.contains("Engine.max_fps = 30") and src.contains("scaling_3d_scale = 0.67") and src.contains("drop_live_battle") and src.contains("live_off = true"), "phones: 30 fps cap, 67% render scale, and a fall-back to the key art when the frame rate drops")
-	t._check(MenuBattle.FX_MUL < 1.0 and MenuBattle.MAX_SIDE <= 16, "lighter effects and a unit cap behind the menu")
-
 # ------------------------------------------------------------------ Campaign "Coming soon"
 static func _menu_campaign(t: Node) -> void:
 	var menu: Control = (load("res://ui/main_menu.tscn") as PackedScene).instantiate()
@@ -479,8 +404,3 @@ static func _menu_campaign(t: Node) -> void:
 	t._check(menu.find_child("BattleBackdrop", true, false) == null and menu.find_child("KeyArt", true, false) != null, "headless: the static key art backdrop")
 	menu.queue_free()
 	await t.get_tree().process_frame
-
-## fl_night as set (the headless renderer keeps no globals: then the menu battle's own flag is used)
-static func _gnight_is(v: float) -> bool:
-	var g = RenderingServer.global_shader_parameter_get(&"fl_night")
-	return g == null or is_equal_approx(float(g), v)

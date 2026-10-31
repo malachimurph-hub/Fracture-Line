@@ -62,6 +62,16 @@ func _ready() -> void:
 			t.name = "UiFlowTest"
 			add_child.call_deferred(t)
 	_check_startup.call_deferred()
+	if OS.get_environment("FL_BOOT_PROBE") != "":
+		_boot_probe.call_deferred()
+
+## M3.5 startup timing (FL_BOOT_PROBE=1): prints the msec from engine start to the start
+## screen's third drawn frame, then quits.
+func _boot_probe() -> void:
+	for i in 3:
+		await get_tree().process_frame
+	print("BOOTPROBE menu_frame_ms=%d frames=%d" % [Time.get_ticks_msec(), Engine.get_process_frames()])
+	get_tree().quit()
 
 ## The boot scene is loaded by the engine; if its script failed, show the panel too.
 func _check_startup() -> void:
