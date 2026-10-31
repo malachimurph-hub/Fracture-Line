@@ -1,5 +1,14 @@
 # M3.5 fix (0.3.8, versionCode 22)
 
+## Build (0.3.8)
+- APK: `FractureLine-0.3.8.apk`, 97,564,979 bytes (93.0 MiB), recompressed with tools/apk_recompress.sh.
+- SHA256: `868ccea446b5ffe11167dd24d3271a8013fd59e217cd5d725586e3bbfd7eaf02`
+- versionName 0.3.8, versionCode 22, same certificate (7e96c70a…ce54), installs over 0.3.7. apksigner v2+v3 OK.
+- Built from master 456462a (merge of m35-fix 901a05b). Release-engine UI flow 156/156 incl. the new
+  "Skirmish button is on screen" check; all suites, board, m34, m35 and m26 pass.
+- Uploaded to Google Drive (My Drive root), file id `1dvy1lrDu84vbY6sOzl83emDn1CPf5Xjh`.
+- Malachi's Russia/Iran music follows as 0.3.9.
+
 ## Fix: main menu buttons missing on phones (0.3.7)
 - On Malachi's Galaxy S24 Ultra the 0.3.7 main menu showed the photo, logo and build line but no
   buttons. Reproduced with the release engine on the box (UI flow): the button column was there
