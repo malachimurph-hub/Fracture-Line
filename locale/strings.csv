@@ -667,6 +667,7 @@ INFO_DMG_HMG,heavy MGs
 INFO_DMG_FLAME,flame
 INFO_DMG_SNIPER,snipers
 INFO_DMG_AA_MISSILE,AA missiles
+INFO_DMG_AA_GROUND,anti-air site guns
 MAP_TWIN_RIDGES,Twin Ridges
 MAP_TWIN_RIDGES_DESC,"Two players. Rolling hills, farm fields and gravel farm tracks between two corner bases, with a paved village square in the middle. Vehicles slow a little on the slopes."
 MAP_HARVEST_VALLEY,Harvest Valley
