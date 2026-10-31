@@ -31,7 +31,7 @@ Malachi's M3.5 list. Version not bumped, no APK built.
 - All six artillery pieces (Longreach, Thunderhead, Hearth, Blight, Shrike, Msta) raise the gun or launcher while aiming and lower it afterwards. This is view only.
 - Vehicle base paint is set per faction: US FDE tan, Germany dark pine green, Iran coyote brown, Russia grey. Team-colour accents are kept, and the paint covers vehicles, aircraft and drones.
 - Supply stashes are now **Crude Oil Reserves**: a pad with two storage tanks, a catwalk and pallets of drums. Harvest trucks show oil drums in the bed (up to 6), growing with their load and gone after unloading "for export". The HUD, tooltips and Map Builder wording are updated, and the economy is unchanged.
-- Russia and Iran power-station models and names are swapped. Russia's plant is now the 4x4 Combined-Cycle Gas Plant, and Iran's late plant is the 3x3 Gas Processing Plant. Costs and outputs per faction are unchanged.
+- Russia and Iran power-station models and names are swapped. Russia's plant is now the 4x4 Combined-Cycle Gas Plant, and Iran's late plant is the 3x3 Gas Processing Plant. The stats followed the models: Russia's plant now costs $1,600 and gives +19 power (20 s build, 1,500 HP), and Iran's late plant costs $800 and gives +10 power (10 s build, 1,000 HP). Prerequisites stay per faction (Iran's still needs the Defence Workshop).
 - Germany's Heavy Factory is removed. The Motor Pool now builds every German vehicle (the def is kept for saves).
 - Non-lethal vehicles removed from production: the Fuchs EW jammer (`eu_spectre`) and the Fennek recon (`eu_sentinel`). Builders, harvesters and transports are kept.
 
@@ -52,5 +52,5 @@ Malachi's M3.5 list. Version not bumped, no APK built.
 ## Questions for Malachi
 - Should a squad take 3 seats in a transport?
 - The Fennek was the only detector in the game. Should a detector go somewhere else?
-- Power swap: only the models, names and footprints were swapped, and each faction kept its costs and outputs. Is that what you meant, or should the stats swap too?
+- Power swap: answered, the stats swap too (done).
 - Squad icons are copied from the old units' icons for now. Should they be re-rendered?

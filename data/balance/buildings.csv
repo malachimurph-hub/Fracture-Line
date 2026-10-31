@@ -10,7 +10,7 @@ neutral_civ_block,BLD_CIV_BLOCK,neutral,0,1000,3,3,1600,0,0,4,,,0,0,0,,0,,0,5,0,
 neutral_pump,BLD_PUMP,neutral,0,1000,2,2,1200,0,0,4,,,0,0,0,,0,,0,0,1,6,0,,,0,0,0,0
 tpla_den,BLD_TPLA_DEN,base,2500,45000,4,4,4600,5,0,10,,tpla_backhoe|tpla_pickup,1,0,0,,0,,0,0,0,0,1,,,0,0,0,0
 tpla_gas_plant,BLD_TPLA_GAS_PLANT,base,600,10000,3,3,900,8,0,6,,,0,0,0,,0,,0,0,0,0,1,,,0,0,0,0
-tpla_cc_plant,BLD_TPLA_CC_PLANT,base,1600,20000,3,3,1500,19,0,7,tpla_workshop,,0,0,0,,0,,0,0,0,0,1,,,0,0,0,0
+tpla_cc_plant,BLD_TPLA_CC_PLANT,base,800,10000,3,3,1000,10,0,6,tpla_workshop,,0,0,0,,0,,0,0,0,0,1,,,0,0,0,0
 tpla_stash,BLD_TPLA_STASH,base,1500,14000,3,3,1300,-2,0,6,,tpla_pickup,0,1,0,tpla_pickup,0,,0,0,0,0,1,,,0,0,0,0
 tpla_camp,BLD_TPLA_CAMP,production,500,9000,3,3,1100,-3,0,6,,tpla_squad|tpla_marksman|tpla_insurgent,0,0,0,,0,,0,0,0,0,1,,,0,0,0,0
 tpla_chop_shop,BLD_TPLA_CHOP_SHOP,production,1600,16000,4,4,1700,-4,0,6,tpla_camp,tpla_rattler|tpla_scrapback|tpla_bus|tpla_hailstorm|tpla_blight|tpla_shrike,0,0,0,,0,,0,0,0,0,1,,,0,0,0,0
@@ -39,7 +39,7 @@ us_patriot,BLD_US_PATRIOT,defense,1000,12000,2,2,1200,-3,0,10,us_barracks,,0,0,0
 us_firebase,BLD_US_FIREBASE,defense,1200,14000,2,2,1600,-3,0,9,us_garage,,0,0,0,,0,us_firebase_gun,1,0,0,0,1,,,0,0,0,0
 us_drop_zone,BLD_US_DROP_ZONE,tech,3800,20000,4,4,1000,-5,0,6,us_strategy,,0,0,0,,0,,0,0,0,0,1,,,0,0,500,60
 ecc_hq,BLD_ECC_HQ,base,2500,45000,4,4,5000,5,0,10,,ecc_engineer,1,0,0,,0,,0,0,0,0,1,,,0,0,0,0
-ecc_power,BLD_ECC_POWER,base,800,10000,4,4,1000,10,0,6,,,0,0,0,,0,,0,0,0,0,1,,,0,0,0,0
+ecc_power,BLD_ECC_POWER,base,1600,20000,4,4,1500,19,0,7,,,0,0,0,,0,,0,0,0,0,1,,,0,0,0,0
 ecc_depot,BLD_ECC_DEPOT,base,1500,15000,3,3,1500,-2,0,6,ecc_power,ecc_cargo_truck,0,1,0,ecc_cargo_truck,0,,0,0,0,0,1,,,0,0,0,0
 ecc_barracks,BLD_ECC_BARRACKS,production,600,10000,3,3,1200,-3,0,6,ecc_power,ecc_squad|ecc_infiltrator|ecc_saboteur|ecc_drone_operator,0,0,0,,0,,0,0,0,0,1,,,0,0,0,0
 ecc_factory,BLD_ECC_FACTORY,production,1600,16000,4,4,1900,-4,0,6,ecc_barracks,ecc_tigr|ecc_btr|ecc_typhoon|ecc_t90|ecc_zeus|ecc_msta|ecc_engineer,0,0,0,,0,,0,0,0,0,1,,,0,0,0,0
