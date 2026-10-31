@@ -8,6 +8,7 @@ static func run(t: Node) -> void:
 	await _touch_scroll(t)
 	await _lobby_layout(t)
 	await _roster_lock(t)
+	_music_shuffle(t)
 
 static func _frames(t: Node, n: int) -> void:
 	for i in n:
@@ -205,3 +206,32 @@ static func _roster_lock(t: Node) -> void:
 	t._check(Content.playable_factions().size() == 4 and not Content.faction_enabled(&"jp"), "locked factions are never playable")
 	lobby.queue_free()
 	await _frames(t, 1)
+
+# ------------------------------------------------------------------ 6 music shuffle
+static func _music_shuffle(t: Node) -> void:
+	var ad = AudioDirector
+	var w := SimWorld.new()
+	w.rng.seed(77)
+	var sim_before: Dictionary = w.rng.to_dict()
+	seed(1234)
+	var g_before := randi()
+	seed(1234)
+	var ok := true
+	var info := {}
+	for fac in [&"us", &"eu", &"tpla", &"ecc"]:
+		ad.battle_faction = fac
+		var firsts := {}
+		var orders := {}
+		for i in 24:
+			ad.music_track = ""
+			ad.play_music("battle")
+			var o: Array = ad.match_order
+			firsts[o[0]] = true
+			orders[str(o)] = true
+			ok = ok and o[0] != ad.MUSIC["menu"] and o.size() >= 3 and ad.battle_pool().all(func(x): return o.has(x))
+		info[fac] = "%d openers, %d orders" % [firsts.size(), orders.size()]
+		ok = ok and firsts.size() >= 2 and orders.size() >= 3
+	ad.battle_faction = &""
+	ad.play_music("menu")
+	t._check(ok, "music: every faction's match gets its own random order, different openers, never the menu track first (Base Command stays the menu music) %s" % [info])
+	t._check(randi() == g_before and w.rng.to_dict() == sim_before, "the music shuffle uses its own RNG (global and sim RNG untouched)")

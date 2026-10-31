@@ -33,7 +33,11 @@ const VARIANTS := {
 const UI := {"click": "res://audio/ui/click.ogg", "select": "res://audio/ui/select.ogg", "error": "res://audio/ui/error.ogg",
 	"confirm": "res://audio/ui/confirm.ogg", "alert": "res://audio/ui/alert.ogg", "build_ready": "res://audio/ui/build_ready.ogg"}
 ## M3.4: Malachi's own United States tracks (audio/music/us_*.ogg, from his "USA MUSIC" Drive
-## folder, OGG Vorbis 128 kbps). "Base Command" is the menu music (loops) and opens every US match.
+## folder, OGG Vorbis 128 kbps). "Base Command" is the menu music (loops).
+## M3.5 (Malachi: "Make music shuffle for all teams so it's different each game"): every match
+## plays its own random order (MUSIC_RNG, view only - never the sim's PCG32 or the global RNG),
+## no faction always opens with the same track, and Base Command no longer opens US matches (it
+## stays the menu music and comes up later in the US shuffle).
 ## The old synthesized rock tracks are kept in audio/music/superseded (not packaged).
 const MUSIC := {"menu": "res://audio/music/us_base_command.ogg", "battle": "res://audio/music/us_defend_the_border.ogg"}
 const US_PLAYLIST := ["res://audio/music/us_base_command.ogg", "res://audio/music/us_defend_the_border.ogg",
@@ -52,8 +56,11 @@ const FACTION_PLAYLISTS := {
 var battle_faction: StringName = &""
 var _shuffle: Array = []
 var _last_battle := ""
-## M3.3: a match opens with the faction's signature track (playlist[0]), then shuffles.
-var _lead_first := false
+## M3.5: factions with fewer tracks than this also draw on the other factions' battle tracks, so
+## their matches differ too (Germany and Iran have one track of their own so far).
+const MIN_POOL := 3
+var music_rng := RandomNumberGenerator.new()   ## view-only randomness for the music order
+var match_order: Array = []                    ## the order picked for the current match (tests)
 const AMBIENT := {"wind": "res://audio/ambient/desert_wind.ogg", "river": "res://audio/ambient/river.ogg"}
 
 var manifest: Dictionary = {}
@@ -78,6 +85,7 @@ var announcer_faction := "eu"        ## local player's faction: picks the announ
 var music_track := ""
 
 func _init() -> void:
+	music_rng.randomize()
 	for b in BUSES:
 		if AudioServer.get_bus_index(b) < 0:
 			AudioServer.add_bus()
@@ -216,7 +224,7 @@ func play_music(track: String) -> void:
 	music_track = track
 	if track == "battle":
 		_shuffle.clear()
-		_lead_first = FACTION_PLAYLISTS.has(battle_faction)
+		match_order.clear()
 		_next_battle_track()
 		return
 	var s := stream(MUSIC.get(track, ""))
@@ -232,18 +240,39 @@ func play_music(track: String) -> void:
 func battle_playlist() -> Array:
 	return FACTION_PLAYLISTS.get(battle_faction, BATTLE_PLAYLIST)
 
-## Shuffle without repeats: each pass plays every battle track once, never the same one twice in a row.
+## M3.5: the tracks a match of this faction shuffles: its own, plus (when it has fewer than
+## MIN_POOL) the other factions' battle tracks; the menu track only where it is the faction's own.
+func battle_pool() -> Array:
+	var pool: Array = battle_playlist().duplicate()
+	if pool.size() < MIN_POOL:
+		for f in FACTION_PLAYLISTS:
+			for tr_path in FACTION_PLAYLISTS[f]:
+				if not pool.has(tr_path) and tr_path != MUSIC["menu"]:
+					pool.append(tr_path)
+	return pool
+
+## A fresh random order (Fisher-Yates on music_rng). The match never opens with the menu track
+## or with the track the last match ended on.
+func shuffled_order() -> Array:
+	var order := battle_pool()
+	for i in range(order.size() - 1, 0, -1):
+		var j := music_rng.randi_range(0, i)
+		var tmp = order[i]
+		order[i] = order[j]
+		order[j] = tmp
+	if order.size() > 1:
+		for k in order.size():
+			if order[0] != MUSIC["menu"] and order[0] != _last_battle:
+				break
+			order.push_back(order.pop_front())
+	return order
+
+## Shuffle without repeats: each pass plays every track once, never the same one twice in a row.
 func _next_battle_track() -> void:
 	if _shuffle.is_empty():
-		_shuffle = battle_playlist().duplicate()
-		_shuffle.shuffle()
-		if _shuffle.size() > 1 and _shuffle[0] == _last_battle:
-			_shuffle.push_back(_shuffle.pop_front())
-		if _lead_first:
-			var lead: String = battle_playlist()[0]
-			_shuffle.erase(lead)
-			_shuffle.push_front(lead)
-	_lead_first = false
+		_shuffle = shuffled_order()
+		if match_order.is_empty():
+			match_order = _shuffle.duplicate()
 	_last_battle = _shuffle.pop_front()
 	var s := stream(_last_battle)
 	if s == null:
