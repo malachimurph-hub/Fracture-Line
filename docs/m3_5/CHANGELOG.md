@@ -1,3 +1,18 @@
+# M3.5 fix (0.3.8, versionCode 22)
+
+## Fix: main menu buttons missing on phones (0.3.7)
+- On Malachi's Galaxy S24 Ultra the 0.3.7 main menu showed the photo, logo and build line but no
+  buttons. Reproduced with the release engine on the box (UI flow): the button column was there
+  but centred in a 1094 dp tall body on a 419 dp screen, so every button sat below the screen.
+- Cause: the build line under the logo wraps (autowrap) and had no width until `_fit_title` ran,
+  so in the first layout it wrapped letter by letter and grew the body MarginContainer to ~1100 dp;
+  a container never shrinks back by itself, and the body was only re-fitted on UiScale changes.
+  The editor/debug runs laid out in a different order, so the tests there did not see it.
+  Not caused by the APK recompression.
+- Fix: the build line starts 120 dp wide; ScreenBase re-fits the body on its own resize, when the
+  body's minimum size changes and once after the first frame. The UI flow test now checks the
+  Skirmish button is on screen.
+
 # M3.5 (0.3.7, versionCode 21)
 
 ## Build
