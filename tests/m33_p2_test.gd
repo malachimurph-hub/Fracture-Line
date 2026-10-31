@@ -117,16 +117,16 @@ static func _scene_has(path: String, names: Array) -> bool:
 
 static func _new_models(t: Node) -> void:
 	var gp := Content.building(&"tpla_gas_plant")
-	t._check(gp != null and gp.power == 8 and gp.cost == 600 and gp.footprint == Vector2i(3, 3) and Content.faction(&"tpla")["buildings"].has(&"tpla_gas_plant"),
-		"Iran builds a 3x3 Gas Turbine Plant ($600, +8 power)")
+	t._check(gp != null and gp.power == 8 and not gp.buildable and not Content.faction(&"tpla")["buildings"].has(&"tpla_gas_plant"),
+		"M3.7: the Gas Turbine Plant is retired (def kept for saves, not in Iran's build list)")
 	t._check(Content.building(&"us_drop_zone").footprint == Vector2i(4, 4) and Content.building(&"tpla_bazaar").footprint == Vector2i(2, 2),
 		"Data Center is 4x4 and the Oil Derrick 2x2")
 	var er := Content.weapon(&"ecc_eng_rocket")
 	t._check(Content.unit(&"ecc_engineer").weapons.has("ecc_eng_rocket") and er.damage == 60 and er.cooldown_ms == 8000,
 		"the ECC engineer carries a slow rocket launcher (60 dmg / 8 s)")
 	var sm := Content.weapon(&"ecc_silo_missile")
-	t._check(Content.building(&"ecc_bunker").weapons.has("ecc_silo_missile") and sm.damage == 240 and sm.range_mt == 9500,
-		"the missile silo fires a 240-damage missile at 9.5 tiles")
+	t._check(Content.building(&"ecc_bunker").weapons.has("ecc_silo_missile") and sm.damage == 384 and sm.range_mt == 9500,
+		"the missile silo fires a 384-damage missile at 9.5 tiles (M3.7 defence buff, was 240)")
 	t._check(_scene_has("res://view/buildings/ecc/bunker.tscn", ["DoorL", "DoorR"]), "the silo has two hatch doors")
 	t._check(_scene_has("res://view/buildings/ecc/black_market.tscn", ["BucketWheel"]), "the excavator has a bucket wheel")
 	t._check(_scene_has("res://view/buildings/tpla/bazaar.tscn", ["Beam"]), "the oil derrick has a walking beam")
@@ -157,12 +157,12 @@ static func _cc_plant(t: Node) -> void:
 	# M3.5 item 15: Russia and Iran swapped power-station models; Iran's big plant is now the
 	# 3x3 Gas Processing Plant, the 4x4 combined-cycle model is Russia's; the stats followed the
 	# models (Iran now has Russia's old $800 / +10 plant, Russia the old $1,600 / +19 one)
-	t._check(cc != null and cc.power == 10 and cc.cost == 800 and cc.build_time_ms == 10000 and cc.max_hp == 1000 and cc.footprint == Vector2i(3, 3) and cc.prereqs.has("tpla_workshop"),
-		"Iran Gas Processing Plant: $800, +10 power, 3x3, needs the Defence Workshop")
+	t._check(cc != null and cc.power == 10 and cc.cost == 800 and cc.build_time_ms == 10000 and cc.max_hp == 1000 and cc.footprint == Vector2i(3, 3) and cc.prereqs.is_empty() and cc.buildable,
+		"Iran Gas Processing Plant: $800, +10 power, 3x3, no prerequisite (M3.7: Iran's only power plant)")
 	t._check(cc.power > gt.power and cc.cost > gt.cost and nuc != null,
 		"it out-powers the Gas Turbine Plant and costs more")
 	var order: Array = Content.faction(&"tpla")["buildings"]
-	t._check(order.has(&"tpla_cc_plant") and order.find(&"tpla_cc_plant") == order.find(&"tpla_gas_plant") + 1, "it sits next to the Gas Turbine Plant in Iran's build list")
+	t._check(order.has(&"tpla_cc_plant") and order.find(&"tpla_cc_plant") == 1 and not order.has(&"tpla_gas_plant"), "it is Iran's one power plant, right after the HQ in the build list")
 	t._check(TranslationServer.translate(cc.name_key) == "Gas Processing Plant" and TranslationServer.translate(cc.desc_key) != cc.desc_key, "it has a name and an info-card description")
 	var ru := Content.building(&"ecc_power")
 	t._check(TranslationServer.translate(ru.name_key) == "Combined-Cycle Gas Plant" and ru.footprint == Vector2i(4, 4)
@@ -181,7 +181,7 @@ static func _cc_plant(t: Node) -> void:
 	var w := r.sim
 	var hq := M33._hq(w, 0)
 	w.players[0].supply = 20000
-	t._check(w.prereqs_met(0, cc.prereqs) == "tpla_workshop", "locked until a Defence Workshop is built")
+	t._check(w.prereqs_met(0, cc.prereqs) == "", "buildable from the start (no Defence Workshop needed)")
 	for id in [&"tpla_camp", &"tpla_chop_shop", &"tpla_workshop"]:
 		w._place_building(Content.building(id), 0, M33.spot(w, 0, id, hq.tile), 0, true)
 	for i in 3:

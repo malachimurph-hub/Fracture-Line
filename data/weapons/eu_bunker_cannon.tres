@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_s")
 id = &"eu_bunker_cannon"
-damage = 40
+damage = 64
 range_mt = 8000
 min_range_mt = 0
 cooldown_ms = 900

@@ -830,10 +830,8 @@ func _refresh_selection_info() -> void:
 			lines.append(tr("HUD_AIR_REARMING") % ceili(float(e.air_t) / FX.TICK_HZ))
 		if e.stealthy and e.owner == pid:
 			lines.append(tr("HUD_STEALTHED"))
-		if Content.is_squad(e.def_id):   # M3.5 Combat Squad: soldiers left, foxhole
+		if Content.is_squad(e.def_id):   # M3.5 Combat Squad: soldiers left
 			lines.append(tr("HUD_SQUAD_MEN") % [sim.squad_alive(e), Content.squad_members(e.def_id).size()])
-			if e.dig != 0:
-				lines.append(tr("CMD_DIGGING") if sim.digging(e) else tr("CMD_DUG_IN"))
 		if e.owner >= 0 and RosterSys.is_jammed(sim, e, RosterSys.jammers(sim)):
 			lines.append(tr("HUD_JAMMED"))
 		if not ud.stubs.is_empty():
@@ -1256,14 +1254,6 @@ func _make_card() -> Array:
 				out.append({"text": tr(kd[1]), "sub": tr("CMD_DRONE_READY") if wait == 0 else ("—" if busy else "%ds" % ceili(wait / 20.0)),
 					"disabled": wait > 0, "act": ctl.issue.bind({"t": "drone", "ids": ops, "kind": kd[0]}), "accent": kd[2],
 					"tip": tr(Content.unit(drone).name_key + "_DESC"), "info": ["unit", String(drone)]})
-		var sq := ctl._filter(units, "squad")
-		if not sq.is_empty():   # M3.5: Combat Squads dig a foxhole
-			var n_dug := 0
-			for sid in sq:
-				if sim.ents[sid].dig != 0:
-					n_dug += 1
-			out.append({"text": tr("CMD_DIG"), "sub": (tr("CMD_DIGGING") if sim.digging(sim.ents[sq[0]]) else tr("CMD_DUG_IN")) if n_dug == sq.size() else "",
-				"disabled": n_dug == sq.size(), "act": ctl.issue.bind({"t": "dig", "ids": sq}), "accent": Color("#c8a46a"), "tip": tr("CMD_DIG_TIP")})
 		out.append({"text": tr("CMD_AMOVE"), "act": ctl.begin_target.bind("amove"), "accent": Color("#ff9a2a"), "tip": tr("CMD_AMOVE_TIP")})
 		out.append({"text": tr("CMD_MOVE"), "act": ctl.begin_target.bind("move"), "accent": Color("#7dff8a")})
 		out.append({"text": tr("CMD_STOP"), "act": ctl.simple.bind("stop")})

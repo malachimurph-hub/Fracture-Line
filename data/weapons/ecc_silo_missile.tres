@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_s")
 id = &"ecc_silo_missile"
-damage = 240
+damage = 384
 range_mt = 9500
 min_range_mt = 0
 cooldown_ms = 7000

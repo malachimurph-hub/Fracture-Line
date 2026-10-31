@@ -305,29 +305,11 @@ static func _squad_sim(t: Node) -> void:
 	w.damage(single, 30, null)
 	t._check(sq.max_hp - sq.hp == 20 and h0 - single.hp == 30, "squads take a third less damage (+50 %% resistance): %d vs %d" % [sq.max_hp - sq.hp, h0 - single.hp])
 	sq.hp = sq.max_hp
-	# foxhole
-	r.issue({"p": 0, "t": "dig", "ids": [sq.id, single.id]})
-	M33._ticks(r, 2)
-	t._check(w.digging(sq) and single.dig == 0, "Dig foxhole: squads start digging, single soldiers can't")
-	M33._ticks(r, SimWorld.DIG_TICKS + 2)
-	t._check(w.dug_in(sq), "the squad is dug in after %d ticks" % SimWorld.DIG_TICKS)
-	w.damage(sq, 50, null)
-	t._check(sq.max_hp - sq.hp == 50 * SimWorld.SQUAD_DMG_PCT / 100 * SimWorld.FOXHOLE_PCT / 100, "a foxhole cuts damage further (%d)" % (sq.max_hp - sq.hp))
-	sq.hp = sq.max_hp
-	# dug in: holds position, does not chase an enemy in sight but out of range
-	var foe := w.spawn_unit(&"ecc_rifleman", 1, null, FX.tile_center(c + Vector2i(7, 0)))
-	foe.pos = FX.tile_center(c + Vector2i(7, 0))
-	foe.goal = Vector2i(-1, -1)
-	var p0 := sq.pos
-	M33._ticks(r, 60)
-	t._check(sq.pos == p0 and w.dug_in(sq), "a dug-in squad holds its foxhole")
-	w._kill(foe, null)
-	r.issue({"p": 0, "t": "move", "ids": [sq.id], "pos": FX.tile_center(c + Vector2i(0, 4))})
+	# M3.7: foxholes removed - a "dig" order does nothing, an old save's dug-in squad stands up
+	r.issue({"p": 0, "t": "dig", "ids": [sq.id]})
+	sq.dig = w.tick + 5
 	M33._ticks(r, 3)
-	t._check(sq.dig == 0, "moving out leaves the foxhole")
-	var h1 := sq.hp
-	w.damage(sq, 30, null)
-	t._check(h1 - sq.hp == 20, "out of the foxhole: squad resistance only")
+	t._check(sq.dig == 0 and not w.has_method("digging") and not w.has_method("dug_in"), "M3.7: no foxholes (dig order ignored, old dig state cleared)")
 	# barricade: one squad
 	var bar := M33.place(w, 0, &"us_barricade", c + Vector2i(-6, -6))
 	if bar == null:
@@ -385,8 +367,6 @@ static func _squad_view(t: Node) -> void:
 			t._check(v._clip_name(2, i).contains("kneel") or vat.fire_kneel == 2, "%s: the AT soldier kneels to fire" % sid)
 		v.set_health(0.5)
 		t._check(v._alive == 3, "%s: soldiers fall as the squad loses health (%d left)" % [sid, v._alive])
-		v.set_dig(1.0)
-		t._check(v.get_node_or_null("Foxhole") != null and v.get_node("Foxhole").visible, "%s: a dug-in squad shows its foxhole" % sid)
 		v.queue_free()
 	await _frames(t, 1)
 

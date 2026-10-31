@@ -335,7 +335,7 @@ BLD_TPLA_WORKSHOP,Defence Workshop
 BLD_TPLA_GAS_PLANT,Gas Turbine Plant
 BLD_TPLA_GAS_PLANT_DESC,"Natural gas turbine power station. Cheaper than a nuclear plant, with less output. Supplies power to the base."
 BLD_TPLA_CC_PLANT,Gas Processing Plant
-BLD_TPLA_CC_PLANT_DESC,"Large natural gas processing plant with columns, spherical tanks and a flare stack. Gives much more power than a Gas Turbine Plant. Needs a Defence Workshop."
+BLD_TPLA_CC_PLANT_DESC,"Large natural gas processing plant with columns, spherical tanks and a flare stack. Iran's power station: supplies power to the base."
 BLD_TPLA_BAZAAR,Oil Derrick
 BLD_TPLA_BAZAAR_DESC,Oil well with a pumpjack that brings in $185 a minute.
 BLD_TPLA_DEMO_TRAP,Anti-Tank Mine
@@ -667,6 +667,7 @@ INFO_DMG_HMG,heavy MGs
 INFO_DMG_FLAME,flame
 INFO_DMG_SNIPER,snipers
 INFO_DMG_AA_MISSILE,AA missiles
+INFO_DMG_AA_GROUND,anti-air site guns
 MAP_TWIN_RIDGES,Twin Ridges
 MAP_TWIN_RIDGES_DESC,"Two players. Rolling hills, farm fields and gravel farm tracks between two corner bases, with a paved village square in the middle. Vehicles slow a little on the slopes."
 MAP_HARVEST_VALLEY,Harvest Valley
@@ -676,21 +677,17 @@ MAP_SUNFALL_BASIN_DESC,"Six players. Four corner bases and one on the north and 
 MAP_HIGHLAND_CROWN,Highland Crown
 MAP_HIGHLAND_CROWN_DESC,"Eight players. Corner and edge bases around a crown of high hills, with lakes, woods, farmland and a market town in the centre."
 UNIT_US_SQUAD,Combat Squad
-UNIT_US_SQUAD_DESC,"Six Marines as one unit: 3 riflemen, an M240B machine gunner, an anti-armor soldier and a grenadier. Soldiers fall one by one as the squad loses health, and their weapons with them. Tougher than single soldiers; can dig a foxhole, garrison buildings and man a barricade."
+UNIT_US_SQUAD_DESC,"Six Marines as one unit: 3 riflemen, an M240B machine gunner, an anti-armor soldier and a grenadier. Soldiers fall one by one as the squad loses health, and their weapons with them. Tougher than single soldiers; can garrison buildings and man a barricade."
 UNIT_EU_SQUAD,Combat Squad
-UNIT_EU_SQUAD_DESC,"Six soldiers as one unit: 3 riflemen, an MG3 machine gunner, a Panzerfaust gunner and a grenadier. Soldiers fall one by one as the squad loses health, and their weapons with them. Tougher than single soldiers; can dig a foxhole, garrison buildings and man a barricade."
+UNIT_EU_SQUAD_DESC,"Six soldiers as one unit: 3 riflemen, an MG3 machine gunner, a Panzerfaust gunner and a grenadier. Soldiers fall one by one as the squad loses health, and their weapons with them. Tougher than single soldiers; can garrison buildings and man a barricade."
 UNIT_TPLA_SQUAD,Combat Squad
-UNIT_TPLA_SQUAD_DESC,"Six soldiers as one unit: 3 riflemen, a PKM machine gunner, a rocket man and a grenadier. Soldiers fall one by one as the squad loses health, and their weapons with them. Tougher than single soldiers; can dig a foxhole, garrison buildings and man a barricade."
+UNIT_TPLA_SQUAD_DESC,"Six soldiers as one unit: 3 riflemen, a PKM machine gunner, a rocket man and a grenadier. Soldiers fall one by one as the squad loses health, and their weapons with them. Tougher than single soldiers; can garrison buildings and man a barricade."
 UNIT_ECC_SQUAD,Combat Squad
-UNIT_ECC_SQUAD_DESC,"Six soldiers as one unit: 3 riflemen, a PKM machine gunner, an RPG-7V3 gunner and a grenadier. Soldiers fall one by one as the squad loses health, and their weapons with them. Tougher than single soldiers; can dig a foxhole, garrison buildings and man a barricade."
+UNIT_ECC_SQUAD_DESC,"Six soldiers as one unit: 3 riflemen, a PKM machine gunner, an RPG-7V3 gunner and a grenadier. Soldiers fall one by one as the squad loses health, and their weapons with them. Tougher than single soldiers; can garrison buildings and man a barricade."
 UNIT_ECC_DRONE_OPERATOR,Drone Operator
 UNIT_ECC_DRONE_OPERATOR_DESC,Launches an explosive drone (one-way attack). The drone comes back 60 s after it is used or lost. Needs a Ministry of Defense.
 UNIT_ECC_BOMB_DRONE,Explosive Drone
 UNIT_ECC_BOMB_DRONE_DESC,One-way attack drone. Flies to its target and detonates. Strong against vehicles.
-CMD_DIG,Dig foxhole
-CMD_DIG_TIP,"The squad stops and digs in for a few seconds. Dug in, it takes less damage and holds its ground; any move order climbs out."
-CMD_DIGGING,Digging
-CMD_DUG_IN,Dug in
 HUD_SQUAD_MEN,Soldiers: %d / %d
 RES_CACHE_TIP,Surplus crude oil in storage tanks. Trucks load barrels here for export; every load sold earns supply.
 HUD_OIL_LEFT,Oil for export: %d

@@ -1095,8 +1095,6 @@ func frame(a: float, delta: float) -> void:
 				p = man[0]
 			if v is InfantryView:
 				(v as InfantryView).set_braced(not man.is_empty())
-				if e.dig != 0 or (v as InfantryView).dig > 0.0:   # M3.5: foxhole
-					(v as InfantryView).set_dig(0.0 if e.dig == 0 else clampf(1.0 - float(e.dig - sim.tick) / SimWorld.DIG_TICKS, 0.05, 1.0))
 			v.position = p
 			if e.moving and _crushers.has(e.def_id) and (Engine.get_process_frames() + id) % 6 == 0 and terrain.has_cars():
 				terrain.wreck_cars(Vector2(p.x, p.z), 0.42, true)   # M3.3 P3 (19): tanks flatten parked cars

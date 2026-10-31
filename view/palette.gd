@@ -60,9 +60,9 @@ static func ring_mesh(shape: String, width: float = 0.14) -> ArrayMesh:
 			st.add_vertex(Vector3(v.x, 0, v.y))
 	return st.commit()
 
-## M3.5 faction vehicle paint (Malachi): USA flat dark earth / tan, Germany dark earthy pine
+## M3.5 faction vehicle paint (Malachi): USA light tan (M3.7, was FDE #a08a68), Germany dark earthy pine
 ## green, Iran coyote brown, Russia dark grey. Team colour stays on the accent parts.
-const FACTION_PAINT := {&"us": Color("#a08a68"), &"eu": Color("#44523a"), &"tpla": Color("#7d5e3c"), &"ecc": Color("#5d6163")}
+const FACTION_PAINT := {&"us": Color("#c9b48c"), &"eu": Color("#44523a"), &"tpla": Color("#7d5e3c"), &"ecc": Color("#5d6163")}
 ## structures restyled with their faction's paint (M3.5 power station swap)
 const PAINT_BUILDINGS := {&"ecc_power": 0.8, &"tpla_cc_plant": 0.8}
 

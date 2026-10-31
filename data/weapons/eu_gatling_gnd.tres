@@ -5,11 +5,11 @@
 [resource]
 script = ExtResource("1_s")
 id = &"eu_gatling_gnd"
-damage = 7
+damage = 11
 range_mt = 6500
 min_range_mt = 0
 cooldown_ms = 200
-damage_type = &"quad"
+damage_type = &"aa_ground"
 splash_mt = 0
 targets_air = false
 targets_ground = true

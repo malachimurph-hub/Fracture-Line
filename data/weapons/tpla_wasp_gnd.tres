@@ -5,11 +5,11 @@
 [resource]
 script = ExtResource("1_s")
 id = &"tpla_wasp_gnd"
-damage = 14
+damage = 22
 range_mt = 6500
 min_range_mt = 0
 cooldown_ms = 500
-damage_type = &"anti_tank"
+damage_type = &"aa_ground"
 splash_mt = 0
 targets_air = false
 targets_ground = true

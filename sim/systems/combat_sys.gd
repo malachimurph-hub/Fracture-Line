@@ -242,14 +242,23 @@ static func fire(w: SimWorld, src: SimEntity, t: SimEntity, wd: WeaponDef, dmg_p
 	if wd.splash_mt > 0:
 		var r := FX.mt_to_fx(wd.splash_mt)
 		var tair := w.flying(t)
-		for o: SimEntity in w.units_in_radius(impact, r):
+		# M3.7 (Malachi: "artillery does splash damage to infantry"): the blast reaches a unit's
+		# edge, not only its centre (a spread-out squad standing beside the shell is caught), and
+		# artillery blasts fall off less on soldiers (full damage at the centre, 75 % at the rim).
+		var arty := src.kind == SimEntity.Kind.UNIT and w.udef(src).role == &"artillery"
+		for o: SimEntity in w.units_in_radius(impact, r + SPLASH_REACH):
 			if (hit and o.id == t.id) or not w.enemies(src.team, o.team) or o.res_id < 0:
 				continue
 			if w.flying(o) != tair:
 				continue
-			var frac := 100 - 50 * FX.dist(o.pos, impact) / maxi(1, r)
-			var sd := wd.damage * splash_mult(wd, _armor_of(w, o)) / 100 * frac / 100 * dmg_pct / 100
-			w.damage(o, sd, src)
+			var d := maxi(0, FX.dist(o.pos, impact) - o.radius)
+			if d > r:
+				continue
+			var armor := _armor_of(w, o)
+			var fall := ARTY_INF_FALLOFF if arty and armor == &"infantry" else 50
+			var frac := 100 - fall * d / maxi(1, r)
+			var sd := wd.damage * splash_mult(wd, armor) / 100 * frac / 100 * dmg_pct / 100
+			w.damage(o, maxi(1, sd), src)
 		if not tair:
 			_collateral(w, src, impact, r, wd, dmg_pct, t.id if hit else 0)
 
@@ -281,6 +290,10 @@ static func _collateral(w: SimWorld, src: SimEntity, impact: Vector2i, r: int, w
 ## blast damage on soldiers never uses less than SPLASH_INF_PCT of the weapon's damage, so an
 ## anti-tank rocket that lands among infantry still hurts them (its direct hit stays weak).
 const SPLASH_INF_PCT := 125
+## M3.7: blasts reach this far past their radius to find units whose edge is inside it (fx),
+## and artillery splash on soldiers falls off to 75 % at the rim instead of 50 %.
+const SPLASH_REACH := FX.ONE * 6 / 10
+const ARTY_INF_FALLOFF := 25
 static func splash_mult(wd: WeaponDef, armor: StringName) -> int:
 	var m := Content.combat.mult(wd.damage_type, armor)
 	if armor == &"infantry":
