@@ -287,10 +287,8 @@ func _pick_unit(bd: BuildingDef) -> StringName:
 			wgt = wgt / 2       # rockets are wasted on infantry; grenadiers shred slow AT teams
 		if sid == &"tpla_hailstorm":
 			wgt = wgt * 4 if enemy_air > 0 else (wgt * 3 if enemy_inf > enemy_armor else wgt)   # the BHX-35's 35 mm gun also shreds infantry
-		if sid == &"tpla_militia" and enemy_inf > enemy_armor:
-			wgt = wgt * 3 / 2
-		elif sid == &"tpla_militia" and enemy_armor > enemy_inf:
-			wgt = wgt / 2       # carbines barely scratch vehicles
+		if ud.tags.has("squad") and enemy_inf > enemy_armor:
+			wgt = wgt * 3 / 2   # M3.5 Combat Squad: MG + grenadier shred infantry
 		if sid == &"tpla_scrapback" and enemy_armor > enemy_inf:
 			wgt = wgt * 3 / 2
 		if (sid == &"tpla_marksman" or sid == &"tpla_insurgent") and int(have.get(sid, 0)) >= 1 + n_combat / 12:
@@ -332,7 +330,7 @@ func _reserved_ids() -> Dictionary:
 	return out
 
 func _is_scout_type(u: SimEntity) -> bool:
-	return u.def_id == &"tpla_rattler" or u.def_id == &"tpla_militia"
+	return u.def_id == &"tpla_rattler"
 
 func _nearest_tunnel(p: Vector2i, max_tiles: int) -> SimEntity:
 	var best: SimEntity = null

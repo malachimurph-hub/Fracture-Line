@@ -7,11 +7,21 @@ const LEASH := FX.ONE * 7
 static func run(w: SimWorld) -> void:
 	for id in w.ids:
 		var u: SimEntity = w.ents[id]
-		if not u.alive or u.kind != SimEntity.Kind.UNIT or u.res_id < 0:
+		if not u.alive or u.kind != SimEntity.Kind.UNIT:
+			continue
+		if u.dig != 0 and u.res_id < 0:
+			_end_dig(w, u)   # M3.5: boarded / manned a barricade
+		if u.res_id < 0:
 			continue
 		if u.air_state != AirSys.FLYING and w.is_air(u):
 			continue   # parked / returning aircraft: AirSys owns them
 		_think(w, u)
+		if u.dig != 0 and (u.goal != NONE or not u.orders.is_empty()):
+			_end_dig(w, u)   # M3.5: any move climbs out of the foxhole
+
+static func _end_dig(w: SimWorld, u: SimEntity) -> void:
+	u.dig = 0
+	w.events.append({"t": "dig_end", "id": u.id})
 
 ## Longest weapon reach. With a target, only weapons that can hit its layer count: a unit with
 ## a long-range anti-air missile and a short ground gun (US Picket) used to park at missile range
@@ -374,6 +384,9 @@ static func _idle(w: SimWorld, u: SimEntity) -> void:
 		if u.goal == NONE and FX.dist2(u.pos, u.home) > TILE * TILE * 4:
 			u.home = u.pos
 		return
+	if u.dig != 0:
+		_hold(w, u)   # M3.5: a squad in its foxhole fires at what is in range, never chases
+		return
 	var t := w.get_ent(u.target)
 	if t != null and valid_target(w, u, t) and FX.dist(u.home, u.pos) < LEASH:
 		_engage(w, u, t)
@@ -393,6 +406,17 @@ static func _idle(w: SimWorld, u: SimEntity) -> void:
 			u.home = u.pos
 		else:
 			_goto(u, u.home)
+
+## Dug-in squad: keep a target only while it is in weapon range; no move orders.
+static func _hold(w: SimWorld, u: SimEntity) -> void:
+	var t := w.get_ent(u.target)
+	if t != null and valid_target(w, u, t) and w.edge_dist(u, t) <= max_range(w, u, t):
+		return
+	u.target = 0
+	if _acq_tick(w, u):
+		var nt := find_target(w, u, u.pos, max_range(w, u))
+		if nt != null and w.edge_dist(u, nt) <= max_range(w, u, nt):
+			u.target = nt.id
 
 static func _amove(w: SimWorld, u: SimEntity, o: Dictionary) -> void:
 	var dest: Vector2i = o["pos"]

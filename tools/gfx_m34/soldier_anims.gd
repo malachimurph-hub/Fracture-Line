@@ -6,7 +6,9 @@ extends RefCounted
 const Rig := preload("res://tools/gfx_m34/soldier_rig.gd")
 ## clip: [length s, loop]
 const CLIPS := {"idle": [2.0, true], "walk": [1.0, true], "run": [0.66, true], "fire": [0.4, true],
-	"fire_kneel": [0.4, true], "lean": [0.4, true], "die": [1.4, false], "die2": [1.4, false]}
+	"fire_kneel": [0.4, true], "lean": [0.4, true], "die": [1.4, false], "die2": [1.4, false],
+	# M3.5 machine gunners: drop prone (via a kneel), fire lying down, get up again
+	"prone_down": [0.7, false], "fire_prone": [0.4, true], "prone_up": [0.7, false]}
 
 static func _e(t: float) -> float:
 	return t * t * (3.0 - 2.0 * t)
@@ -53,7 +55,69 @@ static func pose(clip: String, t: float, style: String, recoil_k := 1.0) -> Dict
 			_die(p, t, style, false)
 		"die2":
 			_die(p, t, style, true)
+		"fire_prone":
+			_prone(p, t, style, recoil_k)
+		"prone_down":
+			_prone_move(p, t / 0.7, style)
+		"prone_up":
+			_prone_move(p, 1.0 - t / 0.7, style)
 	return p
+
+## M3.5 prone fire: the soldier is posed standing with his body arched back and the gun aimed
+## up by PRONE_TILT, then the whole body is laid forward by that angle about his feet, so he
+## ends lying on his front, up on his elbows, the gun level and the bipod near the ground.
+const PRONE_TILT := 86.0
+static func _prone(p: Dictionary, t: float, style: String, rk: float) -> void:
+	var k := exp(-t * 18.0) * rk * 0.5   # the bipod soaks up most of the recoil
+	p["pelvis"] = Vector3(0.0, 0.98, 0.0)
+	p["pelvis_r"] = Vector3(0, -6, 0)
+	_feet(p, Vector3(0.2, 0.09, -0.02), 10, Vector3(-0.17, 0.09, 0.02), -18, 0.0, 0.0)
+	p["knee_L"] = Vector3(0.3, 0, -1)
+	p["knee_R"] = Vector3(-0.3, 0, -1)
+	p["spine_r"] = Vector3(-14, -2, 0)
+	p["chest_r"] = Vector3(-12 - k, -4, 0)
+	p["neck_r"] = Vector3(-30, 6, 0)
+	p["head_r"] = Vector3(-22, 6, -4)
+	p["gun_rel"] = "aim"
+	p["gun_basis"] = _aim(0, PRONE_TILT + k * 2.0)
+	p["pocket"] = Vector3(-0.135, 0.185, 0.085 - k * 0.02)
+	p["anchor"] = "butt"
+	p["elbow_L"] = Vector3(0.6, 0.0, 1.0)
+	p["elbow_R"] = Vector3(-0.8, 0.0, 1.0)
+	p["root"] = _prone_root(1.0)
+
+## the lay-down transform: forward about the feet, slid back so he lies over his own spot
+static func _prone_root(u: float) -> Transform3D:
+	return Transform3D(Basis(Vector3.RIGHT, deg_to_rad(PRONE_TILT * u)), Vector3(0, 0.19 * u, -0.8 * u))
+
+## going down (u 0 -> 1; getting up plays it backwards): standing aim -> kneel -> prone
+static func _prone_move(p: Dictionary, u: float, style: String) -> void:
+	u = clampf(u, 0.0, 1.0)
+	var a := {}
+	var b := {}
+	var m: float
+	if u < 0.4:
+		_fire(a, 0.39, style, false, 0.0)
+		_fire(b, 0.39, style, true, 0.0)
+		m = _e(u / 0.4)
+	else:
+		_fire(a, 0.39, style, true, 0.0)
+		_prone(b, 0.39, style, 0.0)
+		a["root"] = Transform3D()
+		m = _e((u - 0.4) / 0.6)
+	for key in b:
+		var va = a.get(key, b[key])
+		var vb = b[key]
+		if va is Vector3:
+			p[key] = (va as Vector3).lerp(vb, m)
+		elif va is Basis:
+			p[key] = (va as Basis).slerp(vb, m)
+		elif va is Transform3D:
+			p[key] = (va as Transform3D).interpolate_with(vb, m)
+		elif va is Array:   # feet: [pos, yaw, pitch]
+			p[key] = [(va[0] as Vector3).lerp(vb[0], m), lerpf(va[1], vb[1], m), lerpf(va[2], vb[2], m)]
+		else:
+			p[key] = vb if m > 0.5 else va
 
 # ------------------------------------------------------------------ carry positions
 ## gun held relative to the chest (idle / moving)

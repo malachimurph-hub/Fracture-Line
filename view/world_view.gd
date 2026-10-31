@@ -574,8 +574,11 @@ func _on_fire(ev: Dictionary) -> void:
 	if hitk == 2 and tv != null:
 		# rounds strike the facing wall of a structure, not its centre
 		off = -dir * minf(tv.footprint.x, tv.footprint.y) * 0.38 + Vector3(0, tv.bar_height * 0.4, 0)
-	var muzzles := _muzzles(src, v, garrison, base, dir, cls)
-	if v != null and garrison == null and v.has_method("on_fire"):
+	var wid := StringName(ev.get("w", &""))
+	var muzzles := _muzzles(src, v, garrison, base, dir, cls, wid)
+	if v != null and garrison == null and v is InfantryView:
+		(v as InfantryView).on_fire(wid)   # M3.5: only the squad members carrying this weapon
+	elif v != null and garrison == null and v.has_method("on_fire"):
 		v.on_fire()
 	var aim: Vector3 = (to + off) - (muzzles[0] as Vector3)
 	wfx.fire(cls, muzzles, aim, to, tgt.id if tgt != null else 0, hitk, off)
@@ -592,7 +595,7 @@ func _on_fire(ev: Dictionary) -> void:
 
 ## Muzzle points for one shot: squads fire from their standing soldiers, articulated vehicles
 ## from the barrel tip, turrets from the turret, garrisons from the building's windows.
-func _muzzles(src: SimEntity, v: EntityView, garrison: SimEntity, base: Vector3, dir: Vector3, cls: String) -> Array:
+func _muzzles(src: SimEntity, v: EntityView, garrison: SimEntity, base: Vector3, dir: Vector3, cls: String, wid: StringName = &"") -> Array:
 	if garrison != null:
 		var gv: EntityView = views.get(garrison.id)
 		var r := (minf(gv.footprint.x, gv.footprint.y) * 0.5 if gv != null else 1.0)
@@ -602,10 +605,8 @@ func _muzzles(src: SimEntity, v: EntityView, garrison: SimEntity, base: Vector3,
 	if v is InfantryView:
 		var iv := v as InfantryView
 		var out: Array = []
-		var up := iv.vat.height * 0.6 if iv.vat != null else 0.25
-		for i in iv.formation.size():
-			if iv._state.size() > i and iv._state[i] != 3:
-				out.append(iv.global_transform * (iv.formation[i] + Vector3(0, up, 0)) + dir * 0.14)
+		for i in iv.shooters(wid):
+			out.append(iv.muzzle(i, dir))
 		out.shuffle()
 		if out.is_empty():
 			out.append(v.position + Vector3(0, 0.35, 0))
@@ -1086,6 +1087,8 @@ func frame(a: float, delta: float) -> void:
 				p = man[0]
 			if v is InfantryView:
 				(v as InfantryView).set_braced(not man.is_empty())
+				if e.dig != 0 or (v as InfantryView).dig > 0.0:   # M3.5: foxhole
+					(v as InfantryView).set_dig(0.0 if e.dig == 0 else clampf(1.0 - float(e.dig - sim.tick) / SimWorld.DIG_TICKS, 0.05, 1.0))
 			v.position = p
 			if e.moving and _crushers.has(e.def_id) and (Engine.get_process_frames() + id) % 6 == 0 and terrain.has_cars():
 				terrain.wreck_cars(Vector2(p.x, p.z), 0.42, true)   # M3.3 P3 (19): tanks flatten parked cars

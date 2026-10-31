@@ -161,9 +161,12 @@ static func _fire_unit(w: SimWorld, u: SimEntity, t: SimEntity) -> void:
 		return
 	var jet := air and d.tags.has("jet")
 	var dist := w.edge_dist(u, t)
+	var car: PackedInt32Array = Content.squad_carriers(d)[w.squad_alive(u)] if Content.is_squad(d.id) else PackedInt32Array()
 	for i in d.weapons.size():
 		if u.cds[i] > 0:
 			continue
+		if not car.is_empty() and car[i] == 0:
+			continue   # M3.5: every soldier carrying this weapon has fallen
 		var wd: WeaponDef = Content.weapon(d.weapons[i])
 		if wd.min_tier > u.tier:
 			continue
@@ -191,7 +194,7 @@ static func _fire_unit(w: SimWorld, u: SimEntity, t: SimEntity) -> void:
 			u.pre[i] = int(u.pre[i]) + 1
 			if int(u.pre[i]) < pt:
 				continue
-		fire(w, u, t, wd, dmg_pct(u))
+		fire(w, u, t, wd, dmg_pct(u) * (1 if car.is_empty() else car[i]))
 		u.pre[i] = 0 if wd.pre_attack_type == &"shot" else -1
 		after_shot(u, i, wd)
 
@@ -337,8 +340,9 @@ static func _garrison_fire(w: SimWorld, b: SimEntity) -> void:
 		if not u.alive or u.res_id != -b.id:
 			continue
 		var d: UnitDef = w.udef(u)
+		var car: PackedInt32Array = Content.squad_carriers(d)[w.squad_alive(u)] if Content.is_squad(d.id) else PackedInt32Array()
 		for i in d.weapons.size():
-			if u.cds[i] > 0:
+			if u.cds[i] > 0 or (not car.is_empty() and car[i] == 0):
 				continue
 			var wd: WeaponDef = Content.weapon(d.weapons[i])
 			var r := FX.mt_to_fx(wd.range_mt) + GARRISON_RANGE_BONUS
@@ -347,7 +351,7 @@ static func _garrison_fire(w: SimWorld, b: SimEntity) -> void:
 				continue
 			u.pos = b.pos
 			_ensure(u, d)
-			fire(w, u, t, wd, dmg_pct(u))
+			fire(w, u, t, wd, dmg_pct(u) * (1 if car.is_empty() else car[i]))
 			after_shot(u, i, wd)
 
 static func grant_vet_xp(w: SimWorld, a: SimEntity, value: int) -> void:

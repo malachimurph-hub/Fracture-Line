@@ -38,7 +38,7 @@ func to_dict() -> Dictionary:
 ## "" = the faction has no such structure.
 func roles() -> Dictionary:
 	return {"builder": &"eu_crawler", "harvester": &"eu_harvester", "refinery": &"eu_hub", "power": &"eu_reactor",
-		"bunker": &"eu_gun_bunker", "barracks": &"eu_barracks", "heavy": &"eu_heavy_factory", "motor": &"eu_motor_pool",
+		"bunker": &"eu_gun_bunker", "barracks": &"eu_barracks", "heavy": &"eu_motor_pool", "motor": &"eu_motor_pool",   # M3.5: one vehicle factory
 		"tech": &"eu_signals", "support": &"eu_relay", "aa_tower": &"eu_flak_tower", "income": &"eu_exchange",
 		"mine": &"eu_minefield", "pylon": &""}   # M2.9: Grid Pylon removed
 
@@ -134,6 +134,8 @@ func think() -> void:
 		_scout()
 	if cfg["capture"]:
 		_capture()
+	if _every("t_drone", 30):
+		_drones()
 		if _every("t_breach", 50):
 			_breach()
 	if cfg["powers"] and Content.GENERALS_ENABLED:   # M3.3: generals are off
@@ -536,8 +538,8 @@ func _pick_unit(bd: BuildingDef) -> StringName:
 		var ud: UnitDef = Content.unit(uid)
 		if ud.tags.has("at") and enemy_armor > enemy_inf:
 			wgt *= 2
-		if uid == "eu_grenadier" and enemy_inf > enemy_armor:
-			wgt *= 2
+		if ud.tags.has("squad") and enemy_inf > enemy_armor:
+			wgt *= 2   # M3.5: Combat Squads (MG + grenadier) against infantry
 		if ud.tags.has("aa") and _enemy_air_seen() > 0:
 			wgt *= 4   # M2.5: enemy aircraft spotted - build anti-air
 		elif uid == "eu_flakwerk" and enemy_inf < 4:
@@ -571,6 +573,29 @@ func _pick_unit(bd: BuildingDef) -> StringName:
 		if roll < 0:
 			return StringName(uid)
 	return StringName(bd.produces[0])
+
+## M3.2 Drone Operators: launch a bomb drone when enemy vehicles / infantry are near, and send
+## idle bomb drones at the closest visible enemy (preferring vehicles). Scout drones are player-only.
+## M3.5: shared by every AI; only operators with explosive drones (Russia) launch.
+func _drones() -> void:
+	var team := me().team
+	for u: SimEntity in my_ents(SimEntity.Kind.UNIT):
+		var d: UnitDef = w.udef(u)
+		if d.tags.has("drone_operator") and Content.operator_drone(u.def_id, "bomb") != &"" and u.res_id >= 0 and w.drone_wait(u, "bomb") == 0 and _enemy_strength_near(FX.to_tile(u.pos), 12) > 0:
+			cmd({"t": "drone", "ids": [u.id], "kind": "bomb"})
+		elif d.tags.has("drone") and d.tags.has("suicide") and u.target <= 0 and u.orders.is_empty():
+			var best: SimEntity = null
+			var bd := 1 << 60
+			for id in w.ids:
+				var e: SimEntity = w.ents[id]
+				if not e.alive or e.kind != SimEntity.Kind.UNIT or not w.enemies(team, e.team) or w.flying(e) or not w.fog.is_visible_ent(w, team, e):
+					continue
+				var dd := FX.dist2(u.pos, e.pos) / (4 if w.is_vehicle(e) else 1)
+				if dd < bd:
+					bd = dd
+					best = e
+			if best != null:
+				cmd({"t": "attack", "ids": [u.id], "target": best.id})
 
 ## Enemy aircraft currently visible, or seen in the last 3 minutes (M2.5 air layer).
 func _enemy_air_seen() -> int:
@@ -863,7 +888,7 @@ func _send_back(ids: Array) -> void:
 	cmd({"t": "move", "ids": ids, "pos": _staging()})
 
 func _is_scout_type(u: SimEntity) -> bool:
-	return u.def_id == &"eu_grenadier" or u.def_id == &"eu_wolfhound"
+	return u.def_id == &"eu_wolfhound"
 
 func _every(key: String, period: int) -> bool:
 	if w.tick - int(bb.get(key, -1000000)) >= period:
