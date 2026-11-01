@@ -307,8 +307,10 @@ CREDITS_BODY,"FRACTURE LINE: MODERN CONFLICT — skirmish with four factions: Un
 Design, code, procedural 3D models (with automatic LODs), weathering and surface-detail shaders, decals, effects, maps, faction HUD themes, UI and text: original work made for Malachi Murphy with Grok Bot. US unit names are original and only inspired by real equipment roles.
 Textures: ambientCG (ambientcg.com), CC0 1.0 public domain — Ground097, Ground109, Grass004, Rock063, Asphalt033, Gravel035, Concrete034, CorrugatedSteel005, Rust004; winter: Snow006, Ground054, Snow004, Rock035, Ice002, Snow010A; temperate: Grass001, Ground037, Rock023, PavingStones130; arid: Ground090, Ground102, Rock061, Ground079S.
 Soldier models and animations: Quaternius, ""Toon Shooter Game Kit"" (quaternius.com), CC0 1.0 public domain — recoloured and re-equipped per faction, re-proportioned, decimated and baked to vertex animation.
-Sound effects and the Russia, Germany and Iran music: original, synthesized for this game (no samples, no third-party audio).
+Sound effects, the Germany music and the Russian ""Steppe March"" and Iranian ""Zagros"": original, synthesized for this game (no samples, no third-party audio).
 Menu and United States music (""Base Command"", ""Defend the Border"", ""Mission Accomplished"", ""Zero Hour Background""): original music by Malachi Murphy.
+Russia music (""Red Banner March"", ""Forward, Comrades"", ""Iron Rhythm (Zhelezny ritm)"", ""Moscow Techno"" I and II, ""Desionaries""): original music by Malachi Murphy.
+Iran music (""Defend the Holy Land"", ""Iran Victory"", ""Triumph of the Dunes"", ""Descent into Dust"", ""Dusty Loop"", ""Setar's Waiting Riff"", ""Iron and Flower (Ahan o Gol)""): original music by Malachi Murphy.
 Voices (AI-generated, original lines, no real person's voice cloned):
 • Germany and US: Kokoro-82M speech model (hexgrad, Apache-2.0) via kokoro-onnx (MIT); phonemes by eSpeak NG (GPL-3.0 build tool, only audio ships).
 • Iran (English with Persian accents): Chatterbox Multilingual (Resemble AI, MIT; output carries Resemble's Perth audio watermark), prompted with synthetic speakers derived from Piper Persian voices amir, ganji and reza_ibrahim (CC0 datasets, but fine-tuned from Piper's research-only ""lessac"" voice — licence not clearly permissive; these Iran voices will be replaced in a later update; Piper GPL-3.0 build tool only). Checked with faster-whisper / Whisper (MIT).
@@ -636,7 +638,7 @@ INFO_DETECTOR,Detects stealth
 INFO_REQUIRES,Requires: %s
 INFO_POWER_GEN,Power: +%d
 INFO_POWER_USE,Power use: %d
-INFO_INCOME,"Income: $%d / min (up to 4 count)"
+INFO_INCOME,"Income: $%d / min, each one pays"
 INFO_INCOME_BURST,Income: $%d every %d s
 INFO_INCOME_CAPTURED,Income when captured: $%d / min
 INFO_REFINERY,Harvesters unload here
@@ -691,3 +693,15 @@ UNIT_ECC_BOMB_DRONE_DESC,One-way attack drone. Flies to its target and detonates
 HUD_SQUAD_MEN,Soldiers: %d / %d
 RES_CACHE_TIP,Surplus crude oil in storage tanks. Trucks load barrels here for export; every load sold earns supply.
 HUD_OIL_LEFT,Oil for export: %d
+UNIT_US_BLACKHAWK,UH-60 Black Hawk
+UNIT_US_BLACKHAWK_DESC,"Troop transport helicopter: carries 6 seats (two Combat Squads) and has a minigun in each door. Board it with infantry, fly them in, Unload anywhere. Passengers are lost if it is shot down. Built at the Airfield."
+UNIT_ECC_HIND,Mi-24 Hind
+UNIT_ECC_HIND_DESC,"Armoured assault helicopter with a troop cabin: carries 6 seats (two Combat Squads) and fires a 20 mm nose cannon. Tougher and slower than other transports. Passengers are lost if it is shot down. Built at the Airfield."
+UNIT_EU_H145M,H145M
+UNIT_EU_H145M_DESC,"Light utility helicopter: carries 6 seats (two Combat Squads) with a light machine gun in each door. Fastest and cheapest transport, but lightly built. Passengers are lost if it is shot down. Built at the Airfield."
+BLD_EU_GUARD_TOWER,Guard Tower
+BLD_EU_GUARD_TOWER_DESC,"Raised guard tower with a mounted .50 cal heavy machine gun and a searchlight. Strong against infantry and light vehicles. Needs power to fire."
+BLD_EU_JAVELIN_PIT,Javelin Foxhole
+BLD_EU_JAVELIN_PIT_DESC,"Sandbagged foxhole with two Javelin anti-tank teams, kneeling to fire. Very long range; strong against vehicles, cannot hit aircraft. Needs power to fire."
+BLD_EU_MANTIS,MANTIS AA Turret
+BLD_EU_MANTIS_DESC,"Single-barrel 35 mm revolver-cannon air-defence turret with a very high rate of fire. Shreds aircraft and also hits ground vehicles hard. Needs power to fire."

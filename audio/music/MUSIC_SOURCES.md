@@ -54,3 +54,35 @@ APK stays under 100 MB, together with the four Russia/Germany/Iran tracks, re-en
 The M2.9 rock tracks (Breach Point, Iron Convoy, Dust Devils, Last Light Rising, Steel Rain) and
 M3.2 Liberty Steel are retired to `superseded/` (`.gdignore`, not packaged; still reproducible
 with their generators). Other factions' music is unchanged.
+
+## M3.5 Russia and Iran music (Malachi's own tracks)
+
+Supplied by Malachi (his "Russia music" and "Iran Music" Google Drive folders, uploaded 2026-10-31;
+used with his permission as the game's owner). Converted from MP3 (48 kHz stereo) to OGG Vorbis
+44.1 kHz; see docs/m3_5/CHANGELOG.md for the bitrate used to keep the APK under 100 MB.
+
+| File | Title (Drive file name) | Use |
+|---|---|---|
+| ru_red_banner_march.ogg | Red Banner March | Russia shuffle |
+| ru_forward_comrades.ogg | Forward, Comrades | Russia shuffle |
+| ru_iron_rhythm.ogg | Iron Rhythm ("Железный ритм") | Russia shuffle |
+| ru_moscow_techno_1.ogg | Moscow Techno (1) | Russia shuffle |
+| ru_moscow_techno_2.ogg | Moscow Techno (2) | Russia shuffle |
+| ru_desionaries.ogg | Desionaries (title as uploaded) | Russia shuffle |
+| ir_defend_the_holy_land.ogg | Defend the Holy Land | Iran shuffle |
+| ir_iran_victory.ogg | Iran Victory | Iran shuffle |
+| ir_triumph_of_the_dunes.ogg | Triumph of the Dunes | Iran shuffle |
+| ir_descent_into_dust.ogg | Descent into Dust | Iran shuffle |
+| ir_dusty_loop.ogg | Dusty Loop | Iran shuffle |
+| ir_setars_waiting_riff.ogg | Setar's Waiting Riff | Iran shuffle |
+| ir_iron_and_flower.ogg | Iron and Flower ("آهن و گل") | Iran shuffle |
+
+Russia keeps the M3.3 "Steppe March"; Iran keeps "Zagros". The synthesized Russian hard bass
+"Red Bounce" is superseded by "Moscow Techno" and moved to `superseded/` (not packaged).
+
+## 0.4.0 size fit (Malachi approved lower music quality)
+All 20 packaged tracks re-encoded from their best sources (Malachi's original MP3s; the
+synthesized Tiefgarage / Zagros / Steppe March from their 128 kbps OGGs) to OGG Vorbis **mono,
+16 kHz, 17 kbps nominal** (~20 kbps actual), so the full-soundtrack APK stays under 99 MB
+(music 21.3 MB -> 8.8 MB). Stereo at 44.1 kHz cannot go below ~45 kbps in libvorbis, and mono
+22 kHz below ~29 kbps; both would not fit.

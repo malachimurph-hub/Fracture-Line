@@ -36,10 +36,13 @@ const CLASSES := {
 	&"us_m240b": "mg", &"eu_mg3": "mg", &"tpla_pkm": "mg",
 	&"us_m203": "grenade", &"eu_ag36": "grenade", &"tpla_gp25": "grenade", &"ecc_gp25": "grenade",
 	# M3.2 part 2: AA ground modes, capture-unit sidearm
+	# M4.1: Germany's new defences (the MANTIS turret's 35 mm in both modes)
+	&"eu_mantis_35": "quad", &"eu_mantis_gnd": "quad",
+	&"eu_tower_50cal": "mg", &"eu_pit_javelin": "missile", &"us_door_minigun": "minigun", &"eu_h145_mg": "mg", &"ecc_hind_20mm": "autocannon",
 	&"eu_gatling_gnd": "quad", &"tpla_wasp_gnd": "missile", &"us_patriot_gnd": "mg", &"ecc_zak30_gnd": "quad", &"sidearm": "rifle",
 }
 const BY_KIND := {"tracer": "rifle", "tracer_heavy": "mg", "shell": "cannon", "missile": "missile",
-	"rocket": "rocket", "rocket_salvo": "salvo", "tracer_quad": "quad", "flak": "flak", "grenade": "grenade",
+	"rocket": "rocket", "rocket_salvo": "salvo", "tracer_quad": "quad", "tracer_minigun": "minigun", "flak": "flak", "grenade": "grenade",
 	"rust_shell": "rust", "flame": "flame", "bomb": "none"}
 ## Per class: speed (tiles/s, 0 = timed arc), arc (apex height per tile of range), rounds per sim
 ## shot and gap between them, streak tail length / half width / colour, solid body, muzzle size,
@@ -47,6 +50,7 @@ const BY_KIND := {"tracer": "rifle", "tracer_heavy": "mg", "shell": "cannon", "m
 const P := {
 	"rifle": {"spd": 62.0, "arc": 0.0, "n": 2, "gap": 0.07, "tail": 0.55, "w": 0.018, "col": Color(1.0, 0.93, 0.62), "muz": 0.08, "imp": 0.16},
 	"mg": {"spd": 56.0, "arc": 0.0, "n": 3, "gap": 0.055, "tail": 0.75, "w": 0.024, "col": Color(1.0, 0.8, 0.42), "muz": 0.13, "imp": 0.2},
+	"minigun": {"spd": 70.0, "arc": 0.0, "n": 5, "gap": 0.014, "tail": 0.6, "w": 0.015, "col": Color(1.0, 0.62, 0.35), "muz": 0.1, "imp": 0.12},   # M4.1 door miniguns
 	"quad": {"spd": 64.0, "arc": 0.0, "n": 2, "gap": 0.04, "tail": 0.8, "w": 0.022, "col": Color(1.0, 0.86, 0.5), "muz": 0.12, "imp": 0.2},
 	"autocannon": {"spd": 48.0, "arc": 0.0, "n": 1, "gap": 0.0, "tail": 0.9, "w": 0.036, "col": Color(1.0, 0.7, 0.32), "muz": 0.2, "imp": 0.3},
 	"cannon": {"spd": 36.0, "arc": 0.02, "n": 1, "gap": 0.0, "tail": 1.1, "w": 0.05, "col": Color(1.0, 0.78, 0.45), "muz": 0.42, "imp": 0.62},

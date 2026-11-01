@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"eu_h145m"
+faction = &"eu"
+name_key = "UNIT_EU_H145M"
+desc_key = "UNIT_EU_H145M_DESC"
+cost = 1150
+build_time_ms = 12000
+pop = 3
+prereqs = PackedStringArray()
+tags = PackedStringArray("air", "helicopter", "transport")
+max_hp = 620
+armor_type = &"air"
+weapons = PackedStringArray("eu_h145_mg")
+speed_mtps = 4720
+move_layer = &"air"
+sight = 10
+radius_mt = 620
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 0
+role = &"transport"
+view_scene = "res://view/units/eu/h145m.tscn"
+stubs = PackedStringArray()
+loco = &"heli"
+turn_dps = 210
+accel_ms = 800
+turret_dps = 0
+abilities = PackedStringArray()
+transport_capacity = 6
+detector = false
+air_slots = 0

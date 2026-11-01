@@ -254,6 +254,11 @@ func _next_building() -> StringName:
 		return R["support"]
 	if seconds() > 600 and difficulty != "easy" and _has_role("aa_tower") and counts.get(R["aa_tower"], 0) < 1 and p.supply > 1200:
 		return R["aa_tower"]
+	# M4.1: Germany's Guard Tower, Javelin Foxhole and MANTIS turret, one each as the game goes on
+	if faction() == &"eu" and difficulty != "easy":
+		for d in EU_EXTRA_DEFENCES:
+			if seconds() > int(d[1]) and counts.get(d[0], 0) < 1 and p.supply > int(d[2]) and w.prereqs_met(pid, Content.building(d[0]).prereqs) == "":
+				return d[0]
 	if _has_role("income") and counts.get(R["tech"], 0) >= 1 and counts.get(R["income"], 0) < 1 and p.supply > Content.building(R["income"]).cost + 600:   # M3.3: income buildings now cost $2k-$6.5k
 		return R["income"]
 	if seconds() > 540 and difficulty != "easy" and _has_role("mine") and counts.get(R["mine"], 0) < (4 if difficulty == "hard" else 2) and p.supply > 600:
@@ -354,6 +359,8 @@ func _toward_for(id: StringName) -> Vector2i:
 						far = b
 				if far != null:
 					return far.pos + (map_center() - far.pos) / 10
+			return base + (map_center() - base) * 3 / 10
+	if EU_EXTRA_IDS.has(id):
 			return base + (map_center() - base) * 3 / 10
 	if id == R["aa_tower"] or id == R["mine"]:
 			# forward, on the road toward the map centre (mines spread a little by count)
@@ -519,6 +526,9 @@ func _unit_allowed(ud: UnitDef) -> bool:
 		return _air_slot_ok(ud)
 	return true
 
+## M4.1: [id, after seconds, supply needed]
+const EU_EXTRA_DEFENCES := [[&"eu_guard_tower", 360, 900], [&"eu_javelin_pit", 600, 1300], [&"eu_mantis", 840, 1500]]
+const EU_EXTRA_IDS := [&"eu_guard_tower", &"eu_javelin_pit", &"eu_mantis"]
 func _pick_unit(bd: BuildingDef) -> StringName:
 	# counter-aware weights: more anti-tank if we see enemy armor, more grenadiers vs infantry
 	var enemy_armor := 0
@@ -551,6 +561,8 @@ func _pick_unit(bd: BuildingDef) -> StringName:
 			wgt = 0
 		elif ud.tags.has("artillery") and _count_type(StringName(uid)) >= 2 + combat_units().size() / 8:
 			wgt = 0
+		elif ud.tags.has("transport") and ud.move_layer == &"air" and _count_type(StringName(uid)) >= 1 + combat_units().size() / 12:
+			wgt = 0   # M4.1: a transport helicopter or two (they fight with their door guns)
 		elif ud.tags.has("upgrade") and (me().upgrades.has(String(uid)) or CommandSys.upgrade_queued(w, pid, StringName(uid))):
 			wgt = 0   # M3.2 research: once
 		elif ud.tags.has("upgrade"):

@@ -3,7 +3,7 @@ extends RefCounted
 ## M3.4 (Malachi: "For all passive income buildings, have the amount it generates pop up and
 ## fade like supply trucks do"). View only: works out, from the sim's state after each economy
 ## second, what each of the local player's income structures earned (the same rules as
-## EconSys.run: up to 4 copies of a type pay, low power halves, Logistics doubles; captured
+## EconSys.run: every copy pays, low power halves, Logistics doubles; captured
 ## pumps), adds it up per structure and hands back a "+$N" popup every WINDOW_S seconds per
 ## structure (staggered by id so a base does not flash all at once). The lump-sum mine pays
 ## through its own "income" event (match.gd) and is skipped here. One pass over the entities
@@ -51,7 +51,7 @@ static func pay_out(snap: Dictionary) -> Dictionary:
 	var pay := {}
 	for did in snap["by_def"]:
 		var d: BuildingDef = Content.building(did)
-		var n := mini(4, (snap["by_def"][did] as Array).size())
+		var n := (snap["by_def"][did] as Array).size()
 		if d.passive_income > 0:
 			hub_raw[did] = d.passive_income * n
 			hub_sum += d.passive_income * n

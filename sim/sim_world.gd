@@ -61,7 +61,7 @@ func setup(map_def: MapDef, slots: Array, opts: Dictionary, p_seed: int) -> void
 		e.pos = FX.tile_center(r["tile"])
 		e.amount = int(r["amount"])
 		e.max_amount = e.amount
-		e.radius = 900
+		e.radius = 1300   # M4.1: the bigger Crude Oil Reserve (was 900)
 		map.mark_nobuild(r["tile"], 3)
 	# neutrals
 	for n in map_def.neutrals:
@@ -545,7 +545,12 @@ func _kill(e: SimEntity, attacker: SimEntity) -> void:
 					op.air_t = tick + DRONE_RELOAD_TICKS
 				else:
 					op.aux_t = tick + DRONE_RELOAD_TICKS
-		if udef(e).transport_capacity > 0:
+		if udef(e).transport_capacity > 0 and udef(e).move_layer == &"air":
+			# M4.1 transport helicopters: shot down with everyone aboard
+			for pu: SimEntity in RosterSys.passengers(self, e):
+				pu.res_id = 0
+				_kill(pu, attacker)
+		elif udef(e).transport_capacity > 0:
 			RosterSys.unload(self, e, 40)   # passengers bail out of the wreck, stunned 2 s
 		TplaSys.on_unit_death(self, e)
 	elif e.kind == SimEntity.Kind.BUILDING or e.kind == SimEntity.Kind.NEUTRAL:

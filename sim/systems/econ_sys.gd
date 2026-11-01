@@ -33,18 +33,18 @@ static func run(w: SimWorld) -> void:
 	for p in w.players:
 		if p.eliminated:
 			continue
-		# passive income: each income structure type counts up to 4 copies (EU Hub +3/s,
-		# TPLA Scrap Bazaar +6/s)
+		# passive income: every copy of an income structure pays (EU Hub +3/s, TPLA Scrap
+		# Bazaar +6/s; M3.7.1, Malachi: no cap - was the first 4 copies of a type)
 		var inc := 0
 		for did in hubs.get(p.id, {}):
 			var hc: Array = hubs[p.id][did]
-			inc += mini(4, int(hc[0])) * int(hc[1])
+			inc += int(hc[0]) * int(hc[1])
 		if p.low_power:
 			inc /= 2
 		var sec := w.tick / FX.TICK_HZ
 		for did in earners.get(p.id, {}):
 			var ed: BuildingDef = Content.building(did)
-			var pay := period_pay(ed, mini(4, int(earners[p.id][did])), sec)
+			var pay := period_pay(ed, int(earners[p.id][did]), sec)
 			if p.low_power and not ed.tags.has("no_power"):
 				pay /= 2
 			if pay > 0 and ed.tags.has("income_burst"):
