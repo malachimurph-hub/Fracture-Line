@@ -60,3 +60,10 @@ The Russia and Iran music held back from 0.3.7-0.3.9, re-encoded to fit the 100 
 - Every copy of a passive income structure now pays (EU Hub and other `passive_income`
   buildings, and the `income_amount` earners such as Iran's Oil Derrick). Before, only the first
   4 copies of each type counted. Income popups and the info card ("each one pays") follow.
+
+## Build info (0.4.1)
+- Release APK: `export_build/FractureLine-0.4.1.apk`, 97,943,532 bytes (after tools/apk_recompress.sh),
+  SHA-256 be7d3c734fa90057967c253b80b4fdcf66e32180b5256296338ed3d5c778e724, versionCode 25,
+  signer cert SHA-256 7e96c70a…ce54 (same key, installs over 0.4.0). Uploaded to Drive root.
+- Play AAB rebuilt at `builds/play/FractureLine.aab` (not uploaded).
+- Superseded assets deleted (about 9.5 MB of source).
