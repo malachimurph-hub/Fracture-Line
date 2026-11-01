@@ -12,6 +12,7 @@ static func run(t: Node) -> void:
 	_defences(t)
 	_artillery_splash(t)
 	_squad_hp(t)
+	_income_no_cap(t)
 
 static func _frames(t: Node, n: int) -> void:
 	for i in n:
@@ -149,3 +150,9 @@ static func _squad_hp(t: Node) -> void:
 		ok = ok and cut >= 0.3 and cut <= 0.35
 		info.append("%s %d->%d" % [sid, old[sid], hp])
 	t._check(ok, "squads have about a third less health: %s" % ", ".join(info))
+
+# ------------------------------------------------------------------ M3.7.1 no income cap
+static func _income_no_cap(t: Node) -> void:
+	var src := FileAccess.get_file_as_string("res://sim/systems/econ_sys.gd") + FileAccess.get_file_as_string("res://ui/hud/income_popups.gd")
+	t._check(not src.contains("mini(4"), "income: no 4-copy cap in the economy or the popups")
+	t._check(not TranslationServer.translate("INFO_INCOME").contains("4"), "info card no longer says 'up to 4'")

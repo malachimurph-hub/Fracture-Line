@@ -14,3 +14,8 @@ The Russia and Iran music held back from 0.3.7-0.3.9, re-encoded to fit the 100 
 - Credits list the new titles as original music by Malachi Murphy; MUSIC_SOURCES.md updated.
 - Size: at 56 kbps the full soundtrack made the APK 111.4 MB; mono 16 kHz brings the music from 21.3 MB to 8.8 MB and the APK to 98,935,815 bytes.
 - Tests: m35 adds a Russia/Iran own-playlist check. All suites, board, m34 and m35 pass.
+
+## No income cap (M3.7.1, Malachi: "each passive income structure should not have a cap")
+- Every copy of a passive income structure now pays (EU Hub and other `passive_income`
+  buildings, and the `income_amount` earners such as Iran's Oil Derrick). Before, only the first
+  4 copies of each type counted. Income popups and the info card ("each one pays") follow.
