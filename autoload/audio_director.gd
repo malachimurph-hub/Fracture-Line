@@ -23,6 +23,8 @@ const SFX := {
 	"expl_huge": "res://audio/sfx/explosion_huge.ogg", "salvage": "res://audio/sfx/salvage.ogg", "tunnel": "res://audio/sfx/tunnel.ogg",
 	"trap_click": "res://audio/sfx/trap_click.ogg",
 	# M2.4 weapon effects
+	# M4.1 sound design: heavy .50 cal, door minigun
+	"hmg_heavy": "res://audio/sfx/hmg_heavy.ogg", "minigun": "res://audio/sfx/minigun.ogg",
 	"flame": "res://audio/sfx/flame.ogg", "howitzer": "res://audio/sfx/howitzer.ogg", "hit_metal": "res://audio/sfx/hit_metal_1.ogg",
 }
 ## M2.4: alternative takes picked at random (plus pitch jitter) so repeated fire does not loop.

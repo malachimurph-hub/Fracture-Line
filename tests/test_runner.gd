@@ -106,6 +106,8 @@ func _ready() -> void:
 			await load("res://tests/m35_test.gd").run(self)   # M3.5 menu, squads, poses, factions
 		"m37":
 			await load("res://tests/m37_test.gd").run(self)   # M3.7 balance update
+		"m41":
+			await load("res://tests/m41_test.gd").run(self)   # M4.1 (0.4.1) helicopters, German defences, fx, sound
 		"stall":
 			var r2 := MatchRunner.new()
 			r2.record_replay = false
@@ -622,7 +624,7 @@ func test_audio() -> void:
 	var old_in := false
 	for d in [ad.MUSIC, ad.FACTION_PLAYLISTS]:
 		old_in = old_in or str(d).contains("liberty_steel") or str(d).contains("breach_point") or str(d).contains("iron_convoy")
-	_check(not old_in and FileAccess.file_exists("res://audio/music/superseded/.gdignore"), "M3.4: the old US rock tracks are out of the build")
+	_check(not old_in and not FileAccess.file_exists("res://audio/music/battle_us_liberty_steel.ogg"), "M3.4: the old US rock tracks are out of the build (M4.1: deleted)")
 	var missing: Array = []
 	var units := 0
 	for fac in ad.manifest["factions"]:

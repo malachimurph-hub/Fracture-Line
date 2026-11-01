@@ -12,8 +12,8 @@ var combat: CombatTable
 var errors: PackedStringArray = []
 var power_order: Array[StringName] = []
 
-const UNIT_ORDER := [&"eu_crawler", &"eu_harvester", &"eu_squad", &"eu_wolfhound", &"eu_boxer", &"eu_flakwerk", &"eu_leopold", &"eu_salamander", &"eu_hearth", &"eu_thunderhead", &"eu_kestrel", &"eu_corvid", &"eu_field_engineer", &"eu_sturmtrupp"]
-const BUILDING_ORDER := [&"eu_hq", &"eu_reactor", &"eu_hub", &"eu_barracks", &"eu_motor_pool", &"eu_gun_bunker", &"eu_flak_tower", &"eu_minefield", &"eu_signals", &"eu_relay", &"eu_exchange", &"eu_airstrip", &"eu_sandbags", &"eu_barricade"]
+const UNIT_ORDER := [&"eu_crawler", &"eu_harvester", &"eu_squad", &"eu_wolfhound", &"eu_boxer", &"eu_flakwerk", &"eu_leopold", &"eu_salamander", &"eu_hearth", &"eu_thunderhead", &"eu_kestrel", &"eu_h145m", &"eu_corvid", &"eu_field_engineer", &"eu_sturmtrupp"]
+const BUILDING_ORDER := [&"eu_hq", &"eu_reactor", &"eu_hub", &"eu_barracks", &"eu_motor_pool", &"eu_gun_bunker", &"eu_guard_tower", &"eu_javelin_pit", &"eu_flak_tower", &"eu_mantis", &"eu_minefield", &"eu_signals", &"eu_relay", &"eu_exchange", &"eu_airstrip", &"eu_sandbags", &"eu_barricade"]
 ## M2.9: Malachi's TPLA roster (notes 2026-10-22). Internal ids kept where a unit took over a slot:
 ## militia = Rifleman, rocket_cell = Rocket Man, rattler = Technical, scrapback = Striker (Karrar MBT),
 ## bus = BMP-2 transport, hailstorm = BHX-35 (35 mm AA), blight = Koksan, shrike = Fajr-5.
@@ -58,11 +58,11 @@ const SQUAD_MEMBERS := {
 ## M3.5 Drone Operators: which drone each operator launches (US: scout only; Russia: explosive only).
 const OPERATOR_DRONES := {&"us_drone_operator": {"scout": &"us_scout_drone"}, &"ecc_drone_operator": {"bomb": &"ecc_bomb_drone"}}
 const TPLA_UNIT_ORDER := [&"tpla_backhoe", &"tpla_pickup", &"tpla_squad", &"tpla_marksman", &"tpla_insurgent", &"tpla_rattler", &"tpla_scrapback", &"tpla_bus", &"tpla_hailstorm", &"tpla_blight", &"tpla_shrike", &"tpla_mirage", &"tpla_mig29", &"tpla_f16"]
-const US_UNIT_ORDER := [&"us_dozer", &"us_supply_truck", &"us_squad", &"us_jtac", &"us_sniper", &"us_lynx", &"us_bradley", &"us_halberd", &"us_picket", &"us_longreach", &"us_harrier", &"us_wraith", &"us_thunderlance", &"us_drone_operator", &"us_breacher"]
+const US_UNIT_ORDER := [&"us_dozer", &"us_supply_truck", &"us_squad", &"us_jtac", &"us_sniper", &"us_lynx", &"us_bradley", &"us_halberd", &"us_picket", &"us_longreach", &"us_harrier", &"us_blackhawk", &"us_wraith", &"us_thunderlance", &"us_drone_operator", &"us_breacher"]
 const US_BUILDING_ORDER := [&"us_command", &"us_reactor", &"us_supply_center", &"us_barracks", &"us_garage", &"us_airfield", &"us_strategy", &"us_patriot", &"us_firebase", &"us_drop_zone", &"us_sandbags", &"us_barricade"]
 ## M3.0 F: Russia (Malachi's list 2026-10-23: T-90M, Tiger-M, BTR, Typhoon, 2S Msta, Zeus and four
 ## single soldiers). Engineer, Cargo Truck and every building are stand-ins until his list covers them.
-const ECC_UNIT_ORDER := [&"ecc_engineer", &"ecc_cargo_truck", &"ecc_squad", &"ecc_infiltrator", &"ecc_saboteur", &"ecc_drone_operator", &"ecc_tigr", &"ecc_btr", &"ecc_typhoon", &"ecc_t90", &"ecc_zeus", &"ecc_msta", &"ecc_ka52", &"ecc_su57", &"ecc_tu160"]
+const ECC_UNIT_ORDER := [&"ecc_engineer", &"ecc_cargo_truck", &"ecc_squad", &"ecc_infiltrator", &"ecc_saboteur", &"ecc_drone_operator", &"ecc_tigr", &"ecc_btr", &"ecc_typhoon", &"ecc_t90", &"ecc_zeus", &"ecc_msta", &"ecc_ka52", &"ecc_hind", &"ecc_su57", &"ecc_tu160"]
 const ECC_BUILDING_ORDER := [&"ecc_hq", &"ecc_power", &"ecc_depot", &"ecc_barracks", &"ecc_factory", &"ecc_airfield", &"ecc_ministry", &"ecc_black_market", &"ecc_bunker", &"ecc_aa_site", &"ecc_sandbags", &"ecc_barricade"]
 const TPLA_BUILDING_ORDER := [&"tpla_den", &"tpla_cc_plant", &"tpla_stash", &"tpla_camp", &"tpla_chop_shop", &"tpla_tunnel", &"tpla_workshop", &"tpla_bazaar", &"tpla_demo_trap", &"tpla_camo_net", &"tpla_wasp_nest", &"tpla_airfield", &"tpla_sandbags", &"tpla_barricade"]
 

@@ -258,13 +258,13 @@ func _update_stacks(delta: float) -> void:
 			var wp: Array = []
 			for sp in pts:
 				wp.append(v.global_transform * (sp as Vector3))
-			nb[id] = [wp, _stack_bld[id][1] if _stack_bld.has(id) else randf() * 0.3, _stack_steam.has(e.def_id)]
+			nb[id] = [wp, _stack_bld[id][1] if _stack_bld.has(id) else randf() * 0.3, _stack_steam.has(e.def_id), Content.building(e.def_id).power > 0 and not Content.building(e.def_id).is_hq]
 		_stack_bld = nb
 	var n := 0   # (buildings still draw as models at the far, icon zoom, so their chimneys smoke too)
 	for id in _stack_bld:
 		var it: Array = _stack_bld[id]
 		it[1] += delta
-		if it[1] < 0.32:
+		if it[1] < (POWER_PUFF_S if it[3] else 0.32):   # M4.1: power plants vent less (dialled back)
 			continue
 		it[1] = 0.0
 		var v: EntityView = views.get(id)
@@ -274,8 +274,12 @@ func _update_stacks(delta: float) -> void:
 		if n > 10:
 			break
 		for wp in it[0]:
-			vfx.stack_puff(wp, it[2])
+			vfx.stack_puff(wp, it[2], POWER_PUFF_K if it[3] else 1.0)
 
+## M4.1 (Malachi: "Dial back vapors on all power plants"): every faction's power plant puffs
+## every POWER_PUFF_S (was 0.32 s) with plumes POWER_PUFF_K the size and opacity.
+const POWER_PUFF_S := 0.8
+const POWER_PUFF_K := 0.6
 var _stack_steam := {}   ## M3.3: def ids whose Stack markers are cooling towers (big white steam)
 const STACK_WORDS := ["factory", "reactor", "power", "plant", "refinery", "forge", "foundry", "chop_shop", "garage", "works", "mill"]
 func _stack_points(v: EntityView, def_id: StringName) -> Array:
@@ -599,7 +603,13 @@ func _on_fire(ev: Dictionary) -> void:
 		snd = "flame"
 	elif cls == "artillery":
 		snd = "howitzer"
-	AudioDirector.sfx(snd, base, -3.0 if snd in ["rifle", "tpla_carbine"] else 0.0, 0.1)
+	elif kind == "tracer_minigun":
+		snd = "minigun"     # M4.1: ear-ringing buzz of a door minigun
+	elif wd0 != null and wd0.damage_type == &"hmg" and kind == "tracer_heavy":
+		snd = "hmg_heavy"   # M4.1: .50 cal / 12.7 mm heavy MGs boom deeper than rifle-calibre MGs
+	elif cls == "mg" and snd in ["rifle", "tpla_carbine"]:
+		snd = "mg"          # rifle-calibre machine guns (M240B, MG3, PKM, door guns)
+	AudioDirector.sfx(snd, base, -3.0 if snd in ["rifle", "tpla_carbine"] else (-2.0 if snd == "minigun" else 0.0), 0.1 if snd != "minigun" else 0.04)
 
 ## Muzzle points for one shot: squads fire from their standing soldiers, articulated vehicles
 ## from the barrel tip, turrets from the turret, garrisons from the building's windows.
@@ -619,6 +629,12 @@ func _muzzles(src: SimEntity, v: EntityView, garrison: SimEntity, base: Vector3,
 		if out.is_empty():
 			out.append(v.position + Vector3(0, 0.35, 0))
 		return out
+	# M4.1: door guns / launch tubes marked Muzzle* in the model fire from those (alternating)
+	var mz: Array = _marker_muzzles(v)
+	if not mz.is_empty():
+		var mk: Node3D = mz[randi() % mz.size()]
+		if is_instance_valid(mk):
+			return [mk.global_position]
 	var barrel: Node3D = v.get("barrel") if "barrel" in v else null
 	if barrel != null and is_instance_valid(barrel):
 		if not barrel.has_meta("tip"):
@@ -636,6 +652,16 @@ func _muzzles(src: SimEntity, v: EntityView, garrison: SimEntity, base: Vector3,
 	if cls in ["rocket", "missile"] and src.kind == SimEntity.Kind.UNIT and Content.unit(src.def_id).tags.has("infantry"):
 		h = 0.45
 	return [base + Vector3(0, h, 0) + dir * 0.4]
+
+func _marker_muzzles(v: EntityView) -> Array:
+	if v.has_meta("_mz"):
+		return v.get_meta("_mz")
+	var out: Array = []
+	if v.model != null:
+		for n in v.model.find_children("Muzzle*", "Marker3D", true, false):
+			out.append(n)
+	v.set_meta("_mz", out)
+	return out
 
 func _faction_of(e: SimEntity) -> String:
 	if e.owner < 0:
@@ -952,46 +978,100 @@ static func headlights_of(v: EntityView) -> Array:
 ## M3.4 floodlights on a structure: wall-mounted fixtures at the front corners pointing out and
 ## down, plus roof-edge ones on the big buildings (3 tiles and up): 2 to 4 per structure, none on
 ## walls, sandbags and other 1-tile pieces. View-local layout cached per model scene.
+## M4.1 (Malachi: "spot lights appear floating"): fixtures now sit ON the model - each corner
+## walks in from the footprint edge until it meets the model's actual wall (a coarse top-down
+## height grid of the hull vertices) and mounts below that wall's top; corners with no wall
+## nearby get no light. Models with Spot* markers (the Guard Tower searchlight) light from those
+## and turn with their mount.
 static var _flood_cache := {}
+const FLOOD_CELL := 0.2
 func _floodlights_of(v: EntityView, fac: StringName) -> Array:
 	if v.footprint.x < 2 or v.footprint.y < 2:
 		return []
 	var key := "%s|%s" % [v.scene_file_path, v.footprint]
 	var lay: Array = _flood_cache.get(key, [])
 	if not _flood_cache.has(key):
-		var top := 0.0
-		var inv := v.global_transform.affine_inverse()
-		for n in v.find_children("*", "MeshInstance3D", true, false):
-			var mi := n as MeshInstance3D
-			if mi.mesh == null or mi.visibility_range_begin > 0.0:
-				continue
-			var bb: AABB = (inv * mi.global_transform) * mi.get_aabb()
-			if bb.size.is_finite() and bb.size.length() < 40.0:
-				top = maxf(top, bb.end.y)
-		var hx := v.footprint.x * 0.5
-		var hz := v.footprint.y * 0.5
-		var wall := clampf(top * 0.55, 0.9, 2.4)    # fixture height on the wall
-		var roof := clampf(top, 1.2, 4.0)
-		lay = []
-		for sx in [-1.0, 1.0]:   # front corners (+Z is the front)
-			var at := Vector3(sx * (hx - 0.25), wall, hz - 0.05)
-			lay.append([at, Vector3(sx * 0.6, 0, 1.0).normalized(), 2.2 + wall * 0.6])
-		if v.footprint.x >= 3 and v.footprint.y >= 3:   # roof edge, rear corners, aimed out sideways
-			for sx in [-1.0, 1.0]:
-				var at2 := Vector3(sx * (hx - 0.35), roof + 0.1, -hz + 0.4)
-				lay.append([at2, Vector3(sx, 0, -0.35).normalized(), 2.6 + roof * 0.5])
+		lay = _flood_layout(v)
 		_flood_cache[key] = lay
 	var out: Array = []
 	var gx := v.global_transform
 	var col: Color = NightLights.FLOOD_COLS.get(fac, NightLights.FLOOD_COL)
 	for f in lay:
-		var lens: Vector3 = gx * (f[0] as Vector3)
-		var dir: Vector3 = gx.basis * (f[1] as Vector3)
+		var lens: Vector3
+		var dir: Vector3
+		if f[0] is NodePath:
+			var mk := v.get_node_or_null(f[0]) as Node3D
+			if mk == null:
+				continue
+			lens = mk.global_position
+			dir = mk.global_transform.basis.z
+		else:
+			lens = gx * (f[0] as Vector3)
+			dir = gx.basis * (f[1] as Vector3)
 		dir.y = 0.0
 		var aim := lens + dir.normalized() * float(f[2])
 		aim.y = FX.ground_y(aim.x, aim.z)
 		out.append([lens, aim, col])
 	return out
+
+func _flood_layout(v: EntityView) -> Array:
+	var lay: Array = []
+	if v.model != null:
+		for n in v.model.find_children("Spot*", "Marker3D", true, false):
+			lay.append([v.get_path_to(n), Vector3.ZERO, 4.0])
+	if not lay.is_empty():
+		return lay
+	var grid := {}
+	var top := 0.0
+	var inv := v.global_transform.affine_inverse()
+	for n in v.find_children("*", "MeshInstance3D", true, false):
+		var mi := n as MeshInstance3D
+		if mi.mesh == null or mi.visibility_range_begin > 0.0 or not mi.visible or String(mi.name) in ["Foundation", "Scaffold", "DamageLight", "DamageHeavy", "Rubble"]:
+			continue
+		var xf: Transform3D = inv * mi.global_transform
+		for si in mi.mesh.get_surface_count():
+			var verts: PackedVector3Array = mi.mesh.surface_get_arrays(si)[Mesh.ARRAY_VERTEX]
+			for pv in verts:
+				var q: Vector3 = xf * pv
+				if not q.is_finite():
+					continue
+				var c := Vector2i(floori(q.x / FLOOD_CELL), floori(q.z / FLOOD_CELL))
+				if q.y > float(grid.get(c, 0.0)):
+					grid[c] = q.y
+				top = maxf(top, q.y)
+	var hx := v.footprint.x * 0.5
+	var hz := v.footprint.y * 0.5
+	var wall := clampf(top * 0.55, 0.6, 2.4)
+	for sx in [-1.0, 1.0]:   # front corners (+Z is the front): walk back to the wall
+		var x: float = sx * (hx - 0.3)
+		var z := hz - 0.1
+		while z > -hz * 0.5:
+			var h := _flood_h(grid, x, z)
+			if h >= 0.45:
+				var at := Vector3(x, minf(wall, h - 0.12), z + 0.05)
+				lay.append([at, Vector3(sx * 0.6, 0, 1.0).normalized(), 1.8 + at.y * 0.5])
+				break
+			z -= FLOOD_CELL * 0.5
+	if v.footprint.x >= 3 and v.footprint.y >= 3:   # roof edge, rear corners, aimed out sideways
+		for sx in [-1.0, 1.0]:
+			var x2: float = sx * (hx - 0.4)
+			var z2 := -hz + 0.3
+			while z2 < 0.0:
+				var h2 := _flood_h(grid, x2, z2)
+				if h2 >= 1.0:
+					lay.append([Vector3(x2, h2 + 0.04, z2), Vector3(sx, 0, -0.35).normalized(), 2.2 + h2 * 0.4])
+					break
+				z2 += FLOOD_CELL * 0.5
+	return lay
+
+## Highest hull vertex around (x, z) on the floodlight grid (own cell and the x neighbours).
+static func _flood_h(grid: Dictionary, x: float, z: float) -> float:
+	var cx := floori(x / FLOOD_CELL)
+	var cz := floori(z / FLOOD_CELL)
+	var h := 0.0
+	for dx in [-1, 0, 1]:
+		h = maxf(h, float(grid.get(Vector2i(cx + dx, cz), 0.0)))
+	return h
 
 ## Distance (m) from a vehicle view's origin to the front of its hull (largest local +Z of its
 ## meshes), cached per view.
@@ -1135,8 +1215,8 @@ func frame(a: float, delta: float) -> void:
 			# M3.4: the packed excavator unfolds in step with its set-up timer
 			if v is VehicleView and (v as VehicleView).pack_rig != null:
 				(v as VehicleView).set_pack(1.0 - MineSys.progress(sim, e) if MineSys.unpacking(e) else 1.0)
-			# dust behind moving vehicles (M3.3: drones leave no trail; helicopters and jets keep theirs)
-			if not v is InfantryView and not icon_mode and not ud.tags.has("drone"):
+			# dust behind moving vehicles (M3.3: drones leave no trail; M4.1: nor do helicopters, jets keep theirs)
+			if not v is InfantryView and not icon_mode and not ud.tags.has("drone") and not ud.tags.has("helicopter"):
 				var spd: float = p.distance_to(v.get_meta("lastp", p)) / maxf(delta, 0.001)
 				v.set_meta("lastp", p)
 				var acc: float = fx_acc.get(id, 0.0) + delta

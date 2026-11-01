@@ -176,13 +176,13 @@ func smoke_puff(p: Vector3, strength: float, burning: bool) -> void:
 			spark_layer.emit(p + Vector3(0, 0.2, 0), Vector3(randf_range(-0.3, 0.3), randf_range(1.2, 2.2), randf_range(-0.3, 0.3)), 1.2, 0.03, 0.01, Color("#ffd27a"), Color(1.0, 0.4, 0.05, 0.0), 1.0)
 
 ## M3.2: light grey chimney wisp drifting downwind.
-func stack_puff(p: Vector3, steam := false) -> void:
+func stack_puff(p: Vector3, steam := false, k := 1.0) -> void:
 	if fx_mul < 1.0 and randf() > fx_mul:
 		return
 	if steam:   # M3.3: cooling tower - one broad, bright, slow plume puff (same particle budget)
-		smoke.emit(p + Vector3(randf_range(-0.15, 0.15), 0, randf_range(-0.15, 0.15)), Vector3(0.35, 0.7, 0.12), 4.2, 0.55, 2.4, Color(0.97, 0.97, 0.96, 0.6), Color(0.95, 0.95, 0.95, 0.0))
+		smoke.emit(p + Vector3(randf_range(-0.15, 0.15), 0, randf_range(-0.15, 0.15)), Vector3(0.35, 0.7, 0.12), 4.2 * (0.5 + 0.5 * k), 0.55 * k, 2.4 * k, Color(0.97, 0.97, 0.96, 0.6 * k), Color(0.95, 0.95, 0.95, 0.0))
 		return
-	smoke.emit(p, Vector3(0.3, 0.8, 0.1), 3.6, 0.24, 1.5, Color(0.86, 0.84, 0.8, 0.55), Color(0.9, 0.88, 0.85, 0.0))
+	smoke.emit(p, Vector3(0.3, 0.8, 0.1), 3.6 * (0.5 + 0.5 * k), 0.24 * k, 1.5 * k, Color(0.86, 0.84, 0.8, 0.55 * k), Color(0.9, 0.88, 0.85, 0.0))
 
 ## M3.2 item 14: destroyed vehicle — persistent scorch decal + a tall drifting smoke column that
 ## burns for `secs` (capped number of live columns keeps the pooled particle budget on mobile).

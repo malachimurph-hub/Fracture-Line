@@ -123,14 +123,14 @@ func set_floodlights(fixtures: Array) -> void:
 		var x := Vector3.UP.cross(z).normalized()
 		var pool_c := aim + z * 0.4
 		pool_c.y = FX.ground_y(pool_c.x, pool_c.z) + 0.05
-		var pw := 1.5 + reach * 0.3
+		var pw := 1.1 + reach * 0.25
 		bld_mm.set_instance_transform(i, Transform3D(Basis(x * pw, Vector3.UP, z * (pw * 1.35)), pool_c))
-		bld_mm.set_instance_color(i, Color(c, 0.4))
-		flare_mm.set_instance_transform(i, Transform3D(Basis().scaled(Vector3(0.55, 0.55, 0.55)), lens))
-		flare_mm.set_instance_color(i, Color(c, 1.1))
+		bld_mm.set_instance_color(i, Color(c, 0.26))   # M4.1: dialled back (was 0.4)
+		flare_mm.set_instance_transform(i, Transform3D(Basis().scaled(Vector3(0.3, 0.3, 0.3)), lens))   # M4.1: was 0.55
+		flare_mm.set_instance_color(i, Color(c, 0.7))
 		var ax := lens - aim
-		shaft_mm.set_instance_transform(i, Transform3D(Basis(Vector3.RIGHT * 0.7, ax, Vector3.FORWARD), (lens + aim) * 0.5))
-		shaft_mm.set_instance_color(i, Color(c, 0.3))
+		shaft_mm.set_instance_transform(i, Transform3D(Basis(Vector3.RIGHT * 0.45, ax, Vector3.FORWARD), (lens + aim) * 0.5))
+		shaft_mm.set_instance_color(i, Color(c, 0.14))
 	bld_mm.visible_instance_count = n
 	shaft_mm.visible_instance_count = n
 	_flood_flares = n
