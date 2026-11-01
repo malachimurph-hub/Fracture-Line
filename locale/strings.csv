@@ -638,7 +638,7 @@ INFO_DETECTOR,Detects stealth
 INFO_REQUIRES,Requires: %s
 INFO_POWER_GEN,Power: +%d
 INFO_POWER_USE,Power use: %d
-INFO_INCOME,"Income: $%d / min (each one pays)"
+INFO_INCOME,"Income: $%d / min, each one pays"
 INFO_INCOME_BURST,Income: $%d every %d s
 INFO_INCOME_CAPTURED,Income when captured: $%d / min
 INFO_REFINERY,Harvesters unload here
