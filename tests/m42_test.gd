@@ -12,6 +12,8 @@ static func run(t: Node) -> void:
 	_rally(t)
 	_build_rules(t)
 	_text(t)
+	_defs(t)
+	_paint(t)
 	if ResourceLoader.exists("res://tests/m42_more.gd"):
 		await load("res://tests/m42_more.gd").run(t)
 
@@ -209,3 +211,42 @@ static func _text(t: Node) -> void:
 	t._check(mm.contains("MENU_MAP_BUILDER_SOON_TOAST") and not mm.contains("goto(\"res://ui/map_builder.tscn\")"), "Map Builder is marked coming soon and does not open")
 	var hud := FileAccess.get_file_as_string("res://ui/hud/hud.gd")
 	t._check(hud.contains("PAUSE_OPTIONS") and hud.contains("vol_music"), "pause menu has an Options page with volume sliders")
+
+# ------------------------------------------------------------------ 1, 11, 20: structures
+static func _defs(t: Node) -> void:
+	# Javelin Foxhole: crews are the barracks infantry views at the Crew markers
+	var pit: Node3D = (load("res://view/buildings/eu/javelin_pit.tscn") as PackedScene).instantiate()
+	var marks := pit.find_children("Crew*", "Marker3D", true, false)
+	t._check(marks.size() == 4 and (marks[0].get_parent().name == "TurretPivot"), "Javelin Foxhole has 4 crew posts on the turning mount")
+	var wv := FileAccess.get_file_as_string("res://view/world_view.gd")
+	t._check(wv.contains("&\"eu_javelin_pit\": [&\"eu_lancer\", &\"eu_grenadier\"]") and wv.contains("_crew_fire"), "the crews are animated eu_lancer / eu_grenadier infantry views that fire with the pit")
+	var lv: Node3D = (load(Content.unit(&"eu_lancer").view_scene) as PackedScene).instantiate()
+	t._check(lv is InfantryView and lv.scale == Vector3.ONE and (lv as InfantryView).vat != null, "crew view is the trained soldier model at full size")
+	pit.free()
+	lv.free()
+	# airfields: 4 hangars, 10 x 8, 8 parking slots
+	for id in [&"us_airfield", &"eu_airstrip", &"ecc_airfield", &"tpla_airfield"]:
+		var b: BuildingDef = Content.building(id)
+		t._check(b.footprint == Vector2i(10, 8) and b.air_slots == 8, "%s: 10 x 8 with 4 hangars (8 slots)" % id)
+	# Sayad-3
+	var sd: BuildingDef = Content.building(&"tpla_sayad3")
+	t._check(sd != null and sd.buildable and sd.faction == &"tpla" and sd.prereqs.has("tpla_workshop") and ResourceLoader.exists(sd.view_scene), "Sayad-3 SAM site: Iran defence, needs a Workshop, has a model")
+	var sw := Content.weapon(sd.weapons[0]) if sd != null else null
+	var best := 0
+	for wid in Content.weapons:
+		var o: WeaponDef = Content.weapon(wid)
+		if o.targets_air and o.id != sw.id and Content.buildings.values().any(func(bb): return bb.weapons.has(wid)):
+			best = maxi(best, o.range_mt)
+	t._check(sw != null and sw.targets_air and not sw.targets_ground and sw.range_mt > best, "Sayad-3 outranges every other air-defence structure (%d vs %d)" % [sw.range_mt if sw else 0, best])
+	t._check((Content.faction(&"tpla")["buildings"] as Array).has(&"tpla_sayad3") and ResourceLoader.exists("res://ui/icons/tpla_sayad3.png"), "Sayad-3 in Iran's build menu with an icon")
+	t._check(TranslationServer.translate("BLD_TPLA_SAYAD3").contains("Sayad-3"), "named by its military designation")
+	t._check(FileAccess.get_file_as_string("res://ai/ai_tpla.gd").contains("tpla_sayad3"), "the Iran AI builds one")
+
+# ------------------------------------------------------------------ 10, 12: paint
+static func _paint(t: Node) -> void:
+	t._check(Palette.paint_for(&"us_blackhawk").get_luminance() < 0.15, "Black Hawk is black")
+	t._check(Palette.paint_for(&"us_dozer") == Palette.paint_for(&"us_wraith") or absf(Palette.paint_for(&"us_dozer").s) < 0.1, "US dozer is grey")
+	for id in [&"us_wraith", &"us_thunderlance", &"us_harrier"]:
+		var c := Palette.paint_for(id)
+		t._check(c.s < 0.1 and c.v > 0.35, "%s is grey" % id)
+	t._check(Palette.paint_for(&"us_bradley") == Palette.FACTION_PAINT[&"us"], "other US vehicles stay tan")

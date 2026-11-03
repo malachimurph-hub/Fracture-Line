@@ -182,6 +182,9 @@ func _next_building() -> StringName:
 	# M2.4: rocket nests for anti-vehicle / AA cover (not on easy)
 	if s > 420 and difficulty != "easy" and counts.get(&"tpla_wasp_nest", 0) < (2 if difficulty == "hard" else 1) and p.supply > 1100:
 		return &"tpla_wasp_nest"
+	# M4.2: one Sayad-3 long-range SAM site once the Workshop is up (not on easy)
+	if s > 720 and difficulty != "easy" and counts.get(&"tpla_workshop", 0) >= 1 and counts.get(&"tpla_sayad3", 0) < 1 and p.supply > 1900:
+		return &"tpla_sayad3"
 	# M2.9: an Airfield for the Mirage / Fulcrum / Falcon once the Chop Shop economy is running
 	if s > (780 if difficulty == "hard" else 960) and difficulty != "easy" and counts.get(&"tpla_chop_shop", 0) >= 1 \
 			and counts.get(&"tpla_airfield", 0) < 1 and p.supply > 2400:
@@ -220,6 +223,8 @@ func _toward_for(id: StringName) -> Vector2i:
 			return er.pos if er != null else base
 		&"tpla_wasp_nest":
 			return base + (_enemy_spawn() - base) * 22 / 100
+		&"tpla_sayad3":   # M4.2: covers the base core, a little toward the enemy
+			return base + (_enemy_spawn() - base) * 12 / 100
 		&"tpla_tunnel":
 			var n := w.count_owned(pid, &"tpla_tunnel")
 			var far := _remote_stash()

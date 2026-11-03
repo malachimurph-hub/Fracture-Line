@@ -59,3 +59,4 @@ ecc_barricade,BLD_BARRICADE,defense,250,7000,2,1,1600,0,0,5,,,0,0,0,,0,,0,1,0,0,
 eu_guard_tower,BLD_EU_GUARD_TOWER,defense,700,9000,2,2,1100,-2,0,11,eu_barracks,,0,0,0,,25,eu_tower_50cal,1,0,0,0,1,,,0,0,0,0
 eu_javelin_pit,BLD_EU_JAVELIN_PIT,defense,1100,12000,2,2,1300,-2,0,11,eu_barracks,,0,0,0,,25,eu_pit_javelin,1,0,0,0,1,,,0,0,0,0
 eu_mantis,BLD_EU_MANTIS,defense,1200,12000,2,2,1200,-4,0,11,eu_motor_pool,,0,0,0,,25,eu_mantis_35|eu_mantis_gnd,1,0,0,0,1,,,0,0,0,0
+tpla_sayad3,BLD_TPLA_SAYAD3,defense,1600,15000,3,3,1400,-4,0,13,tpla_workshop,,0,0,0,,0,tpla_sayad3_sam,0,0,0,0,1,,,0,0,0,0

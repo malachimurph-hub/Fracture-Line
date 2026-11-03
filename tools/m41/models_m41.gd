@@ -19,6 +19,7 @@ const DRK := "#1d1f1e"
 const SOLDIER := "#5b6244"
 const SKIN := "#c29a78"
 var wrote: Array = []
+var struct_fac := "eu"   ## M4.2: folder for _structure scenes
 
 func _initialize() -> void:
 	var mat: Material = load(VK.MAT_PATH)
@@ -279,7 +280,7 @@ func _structure(short: String, fp: Vector2, top: float, mat: Material, hull_fn: 
 		_marker(model, root, "Fire%d" % i, p)
 		i += 1
 	VK._report(short, parts)
-	var path := "res://view/buildings/eu/%s.tscn" % short
+	var path := "res://view/buildings/%s/%s.tscn" % [struct_fac, short]
 	VK._save(root, path, top + 0.15)
 	wrote.append(path)
 
@@ -363,11 +364,17 @@ func _javelin_pit(mat: Material) -> void:
 		g.color("#ffffff", Geo.TEAM)
 		g.box(Vector3(0, Y0 + 0.26, -0.84), Vector3(0.3, 0.05, 0.02)),
 	func(t) -> void:
+		# M4.2: the crews are real animated infantry (same models and size as barracks troops),
+		# placed at the Crew* markers by WorldView; the turret carries only their kit.
 		for s in [-1.0, 1.0]:
-			_kneeling_gunner(t, Vector3(s * 0.28, 0.0, 0.05))
-			_kneeling_loader(t, Vector3(s * 0.28 + s * 0.2, 0.0, -0.22)),
+			t.color("#4a5038", Geo.CANVAS)
+			t.tube(Vector3(s * 0.56, 0.05, -0.36), Vector3(s * 0.3, 0.05, -0.44), 0.045, 6)   # spare round
+			t.color("#565c46", Geo.STEEL)
+			t.box(Vector3(s * 0.12, 0.04, -0.3), Vector3(0.1, 0.08, 0.12)),   # CLU battery case
 		Vector3(0, Y0, 0),
-		{"turret": {"Muzzle0": Vector3(-0.28, 0.36, 0.42), "Muzzle1": Vector3(0.28, 0.36, 0.42)}})
+		{"turret": {"Muzzle0": Vector3(-0.28, 0.36, 0.42), "Muzzle1": Vector3(0.28, 0.36, 0.42),
+			"Crew0": Vector3(-0.28, 0.0, 0.05), "Crew1": Vector3(0.28, 0.0, 0.05),
+			"Crew2": Vector3(-0.5, 0.0, -0.2), "Crew3": Vector3(0.5, 0.0, -0.2)}})
 
 ## Kneeling AT gunner (one knee down, launcher on the shoulder, aimed along +Z).
 func _kneeling_gunner(t, p: Vector3) -> void:

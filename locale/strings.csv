@@ -420,6 +420,8 @@ BLD_EU_MINEFIELD,Minefield
 BLD_EU_MINEFIELD_DESC,Hidden mine. Explodes when an enemy steps or drives onto it. Detectors reveal it.
 BLD_TPLA_WASP_NEST,Missile Battery
 BLD_TPLA_WASP_NEST_DESC,Dug-in missile launcher. Fires 3-missile salvos at vehicles and aircraft.
+BLD_TPLA_SAYAD3,Sayad-3 SAM Site
+BLD_TPLA_SAYAD3_DESC,"Long-range surface-to-air missile battery with its own phased-array radar. Four heavy missiles per salvo reach aircraft far beyond other air defences. Cannot fire at ground targets. Requires a Workshop."
 ROLE_FLAME,Flame
 ROLE_JAMMER,Jammer
 ROLE_DETECTOR,Detector

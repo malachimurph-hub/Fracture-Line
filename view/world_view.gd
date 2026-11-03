@@ -427,6 +427,8 @@ func _ensure_view(e: SimEntity) -> EntityView:
 		Palette.apply_unit_paint(v, e.def_id)   # M3.5 faction vehicle paint (M4.2 per-unit overrides)
 	elif e.kind == SimEntity.Kind.BUILDING and Palette.PAINT_BUILDINGS.has(e.def_id):
 		Palette.apply_paint(v, Content.faction_of_id(e.def_id), Palette.PAINT_BUILDINGS[e.def_id])
+	if e.kind == SimEntity.Kind.BUILDING:
+		_add_crew(v, e)
 	v.position = _world_pos(e)
 	if e.kind == SimEntity.Kind.BUILDING or e.kind == SimEntity.Kind.NEUTRAL:
 		v.rotation.y = [0.0, PI * 0.5, PI, -PI * 0.5][e.rot]
@@ -549,6 +551,38 @@ func _refresh_fog() -> void:
 func _visible_pos(p: Vector2i) -> bool:
 	return local_team < 0 or sim.fog.visible_tile(local_team, FX.to_tile(p))
 
+## M4.2 (Malachi: animated Javelin teams at barracks-infantry size): structures with Crew*
+## markers get real infantry views (same VAT soldiers, size and animation as trained troops).
+## Crew0/1 are the anti-tank gunners (kneel to fire), the rest are riflemen loaders.
+const CREW := {&"eu_javelin_pit": [&"eu_lancer", &"eu_grenadier"]}
+func _add_crew(v: Node3D, e: SimEntity) -> void:
+	if not CREW.has(e.def_id):
+		return
+	var crew: Array = []
+	for m in v.find_children("Crew*", "Marker3D", true, false):
+		var k := int(String(m.name).substr(4))
+		var uid: StringName = CREW[e.def_id][0 if k < 2 else 1]
+		var ud := Content.unit(uid)
+		if ud == null or not ResourceLoader.exists(ud.view_scene):
+			continue
+		var cv: Node3D = (load(ud.view_scene) as PackedScene).instantiate()
+		cv.name = "CrewView%d" % k
+		m.add_child(cv)
+		if cv.has_method("set_variant"):
+			cv.set_variant(e.id * 7 + k)
+		if cv.has_method("set_team_material") and e.owner >= 0:
+			cv.set_team_material(Palette.team_material(sim.players[e.owner].color))
+		var hb := cv.get_node_or_null("HealthBarAnchor")
+		if hb != null:
+			hb.queue_free()
+		crew.append([k, cv])
+	v.set_meta("crew", crew)
+
+func _crew_fire(v: Node3D) -> void:
+	for c in v.get_meta("crew", []):
+		if int(c[0]) < 2 and is_instance_valid(c[1]) and c[1].has_method("on_fire"):
+			c[1].on_fire(&"")
+
 func _on_fire(ev: Dictionary) -> void:
 	var src := sim.get_ent(int(ev["id"]))
 	if src == null:
@@ -592,6 +626,8 @@ func _on_fire(ev: Dictionary) -> void:
 		(v as InfantryView).on_fire(wid)   # M3.5: only the squad members carrying this weapon
 	elif v != null and garrison == null and v.has_method("on_fire"):
 		v.on_fire()
+	if v != null and v.has_meta("crew"):
+		_crew_fire(v)
 	var aim: Vector3 = (to + off) - (muzzles[0] as Vector3)
 	wfx.fire(cls, muzzles, aim, to, tgt.id if tgt != null else 0, hitk, off)
 	var wd0: WeaponDef = Content.weapon(StringName(ev.get("w", &"")))

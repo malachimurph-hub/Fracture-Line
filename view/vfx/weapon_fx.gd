@@ -37,7 +37,7 @@ const CLASSES := {
 	&"us_m203": "grenade", &"eu_ag36": "grenade", &"tpla_gp25": "grenade", &"ecc_gp25": "grenade",
 	# M3.2 part 2: AA ground modes, capture-unit sidearm
 	# M4.1: Germany's new defences (the MANTIS turret's 35 mm in both modes)
-	&"eu_mantis_35": "quad", &"eu_mantis_gnd": "quad",
+	&"tpla_sayad3_sam": "missile", &"eu_mantis_35": "quad", &"eu_mantis_gnd": "quad",
 	&"eu_tower_50cal": "mg", &"eu_pit_javelin": "missile", &"us_door_minigun": "minigun", &"eu_h145_mg": "mg", &"ecc_hind_20mm": "autocannon",
 	&"eu_gatling_gnd": "quad", &"tpla_wasp_gnd": "missile", &"us_patriot_gnd": "mg", &"ecc_zak30_gnd": "quad", &"sidearm": "rifle",
 }
