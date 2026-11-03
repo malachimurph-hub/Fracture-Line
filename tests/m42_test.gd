@@ -226,10 +226,10 @@ static func _defs(t: Node) -> void:
 	t._check(lv is InfantryView and lv.scale == Vector3.ONE and (lv as InfantryView).vat != null, "crew view is the trained soldier model at full size")
 	pit.free()
 	lv.free()
-	# airfields: 4 hangars, 10 x 8, 8 parking slots
+	# airfields: M4.2 4-hangar change reverted (Malachi) - back to 8 x 8 with 6 parking slots
 	for id in [&"us_airfield", &"eu_airstrip", &"ecc_airfield", &"tpla_airfield"]:
 		var b: BuildingDef = Content.building(id)
-		t._check(b.footprint == Vector2i(10, 8) and b.air_slots == 8, "%s: 10 x 8 with 4 hangars (8 slots)" % id)
+		t._check(b.footprint == Vector2i(8, 8) and b.air_slots == 6, "%s: 8 x 8 with 6 slots" % id)
 	# Sayad-3
 	var sd: BuildingDef = Content.building(&"tpla_sayad3")
 	t._check(sd != null and sd.buildable and sd.faction == &"tpla" and sd.prereqs.has("tpla_workshop") and ResourceLoader.exists(sd.view_scene), "Sayad-3 SAM site: Iran defence, needs a Workshop, has a model")
@@ -264,6 +264,7 @@ static func _tutorial_voices(t: Node) -> void:
 		if not ResourceLoader.exists("res://audio/voice_ai/announcer_us/tut_%s_1.ogg" % st):
 			miss.append("voice " + st)
 	t._check(miss.is_empty(), "every tutorial step has text and an announcer line %s" % [miss])
+	t._check(FileAccess.get_file_as_string("res://ui/settings_screen.gd").contains("TutorialDirector.setup_cfg()") and TranslationServer.translate("SET_REPLAY_TUTORIAL") != "SET_REPLAY_TUTORIAL", "Settings can replay the First Battle")
 	var vm := []
 	for f in ["us/blackhawk", "eu/h145m", "ecc/hind"]:
 		for ev in ["select", "move", "attack", "under_fire", "created"]:

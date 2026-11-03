@@ -1846,7 +1846,7 @@ func _roster_heal_stub_prod() -> void:
 	w.players[0].supply = 50000
 	r.issue({"p": 0, "t": "queue", "target": strip.id, "def": "eu_kestrel", "n": 1})
 	_ticks(r, 2)
-	_check(not strip.queue.is_empty() and Content.building(&"eu_airstrip").air_slots == 8, "Tiger is queued at the German Airfield (8 parking slots, M4.2 4 hangars)")
+	_check(not strip.queue.is_empty() and Content.building(&"eu_airstrip").air_slots == 6, "Tiger is queued at the German Airfield (6 parking slots)")
 	var mp := w._place_building(Content.building(&"eu_motor_pool"), 0, c + Vector2i(-6, 4), 0, true)
 	var before := w.count_owned(0, &"eu_salamander")
 	r.issue({"p": 0, "t": "queue", "target": mp.id, "def": "eu_salamander", "n": 1})
@@ -2165,8 +2165,8 @@ func _m25_us_content() -> void:
 	for id in f["buildings"]:
 		var b: BuildingDef = Content.building(id)
 		_check(b != null and ResourceLoader.exists(b.view_scene) and tr(b.name_key) != b.name_key, "US structure %s: def, model, name '%s'" % [id, tr(b.name_key) if b else "?"])
-	_check(Content.unit(&"us_thunderlance").air_slots == 4 and Content.unit(&"us_wraith").air_slots == 2 and Content.unit(&"us_harrier").air_slots == 0 and Content.building(&"us_airfield").air_slots == 8,
-		"airfield slots: bomber 4, fighter 2, gunship 0, airfield 8 (M4.2: 4 hangars)")
+	_check(Content.unit(&"us_thunderlance").air_slots == 4 and Content.unit(&"us_wraith").air_slots == 2 and Content.unit(&"us_harrier").air_slots == 0 and Content.building(&"us_airfield").air_slots == 6,
+		"airfield slots: bomber 4, fighter 2, gunship 0, airfield 6")
 	var g: int = Content.weapon(&"us_m16").damage
 	_check(Content.weapon(&"us_m4").damage * 100 / g >= 135 and Content.unit(&"us_jtac").max_hp * 100 / Content.unit(&"us_grunt").max_hp >= 135 and Content.unit(&"us_jtac").sight > Content.unit(&"us_grunt").sight,
 		"JTAC: 35% stronger than a Rifleman, wider sight")
@@ -2182,9 +2182,9 @@ func _m25_air() -> void:
 	var af := _tpla_place(w, 0, &"us_airfield", c)
 	_tpla_place(w, 0, &"us_strategy", c + Vector2i(0, -8))
 	w.power_dirty = true
-	for def in ["us_thunderlance", "us_wraith", "us_wraith", "us_wraith"]:   # M4.2: 8 slots
+	for def in ["us_thunderlance", "us_wraith", "us_wraith"]:
 		r.issue({"p": 0, "t": "queue", "target": af.id, "def": def, "n": 1})
-	_ticks(r, 1700)
+	_ticks(r, 1150)
 	var jets: Array = []
 	for id in w.ids:
 		var u: SimEntity = w.ents[id]
@@ -2194,7 +2194,7 @@ func _m25_air() -> void:
 	for j: SimEntity in jets:
 		if j.air_state == AirSys.PARKED and j.air_home == af.id:
 			parked += 1
-	_check(jets.size() == 3 and parked == 3 and AirSys.slots_used(w, af) == 8, "bomber (4) + 2 fighters (2) fill the 8 slots, parked on the pad (%d jets, %d slots)" % [jets.size(), AirSys.slots_used(w, af)])
+	_check(jets.size() == 2 and parked == 2 and AirSys.slots_used(w, af) == 6, "bomber (4) + fighter (2) fill the 6 slots, parked on the pad (%d jets, %d slots)" % [jets.size(), AirSys.slots_used(w, af)])
 	_check(af.queue.size() == 1 and af.hold_reason == "REASON_AIRFIELD_FULL", "a third jet waits: airfield full (%s)" % af.hold_reason)
 	var bomber: SimEntity = null
 	var fighter: SimEntity = null

@@ -32,8 +32,8 @@ static func build(only: Array) -> void:
 		"us_barracks": func() -> void: _make("barracks", Vector2(3, 3), 1.3, _barracks),
 		"us_garage": func() -> void: _make("garage", Vector2(4, 4), 1.55, _garage),
 		# M2.8: airfields doubled to 8 x 8 with three hangar bays (AirSys.parking_pos)
-		"us_airfield": func() -> void: _make("airfield", Vector2(10, 8), 2.2, _airbase8.bind("us")),
-		"eu_airstrip": func() -> void: _make("airstrip", Vector2(10, 8), 2.2, _airbase8.bind("eu"), Callable(), Vector3.ZERO, "eu"),
+		"us_airfield": func() -> void: _make("airfield", Vector2(8, 8), 2.2, _airbase8.bind("us")),
+		"eu_airstrip": func() -> void: _make("airstrip", Vector2(8, 8), 2.2, _airbase8.bind("eu"), Callable(), Vector3.ZERO, "eu"),
 		"us_strategy": func() -> void: _make("strategy", Vector2(3, 3), 2.0, _strategy),
 		"us_patriot": func() -> void: _make("patriot", Vector2(2, 2), 0.95, _patriot, _patriot_turret, Vector3(0, 0.32, 0)),
 		"us_firebase": func() -> void: _make("firebase", Vector2(2, 2), 1.0, _firebase, _firebase_turret, Vector3(0, 0.55, 0)),
@@ -593,36 +593,30 @@ static func _airfield(g) -> void:
 ## clips; painted bay outlines, lead-in lines and stop bars; a runway strip along the front with
 ## edge lights; control tower on the back corner of the hangar roof.
 const BAY_Z := 0.0           # parking point (model z); AirSys.PARK_DZ mirrors this
-## M4.2: width AB_W tiles with AB_N hangar bays (Malachi: "4 hangars" -> 10 x 8, 4 bays).
-static var AB_W := 10.0
-static var AB_N := 4
 static func _airbase8(g, fac: String) -> void:
-	var W := AB_W
-	var HW := W * 0.5
-	var NB := AB_N
 	var main := US if fac == "us" else ("#a8915f" if fac == "tpla" else ("#6f7a5a" if fac == "ecc" else "#8a9378"))   # M2.9: TPLA airfield   # M3.2: Russia
 	var dark := US_D if fac == "us" else ("#8a774d" if fac == "tpla" else ("#545c43" if fac == "ecc" else "#6c7460"))
 	var steel := US_S if fac == "us" else "#4a4e50"
-	var bw := W / float(NB)
+	var bw := 8.0 / 3.0
 	# apron
 	g.color("#6a665e", Geo.CONCRETE)
-	g.box(Vector3(0, Y0 + 0.01, -0.85), Vector3(W - 0.1, 0.02, 6.1))
+	g.box(Vector3(0, Y0 + 0.01, -0.85), Vector3(7.9, 0.02, 6.1))
 	# runway strip along the front
 	g.color("#3b3c3a", Geo.CONCRETE)
-	g.box(Vector3(0, Y0 + 0.012, 3.15), Vector3(W - 0.1, 0.02, 1.5))
+	g.box(Vector3(0, Y0 + 0.012, 3.15), Vector3(7.9, 0.02, 1.5))
 	g.color("#e4e0d6", Geo.PAINT)
-	for i in int(W) + 1:
-		g.box(Vector3(-HW + 0.4 + i * 0.9, Y0 + 0.024, 3.15), Vector3(0.45, 0.004, 0.06))   # centre dashes
+	for i in 9:
+		g.box(Vector3(-3.6 + i * 0.9, Y0 + 0.024, 3.15), Vector3(0.45, 0.004, 0.06))   # centre dashes
 	for sx in [-1.0, 1.0]:
 		for k in 5:
-			g.box(Vector3(sx * (HW - 0.25), Y0 + 0.024, 2.7 + k * 0.22), Vector3(0.22, 0.004, 0.1))   # piano keys
+			g.box(Vector3(sx * 3.75, Y0 + 0.024, 2.7 + k * 0.22), Vector3(0.22, 0.004, 0.1))   # piano keys
 	g.color("#ffd27a", Geo.LAMP)
-	for i in int(W * 1.5):
+	for i in 12:
 		for z in [2.45, 3.86]:
-			g.cbox(Vector3(-HW + 0.15 + i * 0.7, Y0 + 0.035, z), Vector3(0.04, 0.03, 0.04), 0.008)
+			g.cbox(Vector3(-3.85 + i * 0.7, Y0 + 0.035, z), Vector3(0.04, 0.03, 0.04), 0.008)
 	# bays: outlines, lead-in line, stop bar, number plate (team colour)
-	for b in NB:
-		var cx := -HW + bw * (b + 0.5)
+	for b in 3:
+		var cx := -4.0 + bw * (b + 0.5)
 		g.color("#e4e0d6", Geo.PAINT)
 		for sx in [-1.0, 1.0]:
 			g.box(Vector3(cx + sx * (bw * 0.5 - 0.06), Y0 + 0.024, -0.85), Vector3(0.05, 0.004, 6.0))
@@ -639,17 +633,17 @@ static func _airbase8(g, fac: String) -> void:
 	var spring := 1.6
 	var peak := 2.05
 	g.color(CON_L if fac == "us" else "#bcb7a9", Geo.CONCRETE)
-	g.cbox(Vector3(0, Y0 + spring * 0.5, hz0 + 0.06), Vector3(W - 0.04, spring, 0.12), 0.02)
+	g.cbox(Vector3(0, Y0 + spring * 0.5, hz0 + 0.06), Vector3(7.96, spring, 0.12), 0.02)
 	for sx in [-1.0, 1.0]:
-		g.cbox(Vector3(sx * (HW - 0.08), Y0 + spring * 0.5, (hz0 + hz1) * 0.5), Vector3(0.12, spring, hz1 - hz0), 0.02)
+		g.cbox(Vector3(sx * 3.92, Y0 + spring * 0.5, (hz0 + hz1) * 0.5), Vector3(0.12, spring, hz1 - hz0), 0.02)
 	g.color(steel, Geo.STEEL)
-	for k in range(1, NB):
-		var px := -HW + bw * k
+	for k in range(1, 3):
+		var px := -4.0 + bw * k
 		g.cbox(Vector3(px, Y0 + spring * 0.5, hz0 + 0.2), Vector3(0.12, spring, 0.16), 0.02)   # back pillar
 		g.cbox(Vector3(px, Y0 + 0.2, hz0 + 0.45), Vector3(0.08, 0.4, 0.5), 0.01)               # low back partition
 		g.tube(Vector3(px, Y0 + spring, hz0), Vector3(px, Y0 + spring, hz1), 0.05, 6)          # gutter beam
-	for b in NB:
-		var cx := -HW + bw * (b + 0.5)
+	for b in 3:
+		var cx := -4.0 + bw * (b + 0.5)
 		var n := 7
 		for i in n:
 			var a0 := PI * float(i) / n
@@ -667,7 +661,7 @@ static func _airbase8(g, fac: String) -> void:
 		g.color("#ffffff", Geo.TEAM)
 		g.box(Vector3(cx, Y0 + spring + 0.18, hz1 + 0.03), Vector3(0.5, 0.14, 0.01))  # bay sign
 	# control tower on the back-right roof corner
-	var tc := Vector3(HW - 0.55, Y0 + spring, -3.5)
+	var tc := Vector3(3.45, Y0 + spring, -3.5)
 	g.color(CON, Geo.CONCRETE)
 	g.cbox(tc + Vector3(0, 0.25, 0), Vector3(0.5, 0.5, 0.5), 0.03)
 	g.color("#2a3a46", Geo.GLASS)
@@ -680,13 +674,13 @@ static func _airbase8(g, fac: String) -> void:
 	_lamp(g, tc + Vector3(-0.3, 0.82, -0.3))
 	# windsock + fuel bowser beside the runway
 	g.color(steel, Geo.STEEL)
-	g.tube(Vector3(-HW + 0.15, Y0, 2.3), Vector3(-HW + 0.15, Y0 + 0.7, 2.3), 0.012, 4)
+	g.tube(Vector3(-3.85, Y0, 2.3), Vector3(-3.85, Y0 + 0.7, 2.3), 0.012, 4)
 	g.color("#ff8a2a", Geo.CANVAS)
-	g.tube(Vector3(-HW + 0.15, Y0 + 0.68, 2.3), Vector3(-HW + 0.38, Y0 + 0.64, 2.32), 0.045, 6, 0.02)
+	g.tube(Vector3(-3.85, Y0 + 0.68, 2.3), Vector3(-3.62, Y0 + 0.64, 2.32), 0.045, 6, 0.02)
 	g.color(dark, Geo.PAINT)
-	g.cbox(Vector3(HW - 0.3, Y0 + 0.12, 1.5), Vector3(0.24, 0.16, 0.5), 0.02)
+	g.cbox(Vector3(3.7, Y0 + 0.12, 1.5), Vector3(0.24, 0.16, 0.5), 0.02)
 	g.color(WHITE, Geo.PAINT)
-	g.tube(Vector3(HW - 0.3, Y0 + 0.24, 1.3), Vector3(HW - 0.3, Y0 + 0.24, 1.67), 0.09, 10)
+	g.tube(Vector3(3.7, Y0 + 0.24, 1.3), Vector3(3.7, Y0 + 0.24, 1.67), 0.09, 10)
 
 # ================================================================== Strategy Center
 static func _strategy(g) -> void:

@@ -1049,5 +1049,5 @@ static func _decoy(g) -> void:
 # ------------------------------------------------------------------ Airfield (M2.8 8x8 base, TPLA colours)
 static func _airfield() -> void:
 	var U = load("res://tools/gfx_m7/us_m7.gd")
-	U._make("airfield", Vector2(10, 8), 2.2, U._airbase8.bind("tpla"), Callable(), Vector3.ZERO, "tpla")
+	U._make("airfield", Vector2(8, 8), 2.2, U._airbase8.bind("tpla"), Callable(), Vector3.ZERO, "tpla")
 	wrote.append("res://view/buildings/tpla/airfield.tscn")

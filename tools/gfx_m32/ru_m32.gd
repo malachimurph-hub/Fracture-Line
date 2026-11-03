@@ -68,7 +68,7 @@ static func jobs() -> Dictionary:
 		"ecc_black_market": func() -> void: U()._make("black_market", Vector2(3, 3), 1.0, _black_market, Callable(), Vector3.ZERO, "ecc"),
 		"ecc_bunker": func() -> void: U()._make("bunker", Vector2(2, 2), 0.7, _kornet_nest, _kornet_turret, Vector3(0, Y0 + 0.06, 0.05), "ecc"),
 		"ecc_aa_site": func() -> void: U()._make("aa_site", Vector2(2, 2), 1.1, _zak_base, _zak_turret, Vector3(0, Y0 + 0.42, 0), "ecc"),
-		"ecc_airfield": func() -> void: U()._make("airfield", Vector2(10, 8), 2.2, _airfield, Callable(), Vector3.ZERO, "ecc"),
+		"ecc_airfield": func() -> void: U()._make("airfield", Vector2(8, 8), 2.2, _airfield, Callable(), Vector3.ZERO, "ecc"),
 		"ecc_su57": func() -> void: _su57(),
 		"ecc_tu160": func() -> void: _tu160(),
 		"ecc_ka52": func() -> void: _ka52(),
@@ -706,11 +706,11 @@ static func _zak_turret(t) -> void:
 # ================================================================== Airfield (shared air base)
 static func _airfield(g) -> void:
 	U()._airbase8(g, "ecc")
-	var bw: float = float(U().AB_W) / float(U().AB_N)
-	for b in U().AB_N:
-		var cx: float = -float(U().AB_W) * 0.5 + bw * (b + 0.5)
+	var bw := 8.0 / 3.0
+	for b in 3:
+		var cx := -4.0 + bw * (b + 0.5)
 		R._star(g, Vector3(cx, Y0 + 1.87, -1.73), 0.13)
-	R._ru_flag(g, Vector3(U().AB_W * 0.5 - 1.1, Y0, -1.55), 1.3)
+	R._ru_flag(g, Vector3(2.9, Y0, -1.55), 1.3)
 
 # ================================================================== aircraft helpers
 static func _nozzle(h, c: Vector3, r: float, l: float) -> void:
