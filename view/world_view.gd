@@ -457,6 +457,19 @@ func _ensure_view(e: SimEntity) -> EntityView:
 				(v as InfantryView).set_variant(e.id)   # M3.4: per-soldier look
 		if e.tier > 0:
 			v.set_tier(e.tier)
+		if AudioDirector.is_drone(String(e.def_id)):   # M4.2: looping motor hum while the drone flies
+			var hum := AudioStreamPlayer3D.new()
+			hum.name = "DroneHum"
+			var hs := (load(AudioDirector.DRONE_LOOP) as AudioStreamOggVorbis).duplicate() as AudioStreamOggVorbis
+			hs.loop = true
+			hum.stream = hs
+			hum.bus = &"SFX"
+			hum.volume_db = -8.0
+			hum.unit_size = 4.0
+			hum.max_distance = 40.0
+			hum.pitch_scale = 0.95 + float(e.id % 7) * 0.02
+			hum.autoplay = true
+			v.add_child(hum)
 		if v is VehicleView and d.tags.has("artillery") and (v as VehicleView).elevate <= 0.0:
 			(v as VehicleView).elevate = ARTY_ELEVATE   # M3.5: every artillery piece raises its gun / launcher
 		if d.shield_aura_radius > 0:

@@ -15,6 +15,7 @@ static func run(t: Node) -> void:
 	_defs(t)
 	_paint(t)
 	_tutorial_voices(t)
+	_drone_audio(t)
 	if ResourceLoader.exists("res://tests/m42_more.gd"):
 		await load("res://tests/m42_more.gd").run(t)
 
@@ -269,3 +270,14 @@ static func _tutorial_voices(t: Node) -> void:
 			if not ResourceLoader.exists("res://audio/voice_ai/%s/%s_1.ogg" % [f, ev]):
 				vm.append(f + "/" + ev)
 	t._check(vm.is_empty(), "transport helicopters have their own voice lines %s" % [vm])
+
+# ------------------------------------------------------------------ drones hum, never talk
+static func _drone_audio(t: Node) -> void:
+	var ids := []
+	for id in Content.units:
+		if AudioDirector.is_drone(String(id)):
+			ids.append(id)
+	t._check(ids.size() >= 3 and not ids.has(&"us_drone_operator"), "scout / explosive drones of every faction are recognised %s" % [ids])
+	t._check(ResourceLoader.exists(AudioDirector.DRONE_ACK) and ResourceLoader.exists(AudioDirector.DRONE_LOOP), "drone rev + hum loop exist")
+	t._check(FileAccess.get_file_as_string("res://autoload/audio_director.gd").contains("if is_drone(unit_id):"), "drone acknowledgements are the motor rev, not a voice")
+	t._check(FileAccess.get_file_as_string("res://view/world_view.gd").contains("DroneHum"), "flying drones play a looping hum")
