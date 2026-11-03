@@ -1,8 +1,8 @@
 # Graphics overhaul (item 14) - first pass done in M4.2, plan for the rest
 
 Done (M4.2): US aircraft + dozer grey, Black Hawk black (Palette.UNIT_PAINT), Iran vehicles repainted as clean
-modern panels (tpla_modern pass on 8 vehicle scenes) with desert-khaki paint, 4-hangar airfields rebuilt for all
-four factions, Sayad-3 site modelled, Javelin Foxhole crews use the animated infantry models; icons re-rendered.
+modern panels (tpla_modern pass on 8 vehicle scenes) with desert-khaki paint (the 4-hangar airfields were tried and reverted;
+airfields stay 8 x 8), Sayad-3 site modelled, Javelin Foxhole crews use the animated infantry models; icons re-rendered.
 
 Plan (one milestone per group, most-seen first; every model built from public reference drawings / photos of the
 real vehicle's proportions, original geometry, smooth baked textures, <= current triangle + LOD budgets on S24):

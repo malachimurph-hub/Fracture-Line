@@ -1,4 +1,4 @@
-# M4.2 batch (branch m42, not shipped; version unchanged)
+# 0.4.2 (versionCode 26) - M4.2 batch
 
 Gameplay: rounds deal damage on impact (in-flight records, saved); transport helicopters land before troops
 board (unloading in the air still allowed); "Unload All" with several transports selected; smart targeting
