@@ -151,6 +151,11 @@ func _build_scene() -> void:
 	AudioDirector.play_ambient("wind")
 	if runner.sim.tick < 10:
 		AudioDirector.announce("battle_start")
+	if bool(runner.setup_cfg.get("tutorial", false)) and local_pid >= 0:   # M4.2 (item 2)
+		var td := TutorialDirector.new()
+		td.name = "Tutorial"
+		td.match_node = self
+		add_child(td)
 
 func _exit_tree() -> void:
 	AudioDirector.on_match_end()

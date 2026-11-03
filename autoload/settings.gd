@@ -22,6 +22,7 @@ var data := {
 	"vol_sfx": 0.85,
 	"vol_voice": 1.0,
 	"vol_ui": 0.7,
+	"tutorial_done": false,   # M4.2: narrated first battle offered until played or skipped
 }
 
 func _ready() -> void:

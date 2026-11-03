@@ -14,6 +14,7 @@ static func run(t: Node) -> void:
 	_text(t)
 	_defs(t)
 	_paint(t)
+	_tutorial_voices(t)
 	if ResourceLoader.exists("res://tests/m42_more.gd"):
 		await load("res://tests/m42_more.gd").run(t)
 
@@ -250,3 +251,21 @@ static func _paint(t: Node) -> void:
 		var c := Palette.paint_for(id)
 		t._check(c.s < 0.1 and c.v > 0.35, "%s is grey" % id)
 	t._check(Palette.paint_for(&"us_bradley") == Palette.FACTION_PAINT[&"us"], "other US vehicles stay tan")
+
+# ------------------------------------------------------------------ 2, 13: tutorial + new voices
+static func _tutorial_voices(t: Node) -> void:
+	var cfg := SkirmishConfig.resolve(TutorialDirector.setup_cfg())
+	t._check(cfg.get("tutorial", false) and cfg["slots"][0]["kind"] == "human" and cfg["slots"][0]["faction"] == "us" and cfg["slots"][1]["difficulty"] == "easy", "first battle: US player vs easy Iran AI")
+	var miss := []
+	for st in TutorialDirector.STEPS + ["done"]:
+		if TranslationServer.translate("TUT_" + st.to_upper()) == "TUT_" + st.to_upper():
+			miss.append("text " + st)
+		if not ResourceLoader.exists("res://audio/voice_ai/announcer_us/tut_%s_1.ogg" % st):
+			miss.append("voice " + st)
+	t._check(miss.is_empty(), "every tutorial step has text and an announcer line %s" % [miss])
+	var vm := []
+	for f in ["us/blackhawk", "eu/h145m", "ecc/hind"]:
+		for ev in ["select", "move", "attack", "under_fire", "created"]:
+			if not ResourceLoader.exists("res://audio/voice_ai/%s/%s_1.ogg" % [f, ev]):
+				vm.append(f + "/" + ev)
+	t._check(vm.is_empty(), "transport helicopters have their own voice lines %s" % [vm])

@@ -711,3 +711,14 @@ BLD_EU_JAVELIN_PIT,Javelin Foxhole
 BLD_EU_JAVELIN_PIT_DESC,"Sandbagged foxhole with two Javelin anti-tank teams, kneeling to fire. Very long range; strong against vehicles, cannot hit aircraft. Needs power to fire."
 BLD_EU_MANTIS,MANTIS AA Turret
 BLD_EU_MANTIS_DESC,"Single-barrel 35 mm revolver-cannon air-defence turret with a very high rate of fire. Shreds aircraft and also hits ground vehicles hard. Needs power to fire."
+MENU_TUTORIAL,First Battle
+MENU_TUTORIAL_NEW,New? Start here
+TUT_WELCOME,"Welcome, Commander. This is your first battle. Follow the steps here."
+TUT_SELECT,Tap your Dozer to select it.
+TUT_POWER,Open the build menu and place a Nuclear Power Plant.
+TUT_BARRACKS,Good. Now build a Barracks to train infantry.
+TUT_TRAIN,Select the Barracks and train two squads.
+TUT_MOVE,"Select your soldiers, then tap the ground to move them."
+TUT_ATTACK,The enemy base is to the east. Destroy it to win.
+TUT_DONE,"Well done, Commander. You are ready for Skirmish."
+TUT_SKIP,Skip tutorial

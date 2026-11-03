@@ -52,11 +52,28 @@ func build() -> void:
 	h.add_child(gap)
 	_corner = _logo_block()
 	h.add_child(_corner)
-	var b := _button(tr("MENU_SKIRMISH"), COL_W, "Skirmish", true)
-	b.pressed.connect(func(): GameSession.goto("res://ui/skirmish_setup.tscn"))
-	_col.add_child(b)
-	# M3.3: Continue (autosave) and Load (manual slots) share a row so the menu still fits a phone
 	var half := (COL_W - 6.0) * 0.5
+	# M4.2 (item 2): new players get "First Battle" (narrated tutorial) beside Skirmish until it is played
+	var new_player := not bool(Settings.g("tutorial_done"))
+	var b := _button(tr("MENU_SKIRMISH"), half if new_player else COL_W, "Skirmish", true)
+	b.pressed.connect(func(): GameSession.goto("res://ui/skirmish_setup.tscn"))
+	if new_player:
+		var r0 := _row()
+		r0.name = "SkirmishRow"
+		r0.add_child(b)
+		var tb := _button(tr("MENU_TUTORIAL"), half, "Tutorial", true)
+		tb.pressed.connect(_tutorial)
+		var nl := _shadowed(UiTheme.label(tr("MENU_TUTORIAL_NEW"), 10, AMBER), 3)
+		nl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		nl.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+		nl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		nl.set_anchors_preset(Control.PRESET_FULL_RECT)
+		nl.offset_bottom = -4
+		tb.add_child(nl)
+		r0.add_child(tb)
+	else:
+		_col.add_child(b)
+	# M3.3: Continue (autosave) and Load (manual slots) share a row so the menu still fits a phone
 	if SaveSystem.has_suspend() or SaveSystem.has_any_slot():
 		var row := _row()
 		var both := SaveSystem.has_suspend() and SaveSystem.has_any_slot()
@@ -310,6 +327,13 @@ func _lift_campaign_text(cb: Button) -> void:
 var _toast: Label
 func _campaign_soon() -> void:
 	_soon("MENU_CAMPAIGN_SOON_TOAST")
+
+func _tutorial() -> void:
+	if GameSession.busy:
+		return
+	GameSession.setup = TutorialDirector.setup_cfg()
+	GameSession.resume_save = {}
+	GameSession.goto_with_loading("res://match/match.tscn", tr("LOADING_BATTLE"))
 
 func _soon(key: String) -> void:
 	if _toast != null:
