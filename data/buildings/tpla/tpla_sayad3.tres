@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="BuildingDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/building_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"tpla_sayad3"
+faction = &"tpla"
+name_key = "BLD_TPLA_SAYAD3"
+desc_key = "BLD_TPLA_SAYAD3_DESC"
+category = &"defense"
+cost = 1600
+build_time_ms = 15000
+footprint = Vector2i(3, 3)
+max_hp = 1400
+power = -4
+grid_radius = 0
+sight = 13
+prereqs = PackedStringArray("tpla_workshop")
+produces = PackedStringArray()
+is_hq = false
+is_refinery = false
+passive_income = 0
+income_amount = 0
+income_period_s = 0
+free_unit = &""
+shield_pct = 0
+view_scene = "res://view/buildings/tpla/sayad3.tscn"
+stubs = PackedStringArray()
+weapons = PackedStringArray("tpla_sayad3_sam")
+needs_power_to_fire = false
+garrison_capacity = 0
+capturable = false
+capture_income = 0
+buildable = true
+tags = PackedStringArray()
+aux_radius = 0
+air_slots = 0

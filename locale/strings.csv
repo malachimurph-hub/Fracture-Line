@@ -8,6 +8,7 @@ MENU_MAP_BUILDER,Map Builder
 MENU_CAMPAIGN,Campaign
 MENU_COMING_SOON,Coming soon
 MENU_CAMPAIGN_SOON_TOAST,Campaign: coming soon
+MENU_MAP_BUILDER_SOON_TOAST,Map Builder: coming soon
 LOBBY_CUSTOM_TAG,  · custom
 MENU_CREDITS,Credits / About
 MENU_QUIT,Quit
@@ -94,6 +95,7 @@ PAUSE_RESTART,Restart match
 PAUSE_SURRENDER,Surrender
 PAUSE_QUIT,Save & quit to menu
 PAUSE_SAVE,Save game
+PAUSE_OPTIONS,Options
 SAVE_TITLE,Save game
 SAVE_SLOT,Slot %d
 SAVE_EMPTY,empty
@@ -160,6 +162,8 @@ CMD_SCATTER,Scatter
 CMD_HARVEST,Harvest
 CMD_LOAD,Load
 CMD_UNLOAD,Unload
+CMD_UNLOAD_ALL,Unload All
+CMD_UNLOAD_ALL_TIP,Every selected transport lets its troops out.
 CMD_CANCEL_BUILD,"Cancel
 build"
 CMD_RESUME_BUILD,Resume build
@@ -218,7 +222,7 @@ RES_COL_KILLS,Kills
 RES_COL_STRUCT,Bldg. kills
 RES_COL_HARVEST,Harvested
 RES_AI,AI %d (%s)
-RES_SEAM,Veridite seam
+RES_SEAM,Supply Stash
 RES_CACHE,Crude Oil Reserve
 SET_AUDIO,Audio
 SET_VOL_MASTER,Master volume
@@ -242,7 +246,7 @@ REASON_POINTS,Not enough General points
 REASON_POP_CAP,Unit limit reached
 REASON_PREREQ,Requirements not met
 REASON_RANK,Needs a higher General rank
-REASON_RESOURCE,Too close to a supply seam
+REASON_RESOURCE,Blocked by a supply stash
 REASON_STUB,[STUB] Not available yet
 REASON_TERRAIN,Can't build on that ground
 UNIT_EU_CRAWLER,Engineer Crane
@@ -275,7 +279,7 @@ BLD_EU_GUN_BUNKER,Gun Bunker
 BLD_CIV_BLOCK,Civilian Block
 BLD_CIV_HOUSE,House
 BLD_CIV_HOUSE_DESC,"Civilian house. Up to 4 infantry can garrison it."
-BLD_PUMP,Veridite Pump
+BLD_PUMP,Supply Pump
 SHORT_EU_CRAWLER,ENG
 SHORT_EU_HARVESTER,LOG
 SHORT_EU_GRENADIER,PZGR
@@ -416,6 +420,8 @@ BLD_EU_MINEFIELD,Minefield
 BLD_EU_MINEFIELD_DESC,Hidden mine. Explodes when an enemy steps or drives onto it. Detectors reveal it.
 BLD_TPLA_WASP_NEST,Missile Battery
 BLD_TPLA_WASP_NEST_DESC,Dug-in missile launcher. Fires 3-missile salvos at vehicles and aircraft.
+BLD_TPLA_SAYAD3,Sayad-3 SAM Site
+BLD_TPLA_SAYAD3_DESC,"Long-range surface-to-air missile battery with its own phased-array radar. Four heavy missiles per salvo reach aircraft far beyond other air defences. Cannot fire at ground targets. Requires a Workshop."
 ROLE_FLAME,Flame
 ROLE_JAMMER,Jammer
 ROLE_DETECTOR,Detector
@@ -597,7 +603,7 @@ BLD_SANDBAGS_DESC,Cheap sandbag wall. One infantry squad (or one soldier) can ma
 BLD_BARRICADE,Concrete Barricade
 BLD_BARRICADE_DESC,Heavy concrete barrier. One infantry squad (or one soldier) can man it and fire from cover; much tougher than sandbags.
 UNIT_EU_FIELD_ENGINEER,Field Engineer
-UNIT_EU_FIELD_ENGINEER_DESC,"Combat engineer with a rifle. Repairs nearby vehicles while standing still, repairs structures, lays anti-tank minefields and builds barricades."
+UNIT_EU_FIELD_ENGINEER_DESC,"Combat engineer with a rifle. Repairs nearby vehicles while standing still, repairs structures and builds barricades."
 UNIT_US_DRONE_OPERATOR,Drone Operator
 UNIT_US_DRONE_OPERATOR_DESC,Launches a scout drone (unarmed flying recon with a wide view). The drone comes back 60 s after it is used or lost. Needs Drone Warfare from the Strategic Center.
 UNIT_US_BOMB_DRONE,Bomb Drone
@@ -705,3 +711,15 @@ BLD_EU_JAVELIN_PIT,Javelin Foxhole
 BLD_EU_JAVELIN_PIT_DESC,"Sandbagged foxhole with two Javelin anti-tank teams, kneeling to fire. Very long range; strong against vehicles, cannot hit aircraft. Needs power to fire."
 BLD_EU_MANTIS,MANTIS AA Turret
 BLD_EU_MANTIS_DESC,"Single-barrel 35 mm revolver-cannon air-defence turret with a very high rate of fire. Shreds aircraft and also hits ground vehicles hard. Needs power to fire."
+MENU_TUTORIAL,First Battle
+MENU_TUTORIAL_NEW,New? Start here
+TUT_WELCOME,"Welcome, Commander. This is your first battle. Follow the steps here."
+TUT_SELECT,Tap your Dozer to select it.
+TUT_POWER,Open the build menu and place a Nuclear Power Plant.
+TUT_BARRACKS,Good. Now build a Barracks to train infantry.
+TUT_TRAIN,Select the Barracks and train two squads.
+TUT_MOVE,"Select your soldiers, then tap the ground to move them."
+TUT_ATTACK,The enemy base is to the east. Destroy it to win.
+TUT_DONE,"Well done, Commander. You are ready for Skirmish."
+TUT_SKIP,Skip tutorial
+SET_REPLAY_TUTORIAL,Replay First Battle (tutorial)

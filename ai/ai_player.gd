@@ -40,7 +40,7 @@ func roles() -> Dictionary:
 	return {"builder": &"eu_crawler", "harvester": &"eu_harvester", "refinery": &"eu_hub", "power": &"eu_reactor",
 		"bunker": &"eu_gun_bunker", "barracks": &"eu_barracks", "heavy": &"eu_motor_pool", "motor": &"eu_motor_pool",   # M3.5: one vehicle factory
 		"tech": &"eu_signals", "support": &"eu_relay", "aa_tower": &"eu_flak_tower", "income": &"eu_exchange",
-		"mine": &"eu_minefield", "pylon": &""}   # M2.9: Grid Pylon removed
+		"mine": &"", "pylon": &""}   # M2.9: Grid Pylon removed; M4.2: minefields removed
 
 var R: Dictionary:
 	get:
@@ -455,7 +455,7 @@ func find_spot_step(id: StringName, toward: Vector2i) -> Vector2i:
 				continue
 			st["tries"] = int(st["tries"]) + 1
 			calls += 1
-			if w.can_place(pid, id, t2) == "":
+			if w.can_place(pid, id, t2, true, [], true) == "":   # M4.2: AI keeps the old stash clearance
 				bb.erase("fs")
 				return t2
 			if calls >= SPOT_BUDGET:

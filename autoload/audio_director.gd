@@ -387,6 +387,8 @@ func _rule(faction: String, event: String) -> Dictionary:
 
 ## Unit acknowledgement / chatter for the LOCAL player's units.
 func unit_voice(faction: String, unit_id: String, event: String) -> bool:
+	if is_drone(unit_id):   # M4.2: drones do not talk - a short motor rev for select / move / attack
+		return drone_ack(event)
 	var folder := _folder_of(faction, unit_id)
 	var rule := _rule(faction, event)
 	var key := faction + "/" + folder + "/" + event
@@ -407,6 +409,29 @@ func unit_voice(faction: String, unit_id: String, event: String) -> bool:
 	_cool[key] = now + int(float(rule.get("cooldown", 0.0)) * 1000.0)
 	_unit_prio = prio
 	_unit_voice.stream = s
+	_unit_voice.pitch_scale = 1.0
+	_unit_voice.play()
+	return true
+
+## M4.2: scout / explosive drones (all factions) have no voice, only a motor hum.
+const DRONE_ACK := "res://audio/sfx/drone_ack.ogg"
+const DRONE_LOOP := "res://audio/sfx/drone_hum_loop.ogg"
+static func is_drone(unit_id: String) -> bool:
+	return unit_id.ends_with("_drone")
+
+func drone_ack(event: String) -> bool:
+	if not event in ["select", "move", "attack", "created"]:
+		return false
+	var now := Time.get_ticks_msec()
+	if now < int(_cool.get("drone_ack", 0)):
+		return false
+	_cool["drone_ack"] = now + 250
+	var s := load(DRONE_ACK) as AudioStream
+	if s == null:
+		return false
+	_unit_prio = 1
+	_unit_voice.stream = s
+	_unit_voice.pitch_scale = randf_range(0.94, 1.08)
 	_unit_voice.play()
 	return true
 

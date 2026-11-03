@@ -32,6 +32,11 @@ func build() -> void:
 	vl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vl.custom_minimum_size = Vector2(260, 0)
 	c.add_child(vl)
+	# M4.2: the First Battle tutorial can be replayed any time
+	var tut := UiTheme.button(tr("SET_REPLAY_TUTORIAL"), Vector2(260, 44))
+	tut.name = "ReplayTutorial"
+	tut.pressed.connect(_replay_tutorial)
+	c.add_child(tut)
 	_slider(a, "SET_UI_SCALE", "ui_scale", 0.8, 1.4, 0.05)
 	_slider(a, "SET_HOLD_MS", "hold_ms", 250, 600, 25)
 	_slider(a, "SET_DOUBLE_TAP", "double_tap_ms", 200, 450, 25)
@@ -86,3 +91,10 @@ func _toggle(p: Control, key: String, sk: String) -> void:
 
 func go_back() -> void:
 	GameSession.goto("res://ui/main_menu.tscn")
+
+func _replay_tutorial() -> void:
+	if GameSession.busy:
+		return
+	GameSession.setup = TutorialDirector.setup_cfg()
+	GameSession.resume_save = {}
+	GameSession.goto_with_loading("res://match/match.tscn", tr("LOADING_BATTLE"))

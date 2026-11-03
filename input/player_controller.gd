@@ -526,6 +526,9 @@ func simple(kind: String) -> void:
 	issue({"t": kind, "ids": units})
 
 func _set_rally(blds: Array, pos: Vector2i, attack: bool = false) -> void:
+	blds = blds.filter(func(id): return sim.get_ent(id) != null and CommandSys.rally_ok(sim, sim.get_ent(id)))
+	if blds.is_empty():
+		return
 	issue({"t": "rally", "ids": blds, "pos": pos, "flag": attack})
 	world.marker(pos, Color("#ffd166"))
 

@@ -108,6 +108,8 @@ func _ready() -> void:
 			await load("res://tests/m37_test.gd").run(self)   # M3.7 balance update
 		"m41":
 			await load("res://tests/m41_test.gd").run(self)   # M4.1 (0.4.1) helicopters, German defences, fx, sound
+		"m42":
+			await load("res://tests/m42_test.gd").run(self)   # M4.2 (0.4.2) Malachi's 20-item list
 		"stall":
 			var r2 := MatchRunner.new()
 			r2.record_replay = false
@@ -1350,6 +1352,11 @@ func test_tpla() -> void:
 	_check(site != null and site.built, "the structure is rebuilt for free")
 	# --- demo trap + stealth
 	var trap := _tpla_place(w, 0, &"tpla_demo_trap", base + Vector2i(-8, -8))
+	if trap == null:   # M4.2: anti-tank mines removed from every build menu; old saves keep theirs
+		var tdef: BuildingDef = Content.building(&"tpla_demo_trap")
+		tdef.buildable = true
+		trap = _tpla_place(w, 0, &"tpla_demo_trap", base + Vector2i(-8, -8))
+		tdef.buildable = false
 	_ticks(r, 25)
 	_check(trap.stealthy and not w.fog.is_visible_ent(w, 1, trap), "Demo Trap is hidden from the enemy")
 	_check(w.fog.is_visible_ent(w, 0, trap), "the owner still sees the trap")
@@ -1515,6 +1522,7 @@ func _zh_hit_rate(w: SimWorld, u: SimEntity, tdef: String, wid: String, n: int) 
 		t.hp = 1000000
 		t.shield = 0
 		CombatSys.fire(w, u, t, wd, 100)
+		CombatSys.land_all(w)   # M4.2: damage lands on impact
 		if 1000000 - t.hp >= full:
 			hits += 1
 	t.hp = 0
@@ -1730,7 +1738,7 @@ func _roster_content() -> void:
 		_check(made, "unit %s is in a production building's build list" % id)
 	for id in ROSTER_NEW_BUILDINGS:
 		var b: BuildingDef = Content.building(StringName(id))
-		_check(b != null and ResourceLoader.exists(b.view_scene) and tr(b.name_key) != b.name_key and b.buildable, "structure %s: def, model, name '%s', buildable" % [id, tr(b.name_key) if b else "?"])
+		_check(b != null and ResourceLoader.exists(b.view_scene) and tr(b.name_key) != b.name_key and (b.buildable or id == "eu_minefield"), "structure %s: def, model, name '%s', buildable" % [id, tr(b.name_key) if b else "?"])
 	_check(Content.combat.table.has(&"flame") or Content.combat.table.has("flame"), "flame damage type in the combat table")
 	_check(Content.unit(&"eu_wolfhound").transport_capacity == 4 and Content.unit(&"eu_wolfhound").stubs.is_empty(), "Wolfhound transport is real (capacity 4, no stub)")
 
@@ -2223,7 +2231,7 @@ func _m25_air() -> void:
 			taxied = true
 			ground_tgt = ground_tgt and not w.flying(bomber)
 			# lift-off happens from the runway centre line
-			var rw := AirSys.local_pos(af, AirSys.LIFT_X, AirSys.RWY_Z)
+			var rw := AirSys.local_pos(af, AirSys.lift_x(af), AirSys.RWY_Z)
 			if bomber.phase == 2 and FX.dist(bomber.pos, rw) < FX.ONE:
 				lift_ok = true
 		if bomber.air_state == AirSys.LANDING and bomber.phase == 1:

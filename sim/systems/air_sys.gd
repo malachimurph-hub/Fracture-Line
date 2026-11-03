@@ -19,9 +19,13 @@ const LANDING := 4    ## M3.1: final approach (phase 0), touchdown roll-out (1),
 ## _airbase8): strip along +z at RWY_Z, threshold at the -x end, jets take off and land towards +x.
 const RWY_Z := FX.ONE * 315 / 100
 const HOLD_Z := FX.ONE * 23 / 10
-const RWY_X0 := -FX.ONE * 36 / 10     ## threshold / touchdown
-const LIFT_X := FX.ONE * 26 / 10      ## lift-off point
-const APP_X := -FX.ONE * 12           ## approach fix, 8 tiles out from the threshold
+## M4.2: the runway scales with the airfield width (10 x 8 with 4 hangars; was 8 x 8 with 3)
+static func rwy_x0(home: SimEntity) -> int:   ## threshold / touchdown
+	return -home.fp.x * FX.ONE / 2 + FX.ONE * 4 / 10
+static func lift_x(home: SimEntity) -> int:   ## lift-off point
+	return home.fp.x * FX.ONE / 2 - FX.ONE * 14 / 10
+static func app_x(home: SimEntity) -> int:    ## approach fix, ~8 tiles out from the threshold
+	return rwy_x0(home) - FX.ONE * 84 / 10
 const IDLE_RETURN_TICKS := 40          ## idle airborne jets head home after 2 s
 const JTAC_RADIUS := FX.ONE * 8        ## boost aura around the JTAC
 const JTAC_BONUS := 25                 ## +% damage for artillery / aircraft hitting near a JTAC
@@ -38,11 +42,53 @@ static func run(w: SimWorld) -> void:
 		if d.move_layer == &"air":
 			if d.tags.has("jet"):
 				_jet(w, u, d)
+			elif d.transport_capacity > 0:
+				_heli_transport(w, u, d)
 		elif d.tags.has("jtac"):
 			jtacs.append(u)
 	if w.tick % 20 == 5:
 		for j: SimEntity in jtacs:
 			_jtac_call(w, j)
+
+# ------------------------------------------------------------------ transport helicopters
+## M4.2 (Malachi: "any aircraft transporting troops needs to land before troops can enter"):
+## an idle transport helicopter with friendly infantry on their way to board it sets down
+## (LANDING phase 0 = descending, still airborne, for HELI_LAND_TICKS), then sits PARKED (a ground
+## target that cannot fire) until it is given an order, when it lifts off again.
+const HELI_LAND_TICKS := 30
+const HELI_CALL_R := FX.ONE * 14
+
+static func _heli_transport(w: SimWorld, u: SimEntity, d: UnitDef) -> void:
+	if u.air_state == FLYING:
+		if u.goal == NONE and u.orders.is_empty() and u.spd == 0 and w.tick % 4 == u.id % 4 and _boarders_near(w, u):
+			if w.map.passable(FX.to_tile(u.pos), false):
+				u.air_state = LANDING
+				u.phase = 0
+				u.phase_t = w.tick + HELI_LAND_TICKS
+				u.target = 0
+		return
+	if not u.orders.is_empty():
+		u.air_state = FLYING   # lift off for the new order
+		u.phase = 0
+		w.events.append({"t": "takeoff", "id": u.id})
+		return
+	if u.air_state == LANDING and w.tick >= u.phase_t:
+		u.air_state = PARKED
+		u.air_t = 0
+		w.events.append({"t": "landed", "id": u.id})
+
+static func _boarders_near(w: SimWorld, t: SimEntity) -> bool:
+	for o: SimEntity in w.units_in_radius(t.pos, HELI_CALL_R):
+		if o.owner != t.owner or o.res_id < 0 or o.orders.is_empty():
+			continue
+		var od: Dictionary = o.orders[0]
+		if od.get("o", "") == "garrison" and int(od.get("target", 0)) == t.id:
+			return true
+	return false
+
+## Can infantry step aboard right now? Ground transports always; helicopters only once landed.
+static func boardable(w: SimWorld, t: SimEntity) -> bool:
+	return not w.is_air(t) or t.air_state == PARKED
 
 # ------------------------------------------------------------------ airfield slots
 static func is_airfield(w: SimWorld, b: SimEntity) -> bool:
@@ -260,7 +306,7 @@ static func _jet(w: SimWorld, u: SimEntity, d: UnitDef) -> void:
 			u.target = 0
 			# M3.1: fly to the approach fix, then a straight final onto the runway; while the
 			# runway is in use the jet holds (circles) over the fix
-			var fix := local_pos(home, APP_X, RWY_Z)
+			var fix := local_pos(home, app_x(home), RWY_Z)
 			fix.x = clampi(fix.x, FX.ONE * 2, w.map.w * FX.ONE - FX.ONE * 2)
 			fix.y = clampi(fix.y, FX.ONE * 2, w.map.h * FX.ONE - FX.ONE * 2)
 			if FX.dist(u.pos, fix) <= FX.ONE * 2:
@@ -305,7 +351,7 @@ static func _taxi_out(w: SimWorld, u: SimEntity, d: UnitDef, home: SimEntity) ->
 			if _taxi_to(u, local_pos(home, bx, HOLD_Z), tx, turn) and not runway_busy(w, home, u):
 				u.phase = 1
 		1:   # onto the runway, back-taxi to the threshold
-			var thr := local_pos(home, RWY_X0, RWY_Z)
+			var thr := local_pos(home, rwy_x0(home), RWY_Z)
 			var lane := local_pos(home, bx, RWY_Z)
 			if u.phase_t == 0:
 				if _taxi_to(u, lane, tx, turn):
@@ -320,7 +366,7 @@ static func _taxi_out(w: SimWorld, u: SimEntity, d: UnitDef, home: SimEntity) ->
 			var maxs := FX.speed_per_tick(d.speed_mtps)
 			u.spd = mini(maxs, u.spd + maxi(1, maxs * 50 / maxi(1, int(lp["accel_ms"]))))
 			u.face = runway_face(home)
-			var lift := local_pos(home, LIFT_X, RWY_Z)
+			var lift := local_pos(home, lift_x(home), RWY_Z)
 			if _taxi_to(u, lift, u.spd, turn):
 				u.air_state = FLYING
 				u.phase = 0
@@ -338,7 +384,7 @@ static func _landing(w: SimWorld, u: SimEntity, d: UnitDef, home: SimEntity) -> 
 	u.goal = NONE
 	match u.phase:
 		0:   # final approach: straight line to the touchdown point, aligning with the runway
-			var td := local_pos(home, RWY_X0, RWY_Z)
+			var td := local_pos(home, rwy_x0(home), RWY_Z)
 			u.spd = maxi(maxs * 55 / 100, u.spd - maxi(1, maxs / 40))
 			if _taxi_to(u, td, u.spd, int(lp["turn"]) * 3):
 				u.phase = 1
@@ -347,9 +393,9 @@ static func _landing(w: SimWorld, u: SimEntity, d: UnitDef, home: SimEntity) -> 
 		1:   # roll-out: brake along the strip
 			u.face = runway_face(home)
 			u.spd = maxi(tx, u.spd - maxi(1, maxs / 25))
-			var end := local_pos(home, LIFT_X, RWY_Z)
+			var end := local_pos(home, lift_x(home), RWY_Z)
 			var exit := local_pos(home, bx, RWY_Z)
-			var past := FX.dist(u.pos, local_pos(home, RWY_X0, RWY_Z)) >= FX.dist(exit, local_pos(home, RWY_X0, RWY_Z))
+			var past := FX.dist(u.pos, local_pos(home, rwy_x0(home), RWY_Z)) >= FX.dist(exit, local_pos(home, rwy_x0(home), RWY_Z))
 			if (u.spd <= tx and past) or _taxi_to(u, end, u.spd, turn):
 				u.phase = 2
 				u.spd = tx

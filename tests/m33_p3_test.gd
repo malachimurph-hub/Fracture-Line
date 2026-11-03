@@ -107,6 +107,7 @@ static func _civilians(t: Node) -> void:
 	var hp0 := house.hp
 	var wd := Content.weapon(Content.unit(&"us_halberd").weapons[0])
 	CombatSys.fire(w, tank, foe, wd, 100)
+	CombatSys.land_all(w)   # M4.2: damage lands on impact
 	t._check(wd.splash_mt > 0 and house.hp < hp0, "a tank round landing next to an empty house damages it (%d -> %d)" % [hp0, house.hp])
 	foe.alive = false
 	_adv(r, 2)

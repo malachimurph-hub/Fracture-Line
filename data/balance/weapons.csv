@@ -96,3 +96,4 @@ eu_tower_50cal,19,6500,0,200,hmg,0,0,1,tracer_heavy,0,0,attack,0,0,12,0,0
 eu_pit_javelin,136,9000,0,1500,anti_tank,0,0,1,missile,0,600,attack,0,0,20,0,0
 eu_mantis_35,26,9000,0,110,quad,0,1,0,tracer_quad,0,0,attack,0,0,15,0,0
 eu_mantis_gnd,14,7500,0,110,aa_ground,0,0,1,tracer_quad,0,0,attack,0,0,12,0,0
+tpla_sayad3_sam,95,13500,1500,900,aa_missile,0,1,0,missile,0,500,attack,4,9000,25,0,0

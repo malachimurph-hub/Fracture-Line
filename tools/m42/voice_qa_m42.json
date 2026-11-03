@@ -1,0 +1,226 @@
+[
+ {
+  "file": "audio/voice_ai/announcer_us/tut_attack_1.ogg",
+  "text": "The enemy base is to the east. Destroy it to win.",
+  "heard": "The enemy base is to the east. Destroy it to win.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT) lang=en; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted +0.0 st"
+ },
+ {
+  "file": "audio/voice_ai/announcer_us/tut_barracks_1.ogg",
+  "text": "Good. Now build a barracks to train infantry.",
+  "heard": "Good. Now build a barracks to train infantry.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT) lang=en; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted +0.0 st"
+ },
+ {
+  "file": "audio/voice_ai/announcer_us/tut_done_1.ogg",
+  "text": "Well done, Commander. You are ready for skirmish.",
+  "heard": "Well done, Commander. You are ready for skirmish.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT) lang=en; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted +0.0 st"
+ },
+ {
+  "file": "audio/voice_ai/announcer_us/tut_move_1.ogg",
+  "text": "Select your soldiers, then tap the ground to move them.",
+  "heard": "Select your soldiers, then tap the ground to move them.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT) lang=en; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted +0.0 st"
+ },
+ {
+  "file": "audio/voice_ai/announcer_us/tut_power_1.ogg",
+  "text": "Open the build menu and place a power plant.",
+  "heard": "Open the build menu and place a power plant.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT) lang=en; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted +0.0 st"
+ },
+ {
+  "file": "audio/voice_ai/announcer_us/tut_select_1.ogg",
+  "text": "Tap your bulldozer to select it.",
+  "heard": "Tap your bulldozer to select it.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT) lang=en; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted +0.0 st"
+ },
+ {
+  "file": "audio/voice_ai/announcer_us/tut_train_1.ogg",
+  "text": "Select the barracks and train two squads.",
+  "heard": "Select the barracks and train two squads.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT) lang=en; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted +0.0 st"
+ },
+ {
+  "file": "audio/voice_ai/announcer_us/tut_welcome_1.ogg",
+  "text": "Welcome, Commander. This is your first battle. Follow my lead.",
+  "heard": "Welcome, Commander. This is your first battle. Follow my lead.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT) lang=en; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted +0.0 st"
+ },
+ {
+  "file": "audio/voice_ai/ecc/hind/attack_1.ogg",
+  "text": "Rockets away!",
+  "heard": "Rockets away.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT) lang=ru; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted -1.0 st"
+ },
+ {
+  "file": "audio/voice_ai/ecc/hind/created_1.ogg",
+  "text": "Flying tank ready.",
+  "heard": "Flying Tank Ready",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT) lang=ru; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted -1.0 st"
+ },
+ {
+  "file": "audio/voice_ai/ecc/hind/garrison_1.ogg",
+  "text": "Soldiers aboard. Lifting off.",
+  "heard": "Soldiers aboard. Lifting off.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT) lang=ru; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted -1.0 st"
+ },
+ {
+  "file": "audio/voice_ai/ecc/hind/move_1.ogg",
+  "text": "Flying there.",
+  "heard": "flying there",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT) lang=ru; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted -1.0 st"
+ },
+ {
+  "file": "audio/voice_ai/ecc/hind/move_2.ogg",
+  "text": "Moving low.",
+  "heard": "Moving low.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT) lang=ru; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted -1.0 st"
+ },
+ {
+  "file": "audio/voice_ai/ecc/hind/select_1.ogg",
+  "text": "Assault helicopter ready.",
+  "heard": "Assault Helicopter ready.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT) lang=ru; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted -1.0 st"
+ },
+ {
+  "file": "audio/voice_ai/ecc/hind/select_2.ogg",
+  "text": "Crew ready, comrade.",
+  "heard": "Crew ready, comrade.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT) lang=ru; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted -1.0 st"
+ },
+ {
+  "file": "audio/voice_ai/ecc/hind/under_fire_1.ogg",
+  "text": "We are hit! Armour holding!",
+  "heard": "We are heat, armor holding.",
+  "score": 0.8,
+  "engine": "chatterbox-multilingual (MIT) lang=ru; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted -1.0 st"
+ },
+ {
+  "file": "audio/voice_ai/eu/h145m/attack_1.ogg",
+  "text": "Engaging target!",
+  "heard": "Engaging target. Engaging...",
+  "score": 0.85,
+  "engine": "chatterbox-multilingual (MIT) lang=de; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted +1.5 st"
+ },
+ {
+  "file": "audio/voice_ai/eu/h145m/created_1.ogg",
+  "text": "Helicopter ready for the mission.",
+  "heard": "Helicopter ready for the mission.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT) lang=de; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted +1.5 st"
+ },
+ {
+  "file": "audio/voice_ai/eu/h145m/garrison_1.ogg",
+  "text": "Team aboard. Taking off.",
+  "heard": "Team aboard. Taking off.  Ar...",
+  "score": 0.85,
+  "engine": "chatterbox-multilingual (MIT) lang=de; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted +1.5 st"
+ },
+ {
+  "file": "audio/voice_ai/eu/h145m/move_1.ogg",
+  "text": "On our way.",
+  "heard": "On our way",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT) lang=de; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted +1.5 st"
+ },
+ {
+  "file": "audio/voice_ai/eu/h145m/move_2.ogg",
+  "text": "Understood, flying there.",
+  "heard": "Understood. Flying there.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT) lang=de; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted +1.5 st"
+ },
+ {
+  "file": "audio/voice_ai/eu/h145m/select_1.ogg",
+  "text": "Helicopter ready.",
+  "heard": "helicopter ready",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT) lang=de; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted +1.5 st"
+ },
+ {
+  "file": "audio/voice_ai/eu/h145m/select_2.ogg",
+  "text": "Light transport, go ahead.",
+  "heard": "Light transport go ahead",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT) lang=de; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted +1.5 st"
+ },
+ {
+  "file": "audio/voice_ai/eu/h145m/under_fire_1.ogg",
+  "text": "We are hit! Evading!",
+  "heard": "We are hit. Evading.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT) lang=de; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted +1.5 st"
+ },
+ {
+  "file": "audio/voice_ai/us/blackhawk/attack_1.ogg",
+  "text": "Door guns, open fire!",
+  "heard": "Door guns open fire",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT) lang=en; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted -2.0 st"
+ },
+ {
+  "file": "audio/voice_ai/us/blackhawk/created_1.ogg",
+  "text": "Transport helicopter, ready for tasking.",
+  "heard": "Transport helicopter, ready for tasking.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT) lang=en; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted -2.0 st"
+ },
+ {
+  "file": "audio/voice_ai/us/blackhawk/garrison_1.ogg",
+  "text": "Troops aboard. Lifting off.",
+  "heard": "Troops aboard lifting off  I",
+  "score": 0.85,
+  "engine": "chatterbox-multilingual (MIT) lang=en; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted -2.0 st"
+ },
+ {
+  "file": "audio/voice_ai/us/blackhawk/move_1.ogg",
+  "text": "Moving out.",
+  "heard": "Moving out.  moving",
+  "score": 0.85,
+  "engine": "chatterbox-multilingual (MIT) lang=en; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted -2.0 st"
+ },
+ {
+  "file": "audio/voice_ai/us/blackhawk/move_2.ogg",
+  "text": "Copy that.",
+  "heard": "Copy that.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT) lang=en; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted -2.0 st"
+ },
+ {
+  "file": "audio/voice_ai/us/blackhawk/select_1.ogg",
+  "text": "Transport bird, standing by.",
+  "heard": "Transport bird standing by",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT) lang=en; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted -2.0 st"
+ },
+ {
+  "file": "audio/voice_ai/us/blackhawk/select_2.ogg",
+  "text": "Rotors turning. Where to?",
+  "heard": "Rotors turning, where to?",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT) lang=en; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted -2.0 st"
+ },
+ {
+  "file": "audio/voice_ai/us/blackhawk/under_fire_1.ogg",
+  "text": "Taking fire! Hold on!",
+  "heard": "Taking fire, hold on.",
+  "score": 1.0,
+  "engine": "chatterbox-multilingual (MIT) lang=en; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted -2.0 st"
+ }
+]

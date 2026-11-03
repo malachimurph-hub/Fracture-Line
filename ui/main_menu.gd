@@ -52,11 +52,31 @@ func build() -> void:
 	h.add_child(gap)
 	_corner = _logo_block()
 	h.add_child(_corner)
-	var b := _button(tr("MENU_SKIRMISH"), COL_W, "Skirmish", true)
-	b.pressed.connect(func(): GameSession.goto("res://ui/skirmish_setup.tscn"))
-	_col.add_child(b)
-	# M3.3: Continue (autosave) and Load (manual slots) share a row so the menu still fits a phone
 	var half := (COL_W - 6.0) * 0.5
+	# M4.2 (item 2): new players get "First Battle" (narrated tutorial) beside Skirmish until it is played
+	var new_player := not bool(Settings.g("tutorial_done"))
+	var b := _button(tr("MENU_SKIRMISH"), half if new_player else COL_W, "Skirmish", true)
+	b.pressed.connect(func(): GameSession.goto("res://ui/skirmish_setup.tscn"))
+	if new_player:
+		var r0 := _row()
+		r0.name = "SkirmishRow"
+		r0.add_child(b)
+		var tb := _button(tr("MENU_TUTORIAL"), half, "Tutorial", true)
+		tb.pressed.connect(_tutorial)
+		var nl := _shadowed(UiTheme.label(tr("MENU_TUTORIAL_NEW"), 10, AMBER), 3)
+		nl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		nl.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+		nl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		nl.set_anchors_preset(Control.PRESET_FULL_RECT)
+		nl.offset_bottom = -4
+		tb.add_child(nl)
+		for x: Button in [b, tb]:   # two half-width lead buttons: smaller text so both fit the column
+			x.add_theme_font_size_override("font_size", 16)
+			x.clip_text = true
+		r0.add_child(tb)
+	else:
+		_col.add_child(b)
+	# M3.3: Continue (autosave) and Load (manual slots) share a row so the menu still fits a phone
 	if SaveSystem.has_suspend() or SaveSystem.has_any_slot():
 		var row := _row()
 		var both := SaveSystem.has_suspend() and SaveSystem.has_any_slot()
@@ -85,7 +105,18 @@ func build() -> void:
 	soon.offset_bottom = -4
 	cb.add_child(soon)
 	var mb := _button(tr("MENU_MAP_BUILDER"), half, "MapBuilder")   # M2.8
-	mb.pressed.connect(func(): GameSession.goto("res://ui/map_builder.tscn"))
+	# M4.2 (Malachi: "Map Builder - coming soon"): darkened like Campaign, a tap says so
+	mb.modulate = Color(1, 1, 1, 0.78)
+	_lift_campaign_text(mb)
+	mb.pressed.connect(_soon.bind("MENU_MAP_BUILDER_SOON_TOAST"))
+	var soon2 := _shadowed(UiTheme.label(tr("MENU_COMING_SOON"), 10, AMBER), 3)
+	soon2.name = "MapBuilderSoon"
+	soon2.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	soon2.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+	soon2.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	soon2.set_anchors_preset(Control.PRESET_FULL_RECT)
+	soon2.offset_bottom = -4
+	mb.add_child(soon2)
 	row2.add_child(mb)
 	var s := _button(tr("MENU_SETTINGS"), COL_W, "Settings")
 	s.pressed.connect(func(): GameSession.goto("res://ui/settings_screen.tscn"))
@@ -298,8 +329,20 @@ func _lift_campaign_text(cb: Button) -> void:
 ## M3.4: "Coming soon" toast for the Campaign entry.
 var _toast: Label
 func _campaign_soon() -> void:
+	_soon("MENU_CAMPAIGN_SOON_TOAST")
+
+func _tutorial() -> void:
+	if GameSession.busy:
+		return
+	GameSession.setup = TutorialDirector.setup_cfg()
+	GameSession.resume_save = {}
+	GameSession.goto_with_loading("res://match/match.tscn", tr("LOADING_BATTLE"))
+
+func _soon(key: String) -> void:
+	if _toast != null:
+		_toast.text = tr(key)
 	if _toast == null:
-		_toast = _shadowed(UiTheme.label(tr("MENU_CAMPAIGN_SOON_TOAST"), 16, BTN_HOVER), 6)
+		_toast = _shadowed(UiTheme.label(tr(key), 16, BTN_HOVER), 6)
 		_toast.name = "Toast"
 		_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		_toast.mouse_filter = Control.MOUSE_FILTER_IGNORE

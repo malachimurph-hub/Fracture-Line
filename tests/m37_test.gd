@@ -135,6 +135,8 @@ static func _artillery_splash(t: Node) -> void:
 	wd.scatter_mt = 0
 	CombatSys.fire(w, gun, tgt, wd, 100)
 	wd.scatter_mt = sc
+	w.tick += 40   # M4.2: the shell lands after its flight time
+	CombatSys.resolve_flight(w)
 	var exp_single := wd.damage * CombatSys.splash_mult(wd, &"infantry") / 100 * (100 - CombatSys.ARTY_INF_FALLOFF * 9 / 10) / 100
 	t._check(near.hp < h_near, "artillery splash catches a squad standing at the edge of the blast (%d -> %d)" % [h_near, near.hp])
 	t._check(h_single - single.hp >= mini(exp_single - 2, h_single), "a rifleman near the rim takes most of the blast (%d, expect ~%d)" % [h_single - single.hp, exp_single])

@@ -101,6 +101,7 @@ static func _balance(t: Node) -> void:
 	wd2.scatter_mt = 0
 	wd2.scatter_inf_mt = 0
 	CombatSys.fire(w, tank, a, wd2, 100)
+	CombatSys.land_all(w)   # M4.2: damage lands on impact
 	wd2.scatter_inf_mt = 300
 	wd2.scatter_mt = sc
 	t._check(not a.alive or a.hp <= a.max_hp - 100, "a direct tank hit on a soldier does heavy damage (%d of %d left)" % [a.hp, a.max_hp])
