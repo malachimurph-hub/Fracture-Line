@@ -13,7 +13,7 @@ Output files: `FractureLine-M<x>.apk`, `FractureLine.aab`.
 
 These stay the same so the new APK installs as an update and keeps settings and saves:
 
-- Android package id `com.malachimurphy.fractureline` (`package/unique_name` in `export_presets.cfg`) and the same signing key.
+- Android package id: sideload APK preset `com.malachimurphy.fractureline`; Play AAB preset `com.fracturline.modernconflict` (`package/unique_name` in `export_presets.cfg`); same signing key.
 - `user://`. On Android it is the app's files folder, which comes from the package id, not the app name.
   On desktop, `config/use_custom_user_dir` pins it to the old `godot/app_userdata/Fracture Line` folder.
 

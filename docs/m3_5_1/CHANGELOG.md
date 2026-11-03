@@ -67,3 +67,7 @@ The Russia and Iran music held back from 0.3.7-0.3.9, re-encoded to fit the 100 
   signer cert SHA-256 7e96c70a…ce54 (same key, installs over 0.4.0). Uploaded to Drive root.
 - Play AAB rebuilt at `builds/play/FractureLine.aab` (not uploaded).
 - Superseded assets deleted (about 9.5 MB of source).
+
+## Play package id (0.4.1, versionCode 25)
+- Play builds (AAB preset "Android Play (AAB)") now use the package name `com.fracturline.modernconflict` (spelling deliberate), matching the Play Console app. Same version, versionCode and upload key (AAB upload cert SHA-256 3259b4f8…4a3b, as on every earlier AAB; sideload APK key 7e96c70a…ce54 unchanged).
+- Drive sideload installs use the old id `com.malachimurphy.fractureline` and will NOT update into the Play app; it installs as a separate app (uninstall the sideload to switch; local saves don't carry over).
