@@ -26,8 +26,8 @@ REP = os.path.join(ROOT, "tools", "m42", "voice_qa_m42.json")
 P = "/workspace/vw/int/prompts/"
 JOBS = {
  "blackhawk": dict(rel="us/blackhawk", ref=P + "us_harrier_0.wav", st=-2.0, lang="en", fx="helmet", lines={
-   "select": ["Transport bird, standing by.", "Rotors turning. Where to?"], "move": ["Moving out.", "Copy, heading there."],
-   "attack": ["Door guns, open fire!"], "under_fire": ["Taking fire! Hold on back there!"],
+   "select": ["Transport bird, standing by.", "Rotors turning. Where to?"], "move": ["Moving out.", "Copy that."],
+   "attack": ["Door guns, open fire!"], "under_fire": ["Taking fire! Hold on!"],
    "created": ["Transport helicopter, ready for tasking."], "garrison": ["Troops aboard. Lifting off."]}),
  "h145m": dict(rel="eu/h145m", ref="/workspace/vw/m33de/prompts/field_engineer.wav", st=1.5, lang="de", fx="helmet", lines={
    "select": ["Helicopter ready.", "Light transport, go ahead."], "move": ["On our way.", "Understood, flying there."],

@@ -197,9 +197,9 @@
  },
  {
   "file": "audio/voice_ai/us/blackhawk/move_2.ogg",
-  "text": "Copy, heading there.",
-  "heard": "Copy, adding there, hide time.",
-  "score": 0.7,
+  "text": "Copy that.",
+  "heard": "Copy that.",
+  "score": 1.0,
   "engine": "chatterbox-multilingual (MIT) lang=en; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted -2.0 st"
  },
  {
@@ -218,9 +218,9 @@
  },
  {
   "file": "audio/voice_ai/us/blackhawk/under_fire_1.ogg",
-  "text": "Taking fire! Hold on back there!",
-  "heard": "Taking fire hold on back there hold on back",
-  "score": 0.55,
+  "text": "Taking fire! Hold on!",
+  "heard": "Taking fire, hold on.",
+  "score": 1.0,
   "engine": "chatterbox-multilingual (MIT) lang=en; reference = project Kokoro-82M (Apache-2.0)/Piper take shifted -2.0 st"
  }
 ]
