@@ -985,6 +985,129 @@ func _build_sidewalks() -> void:
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(mi)
 
+## M4.2 (Malachi: "towns, cities need to be more planned and less random"): every cluster of
+## civilian blocks / houses gets a planned street plan, view only: a paved street ring around
+## each block (pavement next to the walls, asphalt beyond, kerb line between) and straight
+## streets joining neighbouring blocks along the grid (an L along x then z, following a
+## spanning tree of the cluster). Only over flat open ground; real roads, water and cliffs are
+## left alone. One mesh per town, no shadows.
+var town_street_tiles := 0
+func build_town_streets(rects: Array) -> void:
+	if rects.is_empty() or m == null:
+		return
+	var n := rects.size()
+	var parent: Array = range(n)
+	var find := func(i: int) -> int:
+		while parent[i] != i:
+			i = parent[i]
+		return i
+	var ctr := func(r: Rect2i) -> Vector2i: return r.position + r.size / 2
+	for i in n:
+		for j in range(i + 1, n):
+			var ci: Vector2i = ctr.call(rects[i])
+			var cj: Vector2i = ctr.call(rects[j])
+			if absi(ci.x - cj.x) + absi(ci.y - cj.y) <= 22:
+				var a: int = find.call(i)
+				var b: int = find.call(j)
+				if a != b:
+					parent[a] = b
+	var groups := {}
+	for i in n:
+		var g: int = find.call(i)
+		if not groups.has(g):
+			groups[g] = []
+		groups[g].append(i)
+	var occ := {}
+	for r: Rect2i in rects:
+		for yy in r.size.y:
+			for xx in r.size.x:
+				occ[r.position + Vector2i(xx, yy)] = true
+	var asph := Color("#43443f")
+	var walk := Color("#9d9a92")
+	var kerb := Color("#c4c0b6")
+	for g in groups:
+		var idx: Array = groups[g]
+		if idx.size() < 2:
+			continue
+		var street := {}   # tile -> 1 asphalt, 2 pavement (next to a block)
+		for i in idx:
+			var r: Rect2i = rects[i]
+			for yy in range(-2, r.size.y + 2):
+				for xx in range(-2, r.size.x + 2):
+					var t := r.position + Vector2i(xx, yy)
+					if occ.has(t):
+						continue
+					var ring1 := xx == -1 or yy == -1 or xx == r.size.x or yy == r.size.y
+					street[t] = maxi(int(street.get(t, 0)), 2 if ring1 else 1)
+		# spanning tree (nearest first) of the blocks, joined by L-shaped streets
+		var done: Array = [idx[0]]
+		var left: Array = idx.slice(1)
+		while not left.is_empty():
+			var best := [-1, -1, 1 << 30]
+			for a in done:
+				for b in left:
+					var ca: Vector2i = ctr.call(rects[a])
+					var cb: Vector2i = ctr.call(rects[b])
+					var d := absi(ca.x - cb.x) + absi(ca.y - cb.y)
+					if d < int(best[2]):
+						best = [a, b, d]
+			var p0: Vector2i = ctr.call(rects[int(best[0])])
+			var p1: Vector2i = ctr.call(rects[int(best[1])])
+			var x := p0.x
+			while x != p1.x:
+				for w in [0, 1]:
+					var t2 := Vector2i(x, p0.y + w)
+					if not occ.has(t2):
+						street[t2] = maxi(int(street.get(t2, 0)), 1)
+				x += signi(p1.x - p0.x)
+			var y := p0.y
+			while y != p1.y + signi(p1.y - p0.y):
+				for w2 in [0, 1]:
+					var t3 := Vector2i(p1.x + w2, y)
+					if not occ.has(t3):
+						street[t3] = maxi(int(street.get(t3, 0)), 1)
+				if p1.y == p0.y:
+					break
+				y += signi(p1.y - p0.y)
+			done.append(best[1])
+			left.erase(best[1])
+		var st := SurfaceTool.new()
+		st.begin(Mesh.PRIMITIVE_TRIANGLES)
+		var any := false
+		for t: Vector2i in street:
+			if not m.in_bounds(t):
+				continue
+			var tt := m.ttype(t)
+			if tt == SimMap.T.WATER or tt == SimMap.T.FORD or tt == SimMap.T.BRIDGE or tt == SimMap.T.CLIFF or tt == SimMap.T.ROAD:
+				continue
+			var hc := m.corner_height(t.x, t.y)
+			var flat := true
+			for d: Vector2i in [Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)]:
+				var hi := (t.y + d.y) * (m.w + 1) + t.x + d.x
+				if (hi < heights.size() and absf(heights[hi]) > 0.01) or absf(m.corner_height(t.x + d.x, t.y + d.y) - hc) > 0.12:
+					flat = false
+			if not flat:
+				continue
+			var c := Vector3(t.x + 0.5, m.height_at(t.x + 0.5, t.y + 0.5) + 0.014, t.y + 0.5)
+			var kind := int(street[t])
+			_flat(st, c, Vector3(1.0, 0, 1.0), walk if kind == 2 else asph)
+			if kind == 2:   # kerb stone on the street side of the pavement
+				for d2: Vector2i in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
+					if int(street.get(t + d2, 0)) == 1:
+						var along := Vector3(0, 0, 1) if d2.x != 0 else Vector3(1, 0, 0)
+						_flat(st, c + Vector3(d2.x, 0, d2.y) * 0.46 + Vector3(0, 0.004, 0), along + Vector3(absf(d2.x), 0, absf(d2.y)) * 0.07, kerb)
+			any = true
+			town_street_tiles += 1
+		if not any:
+			continue
+		st.index()
+		var mi := MeshInstance3D.new()
+		mi.name = "TownStreets_%d" % g
+		mi.mesh = st.commit()
+		mi.material_override = prop_detail_material
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		add_child(mi)
+
 ## Upward-facing quad (2 tris) of size s.x x s.z centred at c: road paint, kerb tops, joints.
 func _flat(st: SurfaceTool, c: Vector3, s: Vector3, col: Color) -> void:
 	var hx := s.x * 0.5

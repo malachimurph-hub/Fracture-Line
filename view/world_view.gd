@@ -53,6 +53,12 @@ func setup(r: MatchRunner, pid: int) -> void:
 	add_child(terrain)
 	terrain.decor_override = (Content.maps[sim.map_id] as MapDef).decor
 	terrain.build(sim.map, Content.maps[sim.map_id].tiles_path, MapEnv.for_map(sim.map_id))
+	var civ: Array = []   # M4.2: planned street grid around civilian blocks and houses
+	for nid in sim.ids:
+		var ne: SimEntity = sim.ents[nid]
+		if ne.kind == SimEntity.Kind.NEUTRAL and sim.is_civilian(ne):
+			civ.append(Rect2i(ne.tile, ne.fp))
+	terrain.build_town_streets(civ)
 	vfx = Vfx.new()
 	add_child(vfx)
 	vfx.set_fog(terrain.fog_texture, Vector2(sim.map.w, sim.map.h))
