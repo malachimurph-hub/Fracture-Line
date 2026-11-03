@@ -57,7 +57,8 @@ static func find_target(w: SimWorld, u: SimEntity, p: Vector2i, r: int) -> SimEn
 	for e: SimEntity in w.units_in_radius(p, r):
 		if not valid_target(w, u, e):
 			continue
-		var s := FX.dist2(u.pos, e.pos) >> 10
+		# M4.2 smart targeting: distance weighted by how well our weapons hurt this target
+		var s := (FX.dist2(u.pos, e.pos) >> 10) * 100 / CombatSys.eff_pct(w, u, e)
 		if w.udef(e).weapons.is_empty():
 			s += 1 << 24
 		if s < best_score:

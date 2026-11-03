@@ -15,6 +15,7 @@ const REPAIR_RADIUS := FX.ONE * 10
 const REPAIR_IDLE_TICKS := 200
 
 static func run(w: SimWorld) -> void:
+	resolve_flight(w)
 	if w.tick % 20 == 10:
 		_base_repair(w)
 	var js := RosterSys.jammers(w)
@@ -68,6 +69,36 @@ static func can_hit(w: SimWorld, src: SimEntity, air: bool) -> bool:
 			hg = hg or wd.targets_ground
 		_hit_cache[key] = [ha, hg]
 	return _hit_cache[key][0] if air else _hit_cache[key][1]
+
+## M4.2 (Malachi: "smart attacking ... anti tank attack tank"): best damage multiplier (%, from
+## the combat damage-type table, min 10) of src's weapons that can hit t's layer. Target pickers
+## divide distance by it, so AT weapons prefer tanks, AA prefers aircraft, MGs prefer infantry,
+## while a much closer target still wins. Cached per (shooter def, target def, layer).
+static var _eff_cache := {}
+static func eff_pct(w: SimWorld, src: SimEntity, t: SimEntity) -> int:
+	if t.kind != SimEntity.Kind.UNIT:
+		return 100
+	var air := w.flying(t)
+	var key := "%s|%s|%d" % [src.def_id, t.def_id, int(air)]
+	if _eff_cache.has(key):
+		return _eff_cache[key]
+	var wl: PackedStringArray = []
+	if src.kind == SimEntity.Kind.UNIT:
+		wl = w.udef(src).weapons
+	else:
+		var bd: BuildingDef = Content.building(src.def_id)
+		if bd != null:
+			wl = bd.weapons
+	var armor := _armor_of(w, t)
+	var best := 0
+	for wid in wl:
+		var wd: WeaponDef = Content.weapon(wid)
+		if wd == null or not (wd.targets_air if air else wd.targets_ground):
+			continue
+		best = maxi(best, Content.combat.mult(wd.damage_type, armor))
+	best = clampi(best if not wl.is_empty() else 100, 10, 400)
+	_eff_cache[key] = best
+	return best
 
 static func layer_ok(w: SimWorld, wd: WeaponDef, t: SimEntity) -> bool:
 	return wd.targets_air if w.flying(t) else wd.targets_ground
@@ -217,6 +248,28 @@ static func explode(w: SimWorld, src: SimEntity, center: Vector2i, wd: WeaponDef
 	for b: SimEntity in blds:
 		w.damage(b, maxi(1, wd.damage * Content.combat.mult(wd.damage_type, &"structure") / 100 * pct / 100), src)
 
+## M4.2 (Malachi: "damage is dealt before the round actually hits"): fire() only launches the
+## round (view event + an in-flight record); damage, splash, rust zones and collateral resolve in
+## _impact() when the round lands, FLIGHT ticks later (same speeds the view's rounds fly at).
+## Flight speed per effect class in tiles/s (0 = lobbed: fixed time window in ms, see LOB).
+const FLIGHT := {"rifle": 62, "mg": 56, "minigun": 70, "quad": 64, "autocannon": 48, "cannon": 36,
+	"flak": 42, "missile": 14, "rocket": 17, "salvo": 15}
+const LOB := {"artillery": [15, 500, 950], "mortar": [11, 450, 850], "rust": [13, 400, 900], "grenade": [9, 300, 600]}
+
+static func flight_ticks(wd: WeaponDef, dist_fx: int) -> int:
+	var cls := WeaponFx.class_of(wd.id, wd.vfx)
+	if cls == "flame" or cls == "spray" or cls == "none":
+		return 0
+	var ms := 0
+	if FLIGHT.has(cls):
+		ms = dist_fx * 1000 / (FX.ONE * int(FLIGHT[cls]))
+	elif LOB.has(cls):
+		var l: Array = LOB[cls]
+		ms = clampi(dist_fx * 1000 / (FX.ONE * int(l[0])), int(l[1]), int(l[2]))
+	else:
+		return 0
+	return ms * FX.TICK_HZ / 1000   # rounds down: hits within one tick resolve at once
+
 static func fire(w: SimWorld, src: SimEntity, t: SimEntity, wd: WeaponDef, dmg_pct: int) -> void:
 	src.firing_tick = w.tick
 	var impact := t.pos
@@ -233,40 +286,76 @@ static func fire(w: SimWorld, src: SimEntity, t: SimEntity, wd: WeaponDef, dmg_p
 		impact = t.pos + Vector2i(hv.x * rr / FX.ONE, hv.y * rr / FX.ONE)
 		hit = rr <= t.radius
 	w.events.append({"t": "fire", "id": src.id, "to": impact, "tid": t.id, "vfx": wd.vfx, "w": wd.id, "miss": not hit})
-	if hit:
+	var arty := src.kind == SimEntity.Kind.UNIT and w.udef(src).role == &"artillery"
+	var rec := {"at": w.tick + flight_ticks(wd, FX.dist(src.pos, impact)), "src": src.id, "team": src.team, "owner": src.owner,
+		"tid": t.id, "w": String(wd.id), "pct": dmg_pct, "hit": hit, "ix": impact.x, "iy": impact.y,
+		"air": w.flying(t), "arty": arty}
+	if int(rec["at"]) <= w.tick:
+		_impact(w, rec)
+	else:
+		w.flight.append(rec)
+
+## Resolve rounds whose flight time is up (called at the start of CombatSys.run, in launch order).
+static func resolve_flight(w: SimWorld) -> void:
+	if w.flight.is_empty():
+		return
+	var keep: Array = []
+	var due: Array = []
+	for r: Dictionary in w.flight:
+		if int(r["at"]) <= w.tick:
+			due.append(r)
+		else:
+			keep.append(r)
+	w.flight = keep
+	for r: Dictionary in due:
+		_impact(w, r)
+
+static func _impact(w: SimWorld, r: Dictionary) -> void:
+	var wd: WeaponDef = Content.weapon(StringName(r["w"]))
+	if wd == null:
+		return
+	var src: SimEntity = w.get_ent(int(r["src"]))   # may be gone: the round still lands
+	var team := int(r["team"])
+	var dmg_pct := int(r["pct"])
+	var hit: bool = r["hit"]
+	var impact := Vector2i(int(r["ix"]), int(r["iy"]))
+	var t: SimEntity = w.get_ent(int(r["tid"]))
+	if hit and t != null and t.alive:
+		# a hit round homes on the target like the view's round does (it lands on the body)
 		var armor := _armor_of(w, t)
 		var dmg := wd.damage * Content.combat.mult(wd.damage_type, armor) / 100 * dmg_pct / 100
 		w.damage(t, maxi(1, dmg), src)
 	if wd.damage_type == &"corrosive":
-		TplaSys.add_zone(w, impact, maxi(FX.ONE, FX.mt_to_fx(wd.splash_mt)), 120, wd.damage * dmg_pct / 100, src.owner, src.team)
+		TplaSys.add_zone(w, impact, maxi(FX.ONE, FX.mt_to_fx(wd.splash_mt)), 120, wd.damage * dmg_pct / 100, int(r["owner"]), team)
 	if wd.splash_mt > 0:
-		var r := FX.mt_to_fx(wd.splash_mt)
-		var tair := w.flying(t)
+		var rad := FX.mt_to_fx(wd.splash_mt)
+		var tair: bool = r["air"]
 		# M3.7 (Malachi: "artillery does splash damage to infantry"): the blast reaches a unit's
 		# edge, not only its centre (a spread-out squad standing beside the shell is caught), and
 		# artillery blasts fall off less on soldiers (full damage at the centre, 75 % at the rim).
-		var arty := src.kind == SimEntity.Kind.UNIT and w.udef(src).role == &"artillery"
-		for o: SimEntity in w.units_in_radius(impact, r + SPLASH_REACH):
-			if (hit and o.id == t.id) or not w.enemies(src.team, o.team) or o.res_id < 0:
+		var arty: bool = r["arty"]
+		var tid := int(r["tid"])
+		for o: SimEntity in w.units_in_radius(impact, rad + SPLASH_REACH):
+			if (hit and o.id == tid) or not w.enemies(team, o.team) or o.res_id < 0:
 				continue
 			if w.flying(o) != tair:
 				continue
 			var d := maxi(0, FX.dist(o.pos, impact) - o.radius)
-			if d > r:
+			if d > rad:
 				continue
 			var armor := _armor_of(w, o)
 			var fall := ARTY_INF_FALLOFF if arty and armor == &"infantry" else 50
-			var frac := 100 - fall * d / maxi(1, r)
+			var frac := 100 - fall * d / maxi(1, rad)
 			var sd := wd.damage * splash_mult(wd, armor) / 100 * frac / 100 * dmg_pct / 100
 			w.damage(o, maxi(1, sd), src)
 		if not tair:
-			_collateral(w, src, impact, r, wd, dmg_pct, t.id if hit else 0)
+			_collateral(w, src, team, impact, rad, wd, dmg_pct, tid if hit else 0)
 
 ## M3.3 Phase 3 (19): blasts also damage civilian structures they land on or next to (empty or
 ## held by anyone other than the shooter's team), at COLLATERAL_PCT of the structure damage.
 ## Uses the occupancy grid, so it only looks at the few tiles under the blast.
 const COLLATERAL_PCT := 50
-static func _collateral(w: SimWorld, src: SimEntity, impact: Vector2i, r: int, wd: WeaponDef, dmg_pct: int, skip_id: int) -> void:
+static func _collateral(w: SimWorld, src: SimEntity, team: int, impact: Vector2i, r: int, wd: WeaponDef, dmg_pct: int, skip_id: int) -> void:
 	var t0 := FX.to_tile(impact - Vector2i(r, r))
 	var t1 := FX.to_tile(impact + Vector2i(r, r))
 	var seen := {}
@@ -280,7 +369,7 @@ static func _collateral(w: SimWorld, src: SimEntity, impact: Vector2i, r: int, w
 				continue
 			seen[bid] = true
 			var b := w.get_ent(bid)
-			if b == null or not b.alive or not w.is_civilian(b) or (b.team >= 0 and not w.enemies(src.team, b.team)):
+			if b == null or not b.alive or not w.is_civilian(b) or (b.team >= 0 and not w.enemies(team, b.team)):
 				continue
 			if w.dist_to_building(impact, b) > r:
 				continue
@@ -340,7 +429,7 @@ static func _nearest_enemy_unit(w: SimWorld, src: SimEntity, p: Vector2i, r: int
 	for e: SimEntity in w.units_in_radius(p, r):
 		if not OrderSys.valid_target(w, src, e):
 			continue
-		var d := FX.dist2(e.pos, p)
+		var d := (FX.dist2(e.pos, p) >> 10) * 100 / eff_pct(w, src, e)
 		if d < bd:
 			bd = d
 			best = e

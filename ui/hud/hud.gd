@@ -369,6 +369,12 @@ func _build() -> void:
 	root.add_child(perf_lbl)
 	_build_pause_menu()
 
+func _toggle_pause_options() -> void:
+	var hb: Control = pause_menu.get_node("P").get_child(0)
+	var o: Control = hb.get_node("Options")
+	o.visible = not o.visible
+	hb.get_node("Controls").visible = not o.visible
+
 func _build_pause_menu() -> void:
 	pause_menu = ColorRect.new()
 	(pause_menu as ColorRect).color = Color(0, 0, 0, 0.55)
@@ -401,8 +407,36 @@ func _build_pause_menu() -> void:
 	hl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hl.custom_minimum_size = Vector2(250, 0)
 	hv.add_child(hl)
+	# M4.2 in-match options (volume levels and display toggles), swapped in for the controls help
+	var ov := VBoxContainer.new()
+	ov.name = "Options"
+	ov.visible = false
+	ov.add_theme_constant_override("separation", 2)
+	hb.add_child(ov)
+	ov.add_child(UiTheme.label(tr("PAUSE_OPTIONS"), 16, UiTheme.GOLD))
+	for pair in [["SET_VOL_MASTER", "vol_master"], ["SET_VOL_MUSIC", "vol_music"], ["SET_VOL_SFX", "vol_sfx"], ["SET_VOL_VOICE", "vol_voice"], ["SET_VOL_UI", "vol_ui"]]:
+		var l := UiTheme.label("", 11)
+		ov.add_child(l)
+		var sl := HSlider.new()
+		sl.name = pair[1]
+		sl.min_value = 0.0
+		sl.max_value = 1.0
+		sl.step = 0.05
+		sl.value = float(Settings.g(pair[1]))
+		sl.custom_minimum_size = Vector2(240, 30)
+		var key: String = pair[0]
+		var sk: String = pair[1]
+		var upd := func(val: float):
+			l.text = "%s: %d%%" % [tr(key), roundi(val * 100.0)]
+			Settings.data[sk] = val
+			AudioDirector.apply_volumes()
+		upd.call(sl.value)
+		sl.value_changed.connect(upd)
+		sl.drag_ended.connect(func(_c): Settings.s(sk, sl.value))
+		ov.add_child(sl)
 	var items := [["PAUSE_RESUME", func(): toggle_pause_menu()],
 		["PAUSE_SAVE", func(): show_save_slots(true)],
+		["PAUSE_OPTIONS", func(): _toggle_pause_options()],
 		["PAUSE_SPEED", func(): m.cycle_speed(); _update_pause_menu()],
 		["PAUSE_HEALTHBARS", func(): Settings.s("always_health_bars", not Settings.g("always_health_bars")); _update_pause_menu()],
 		["PAUSE_PERF", func(): Settings.s("perf_overlay", not Settings.g("perf_overlay")); _update_pause_menu()],
@@ -1273,6 +1307,20 @@ func _make_card() -> Array:
 				"sub": tr("HUD_UNPACKING") % ceili(MineSys.ticks_left(sim, me0) / 20.0) if up else "",
 				"act": func(): ctl.issue({"t": "unpack", "ids": mm}), "tip": tr("CMD_UNPACK_TIP"), "accent": Color("#7dff8a")})
 		var ud := Content.unit(e.def_id)
+		if units.size() > 1:
+			# M4.2 mass unload: with several transports selected, one Unload empties them all
+			var tr_ids: Array = []
+			var n_all := 0
+			var cap_all := 0
+			for tid in units:
+				var te: SimEntity = sim.ents.get(tid)
+				if te != null and te.alive and Content.unit(te.def_id) != null and Content.unit(te.def_id).transport_capacity > 0:
+					tr_ids.append(tid)
+					n_all += RosterSys.load_of(sim, te)
+					cap_all += Content.unit(te.def_id).transport_capacity
+			if tr_ids.size() > 1:
+				out.append({"text": tr("CMD_UNLOAD_ALL"), "sub": "%d / %d" % [n_all, cap_all], "disabled": n_all == 0,
+					"act": func(): ctl.issue({"t": "unload", "ids": tr_ids}), "tip": tr("CMD_UNLOAD_ALL_TIP"), "accent": Color("#ffd166")})
 		if ud.transport_capacity > 0 and units.size() == 1:
 			var n_in := RosterSys.load_of(sim, e)
 			out.append({"text": tr("CMD_UNLOAD"), "sub": "%d / %d" % [n_in, ud.transport_capacity], "disabled": n_in == 0,
@@ -1293,6 +1341,9 @@ func _make_card() -> Array:
 		out.append({"text": tr("CMD_RESUME_BUILD"), "act": resume_site.bind(e), "accent": Color("#7dff8a"), "tip": tr("CMD_RESUME_BUILD_TIP")})
 		out.append({"text": tr("CMD_CANCEL_BUILD"), "act": func(): ctl.issue({"t": "cancel_build", "target": e.id}), "tip": tr("CMD_CANCEL_BUILD_TIP")})
 		return out
+	if bd2.produces.is_empty() and bd2.garrison_capacity > 0:   # M4.2: garrison structures keep a rally point
+		out.append({"text": tr("CMD_RALLY"), "pin": true, "act": ctl.begin_target.bind("rally"), "accent": Color("#ffd166"),
+			"alt": func(): ctl.issue({"t": "rally", "ids": [e.id], "clear": true})})
 	if CommandSys.is_barricade(sim, e):   # M3.2: manned barricade -> troops step out
 		var nb := 0
 		for uid2 in sim.ids:

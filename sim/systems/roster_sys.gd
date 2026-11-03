@@ -83,6 +83,8 @@ static func board(w: SimWorld, u: SimEntity, t: SimEntity) -> int:
 	if capacity(w, t) <= 0 or t.owner != u.owner or t.res_id < 0:
 		return -1
 	if FX.dist(u.pos, t.pos) <= u.radius + t.radius + FX.ONE:
+		if not AirSys.boardable(w, t):
+			return 0   # M4.2: wait under the helicopter until it has landed
 		if load_of(w, t) + seats(w, u) > capacity(w, t):
 			w.events.append({"t": "reject", "owner": u.owner, "reason": "REASON_TRANSPORT_FULL"})
 			return -1

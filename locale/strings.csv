@@ -8,6 +8,7 @@ MENU_MAP_BUILDER,Map Builder
 MENU_CAMPAIGN,Campaign
 MENU_COMING_SOON,Coming soon
 MENU_CAMPAIGN_SOON_TOAST,Campaign: coming soon
+MENU_MAP_BUILDER_SOON_TOAST,Map Builder: coming soon
 LOBBY_CUSTOM_TAG,  · custom
 MENU_CREDITS,Credits / About
 MENU_QUIT,Quit
@@ -94,6 +95,7 @@ PAUSE_RESTART,Restart match
 PAUSE_SURRENDER,Surrender
 PAUSE_QUIT,Save & quit to menu
 PAUSE_SAVE,Save game
+PAUSE_OPTIONS,Options
 SAVE_TITLE,Save game
 SAVE_SLOT,Slot %d
 SAVE_EMPTY,empty
@@ -160,6 +162,8 @@ CMD_SCATTER,Scatter
 CMD_HARVEST,Harvest
 CMD_LOAD,Load
 CMD_UNLOAD,Unload
+CMD_UNLOAD_ALL,Unload All
+CMD_UNLOAD_ALL_TIP,Every selected transport lets its troops out.
 CMD_CANCEL_BUILD,"Cancel
 build"
 CMD_RESUME_BUILD,Resume build
@@ -218,7 +222,7 @@ RES_COL_KILLS,Kills
 RES_COL_STRUCT,Bldg. kills
 RES_COL_HARVEST,Harvested
 RES_AI,AI %d (%s)
-RES_SEAM,Veridite seam
+RES_SEAM,Supply Stash
 RES_CACHE,Crude Oil Reserve
 SET_AUDIO,Audio
 SET_VOL_MASTER,Master volume
@@ -242,7 +246,7 @@ REASON_POINTS,Not enough General points
 REASON_POP_CAP,Unit limit reached
 REASON_PREREQ,Requirements not met
 REASON_RANK,Needs a higher General rank
-REASON_RESOURCE,Too close to a supply seam
+REASON_RESOURCE,Blocked by a supply stash
 REASON_STUB,[STUB] Not available yet
 REASON_TERRAIN,Can't build on that ground
 UNIT_EU_CRAWLER,Engineer Crane
@@ -275,7 +279,7 @@ BLD_EU_GUN_BUNKER,Gun Bunker
 BLD_CIV_BLOCK,Civilian Block
 BLD_CIV_HOUSE,House
 BLD_CIV_HOUSE_DESC,"Civilian house. Up to 4 infantry can garrison it."
-BLD_PUMP,Veridite Pump
+BLD_PUMP,Supply Pump
 SHORT_EU_CRAWLER,ENG
 SHORT_EU_HARVESTER,LOG
 SHORT_EU_GRENADIER,PZGR
@@ -597,7 +601,7 @@ BLD_SANDBAGS_DESC,Cheap sandbag wall. One infantry squad (or one soldier) can ma
 BLD_BARRICADE,Concrete Barricade
 BLD_BARRICADE_DESC,Heavy concrete barrier. One infantry squad (or one soldier) can man it and fire from cover; much tougher than sandbags.
 UNIT_EU_FIELD_ENGINEER,Field Engineer
-UNIT_EU_FIELD_ENGINEER_DESC,"Combat engineer with a rifle. Repairs nearby vehicles while standing still, repairs structures, lays anti-tank minefields and builds barricades."
+UNIT_EU_FIELD_ENGINEER_DESC,"Combat engineer with a rifle. Repairs nearby vehicles while standing still, repairs structures and builds barricades."
 UNIT_US_DRONE_OPERATOR,Drone Operator
 UNIT_US_DRONE_OPERATOR_DESC,Launches a scout drone (unarmed flying recon with a wide view). The drone comes back 60 s after it is used or lost. Needs Drone Warfare from the Strategic Center.
 UNIT_US_BOMB_DRONE,Bomb Drone

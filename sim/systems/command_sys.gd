@@ -120,7 +120,15 @@ static func apply(w: SimWorld, c: Dictionary) -> void:
 					TplaSys.evacuate(w, b3)
 					continue
 				if b3 != null and b3.kind == SimEntity.Kind.BUILDING and b3.owner == pid and is_barricade(w, b3):
+					var inside: Array = []
+					for gid in w.ids:
+						if w.ents[gid].res_id == -b3.id:
+							inside.append(w.ents[gid])
 					leave_barricade(w, b3)   # M3.2: troops step out, no stun
+					if b3.rally != Vector2i(-1, -1):   # M4.2: garrison structures send them to their rally point
+						for gu: SimEntity in inside:
+							if gu.alive and gu.res_id == 0:
+								_push(gu, {"o": "move", "pos": b3.rally}, false)
 					continue
 				if b3 != null and b3.kind == SimEntity.Kind.NEUTRAL and b3.owner == pid:
 					w._eject_garrison(b3)
@@ -197,7 +205,7 @@ static func apply(w: SimWorld, c: Dictionary) -> void:
 		"rally":
 			for id in c.get("ids", []):
 				var b6 := w.get_ent(int(id))
-				if b6 != null and b6.owner == pid and b6.kind == SimEntity.Kind.BUILDING:
+				if b6 != null and b6.owner == pid and b6.kind == SimEntity.Kind.BUILDING and rally_ok(w, b6):
 					if bool(c.get("clear", false)):
 						b6.rally = Vector2i(-1, -1)
 					else:
@@ -222,6 +230,11 @@ static func _own_units(w: SimWorld, pid: int, c: Dictionary) -> Array:
 		if e != null and e.owner == pid and e.kind == SimEntity.Kind.UNIT and e.res_id >= 0:
 			out.append(e)
 	return out
+
+## M4.2 (Malachi: "only structures that produce units or garrison units need rally points").
+static func rally_ok(w: SimWorld, b: SimEntity) -> bool:
+	var bd: BuildingDef = w.bdef(b)
+	return bd != null and (not bd.produces.is_empty() or bd.garrison_capacity > 0)
 
 static func _push(u: SimEntity, o: Dictionary, queued: bool) -> void:
 	if not queued:

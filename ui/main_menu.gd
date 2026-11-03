@@ -85,7 +85,18 @@ func build() -> void:
 	soon.offset_bottom = -4
 	cb.add_child(soon)
 	var mb := _button(tr("MENU_MAP_BUILDER"), half, "MapBuilder")   # M2.8
-	mb.pressed.connect(func(): GameSession.goto("res://ui/map_builder.tscn"))
+	# M4.2 (Malachi: "Map Builder - coming soon"): darkened like Campaign, a tap says so
+	mb.modulate = Color(1, 1, 1, 0.78)
+	_lift_campaign_text(mb)
+	mb.pressed.connect(_soon.bind("MENU_MAP_BUILDER_SOON_TOAST"))
+	var soon2 := _shadowed(UiTheme.label(tr("MENU_COMING_SOON"), 10, AMBER), 3)
+	soon2.name = "MapBuilderSoon"
+	soon2.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	soon2.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+	soon2.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	soon2.set_anchors_preset(Control.PRESET_FULL_RECT)
+	soon2.offset_bottom = -4
+	mb.add_child(soon2)
 	row2.add_child(mb)
 	var s := _button(tr("MENU_SETTINGS"), COL_W, "Settings")
 	s.pressed.connect(func(): GameSession.goto("res://ui/settings_screen.tscn"))
@@ -298,8 +309,13 @@ func _lift_campaign_text(cb: Button) -> void:
 ## M3.4: "Coming soon" toast for the Campaign entry.
 var _toast: Label
 func _campaign_soon() -> void:
+	_soon("MENU_CAMPAIGN_SOON_TOAST")
+
+func _soon(key: String) -> void:
+	if _toast != null:
+		_toast.text = tr(key)
 	if _toast == null:
-		_toast = _shadowed(UiTheme.label(tr("MENU_CAMPAIGN_SOON_TOAST"), 16, BTN_HOVER), 6)
+		_toast = _shadowed(UiTheme.label(tr(key), 16, BTN_HOVER), 6)
 		_toast.name = "Toast"
 		_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		_toast.mouse_filter = Control.MOUSE_FILTER_IGNORE

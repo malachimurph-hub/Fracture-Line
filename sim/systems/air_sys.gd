@@ -38,11 +38,53 @@ static func run(w: SimWorld) -> void:
 		if d.move_layer == &"air":
 			if d.tags.has("jet"):
 				_jet(w, u, d)
+			elif d.transport_capacity > 0:
+				_heli_transport(w, u, d)
 		elif d.tags.has("jtac"):
 			jtacs.append(u)
 	if w.tick % 20 == 5:
 		for j: SimEntity in jtacs:
 			_jtac_call(w, j)
+
+# ------------------------------------------------------------------ transport helicopters
+## M4.2 (Malachi: "any aircraft transporting troops needs to land before troops can enter"):
+## an idle transport helicopter with friendly infantry on their way to board it sets down
+## (LANDING phase 0 = descending, still airborne, for HELI_LAND_TICKS), then sits PARKED (a ground
+## target that cannot fire) until it is given an order, when it lifts off again.
+const HELI_LAND_TICKS := 30
+const HELI_CALL_R := FX.ONE * 14
+
+static func _heli_transport(w: SimWorld, u: SimEntity, d: UnitDef) -> void:
+	if u.air_state == FLYING:
+		if u.goal == NONE and u.orders.is_empty() and u.spd == 0 and w.tick % 4 == u.id % 4 and _boarders_near(w, u):
+			if w.map.passable(FX.to_tile(u.pos), false):
+				u.air_state = LANDING
+				u.phase = 0
+				u.phase_t = w.tick + HELI_LAND_TICKS
+				u.target = 0
+		return
+	if not u.orders.is_empty():
+		u.air_state = FLYING   # lift off for the new order
+		u.phase = 0
+		w.events.append({"t": "takeoff", "id": u.id})
+		return
+	if u.air_state == LANDING and w.tick >= u.phase_t:
+		u.air_state = PARKED
+		u.air_t = 0
+		w.events.append({"t": "landed", "id": u.id})
+
+static func _boarders_near(w: SimWorld, t: SimEntity) -> bool:
+	for o: SimEntity in w.units_in_radius(t.pos, HELI_CALL_R):
+		if o.owner != t.owner or o.res_id < 0 or o.orders.is_empty():
+			continue
+		var od: Dictionary = o.orders[0]
+		if od.get("o", "") == "garrison" and int(od.get("target", 0)) == t.id:
+			return true
+	return false
+
+## Can infantry step aboard right now? Ground transports always; helicopters only once landed.
+static func boardable(w: SimWorld, t: SimEntity) -> bool:
+	return not w.is_air(t) or t.air_state == PARKED
 
 # ------------------------------------------------------------------ airfield slots
 static func is_airfield(w: SimWorld, b: SimEntity) -> bool:

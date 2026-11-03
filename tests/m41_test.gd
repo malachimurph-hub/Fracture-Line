@@ -87,6 +87,7 @@ static func _transport(t: Node) -> void:
 		var s1 := w.spawn_unit(sq_id, 0, null, FX.tile_center(c))
 		var s2 := w.spawn_unit(sq_id, 0, null, FX.tile_center(c))
 		var s3 := w.spawn_unit(sq_id, 0, null, FX.tile_center(c))
+		heli.air_state = AirSys.PARKED   # M4.2: troops board a landed helicopter (m42 tests the landing)
 		var b1 := RosterSys.board(w, s1, heli)
 		var b2 := RosterSys.board(w, s2, heli)
 		var b3 := RosterSys.board(w, s3, heli)

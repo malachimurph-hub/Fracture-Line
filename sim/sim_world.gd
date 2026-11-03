@@ -28,6 +28,7 @@ var temp_vision: Array = []      ## [{team, pos(tile), r, until}]
 var pending: Array = []          ## commands to apply next tick
 var zones: Array = []            ## rust (corrosive) zones: {pos, r, until, dps, owner, team}
 var pending_holes: Array = []    ## TPLA rebuild holes to open after the death pass
+var flight: Array = []           ## M4.2 rounds in the air: damage lands on impact (CombatSys)
 var has_tpla: bool = false       ## salvage crates drop only when a TPLA player is in the match
 
 # ------------------------------------------------------------------ setup
@@ -62,7 +63,7 @@ func setup(map_def: MapDef, slots: Array, opts: Dictionary, p_seed: int) -> void
 		e.amount = int(r["amount"])
 		e.max_amount = e.amount
 		e.radius = 1300   # M4.1: the bigger Crude Oil Reserve (was 900)
-		map.mark_nobuild(r["tile"], 3)
+		map.mark_nobuild(r["tile"], 1)   # M4.2: only the stash itself (was a 7 x 7 no-build zone)
 	# neutrals
 	for n in map_def.neutrals:
 		var d: BuildingDef = Content.building(n["kind"])
@@ -337,7 +338,24 @@ func edge_dist(a: SimEntity, b: SimEntity) -> int:
 
 # ------------------------------------------------------------------ placement
 ## Returns "" if valid, else a localization key with the reason.
-func can_place(pid: int, def_id: StringName, t: Vector2i, check_cost: bool = true, builder_ids: Array = []) -> String:
+## M4.2: players may build right up to a supply stash (only the stash's own 3 x 3 blocks); the
+## AI keeps the old 7 x 7 clearance so its harvest lanes and economy pacing stay as tuned.
+var _res_mask := PackedByteArray()
+func _near_res(c: Vector2i) -> bool:
+	if _res_mask.size() != map.w * map.h:
+		_res_mask.resize(map.w * map.h)
+		_res_mask.fill(0)
+		for id in ids:
+			var r: SimEntity = ents[id]
+			if r.kind == SimEntity.Kind.RESOURCE:
+				for yy in range(-3, 4):
+					for xx in range(-3, 4):
+						var q: Vector2i = r.tile + Vector2i(xx, yy)
+						if map.in_bounds(q):
+							_res_mask[map.idx(q)] = 1
+	return _res_mask[map.idx(c)] != 0
+
+func can_place(pid: int, def_id: StringName, t: Vector2i, check_cost: bool = true, builder_ids: Array = [], ai_clear: bool = false) -> String:
 	var d: BuildingDef = Content.building(def_id)
 	if d == null or not d.buildable:
 		return "REASON_INVALID"
@@ -357,7 +375,7 @@ func can_place(pid: int, def_id: StringName, t: Vector2i, check_cost: bool = tru
 				return "REASON_TERRAIN"
 			if map.occ[i] != 0:
 				return "REASON_BLOCKED"
-			if map.nobuild[i] != 0:
+			if map.nobuild[i] != 0 or (ai_clear and map.nobuild[i] == 0 and _near_res(c)):
 				return "REASON_RESOURCE"
 	# enemy units standing on the footprint block placement
 	var center := Vector2i(t.x * FX.ONE + d.footprint.x * FX.HALF, t.y * FX.ONE + d.footprint.y * FX.HALF)
@@ -664,6 +682,7 @@ func state_hash() -> int:
 		h = FX.fnv_int(h, e.owner)
 		h = FX.fnv_int(h, e.tier)
 	h = FX.fnv_int(h, zones.size())
+	h = FX.fnv_int(h, flight.size())
 	return h
 
 func serialize() -> Dictionary:
@@ -677,7 +696,7 @@ func serialize() -> Dictionary:
 		"players": pd, "ents": ed, "next_id": next_id, "options": options.duplicate(), "fog": fog.to_dict(),
 		"winner_team": winner_team, "game_over": game_over, "temp_vision": temp_vision.duplicate(true),
 		"pending": pending.duplicate(true), "zones": zones.duplicate(true), "pending_holes": pending_holes.duplicate(true),
-		"has_tpla": has_tpla, "path_queue": path_queue.duplicate(), "hash": state_hash(), "map_data": _map_data()}
+		"has_tpla": has_tpla, "flight": flight.duplicate(true), "path_queue": path_queue.duplicate(), "hash": state_hash(), "map_data": _map_data()}
 
 ## M2.8: custom maps travel inside the save (resume works after the map is edited or deleted).
 func _map_data() -> Dictionary:
@@ -688,8 +707,9 @@ func deserialize(d: Dictionary) -> void:
 	var map_def: MapDef = MapStore.resolve(StringName(d["map_id"]), d.get("map_data", {}))
 	map_id = map_def.id
 	map.load_from(map_def)
+	_res_mask = PackedByteArray()
 	for r in map_def.resources:
-		map.mark_nobuild(r["tile"], 3)
+		map.mark_nobuild(r["tile"], 1)   # M4.2: only the stash itself (was a 7 x 7 no-build zone)
 	tick = int(d["tick"])
 	rng.from_dict(d["rng"])
 	seed_value = int(d["seed"])
@@ -714,6 +734,7 @@ func deserialize(d: Dictionary) -> void:
 	zones = d.get("zones", [])
 	pending_holes = d.get("pending_holes", [])
 	has_tpla = bool(d.get("has_tpla", false))
+	flight = d.get("flight", [])
 	power_dirty = true
 	path_queue.clear()
 	for id in ids:
