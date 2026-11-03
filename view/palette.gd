@@ -66,6 +66,29 @@ const FACTION_PAINT := {&"us": Color("#c9b48c"), &"eu": Color("#44523a"), &"tpla
 ## structures restyled with their faction's paint (M3.5 power station swap)
 const PAINT_BUILDINGS := {&"ecc_power": 0.8, &"tpla_cc_plant": 0.8}
 
+## M4.2 (Malachi): per-unit paint overrides. US aircraft and the US dozer are grey, the UH-60
+## Black Hawk is black; every other US vehicle stays light tan.
+const US_AIR_GREY := Color("#7f868c")
+const UNIT_PAINT := {&"us_blackhawk": Color("#1d1f21"), &"us_dozer": Color("#80868a")}
+
+static func paint_for(def_id: StringName) -> Color:
+	if UNIT_PAINT.has(def_id):
+		return UNIT_PAINT[def_id]
+	var fac := Content.faction_of_id(def_id)
+	var ud: UnitDef = Content.unit(def_id)
+	if fac == &"us" and ud != null and ud.move_layer == &"air":
+		return US_AIR_GREY
+	return FACTION_PAINT.get(fac, Color(0, 0, 0, 0))
+
+## Paint for one unit type (faction paint plus the overrides above).
+static func apply_unit_paint(n: Node, def_id: StringName) -> void:
+	var c := paint_for(def_id)
+	if c.a <= 0.0:
+		return
+	for g in n.find_children("*", "GeometryInstance3D", true, false):
+		if _is_m3(g):
+			(g as GeometryInstance3D).set_instance_shader_parameter(&"paint_color", c)
+
 ## Sets the faction paint on every m3-shaded mesh under n (vehicles, aircraft, drones).
 static func apply_paint(n: Node, fac: StringName, strength := 1.0) -> void:
 	if not FACTION_PAINT.has(fac):

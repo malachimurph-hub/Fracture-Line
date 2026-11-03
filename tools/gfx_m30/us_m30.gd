@@ -39,7 +39,7 @@ static func jobs() -> Dictionary:
 		"us_garage": func() -> void: u._make("garage", Vector2(4, 4), 1.55, _motor_pool),
 		"us_reactor": func() -> void: u._make("reactor", Vector2(3, 3), 2.1, _reactor_white),
 		"us_strategy": func() -> void: u._make("strategy", Vector2(4, 4), 1.3, _pentagon),   # M3.1: bigger (4 x 4)   # M3.0.1: Pentagon-style (was the office block, _office)
-		"us_airfield": func() -> void: u._make("airfield", Vector2(8, 8), 2.2, _airfield_lit),
+		"us_airfield": func() -> void: u._make("airfield", Vector2(10, 8), 2.2, _airfield_lit),
 		"us_drop_zone": func() -> void: u._make("drop_zone", Vector2(3, 3), 1.0, _data_center),
 		"us_firebase": func() -> void: u._make("firebase", Vector2(2, 2), 0.9, _m777_pad, _m777, Vector3(0, Y0 + 0.02, 0)),
 		"us_patriot": func() -> void: u._make("patriot", Vector2(2, 2), 1.0, _lpws_trailer, _lpws_mount, Vector3(0.05, Y0 + 0.36, 0.1)),
@@ -428,7 +428,7 @@ static func _office(g) -> void:
 
 static func _airfield_lit(g) -> void:
 	U()._airbase8(g, "us")
-	_roof_lights(g, _corners(0, 0, 3.8, 3.8, Y0 + 0.02))
+	_roof_lights(g, _corners(0, 0, U().AB_W * 0.5 - 0.2, 3.8, Y0 + 0.02))
 
 # ================================================================== Data Center
 ## Long windowless server hall with louvred cooling walls, a row of roof chillers (spinning fans),

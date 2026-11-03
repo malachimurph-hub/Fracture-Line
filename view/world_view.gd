@@ -99,7 +99,7 @@ func _air_view(id: int, e: SimEntity, ud: UnitDef, v: Node3D, p: Vector3, delta:
 		want = 0.0
 		var home := sim.get_ent(e.air_home)
 		if home != null and e.phase == 0:   # M3.1: glide slope down to the touchdown point
-			var td := FX.to_world(AirSys.local_pos(home, AirSys.RWY_X0, AirSys.RWY_Z))
+			var td := FX.to_world(AirSys.local_pos(home, AirSys.rwy_x0(home), AirSys.RWY_Z))
 			want = clampf(FX.to_world(e.pos).distance_to(td) * 0.6, 0.0, JET_ALT)
 	var dive := ud.tags.has("suicide") and want > 0.0
 	if dive:
@@ -424,7 +424,7 @@ func _ensure_view(e: SimEntity) -> EntityView:
 	var did := String(e.def_id)
 	Weathering.apply(v, &"tpla" if did.begins_with("tpla_") else (&"eu" if did.begins_with("eu_") else (&"ecc" if did.begins_with("ecc_") else &"neutral")))
 	if e.kind == SimEntity.Kind.UNIT and not v is InfantryView:
-		Palette.apply_paint(v, Content.faction_of_id(e.def_id))   # M3.5 faction vehicle paint
+		Palette.apply_unit_paint(v, e.def_id)   # M3.5 faction vehicle paint (M4.2 per-unit overrides)
 	elif e.kind == SimEntity.Kind.BUILDING and Palette.PAINT_BUILDINGS.has(e.def_id):
 		Palette.apply_paint(v, Content.faction_of_id(e.def_id), Palette.PAINT_BUILDINGS[e.def_id])
 	v.position = _world_pos(e)

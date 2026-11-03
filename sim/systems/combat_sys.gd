@@ -310,6 +310,13 @@ static func resolve_flight(w: SimWorld) -> void:
 	for r: Dictionary in due:
 		_impact(w, r)
 
+## Tests / tools: land every round in the air now.
+static func land_all(w: SimWorld) -> void:
+	var all := w.flight
+	w.flight = []
+	for r: Dictionary in all:
+		_impact(w, r)
+
 static func _impact(w: SimWorld, r: Dictionary) -> void:
 	var wd: WeaponDef = Content.weapon(StringName(r["w"]))
 	if wd == null:

@@ -78,7 +78,7 @@ func _render(id: StringName, scene: String) -> void:
 	var s := String(id)
 	Weathering.apply(v, &"tpla" if s.begins_with("tpla_") else (&"eu" if s.begins_with("eu_") else (&"ecc" if s.begins_with("ecc_") else &"neutral")))
 	if Content.units.has(id):   # M4.1: icons wear the in-game faction vehicle paint
-		Palette.apply_paint(v, Content.faction_of_id(id))
+		Palette.apply_unit_paint(v, id)
 	for k in 3:
 		await get_tree().process_frame
 	var ms: Array = []
