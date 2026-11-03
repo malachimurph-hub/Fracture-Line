@@ -70,6 +70,9 @@ func build() -> void:
 		nl.set_anchors_preset(Control.PRESET_FULL_RECT)
 		nl.offset_bottom = -4
 		tb.add_child(nl)
+		for x: Button in [b, tb]:   # two half-width lead buttons: smaller text so both fit the column
+			x.add_theme_font_size_override("font_size", 16)
+			x.clip_text = true
 		r0.add_child(tb)
 	else:
 		_col.add_child(b)
