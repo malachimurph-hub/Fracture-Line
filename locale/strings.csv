@@ -722,3 +722,4 @@ TUT_MOVE,"Select your soldiers, then tap the ground to move them."
 TUT_ATTACK,The enemy base is to the east. Destroy it to win.
 TUT_DONE,"Well done, Commander. You are ready for Skirmish."
 TUT_SKIP,Skip tutorial
+SET_REPLAY_TUTORIAL,Replay First Battle (tutorial)
