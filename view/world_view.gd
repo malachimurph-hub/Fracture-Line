@@ -51,8 +51,10 @@ func setup(r: MatchRunner, pid: int) -> void:
 	FX.ground = sim.map   # M3.3 P3 (17): views follow the ground height on maps with hills
 	terrain = TerrainView.new()
 	add_child(terrain)
-	terrain.decor_override = (Content.maps[sim.map_id] as MapDef).decor
-	terrain.build(sim.map, Content.maps[sim.map_id].tiles_path, MapEnv.for_map(sim.map_id))
+	var md: MapDef = Content.maps[sim.map_id]
+	TerrainView.civ_theme = md.civ_theme   # M4.3 country-themed civilians
+	terrain.decor_override = md.decor
+	terrain.build(sim.map, md.tiles_path, MapEnv.for_map(sim.map_id))
 	var civ: Array = []   # M4.2: planned street grid around civilian blocks and houses
 	for nid in sim.ids:
 		var ne: SimEntity = sim.ents[nid]
