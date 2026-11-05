@@ -11,6 +11,7 @@ static func run(t: Node) -> void:
 	_unload_floater(t)
 	_rubble(t)
 	_audio(t)
+	_country_maps(t)
 
 static func _power(t: Node) -> void:
 	for id in [&"eu_javelin_pit", &"eu_guard_tower", &"us_firebase"]:
@@ -81,3 +82,17 @@ static func _audio(t: Node) -> void:
 	for k in ["move_tank_loop", "move_ifv_loop", "move_light_loop", "move_heli_loop", "move_jet_loop", "jet_takeoff", "rocket_heavy", "missile_heavy", "artillery_heavy", "cannon_heavy"]:
 		t._check(ResourceLoader.exists("res://audio/sfx/%s.ogg" % k), "sound %s exists" % k)
 	t._check(AudioDirector.move_class(Content.unit(&"us_halberd")) == "tank" and AudioDirector.move_class(Content.unit(&"us_lynx")) == "light", "vehicles get size-matched engine loops")
+
+static func _country_maps(t: Node) -> void:
+	var expect := {&"prairie_crossing": &"us", &"rheinbruck": &"de", &"qanat_gate": &"ir", &"severny_bridge": &"ru"}
+	for id in expect:
+		t._check(Content.maps.has(id), "country map %s is registered" % id)
+		var md: MapDef = Content.maps[id]
+		t._check(md.civ_theme == expect[id], "%s civ_theme is %s" % [id, expect[id]])
+		var label := tr(md.name_key)
+		t._check(label.contains("USA") or label.contains("Germany") or label.contains("Iran") or label.contains("Russia"),
+			"%s label names the country (%s)" % [id, label])
+		TerrainView.civ_theme = md.civ_theme
+		var hk := PropMeshes.themed("house_a", md.civ_theme)
+		t._check(PropMeshes.make(hk) != null, "%s house mesh %s builds" % [id, hk])
+		t._check(PropMeshes.make(PropMeshes.themed("civ_block", md.civ_theme)) != null, "%s civ block mesh builds" % id)

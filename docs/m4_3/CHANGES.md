@@ -11,8 +11,8 @@ Branch m43 off master 3d620b5 (0.4.2). Not built, merged, bumped or uploaded.
 | 5 | Iran camo net | Unbuildable; TPLA AI skips it |
 | 6 | Technical / supply pickup | Technical remounted on same Hilux-style body as the supply pickup (was Safir jeep); chrome grille + side steps; random blue/white/black/red/yellow paint |
 | 7 | Iran HQ / Workshop / Garage | New models: stone municipal hall (arched portico, cornices, clock turret, flag); glass office block; steel-clad vehicle depot with office. AO + texture bake + icons redone |
-| 8 | Country maps, debris | Debris clearing done. Full country-themed map redesign NOT done (large follow-up) |
-| 9 | Crude Oil Reserves | NOT removed: they are a core income resource (see report) |
+| 8 | Country maps, debris | Debris clearing done. Four new country-staged review maps added (Prairie Crossing — USA, Rheinbruck — Germany, Qanat Gate — Iran, Severny Bridge — Russia) with themed civilian props; existing maps unchanged pending look-and-feel sign-off |
+| 9 | Crude Oil Reserves | Kept (Malachi): same harvest loop as Supply Stashes |
 | 10 | Movement audio | Engine loops per class: tank rumble, IFV diesel, light V8, rotor, jet + take-off roar |
 | 11 | Weapon size distinction | New heavy rocket, heavy missile, reverberant artillery and big-gun sounds |
 | 12 | Germany gun bunker + AA gun | Unbuildable; EU AI uses guard tower / Mantis |
@@ -21,3 +21,5 @@ Branch m43 off master 3d620b5 (0.4.2). Not built, merged, bumped or uploaded.
 
 Tests: new `m43` suite (test_runner "m43"). Minefield test reduced to trigger-only (mines disabled in game since 0.4.2).
 Audio generator: tools/m43/gen_sfx_m43.py. Models: tools/m43/models_m43.gd.
+
+Country maps: tools/gen_maps_m43.py. Props: PropMeshes themed houses/blocks/gas (us/de/ir/ru). MapDef.civ_theme.
