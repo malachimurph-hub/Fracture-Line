@@ -461,6 +461,22 @@ func _ensure_view(e: SimEntity) -> EntityView:
 				(v as InfantryView).set_variant(e.id)   # M3.4: per-soldier look
 		if e.tier > 0:
 			v.set_tier(e.tier)
+		var mc := AudioDirector.move_class(d)
+		if mc != "":   # M4.3: engine / tracks / rotor / jet loop, faded in while moving
+			var mv := AudioStreamPlayer3D.new()
+			mv.name = "MoveLoop"
+			var ms := (load(AudioDirector.MOVE_LOOPS[mc]) as AudioStreamOggVorbis).duplicate() as AudioStreamOggVorbis
+			ms.loop = true
+			mv.stream = ms
+			mv.bus = &"SFX"
+			mv.volume_db = -60.0
+			mv.unit_size = 5.0 if mc in ["tank", "jet", "heli"] else 3.5
+			mv.max_distance = 45.0
+			mv.max_polyphony = 1
+			mv.pitch_scale = 0.96 + float(e.id % 9) * 0.01
+			mv.set_meta("cls", mc)
+			v.add_child(mv)
+			move_loops[e.id] = mv
 		if AudioDirector.is_drone(String(e.def_id)):   # M4.2: looping motor hum while the drone flies
 			var hum := AudioStreamPlayer3D.new()
 			hum.name = "DroneHum"
@@ -664,7 +680,13 @@ func _on_fire(ev: Dictionary) -> void:
 	if cls == "flame":
 		snd = "flame"
 	elif cls == "artillery":
-		snd = "howitzer"
+		snd = "artillery_heavy"   # M4.3: deep boom with a long reverberant roll
+	elif cls == "salvo":
+		snd = "rocket_heavy"      # M4.3: loud launch + whoosh for rocket artillery
+	elif cls == "missile" and wd0 != null and (wd0.damage >= 120 or wd0.splash_mt >= 700):
+		snd = "missile_heavy"
+	elif cls == "cannon" and wd0 != null and wd0.damage >= 100:
+		snd = "cannon_heavy"
 	elif kind == "tracer_minigun":
 		snd = "minigun"     # M4.1: ear-ringing buzz of a door minigun
 	elif wd0 != null and wd0.damage_type == &"hmg" and kind == "tracer_heavy":
@@ -1239,6 +1261,11 @@ func frame(a: float, delta: float) -> void:
 				(v as InfantryView).set_braced(not man.is_empty())
 			if rappel.has(id):
 				p = _rappel_step(id, p, delta)
+			if move_loops.has(id):
+				if is_instance_valid(move_loops[id]):
+					_move_loop(move_loops[id], e, delta)
+				else:
+					move_loops.erase(id)
 			v.position = p
 			if e.moving and _crushers.has(e.def_id) and (Engine.get_process_frames() + id) % 6 == 0 and terrain.has_cars():
 				terrain.wreck_cars(Vector2(p.x, p.z), 0.42, true)   # M3.3 P3 (19): tanks flatten parked cars
@@ -1422,6 +1449,24 @@ var ghost_overlay_ok: StandardMaterial3D
 var ghost_overlay_bad: StandardMaterial3D
 
 var ghost_arrow: MeshInstance3D
+var move_loops := {}   ## unit id -> AudioStreamPlayer3D (M4.3)
+const MOVE_DB := {"tank": -6.0, "ifv": -8.0, "light": -9.0, "heli": -5.0, "jet": -6.0}
+
+func _move_loop(mv: AudioStreamPlayer3D, e: SimEntity, delta: float) -> void:
+	var cls: String = mv.get_meta("cls")
+	if cls == "jet":   # M4.3: thrust roar on the take-off roll
+		var roll := e.air_state == AirSys.TAXI_OUT and e.phase >= 2
+		if roll and not bool(mv.get_meta("roll", false)):
+			AudioDirector.sfx("jet_takeoff", mv.global_position, 0.0, 0.05)
+		mv.set_meta("roll", roll)
+	var on := e.moving if not (cls == "heli" or cls == "jet") else sim.flying(e)
+	var want := float(MOVE_DB[cls]) if on else -60.0
+	mv.volume_db = move_toward(mv.volume_db, want, delta * (40.0 if on else 25.0))
+	if mv.volume_db > -55.0:
+		if not mv.playing:
+			mv.play(randf() * 2.5)
+	elif mv.playing:
+		mv.stop()
 
 ## M4.3: troops leaving a helicopter in the air slide down a fast rope (view only; the sim has
 ## already put them on the ground under the helicopter).
