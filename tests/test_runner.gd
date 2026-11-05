@@ -1365,7 +1365,12 @@ func test_tpla() -> void:
 	var gren := w.spawn_unit(&"eu_grenadier", 1, null, trap.pos + Vector2i(FX.ONE, 0))
 	_ticks(r, 10)
 	_check(not trap.alive and (not gren.alive or gren.hp < gren.max_hp), "enemy infantry walking onto the trap sets it off")
+	# M4.3: camo nets are retired from the build menu; still exercise the hide effect if placed.
+	var nd := Content.building(&"tpla_camo_net")
+	var was := nd.buildable
+	nd.buildable = true
 	var net := _tpla_place(w, 0, &"tpla_camo_net", base + Vector2i(-4, 8))
+	nd.buildable = was
 	_ticks(r, 5)
 	var hidden := 0
 	for id in w.ids:
