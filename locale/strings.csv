@@ -684,6 +684,14 @@ MAP_SUNFALL_BASIN,Sunfall Basin
 MAP_SUNFALL_BASIN_DESC,"Six players. Four corner bases and one on the north and south edges, around a ring of dunes and mesas with an oasis town in the gravel basin."
 MAP_HIGHLAND_CROWN,Highland Crown
 MAP_HIGHLAND_CROWN_DESC,"Eight players. Corner and edge bases around a crown of high hills, with lakes, woods, farmland and a market town in the centre."
+MAP_PRAIRIE,Prairie Crossing — USA
+MAP_PRAIRIE_DESC,"United States. Temperate farmland and a small grid town with ranch houses, a strip of shops and gas stations; bases sit on the outskirts with room to build."
+MAP_RHEINBRUCK,Rheinbruck — Germany
+MAP_RHEINBRUCK_DESC,"Germany. A canal town of half-timbered houses and neat streets, oak woods and bridges; bases on the outer meadows."
+MAP_QANAT,Qanat Gate — Iran
+MAP_QANAT_DESC,"Iran. An arid basin town of courtyard houses and flat roofs around a small oasis, palms and mesas outside; bases on the sandy fringe."
+MAP_SEVERNY,Severny Bridge — Russia
+MAP_SEVERNY_DESC,"Russia. A winter river town of panel apartments and wooden houses, pine forest and ice bridges; bases beyond the snowy outskirts."
 UNIT_US_SQUAD,Combat Squad
 UNIT_US_SQUAD_DESC,"Six Marines as one unit: 3 riflemen, an M240B machine gunner, an anti-armor soldier and a grenadier. Soldiers fall one by one as the squad loses health, and their weapons with them. Tougher than single soldiers; can garrison buildings and man a barricade."
 UNIT_EU_SQUAD,Combat Squad
