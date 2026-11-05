@@ -27,4 +27,5 @@ Country maps: tools/gen_maps_m43.py. Props: PropMeshes themed houses/blocks/gas 
 ## Ship
 - versionName 0.4.3 / versionCode 27
 - package com.malachimurphy.fractureline (APK)
-- FractureLine-0.4.3.apk
+- FractureLine-0.4.3.apk (99.4 MB, under 100 MB — no recompress)
+- Drive: 1NFWylwbvWsN7Dq6g929vxHOy1sCsPI0e
