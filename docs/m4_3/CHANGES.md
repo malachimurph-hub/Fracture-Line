@@ -9,9 +9,9 @@ Branch m43 off master 3d620b5 (0.4.2). Not built, merged, bumped or uploaded.
 | 3 | Front arrow on placement ghost | Green arrow at the exit edge, follows rotation |
 | 4 | Boarding before landing / rappel | Helis descend to ground in LANDING before troops board; mid-air unload plays a fast-rope slide (1.4 s) |
 | 5 | Iran camo net | Unbuildable; TPLA AI skips it |
-| 6 | Technical / supply pickup | Already the pickup-truck body; now random blue/white/black/red/yellow per vehicle |
+| 6 | Technical / supply pickup | Technical remounted on same Hilux-style body as the supply pickup (was Safir jeep); chrome grille + side steps; random blue/white/black/red/yellow paint |
 | 7 | Iran HQ / Workshop / Garage | New models: stone municipal hall (arched portico, cornices, clock turret, flag); glass office block; steel-clad vehicle depot with office. AO + texture bake + icons redone |
-| 8 | Country maps, debris | Building over civilian rubble now clears it. Map redesign NOT done (see report) |
+| 8 | Country maps, debris | Debris clearing done. Full country-themed map redesign NOT done (large follow-up) |
 | 9 | Crude Oil Reserves | NOT removed: they are a core income resource (see report) |
 | 10 | Movement audio | Engine loops per class: tank rumble, IFV diesel, light V8, rotor, jet + take-off roar |
 | 11 | Weapon size distinction | New heavy rocket, heavy missile, reverberant artillery and big-gun sounds |
