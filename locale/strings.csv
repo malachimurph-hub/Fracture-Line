@@ -200,7 +200,7 @@ ALERT_BASE_ATTACK,Our base is under attack
 ALERT_UNITS_ATTACK,Units under attack
 ALERT_BUILT,%s complete
 ALERT_UNIT_READY,%s ready
-ALERT_LOW_POWER,Low power! Build a Power Plant
+ALERT_LOW_POWER,Low power! Powered structures shut down - build a Power Plant
 ALERT_RANK,Promoted to General rank %d — point available
 ALERT_ELIMINATED,Player %d eliminated
 ALERT_YOU_ELIMINATED,You have been eliminated
@@ -238,7 +238,7 @@ REASON_GRID,Outside the power grid
 REASON_SHROUD,Unexplored ground — scout it first
 REASON_UNREACHABLE,No path for the selected builder (water or cliffs in the way)
 REASON_INVALID,Can't do that
-REASON_LOW_POWER,Low power: production at half speed
+REASON_LOW_POWER,Low power: production stopped
 REASON_NO_BUILDER,Select an engineer vehicle to build
 REASON_NO_POWER,Offline: no power
 REASON_OWNED,Already owned
@@ -490,7 +490,7 @@ BLD_US_STRATEGY_DESC,"Tech centre: unlocks the Scout Sniper, M109A7 howitzer, Th
 BLD_US_PATRIOT,LPWS
 BLD_US_PATRIOT_DESC,"C-RAM air defence: trailer-mounted 20mm rotary gun, strong against aircraft, weak against ground targets. Needs power."
 BLD_US_FIREBASE,M777A2
-BLD_US_FIREBASE_DESC,Emplaced M777A2 155mm howitzer that shells ground targets at long range. Needs power.
+BLD_US_FIREBASE_DESC,Emplaced M777A2 155mm howitzer that shells ground targets at long range. Needs no power.
 BLD_US_DROP_ZONE,Data Center
 BLD_US_DROP_ZONE_DESC,Server hall that brings in $500 a minute. Uses a lot of power.
 POWER_US_UAV,UAV Recon
@@ -706,9 +706,9 @@ UNIT_ECC_HIND_DESC,"Armoured assault helicopter with a troop cabin: carries 6 se
 UNIT_EU_H145M,H145M
 UNIT_EU_H145M_DESC,"Light utility helicopter: carries 6 seats (two Combat Squads) with a light machine gun in each door. Fastest and cheapest transport, but lightly built. Passengers are lost if it is shot down. Built at the Airfield."
 BLD_EU_GUARD_TOWER,Guard Tower
-BLD_EU_GUARD_TOWER_DESC,"Raised guard tower with a mounted .50 cal heavy machine gun and a searchlight. Strong against infantry and light vehicles. Needs power to fire."
+BLD_EU_GUARD_TOWER_DESC,"Raised guard tower with a mounted .50 cal heavy machine gun and a searchlight. Strong against infantry and light vehicles. Needs no power."
 BLD_EU_JAVELIN_PIT,Javelin Foxhole
-BLD_EU_JAVELIN_PIT_DESC,"Sandbagged foxhole with two Javelin anti-tank teams, kneeling to fire. Very long range; strong against vehicles, cannot hit aircraft. Needs power to fire."
+BLD_EU_JAVELIN_PIT_DESC,"Sandbagged foxhole with two Javelin anti-tank teams, kneeling to fire. Very long range; strong against vehicles, cannot hit aircraft. Needs no power."
 BLD_EU_MANTIS,MANTIS AA Turret
 BLD_EU_MANTIS_DESC,"Single-barrel 35 mm revolver-cannon air-defence turret with a very high rate of fire. Shreds aircraft and also hits ground vehicles hard. Needs power to fire."
 MENU_TUTORIAL,First Battle

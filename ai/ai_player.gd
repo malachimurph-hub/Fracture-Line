@@ -38,8 +38,8 @@ func to_dict() -> Dictionary:
 ## "" = the faction has no such structure.
 func roles() -> Dictionary:
 	return {"builder": &"eu_crawler", "harvester": &"eu_harvester", "refinery": &"eu_hub", "power": &"eu_reactor",
-		"bunker": &"eu_gun_bunker", "barracks": &"eu_barracks", "heavy": &"eu_motor_pool", "motor": &"eu_motor_pool",   # M3.5: one vehicle factory
-		"tech": &"eu_signals", "support": &"eu_relay", "aa_tower": &"eu_flak_tower", "income": &"eu_exchange",
+		"bunker": &"eu_guard_tower", "barracks": &"eu_barracks", "heavy": &"eu_motor_pool", "motor": &"eu_motor_pool",   # M3.5: one vehicle factory
+		"tech": &"eu_signals", "support": &"eu_relay", "aa_tower": &"eu_mantis", "income": &"eu_exchange",
 		"mine": &"", "pylon": &""}   # M2.9: Grid Pylon removed; M4.2: minefields removed
 
 var R: Dictionary:
@@ -220,9 +220,21 @@ func _next_building() -> StringName:
 	var counts := {}
 	for b: SimEntity in my_ents(SimEntity.Kind.BUILDING):
 		counts[b.def_id] = counts.get(b.def_id, 0) + 1
+	# M4.3: low power now shuts powered structures down completely, so power comes before the build
+	# list whenever headroom is short (one plant at a time)
+	var pp := me()
+	if pp.power_prod > 0 and pp.power_prod - pp.power_used < 2:
+		var building_one := false
+		for b0: SimEntity in my_ents(SimEntity.Kind.BUILDING):
+			if b0.def_id == R["power"] and not b0.built:
+				building_one = true
+		if not building_one:
+			return R["power"]
 	var desired := {}
 	for item in persona.opening:
 		var id := StringName(item)
+		if not Content.building(id).buildable:
+			continue   # M4.3: retired structures (German Gun Bunker / Air Defence Gun) never stall the list
 		desired[id] = desired.get(id, 0) + 1
 		if counts.get(id, 0) < desired[id]:
 			if id == R["refinery"] and desired[id] >= 2 and seconds() < cfg["expand_s"]:

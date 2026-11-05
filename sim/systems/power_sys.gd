@@ -40,10 +40,6 @@ static func recompute_grid(w: SimWorld) -> void:
 				sources.append(b)
 		for b: SimEntity in blds:
 			var d: BuildingDef = w.bdef(b)
-			var pw: bool = b.built
-			if b.powered != pw:
-				b.powered = pw
-				w.events.append({"t": "power_state", "id": b.id, "on": pw})
 			var g := false
 			for s: SimEntity in sources:
 				var r2: int = w.bdef(s).grid_radius * FX.ONE
@@ -60,6 +56,14 @@ static func recompute_grid(w: SimWorld) -> void:
 		if low != p.low_power:
 			p.low_power = low
 			w.events.append({"t": "low_power", "owner": pid, "on": low})
+		# M4.3 (Malachi): in Low Power every structure that draws power shuts down completely (no
+		# production, income, fire, shields or auras); power plants, the HQ and no_power structures run on.
+		for b: SimEntity in blds:
+			var d2: BuildingDef = w.bdef(b)
+			var pw: bool = b.built and not (low and d2.power < 0 and not d2.tags.has("no_power"))
+			if b.powered != pw:
+				b.powered = pw
+				w.events.append({"t": "power_state", "id": b.id, "on": pw})
 
 static func _shields(w: SimWorld) -> void:
 	# Aegis carriers

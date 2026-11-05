@@ -196,7 +196,7 @@ func _income_floaters(evs: Array) -> void:
 			if bv != null and bv.visible:
 				overlay.floater(FX.to_world(b.pos) + Vector3(0, maxf(0.0, bv.bar_height - 1.0), 0), "+$%d" % int(pu[1]), Color("#ffd166"))
 	for ev in evs:
-		if ev["t"] == "unload":
+		if ev["t"] == "unload" and ev.has("amount"):   # M4.3: troops leaving a transport are not a cash drop-off
 			var u := runner.sim.get_ent(int(ev["id"]))
 			if u != null and u.owner == local_pid:
 				overlay.floater(FX.to_world(u.pos), "+$%d" % int(ev["amount"]), Color("#ffd166"))
