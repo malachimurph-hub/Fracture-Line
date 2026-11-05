@@ -1,6 +1,6 @@
-# M4.3 (0.4.3 candidate) - Malachi's list
+# 0.4.3 (versionCode 27) - M4.3 batch
 
-Branch m43 off master 3d620b5 (0.4.2). Not built, merged, bumped or uploaded.
+Shipped as sideload APK only (com.malachimurphy.fractureline). No Play AAB this release.
 
 | # | Item | Status |
 |---|------|--------|
@@ -23,3 +23,8 @@ Tests: new `m43` suite (test_runner "m43"). Minefield test reduced to trigger-on
 Audio generator: tools/m43/gen_sfx_m43.py. Models: tools/m43/models_m43.gd.
 
 Country maps: tools/gen_maps_m43.py. Props: PropMeshes themed houses/blocks/gas (us/de/ir/ru). MapDef.civ_theme.
+
+## Ship
+- versionName 0.4.3 / versionCode 27
+- package com.malachimurphy.fractureline (APK)
+- FractureLine-0.4.3.apk
