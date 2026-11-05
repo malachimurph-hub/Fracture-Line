@@ -110,6 +110,8 @@ func _ready() -> void:
 			await load("res://tests/m41_test.gd").run(self)   # M4.1 (0.4.1) helicopters, German defences, fx, sound
 		"m42":
 			await load("res://tests/m42_test.gd").run(self)   # M4.2 (0.4.2) Malachi's 20-item list
+		"m43":
+			await load("res://tests/m43_test.gd").run(self)   # M4.3 (0.4.3) Malachi's list
 		"stall":
 			var r2 := MatchRunner.new()
 			r2.record_replay = false

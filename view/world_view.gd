@@ -505,6 +505,8 @@ func _ensure_view(e: SimEntity) -> EntityView:
 			add_child(dome)
 			shield_domes[e.id] = dome
 	views[e.id] = v
+	if e.kind == SimEntity.Kind.BUILDING:
+		_clear_rubble(v)   # M4.3 (8): building over a destroyed civilian block erases its debris
 	v.set_meta("owner", e.owner)
 	if e.kind == SimEntity.Kind.NEUTRAL and e.owner >= 0:
 		GarrisonMark.apply(v, sim.players[e.owner].color)   # M3.3: a loaded save keeps the flag
@@ -938,7 +940,27 @@ func _civ_rubble(v: EntityView) -> void:
 		mi.material_override = TerrainView.shared_house_material
 	mi.transform = Transform3D(Basis(Vector3.UP, v.rotation.y).scaled(Vector3(v.footprint.x, 1.0 + v.footprint.x * 0.2, v.footprint.y)), v.position)
 	add_child(mi)
+	mi.set_meta("half", Vector2(v.footprint.x, v.footprint.y) * 0.5)
+	rubble.append(mi)
 	rubble_count += 1
+
+var rubble: Array = []
+
+func _clear_rubble(v: Node3D) -> void:
+	if rubble.is_empty():
+		return
+	var fp: Vector2 = v.footprint if "footprint" in v else Vector2.ONE
+	var half := fp * 0.5
+	for mi in rubble.duplicate():
+		if not is_instance_valid(mi):
+			rubble.erase(mi)
+			continue
+		var h: Vector2 = mi.get_meta("half")
+		var d: Vector3 = mi.position - v.position
+		if absf(d.x) < half.x + h.x - 0.05 and absf(d.z) < half.y + h.y - 0.05:
+			rubble.erase(mi)
+			mi.queue_free()
+			rubble_count -= 1
 
 var rubble_count := 0
 
