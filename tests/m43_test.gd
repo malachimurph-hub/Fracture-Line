@@ -89,7 +89,7 @@ static func _country_maps(t: Node) -> void:
 		t._check(Content.maps.has(id), "country map %s is registered" % id)
 		var md: MapDef = Content.maps[id]
 		t._check(md.civ_theme == expect[id], "%s civ_theme is %s" % [id, expect[id]])
-		var label := tr(md.name_key)
+		var label := TranslationServer.translate(md.name_key)
 		t._check(label.contains("USA") or label.contains("Germany") or label.contains("Iran") or label.contains("Russia"),
 			"%s label names the country (%s)" % [id, label])
 		TerrainView.civ_theme = md.civ_theme
