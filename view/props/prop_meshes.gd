@@ -9,14 +9,43 @@ static var _cache: Dictionary = {}
 const FOOTPRINT := {"tower_glass": Vector2i(4, 4), "tower_apart": Vector2i(4, 4), "tower_office": Vector2i(4, 4),
 	"tower_slim": Vector2i(3, 3), "shops": Vector2i(4, 3),
 	"house_a": Vector2i(3, 3), "house_b": Vector2i(3, 3), "house_c": Vector2i(3, 3), "house_d": Vector2i(3, 3),
+	"house_us_a": Vector2i(3, 3), "house_us_b": Vector2i(3, 3),
+	"house_ir_a": Vector2i(3, 3), "house_ir_b": Vector2i(3, 3),
+	"house_ru_a": Vector2i(3, 3), "house_ru_b": Vector2i(3, 3),
+	"civ_block": Vector2i(3, 3), "civ_us": Vector2i(3, 3), "civ_de": Vector2i(3, 3),
+	"civ_ir": Vector2i(3, 3), "civ_ru": Vector2i(3, 3),
 	"containers": Vector2i(3, 2)}
 ## M3.2 item 14: European village houses (tiled gable roofs, chimneys, framed windows, half-timbering)
 ## and a shipping-container stack. Blocking like the towers but not "urban" (no dark asphalt).
-const HOUSES := ["house_a", "house_b", "house_c", "house_d", "containers"]
+const HOUSES := ["house_a", "house_b", "house_c", "house_d", "containers",
+	"house_us_a", "house_us_b", "house_ir_a", "house_ir_b", "house_ru_a", "house_ru_b"]
 const URBAN := ["tower_glass", "tower_apart", "tower_office", "tower_slim", "shops", "car_red", "car_white", "car_blue",
 	"car_silver", "car_taxi", "car_van", "car_suv", "streetlight_double", "streetlight"]
 const CAR_COL := {"car_red": "#a3302a", "car_white": "#e2e0d8", "car_blue": "#2f5a8a", "car_silver": "#a7abae",
 	"car_taxi": "#e0b22e", "car_van": "#d8d6ce", "car_suv": "#2a2c2e"}
+
+## M4.3: remap a base prop kind to a country-themed variant when MapDef.civ_theme is set.
+static func themed(kind: String, theme: StringName) -> String:
+	var t := String(theme)
+	if t == "" or t == "de":
+		if kind == "civ_block":
+			return "civ_de" if t == "de" else "civ_block"
+		if kind.begins_with("house_") and t == "de":
+			return kind   # European houses already look German
+		if kind == "gas_station" and t == "de":
+			return "gas_de"
+		return kind
+	if kind == "civ_block":
+		return "civ_%s" % t
+	if kind.begins_with("house_"):
+		var letter := kind.get_slice("_", 1)   # a/b/c/d
+		var alt := "house_%s_%s" % [t, "a" if letter in ["a", "c"] else "b"]
+		return alt
+	if kind == "gas_station":
+		return "gas_%s" % t
+	if kind == "shack":
+		return "shack_%s" % t if t in ["us", "ir", "ru"] else kind
+	return kind
 
 ## Floor bands of a w x d tower from y0 to y1: alternating wall and window strips on all 4 sides.
 static func _tower_bands(st: SurfaceTool, w: float, d: float, y0: float, y1: float, floors: int, wall: Color, glass: Color) -> void:
@@ -467,6 +496,143 @@ static func _containers(st: SurfaceTool, seed_i: int) -> void:
 			box(st, p + Vector3(1.205, 0, 0), Vector3(0.01, 0.31, 0.56), c.darkened(0.25))   # doors
 			box(st, p + Vector3(1.212, 0, 0), Vector3(0.01, 0.31, 0.02), Color("#3a3a38"))
 
+
+## M4.3 US ranch: single storey, shallow roof, porch, garage stub on +x.
+static func _house_ranch(st: SurfaceTool, w: float, d: float, wall: Color, roof: Color, shutter: Color, seed_i: int) -> void:
+	box(st, Vector3(0, 0.45, 0), Vector3(w, 0.9, d), wall)
+	box(st, Vector3(0, 1.05, 0), Vector3(w + 0.15, 0.12, d + 0.15), roof, Vector3(4, 0, 0))
+	box(st, Vector3(0, 0.95, d * 0.5 + 0.12), Vector3(w * 0.55, 0.06, 0.35), Color("#d8d0c0"))   # porch roof
+	for x in [-0.2, 0.2]:
+		cyl(st, Vector3(x, 0.5, d * 0.5 + 0.05), 0.03, 0.03, 0.9, Color("#e8e0d2"), 5)
+	box(st, Vector3(-0.35, 0.4, d * 0.5 - 0.01), Vector3(0.35, 0.7, 0.04), Color("#5a4632"))   # door
+	box(st, Vector3(0.45, 0.55, d * 0.5 - 0.01), Vector3(0.45, 0.4, 0.03), Color("#2e3338"))
+	box(st, Vector3(0.45, 0.55, d * 0.5), Vector3(0.35, 0.3, 0.01), lit("#ffe2a0"))
+	if shutter.a > 0.1:
+		box(st, Vector3(0.2, 0.55, d * 0.5 - 0.02), Vector3(0.08, 0.35, 0.02), shutter)
+		box(st, Vector3(0.7, 0.55, d * 0.5 - 0.02), Vector3(0.08, 0.35, 0.02), shutter)
+	box(st, Vector3(w * 0.55, 0.4, -0.1), Vector3(0.7, 0.8, d * 0.7), wall)   # garage
+	box(st, Vector3(w * 0.55, 0.85, -0.1), Vector3(0.75, 0.08, d * 0.75), roof)
+	box(st, Vector3(w * 0.55, 0.4, d * 0.35 - 0.1), Vector3(0.6, 0.65, 0.04), Color("#4a4e55"))
+	_plinth(st, w + 0.2, d + 0.2)
+
+## Flat-roof Middle Eastern house with optional arched entry and a wind-catcher.
+static func _house_flat(st: SurfaceTool, w: float, d: float, floors: int, wall: Color, trim: Color, wood: Color, arch: bool, seed_i: int) -> void:
+	var h := 0.85 * floors
+	box(st, Vector3(0, h * 0.5, 0), Vector3(w, h, d), wall)
+	box(st, Vector3(0, h + 0.04, 0), Vector3(w + 0.08, 0.08, d + 0.08), trim)   # parapet
+	box(st, Vector3(0, h + 0.1, 0), Vector3(w * 0.5, 0.06, d * 0.5), Color("#9a9a96"))   # roof plant
+	for fl in floors:
+		var y := 0.45 + fl * 0.75
+		for sx in [-1.0, 1.0]:
+			box(st, Vector3(sx * w * 0.28, y, d * 0.5 - 0.01), Vector3(0.35, 0.35, 0.03), Color("#2a3338"))
+			box(st, Vector3(sx * w * 0.28, y, d * 0.5), Vector3(0.28, 0.28, 0.01), lit("#ffe2a0"))
+	if arch:
+		box(st, Vector3(0, 0.55, d * 0.5 - 0.02), Vector3(0.5, 0.9, 0.08), trim)
+		box(st, Vector3(0, 0.35, d * 0.5 - 0.01), Vector3(0.32, 0.55, 0.04), wood)
+		for k in 5:
+			var a := PI * float(k) / 4.0
+			box(st, Vector3(cos(a) * 0.18, 0.7 + sin(a) * 0.18, d * 0.5 + 0.01), Vector3(0.08, 0.06, 0.06), trim)
+	else:
+		box(st, Vector3(0, 0.4, d * 0.5 - 0.01), Vector3(0.3, 0.65, 0.04), wood)
+	# wind-catcher
+	box(st, Vector3(-w * 0.3, h + 0.45, -d * 0.2), Vector3(0.35, 0.7, 0.35), wall)
+	box(st, Vector3(-w * 0.3, h + 0.85, -d * 0.2), Vector3(0.4, 0.08, 0.4), trim)
+	_plinth(st, w, d)
+
+## Russian panel apartment (low rise).
+static func _house_panel(st: SurfaceTool, w: float, d: float, floors: int, wall: Color, roof: Color, seed_i: int) -> void:
+	var h := 0.7 * floors
+	box(st, Vector3(0, h * 0.5, 0), Vector3(w, h, d), wall)
+	box(st, Vector3(0, h + 0.05, 0), Vector3(w + 0.05, 0.1, d + 0.05), roof)
+	for fl in floors:
+		var y := 0.35 + fl * 0.7
+		box(st, Vector3(0, y, d * 0.5 - 0.01), Vector3(w * 0.85, 0.35, 0.03), Color("#3a4652"))
+		for i in 3:
+			var x := -w * 0.3 + i * w * 0.3
+			box(st, Vector3(x, y, d * 0.5), Vector3(0.22, 0.28, 0.01), lit("#ffe2a0" if (seed_i + fl + i) % 3 else "#c8d0d8"))
+	box(st, Vector3(-w * 0.35, 0.4, d * 0.5 - 0.01), Vector3(0.35, 0.7, 0.04), Color("#5a4632"))
+	cyl(st, Vector3(w * 0.35, h + 0.35, -d * 0.25), 0.12, 0.12, 0.4, Color("#d9d4c8"), 8)   # water tank
+	_plinth(st, w, d)
+
+static func _civ_eu(st: SurfaceTool, seed_i: int) -> void:
+	box(st, Vector3(0, 1.1, 0), Vector3(2.7, 2.2, 2.5), Color("#d2c3a2"))
+	box(st, Vector3(0, 2.25, 0), Vector3(2.8, 0.12, 2.6), Color("#8f8574"))
+	for i in 3:
+		var x := -0.85 + i * 0.85
+		box(st, Vector3(x, 0.45, 1.26), Vector3(0.7, 0.75, 0.04), Color("#28333c"))
+		box(st, Vector3(x, 0.42, 1.28), Vector3(0.6, 0.55, 0.01), lit("#ffe2a0"))
+		box(st, Vector3(x, 1.5, 1.26), Vector3(0.55, 0.4, 0.03), Color("#3a4652"))
+		box(st, Vector3(x, 1.5, 1.28), Vector3(0.45, 0.3, 0.01), lit("#fff1cc"))
+	box(st, Vector3(0.9, 2.5, -0.5), Vector3(0.5, 0.35, 0.45), Color("#9a9a96"))
+	_plinth(st, 2.7, 2.5)
+
+static func _civ_us(st: SurfaceTool, seed_i: int) -> void:
+	# strip-mall style: brick lower, pale upper, big shop windows, parking awning
+	box(st, Vector3(0, 0.55, 0), Vector3(2.7, 1.1, 2.4), Color("#a85a42"))
+	box(st, Vector3(0, 1.55, 0), Vector3(2.7, 0.9, 2.4), Color("#e8e0d2"))
+	box(st, Vector3(0, 2.05, 0), Vector3(2.8, 0.1, 2.5), Color("#5a5e62"))
+	box(st, Vector3(0, 1.15, 1.35), Vector3(2.5, 0.08, 0.5), Color("#e8e0d2"))   # awning
+	for i in 3:
+		var x := -0.85 + i * 0.85
+		box(st, Vector3(x, 0.55, 1.21), Vector3(0.7, 0.85, 0.04), Color("#2a3340"))
+		box(st, Vector3(x, 0.55, 1.23), Vector3(0.6, 0.7, 0.01), lit("#e8f0ff"))
+		box(st, Vector3(x, 1.55, 1.21), Vector3(0.5, 0.35, 0.03), Color("#3a4652"))
+	_plinth(st, 2.7, 2.4)
+
+static func _civ_ir(st: SurfaceTool, seed_i: int) -> void:
+	box(st, Vector3(0, 1.0, 0), Vector3(2.6, 2.0, 2.4), Color("#d9c4a0"))
+	box(st, Vector3(0, 2.05, 0), Vector3(2.7, 0.12, 2.5), Color("#cbb892"))
+	for i in 3:
+		var x := -0.8 + i * 0.8
+		box(st, Vector3(x, 0.55, 1.21), Vector3(0.55, 0.7, 0.05), Color("#6a5a40"))
+		box(st, Vector3(x, 0.7, 1.24), Vector3(0.35, 0.35, 0.01), lit("#ffe2a0"))
+		# arched top hint
+		box(st, Vector3(x, 1.05, 1.22), Vector3(0.45, 0.15, 0.04), Color("#cbb892"))
+	box(st, Vector3(0, 1.4, 1.21), Vector3(2.2, 0.35, 0.03), Color("#2a3338"))
+	box(st, Vector3(0, 1.4, 1.23), Vector3(2.0, 0.25, 0.01), lit("#fff1cc"))
+	box(st, Vector3(-0.7, 2.5, -0.4), Vector3(0.4, 0.7, 0.4), Color("#d9c4a0"))   # wind tower
+	_plinth(st, 2.6, 2.4)
+
+static func _civ_ru(st: SurfaceTool, seed_i: int) -> void:
+	box(st, Vector3(0, 1.2, 0), Vector3(2.7, 2.4, 2.5), Color("#b8b4aa"))
+	box(st, Vector3(0, 2.45, 0), Vector3(2.8, 0.12, 2.6), Color("#8a8680"))
+	for fl in 3:
+		var y := 0.45 + fl * 0.7
+		box(st, Vector3(0, y, 1.26), Vector3(2.4, 0.4, 0.03), Color("#3a4652"))
+		for i in 4:
+			var x := -0.95 + i * 0.65
+			box(st, Vector3(x, y, 1.28), Vector3(0.4, 0.32, 0.01), lit("#ffe2a0" if (fl + i) % 2 == 0 else "#c8d0d8"))
+	box(st, Vector3(-0.9, 0.45, 1.26), Vector3(0.45, 0.8, 0.04), Color("#5a4632"))
+	for x in [-0.7, 0.7]:
+		cyl(st, Vector3(x, 2.75, -0.6), 0.15, 0.15, 0.4, Color("#d9d4c8"), 8)
+	_plinth(st, 2.7, 2.5)
+
+static func _gas(st: SurfaceTool, canopy: Color, shop: Color, pump: Color) -> void:
+	var conc := Color("#c8bfae")
+	box(st, Vector3(-0.6, 0.6, 0), Vector3(1.6, 1.2, 1.8), shop)
+	box(st, Vector3(-0.6, 1.22, 0), Vector3(1.7, 0.08, 1.9), Color("#8d877c"))
+	box(st, Vector3(0.18, 0.5, 0), Vector3(0.04, 0.6, 1.2), Color("#2d3640"))
+	box(st, Vector3(0.9, 1.35, 0), Vector3(1.4, 0.14, 1.9), canopy)
+	box(st, Vector3(0.9, 1.44, 0), Vector3(1.4, 0.05, 1.9), Color("#e8e2d5"))
+	for zz in [-0.6, 0.6]:
+		cyl(st, Vector3(0.9, 0.65, zz), 0.06, 0.06, 1.3, Color("#d9d3c7"), 6)
+		box(st, Vector3(0.9, 0.3, zz * 0.5), Vector3(0.25, 0.6, 0.18), pump)
+	box(st, Vector3(1.55, 1.6, 0.8), Vector3(0.08, 1.2, 0.08), Color("#5a5650"))
+	box(st, Vector3(1.55, 2.25, 0.8), Vector3(0.5, 0.35, 0.06), canopy)
+	box(st, Vector3(1.55, 2.25, 0.835), Vector3(0.42, 0.26, 0.01), lit("#ffe08a"))
+	box(st, Vector3(0.9, 1.275, 0), Vector3(1.2, 0.01, 1.7), lit("#f4f0e0"))
+	box(st, Vector3(0.2, 0.5, 0), Vector3(0.01, 0.5, 1.1), lit("#fff1cc"))
+
+static func _shack(st: SurfaceTool, wall: Color, roof: Color, flat: bool) -> void:
+	box(st, Vector3(0, 0.5, 0), Vector3(1.8, 1.0, 1.7), wall)
+	if flat:
+		box(st, Vector3(0, 1.05, 0), Vector3(2.0, 0.1, 1.9), roof)
+	else:
+		box(st, Vector3(0, 1.05, 0), Vector3(2.0, 0.1, 1.9), roof, Vector3(4, 0, 0))
+	box(st, Vector3(0.4, 0.35, 0.86), Vector3(0.45, 0.7, 0.04), Color("#5a4632"))
+	box(st, Vector3(-0.45, 0.6, 0.86), Vector3(0.4, 0.3, 0.04), Color("#2e3338"))
+	box(st, Vector3(-0.45, 0.6, 0.875), Vector3(0.32, 0.22, 0.01), lit("#ffd38a"))
+
 static func make(kind: String) -> Mesh:
 	if _cache.has(kind):
 		return _cache[kind]
@@ -654,6 +820,42 @@ static func make(kind: String) -> Mesh:
 			_house(st, 2.2, 1.9, 2, Color("#f0ece2"), Color("#b0502e"), true, Color(0, 0, 0, 0), true, 4)
 		"containers":
 			_containers(st, 1)
+
+		"house_us_a":   # US ranch: long single storey, low pitch, clapboard, attached garage stub
+			_house_ranch(st, 2.6, 1.7, Color("#e8e0d2"), Color("#5a5e62"), Color("#2f5a8a"), 11)
+		"house_us_b":   # US two-storey colonial, white siding, dark shutters
+			_house(st, 2.3, 1.9, 2, Color("#f2efe8"), Color("#4a3e36"), false, Color("#2a3340"), false, 12)
+		"house_ir_a":   # Iranian courtyard house: flat roof, arched entry, sand render
+			_house_flat(st, 2.4, 2.0, 2, Color("#d9c4a0"), Color("#cbb892"), Color("#6a5a40"), true, 21)
+		"house_ir_b":   # smaller adobe dwelling, wind-catcher stub
+			_house_flat(st, 2.1, 1.8, 1, Color("#c9b089"), Color("#b9a078"), Color("#5a4a32"), false, 22)
+		"house_ru_a":   # Russian panel block (low Khrushchyovka), pale grey, flat roof
+			_house_panel(st, 2.5, 2.0, 3, Color("#c4c0b6"), Color("#8a8680"), 31)
+		"house_ru_b":   # wooden izba, steep metal roof
+			_house(st, 2.2, 1.8, 2, Color("#8a6a42"), Color("#6a7078"), false, Color("#3a3a38"), false, 32)
+		"civ_block", "civ_de":   # European stucco apartment with shop front
+			_civ_eu(st, 13)
+		"civ_us":
+			_civ_us(st, 14)
+		"civ_ir":
+			_civ_ir(st, 15)
+		"civ_ru":
+			_civ_ru(st, 16)
+		"gas_us":
+			_gas(st, Color("#2f5a8a"), Color("#e8e2d5"), Color("#c33f2a"))   # blue canopy stripe
+		"gas_de":
+			_gas(st, Color("#3f7a3a"), Color("#e8e2d5"), Color("#2a2c2e"))   # green canopy
+		"gas_ir":
+			_gas(st, Color("#c99a2e"), Color("#d9ceb4"), Color("#6a5a40"))   # sand / gold
+		"gas_ru":
+			_gas(st, Color("#a3302a"), Color("#d0ccc4"), Color("#3a3a38"))   # red canopy
+		"shack_us":
+			_shack(st, Color("#c8bca4"), Color("#5a5e62"), false)
+		"shack_ir":
+			_shack(st, Color("#c9b089"), Color("#b9a078"), true)
+		"shack_ru":
+			_shack(st, Color("#7a6248"), Color("#6a7078"), false)
+
 		"car_red", "car_white", "car_blue", "car_silver", "car_taxi", "car_van", "car_suv":
 			_car(st, Color(CAR_COL[kind]), kind)
 		"streetlight_double":

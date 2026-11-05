@@ -30,13 +30,13 @@ static func run(w: SimWorld) -> void:
 			continue
 		var p: SimPlayer = w.players[b.owner]
 		if not b.powered:
-			b.hold_reason = "REASON_NO_POWER"
+			b.hold_reason = "REASON_LOW_POWER" if p.low_power else "REASON_NO_POWER"
 			continue
 		var ud: UnitDef = Content.unit(b.queue[0])
 		var need := FX.ms_to_ticks(ud.build_time_ms) * 2
 		if b.q_progress < need:
-			b.q_progress += 1 if p.low_power else 2
-			b.hold_reason = "REASON_LOW_POWER" if p.low_power else ""
+			b.q_progress += 2
+			b.hold_reason = ""
 			continue
 		if p.pop + ud.pop > p.pop_cap:
 			b.hold_reason = "REASON_POP_CAP"

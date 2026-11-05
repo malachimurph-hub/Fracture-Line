@@ -80,6 +80,18 @@ static func paint_for(def_id: StringName) -> Color:
 		return US_AIR_GREY
 	return FACTION_PAINT.get(fac, Color(0, 0, 0, 0))
 
+## M4.3 (Malachi): Iran's civilian pickups (Technical, supply pickup) roll out of the garage in a
+## random civilian colour - blue, white, black, red or yellow - fixed per unit (by entity id).
+const CIVVY_PAINT := [Color("#2f5d9e"), Color("#e8e8e4"), Color("#1c1d1f"), Color("#a3241f"), Color("#e0b526")]
+const CIVVY_UNITS := [&"tpla_rattler", &"tpla_pickup"]
+static func civvy_paint(eid: int) -> Color:
+	return CIVVY_PAINT[((eid * 2654435761) >> 7) % CIVVY_PAINT.size()]
+
+static func apply_color(n: Node, c: Color) -> void:
+	for g in n.find_children("*", "GeometryInstance3D", true, false):
+		if _is_m3(g):
+			(g as GeometryInstance3D).set_instance_shader_parameter(&"paint_color", c)
+
 ## Paint for one unit type (faction paint plus the overrides above).
 static func apply_unit_paint(n: Node, def_id: StringName) -> void:
 	var c := paint_for(def_id)

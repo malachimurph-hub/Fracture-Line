@@ -410,7 +410,7 @@ static func _armor_of(w: SimWorld, t: SimEntity) -> StringName:
 
 static func _structure_fire(w: SimWorld, b: SimEntity) -> void:
 	var bd: BuildingDef = w.bdef(b)
-	if bd.needs_power_to_fire and (not b.powered or w.players[b.owner].low_power):
+	if not b.powered or (bd.needs_power_to_fire and w.players[b.owner].low_power):   # M4.3: unpowered = silent
 		return
 	for i in bd.weapons.size():
 		if b.cds[i] > 0:

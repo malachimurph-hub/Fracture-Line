@@ -26,7 +26,24 @@ const SFX := {
 	# M4.1 sound design: heavy .50 cal, door minigun
 	"hmg_heavy": "res://audio/sfx/hmg_heavy.ogg", "minigun": "res://audio/sfx/minigun.ogg",
 	"flame": "res://audio/sfx/flame.ogg", "howitzer": "res://audio/sfx/howitzer.ogg", "hit_metal": "res://audio/sfx/hit_metal_1.ogg",
+	# M4.3 (synthesised, tools/m43/gen_sfx_m43.py): heavy weapons and movement
+	"rocket_heavy": "res://audio/sfx/rocket_heavy.ogg", "missile_heavy": "res://audio/sfx/missile_heavy.ogg",
+	"artillery_heavy": "res://audio/sfx/artillery_heavy.ogg", "cannon_heavy": "res://audio/sfx/cannon_heavy.ogg",
+	"jet_takeoff": "res://audio/sfx/jet_takeoff.ogg",
 }
+## M4.3: looping movement sound per vehicle class (played on the unit while it moves / flies)
+const MOVE_LOOPS := {"tank": "res://audio/sfx/move_tank_loop.ogg", "ifv": "res://audio/sfx/move_ifv_loop.ogg",
+	"light": "res://audio/sfx/move_light_loop.ogg", "heli": "res://audio/sfx/move_heli_loop.ogg", "jet": "res://audio/sfx/move_jet_loop.ogg"}
+static func move_class(ud: UnitDef) -> String:
+	if ud == null or ud.tags.has("suicide") or String(ud.id).ends_with("_drone") or ud.tags.has("infantry") or not (ud.tags.has("vehicle") or ud.move_layer == &"air"):
+		return ""
+	if ud.move_layer == &"air":
+		return "jet" if ud.tags.has("jet") else "heli"
+	if ud.armor_type == &"heavy" or ud.tags.has("tank") or ud.tags.has("spg"):
+		return "tank"
+	if ud.tags.has("ifv") or ud.tags.has("aa") or ud.tags.has("artillery") or ud.speed_mtps < 2200:
+		return "ifv"
+	return "light"
 ## M2.4: alternative takes picked at random (plus pitch jitter) so repeated fire does not loop.
 const VARIANTS := {
 	"expl_small": ["res://audio/sfx/explosion_small.ogg", "res://audio/sfx/explosion_small_b.ogg", "res://audio/sfx/explosion_small_c.ogg"],

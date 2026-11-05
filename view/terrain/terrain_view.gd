@@ -1,6 +1,7 @@
 class_name TerrainView
 extends Node3D
 static var shared_house_material: Material = null   ## M3.2.1: garrisonable house views
+static var civ_theme: StringName = &""   ## M4.3: us|de|ir|ru from MapDef
 ## Terrain v1 (M1.2, Zero Hour-style look): smooth-shaded chunk meshes with raised rocky
 ## outcrops/cliffs (only on impassable cliff tiles, so pathing is unchanged), a lowered
 ## riverbed with an animated water surface, CC0 ground textures blended by splat maps
@@ -1160,9 +1161,10 @@ func _build_props(tiles_path: String) -> void:
 			var parts := f.get_line().split(" ", false)
 			if parts.size() < 4:
 				continue
-			if not by_kind.has(parts[0]):
-				by_kind[parts[0]] = []
-			by_kind[parts[0]].append([float(parts[1]), float(parts[2]), int(parts[3])])
+			var pk := PropMeshes.themed(parts[0], civ_theme)
+			if not by_kind.has(pk):
+				by_kind[pk] = []
+			by_kind[pk].append([float(parts[1]), float(parts[2]), int(parts[3])])
 	else:
 		# fallback: trees on forest tiles, rocks on cliffs
 		by_kind = {_tree_kind: [], "rock": []}
@@ -1195,7 +1197,7 @@ func _build_props(tiles_path: String) -> void:
 		elif PropMeshes.FOOTPRINT.has(kind):
 			mat = prop_tower_material
 			has_towers = true
-		elif kind in ["gas_station", "shack", "power_pole", "streetlight", "streetlight_double"]:
+		elif kind.begins_with("gas_") or kind.begins_with("shack") or kind in ["gas_station", "shack", "power_pole", "streetlight", "streetlight_double"]:
 			mat = prop_detail_material
 		# M2.9: one MultiMesh per kind per 32x32-tile chunk so off-screen props are frustum-culled
 		# (dense urban maps carry thousands of cars / lights / towers)

@@ -39,14 +39,10 @@ static func run(w: SimWorld) -> void:
 		for did in hubs.get(p.id, {}):
 			var hc: Array = hubs[p.id][did]
 			inc += int(hc[0]) * int(hc[1])
-		if p.low_power:
-			inc /= 2
 		var sec := w.tick / FX.TICK_HZ
 		for did in earners.get(p.id, {}):
 			var ed: BuildingDef = Content.building(did)
 			var pay := period_pay(ed, int(earners[p.id][did]), sec)
-			if p.low_power and not ed.tags.has("no_power"):
-				pay /= 2
 			if pay > 0 and ed.tags.has("income_burst"):
 				w.events.append({"t": "income", "owner": p.id, "def": did, "amount": pay})
 			inc += pay

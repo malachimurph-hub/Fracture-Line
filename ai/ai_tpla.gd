@@ -156,7 +156,7 @@ func _next_building() -> StringName:
 				continue
 			if id == &"tpla_demo_trap" and (not Content.building(id).buildable or desired[id] > int(tc["traps"])):
 				continue
-			if id == &"tpla_camo_net" and desired[id] > int(tc["nets"]):
+			if id == &"tpla_camo_net" and (not Content.building(id).buildable or desired[id] > int(tc["nets"])):
 				continue
 			if id == &"tpla_tunnel" and desired[id] > int(tc["tunnels"]):
 				continue
@@ -175,7 +175,7 @@ func _next_building() -> StringName:
 		return &"tpla_bazaar"
 	if Content.building(&"tpla_demo_trap").buildable and counts.get(&"tpla_demo_trap", 0) < int(tc["traps"]) + (counts.get(&"tpla_stash", 0) - 1 if difficulty == "hard" else 0):
 		return &"tpla_demo_trap"
-	if s > 600 and counts.get(&"tpla_camo_net", 0) < int(tc["nets"]) and p.supply > 800:
+	if Content.building(&"tpla_camo_net").buildable and s > 600 and counts.get(&"tpla_camo_net", 0) < int(tc["nets"]) and p.supply > 800:
 		return &"tpla_camo_net"
 	if s > 900 and difficulty == "hard" and counts.get(&"tpla_chop_shop", 0) < 3 and p.supply > 2000:
 		return &"tpla_chop_shop"

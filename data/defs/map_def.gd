@@ -9,6 +9,8 @@ extends Resource
 @export var neutrals: Array[Dictionary] = []  ## {kind, tile}
 @export var description_key: String = ""
 @export var env: StringName = &"desert"
+## M4.3: civilian look (us | de | ir | ru). Empty = legacy European props.
+@export var civ_theme: StringName = &""
 ## M3.3 Phase 3 (20): night version of a map (view only: moonlight, lit windows, street lamps,
 ## floodlights and headlights). Same tiles as its day map.
 @export var night: bool = false

@@ -9,7 +9,8 @@ func _ready() -> void:
 	add_child(mdl)
 	var body := MeshInstance3D.new()
 	body.name = "Body"
-	body.mesh = PropMeshes.make(house_kind)
+	var kind := PropMeshes.themed(house_kind, TerrainView.civ_theme)
+	body.mesh = PropMeshes.make(kind)
 	if TerrainView.shared_house_material != null:
 		body.material_override = TerrainView.shared_house_material
 	else:

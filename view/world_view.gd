@@ -51,8 +51,10 @@ func setup(r: MatchRunner, pid: int) -> void:
 	FX.ground = sim.map   # M3.3 P3 (17): views follow the ground height on maps with hills
 	terrain = TerrainView.new()
 	add_child(terrain)
-	terrain.decor_override = (Content.maps[sim.map_id] as MapDef).decor
-	terrain.build(sim.map, Content.maps[sim.map_id].tiles_path, MapEnv.for_map(sim.map_id))
+	var md: MapDef = Content.maps[sim.map_id]
+	TerrainView.civ_theme = md.civ_theme   # M4.3 country-themed civilians
+	terrain.decor_override = md.decor
+	terrain.build(sim.map, md.tiles_path, MapEnv.for_map(sim.map_id))
 	var civ: Array = []   # M4.2: planned street grid around civilian blocks and houses
 	for nid in sim.ids:
 		var ne: SimEntity = sim.ents[nid]
@@ -101,6 +103,8 @@ var air_shadows := {}
 func _air_view(id: int, e: SimEntity, ud: UnitDef, v: Node3D, p: Vector3, delta: float) -> Vector3:
 	var jet := ud.tags.has("jet")
 	var want := 0.0 if e.air_state == AirSys.PARKED or e.air_state == AirSys.TAXI_OUT else (JET_ALT if jet else HELI_ALT)
+	if e.air_state == AirSys.LANDING and not jet:
+		want = 0.0   # M4.3: helicopters touch down during the landing phase, before anyone boards
 	if e.air_state == AirSys.LANDING and jet:
 		want = 0.0
 		var home := sim.get_ent(e.air_home)
@@ -120,7 +124,7 @@ func _air_view(id: int, e: SimEntity, ud: UnitDef, v: Node3D, p: Vector3, delta:
 			var reach := float(FX.mt_to_fx(Content.weapon(ud.weapons[0]).range_mt))
 			want = lerpf(0.3, want, clampf((dist_fx - reach) / float(FX.ONE * 4), 0.0, 1.0))
 	var alt: float = air_alt.get(id, want)
-	alt = move_toward(alt, want, delta * (3.0 if jet else (4.0 if dive else 2.0)))
+	alt = move_toward(alt, want, delta * (3.0 if jet else (4.0 if dive or e.air_state == AirSys.LANDING else 2.0)))
 	air_alt[id] = alt
 	var spin := alt > 0.2 or not jet
 	var rotors: Array = v.get_meta("_rotors", [])
@@ -431,6 +435,8 @@ func _ensure_view(e: SimEntity) -> EntityView:
 	Weathering.apply(v, &"tpla" if did.begins_with("tpla_") else (&"eu" if did.begins_with("eu_") else (&"ecc" if did.begins_with("ecc_") else &"neutral")))
 	if e.kind == SimEntity.Kind.UNIT and not v is InfantryView:
 		Palette.apply_unit_paint(v, e.def_id)   # M3.5 faction vehicle paint (M4.2 per-unit overrides)
+		if Palette.CIVVY_UNITS.has(e.def_id):
+			Palette.apply_color(v, Palette.civvy_paint(e.id))   # M4.3 random civilian colour
 	elif e.kind == SimEntity.Kind.BUILDING and Palette.PAINT_BUILDINGS.has(e.def_id):
 		Palette.apply_paint(v, Content.faction_of_id(e.def_id), Palette.PAINT_BUILDINGS[e.def_id])
 	if e.kind == SimEntity.Kind.BUILDING:
@@ -457,6 +463,22 @@ func _ensure_view(e: SimEntity) -> EntityView:
 				(v as InfantryView).set_variant(e.id)   # M3.4: per-soldier look
 		if e.tier > 0:
 			v.set_tier(e.tier)
+		var mc := AudioDirector.move_class(d)
+		if mc != "":   # M4.3: engine / tracks / rotor / jet loop, faded in while moving
+			var mv := AudioStreamPlayer3D.new()
+			mv.name = "MoveLoop"
+			var ms := (load(AudioDirector.MOVE_LOOPS[mc]) as AudioStreamOggVorbis).duplicate() as AudioStreamOggVorbis
+			ms.loop = true
+			mv.stream = ms
+			mv.bus = &"SFX"
+			mv.volume_db = -60.0
+			mv.unit_size = 5.0 if mc in ["tank", "jet", "heli"] else 3.5
+			mv.max_distance = 45.0
+			mv.max_polyphony = 1
+			mv.pitch_scale = 0.96 + float(e.id % 9) * 0.01
+			mv.set_meta("cls", mc)
+			v.add_child(mv)
+			move_loops[e.id] = mv
 		if AudioDirector.is_drone(String(e.def_id)):   # M4.2: looping motor hum while the drone flies
 			var hum := AudioStreamPlayer3D.new()
 			hum.name = "DroneHum"
@@ -485,6 +507,8 @@ func _ensure_view(e: SimEntity) -> EntityView:
 			add_child(dome)
 			shield_domes[e.id] = dome
 	views[e.id] = v
+	if e.kind == SimEntity.Kind.BUILDING:
+		_clear_rubble(v)   # M4.3 (8): building over a destroyed civilian block erases its debris
 	v.set_meta("owner", e.owner)
 	if e.kind == SimEntity.Kind.NEUTRAL and e.owner >= 0:
 		GarrisonMark.apply(v, sim.players[e.owner].color)   # M3.3: a loaded save keeps the flag
@@ -533,6 +557,9 @@ func on_tick(events: Array) -> void:
 					views[c.id].set_team_material(Palette.team_material(sim.players[c.owner].color))
 					if rigs.has(c.id):
 						rigs[c.id].refresh_team()
+			"unload":
+				if ev.has("b"):
+					_start_rappel(int(ev["id"]), int(ev["b"]))
 			"garrison":
 				var b := sim.get_ent(int(ev["b"]))
 				if b != null and views.has(b.id):
@@ -657,7 +684,13 @@ func _on_fire(ev: Dictionary) -> void:
 	if cls == "flame":
 		snd = "flame"
 	elif cls == "artillery":
-		snd = "howitzer"
+		snd = "artillery_heavy"   # M4.3: deep boom with a long reverberant roll
+	elif cls == "salvo":
+		snd = "rocket_heavy"      # M4.3: loud launch + whoosh for rocket artillery
+	elif cls == "missile" and wd0 != null and (wd0.damage >= 120 or wd0.splash_mt >= 700):
+		snd = "missile_heavy"
+	elif cls == "cannon" and wd0 != null and wd0.damage >= 100:
+		snd = "cannon_heavy"
 	elif kind == "tracer_minigun":
 		snd = "minigun"     # M4.1: ear-ringing buzz of a door minigun
 	elif wd0 != null and wd0.damage_type == &"hmg" and kind == "tracer_heavy":
@@ -909,7 +942,27 @@ func _civ_rubble(v: EntityView) -> void:
 		mi.material_override = TerrainView.shared_house_material
 	mi.transform = Transform3D(Basis(Vector3.UP, v.rotation.y).scaled(Vector3(v.footprint.x, 1.0 + v.footprint.x * 0.2, v.footprint.y)), v.position)
 	add_child(mi)
+	mi.set_meta("half", Vector2(v.footprint.x, v.footprint.y) * 0.5)
+	rubble.append(mi)
 	rubble_count += 1
+
+var rubble: Array = []
+
+func _clear_rubble(v: Node3D) -> void:
+	if rubble.is_empty():
+		return
+	var fp: Vector2 = v.footprint if "footprint" in v else Vector2.ONE
+	var half := fp * 0.5
+	for mi in rubble.duplicate():
+		if not is_instance_valid(mi):
+			rubble.erase(mi)
+			continue
+		var h: Vector2 = mi.get_meta("half")
+		var d: Vector3 = mi.position - v.position
+		if absf(d.x) < half.x + h.x - 0.05 and absf(d.z) < half.y + h.y - 0.05:
+			rubble.erase(mi)
+			mi.queue_free()
+			rubble_count -= 1
 
 var rubble_count := 0
 
@@ -1230,6 +1283,13 @@ func frame(a: float, delta: float) -> void:
 				p = man[0]
 			if v is InfantryView:
 				(v as InfantryView).set_braced(not man.is_empty())
+			if rappel.has(id):
+				p = _rappel_step(id, p, delta)
+			if move_loops.has(id):
+				if is_instance_valid(move_loops[id]):
+					_move_loop(move_loops[id], e, delta)
+				else:
+					move_loops.erase(id)
 			v.position = p
 			if e.moving and _crushers.has(e.def_id) and (Engine.get_process_frames() + id) % 6 == 0 and terrain.has_cars():
 				terrain.wreck_cars(Vector2(p.x, p.z), 0.42, true)   # M3.3 P3 (19): tanks flatten parked cars
@@ -1412,6 +1472,77 @@ var ghost_bad_mat: StandardMaterial3D
 var ghost_overlay_ok: StandardMaterial3D
 var ghost_overlay_bad: StandardMaterial3D
 
+var ghost_arrow: MeshInstance3D
+var move_loops := {}   ## unit id -> AudioStreamPlayer3D (M4.3)
+const MOVE_DB := {"tank": -6.0, "ifv": -8.0, "light": -9.0, "heli": -5.0, "jet": -6.0}
+
+func _move_loop(mv: AudioStreamPlayer3D, e: SimEntity, delta: float) -> void:
+	var cls: String = mv.get_meta("cls")
+	if cls == "jet":   # M4.3: thrust roar on the take-off roll
+		var roll := e.air_state == AirSys.TAXI_OUT and e.phase >= 2
+		if roll and not bool(mv.get_meta("roll", false)):
+			AudioDirector.sfx("jet_takeoff", mv.global_position, 0.0, 0.05)
+		mv.set_meta("roll", roll)
+	var on := e.moving if not (cls == "heli" or cls == "jet") else sim.flying(e)
+	var want := float(MOVE_DB[cls]) if on else -60.0
+	mv.volume_db = move_toward(mv.volume_db, want, delta * (40.0 if on else 25.0))
+	if mv.volume_db > -55.0:
+		if not mv.playing:
+			mv.play(randf() * 2.5)
+	elif mv.playing:
+		mv.stop()
+
+## M4.3: troops leaving a helicopter in the air slide down a fast rope (view only; the sim has
+## already put them on the ground under the helicopter).
+const RAPPEL_S := 1.4
+var rappel := {}   ## unit id -> {"h": start height, "t": seconds, "rope": MeshInstance3D}
+static var _rope_mat: StandardMaterial3D
+
+func _start_rappel(uid: int, tid: int) -> void:
+	var h: float = air_alt.get(tid, 0.0)
+	if h < 0.6:
+		return
+	var rope := MeshInstance3D.new()
+	var cm := CylinderMesh.new()
+	cm.top_radius = 0.025
+	cm.bottom_radius = 0.025
+	cm.height = 1.0
+	cm.radial_segments = 4
+	cm.rings = 1
+	rope.mesh = cm
+	if _rope_mat == null:
+		_rope_mat = Palette.flat(Color("#2b2620"), 1.0, false)
+	rope.material_override = _rope_mat
+	rope.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(rope)
+	rappel[uid] = {"h": h, "t": 0.0, "rope": rope}
+
+func _rappel_step(uid: int, p: Vector3, delta: float) -> Vector3:
+	var r: Dictionary = rappel[uid]
+	r["t"] = float(r["t"]) + delta
+	var k := clampf(float(r["t"]) / RAPPEL_S, 0.0, 1.0)
+	var h: float = r["h"]
+	var y := h * (1.0 - k * k * (3.0 - 2.0 * k))   # smoothstep slide
+	var rope: MeshInstance3D = r["rope"]
+	rope.position = Vector3(p.x, p.y + h * 0.5, p.z)
+	rope.scale = Vector3(1, h, 1)
+	if k >= 1.0:
+		rope.queue_free()
+		rappel.erase(uid)
+	return p + Vector3(0, y, 0)
+
+## Flat arrow pointing +Z: shaft 0..1.0, head 1.0..1.8 (tiles), lies just above the ground.
+static func _arrow_mesh() -> ArrayMesh:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var pts := [Vector3(-0.22, 0, 0), Vector3(0.22, 0, 0), Vector3(0.22, 0, 1.0), Vector3(-0.22, 0, 1.0),
+		Vector3(-0.6, 0, 1.0), Vector3(0.6, 0, 1.0), Vector3(0, 0, 1.8)]
+	for tri in [[0, 2, 1], [0, 3, 2], [4, 6, 5]]:
+		for k in tri:
+			st.set_normal(Vector3.UP)
+			st.add_vertex(pts[k])
+	return st.commit()
+
 func show_ghost(def_id: StringName, tile: Vector2i, rot: int, ok: bool, pid: int) -> void:
 	if ghost_root == null:
 		ghost_root = Node3D.new()
@@ -1448,6 +1579,21 @@ func show_ghost(def_id: StringName, tile: Vector2i, rot: int, ok: bool, pid: int
 	ghost_model.position = center
 	ghost_model.rotation.y = [0.0, PI * 0.5, PI, -PI * 0.5][rot]
 	ghost_model.set_overlay(ghost_overlay_ok if ok else ghost_overlay_bad)
+	# M4.3: green arrow out of the building's front (the side units leave from, sim exit_tile)
+	if ghost_arrow == null:
+		ghost_arrow = MeshInstance3D.new()
+		ghost_arrow.name = "GhostFrontArrow"
+		ghost_arrow.mesh = _arrow_mesh()
+		ghost_arrow.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		var am := Palette.flat(Color(0.25, 1.0, 0.35), 0.85).duplicate() as BaseMaterial3D
+		am.cull_mode = BaseMaterial3D.CULL_DISABLED
+		ghost_arrow.material_override = am
+		ghost_root.add_child(ghost_arrow)
+	var fwd: Vector3 = [Vector3(0, 0, 1), Vector3(1, 0, 0), Vector3(0, 0, -1), Vector3(-1, 0, 0)][rot]
+	var half := (fpv.y if rot % 2 == 0 else fpv.x) * 0.5
+	ghost_arrow.position = Vector3(center.x, ghost_pad.position.y + 0.05, center.z) + fwd * (half + 0.2)
+	ghost_arrow.rotation.y = [0.0, PI * 0.5, PI, -PI * 0.5][rot]
+	ghost_arrow.visible = true
 
 func _rebuild_grid_rings(pid: int, d: BuildingDef) -> void:
 	for r in ghost_rings:
