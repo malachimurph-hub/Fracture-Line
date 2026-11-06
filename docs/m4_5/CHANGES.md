@@ -1,6 +1,8 @@
-# M4.5 — US 0.4.4 mesh detail, and Sub Stations stay online
+# 0.4.5 (versionCode 29) — US mesh detail, Sub Station power, US voices
 
-No version bump. Gameplay stats, costs and footprints are unchanged.
+Shipped for phone testing as a sideload APK (com.malachimurphy.fractureline). The APK itself is built outside this change.
+
+Gameplay stats, costs and footprints are unchanged.
 
 ## Models
 
@@ -46,3 +48,9 @@ The Ripsaw stays silent (`robot` tag, no bank). The Reaper is a drone: `AudioDir
 Nuclear Research only unlocks the Nuclear Power Plant. Sub Stations keep producing their +12, and a new one can still be started. The US AI still prefers the plant for *new* power buildings once the research is done; yards already built stay on the grid.
 
 The 0.4.4 note that Sub Stations drop to zero power is superseded by this.
+
+## Ship
+- versionName 0.4.5 / versionCode 29
+- project.godot `config/version` 0.4.5
+- sideload APK preset: package com.malachimurphy.fractureline, export `FractureLine-0.4.5.apk`, signed with the Android debug keystore at `/workspace/tools/android/keystore/debug.keystore`
+- Play AAB preset: versionCode 29 / versionName 0.4.5 (package unchanged; AAB not built for this phone test)
