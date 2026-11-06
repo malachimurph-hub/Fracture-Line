@@ -27,7 +27,10 @@ const BUILDING_ORDER := [&"eu_hq", &"eu_reactor", &"eu_hub", &"eu_barracks", &"e
 const RETIRED_UNITS := {&"eu_aegis": &"eu_heavy_factory", &"eu_brennus": &"eu_heavy_factory",
 	&"us_grunt": &"us_barracks", &"us_javelin": &"us_barracks", &"eu_grenadier": &"eu_barracks", &"eu_lancer": &"eu_barracks",
 	&"tpla_militia": &"tpla_camp", &"tpla_rocket_cell": &"tpla_camp", &"ecc_rifleman": &"ecc_barracks",
-	&"ecc_machine_gunner": &"ecc_barracks", &"ecc_rpg": &"ecc_barracks", &"eu_spectre": &"eu_motor_pool", &"eu_sentinel": &"eu_motor_pool"}
+	&"ecc_machine_gunner": &"ecc_barracks", &"ecc_rpg": &"ecc_barracks", &"eu_spectre": &"eu_motor_pool", &"eu_sentinel": &"eu_motor_pool",
+	# M4.4: old US airframes and the Breacher stay loadable for saves and replays.
+	&"us_harrier": &"us_airfield", &"us_wraith": &"us_airfield", &"us_thunderlance": &"us_airfield",
+	&"us_breacher": &"us_barracks", &"us_up_drones": &"us_strategy"}
 ## M3.5: Germany's Heavy Factory merged into the Motor Pool (def kept, not buildable: old saves).
 ## M3.7: Iran has one power plant (the Gas Processing Plant); the Gas Turbine Plant is retired the same way.
 const RETIRED_BUILDINGS := [&"eu_heavy_factory", &"tpla_gas_plant"]
@@ -48,6 +51,8 @@ const GRENADIERS := {
 const SQUAD_MEMBERS := {
 	&"us_squad": [["us_rifleman", [&"us_m16"]], ["us_machine_gunner", [&"us_m240b"]], ["us_javelin", [&"us_javelin"]],
 		["us_rifleman", [&"us_m16"]], &"us", ["us_rifleman", [&"us_m16"]]],
+	# M4.4: two-man MK 23 team. The gunner carries the launcher; the assistant spots and hauls rounds.
+	&"us_mk23": [["us_grenadier", [&"us_mk23_gl"]], ["us_rifleman", [&"sidearm"]]],
 	&"eu_squad": [["eu_rifleman", [&"eu_rifle"]], ["eu_machine_gunner", [&"eu_mg3"]], ["eu_lancer", [&"eu_lancer_missile"]],
 		["eu_rifleman", [&"eu_rifle"]], &"eu", ["eu_rifleman", [&"eu_rifle"]]],
 	&"tpla_squad": [["tpla_rifleman", [&"tpla_carbine"]], ["tpla_machine_gunner", [&"tpla_pkm"]], ["tpla_rocket", [&"tpla_rpg"]],
@@ -58,8 +63,12 @@ const SQUAD_MEMBERS := {
 ## M3.5 Drone Operators: which drone each operator launches (US: scout only; Russia: explosive only).
 const OPERATOR_DRONES := {&"us_drone_operator": {"scout": &"us_scout_drone"}, &"ecc_drone_operator": {"bomb": &"ecc_bomb_drone"}}
 const TPLA_UNIT_ORDER := [&"tpla_backhoe", &"tpla_pickup", &"tpla_squad", &"tpla_marksman", &"tpla_insurgent", &"tpla_rattler", &"tpla_scrapback", &"tpla_bus", &"tpla_hailstorm", &"tpla_blight", &"tpla_shrike", &"tpla_mirage", &"tpla_mig29", &"tpla_f16"]
-const US_UNIT_ORDER := [&"us_dozer", &"us_supply_truck", &"us_squad", &"us_jtac", &"us_sniper", &"us_lynx", &"us_bradley", &"us_halberd", &"us_picket", &"us_longreach", &"us_harrier", &"us_blackhawk", &"us_wraith", &"us_thunderlance", &"us_drone_operator", &"us_breacher"]
-const US_BUILDING_ORDER := [&"us_command", &"us_reactor", &"us_supply_center", &"us_barracks", &"us_garage", &"us_airfield", &"us_strategy", &"us_patriot", &"us_firebase", &"us_drop_zone", &"us_sandbags", &"us_barricade"]
+const US_UNIT_ORDER := [&"us_dozer", &"us_supply_truck", &"us_squad", &"us_mk23", &"us_lynx", &"us_bradley", &"us_picket",
+	&"us_halberd", &"us_longreach", &"us_littlebird", &"us_f16", &"us_blackhawk", &"us_f35", &"us_b1", &"us_ah64", &"us_yf22",
+	&"us_reaper", &"us_ripsaw", &"us_drone_operator", &"us_sniper", &"us_green_beret", &"us_seal", &"us_jtac"]
+const US_BUILDING_ORDER := [&"us_command", &"us_substation", &"us_barracks", &"us_supply_center", &"us_garage", &"us_firebase",
+	&"us_strategy", &"us_airfield", &"us_patriot", &"us_drop_zone", &"us_darpa", &"us_socom", &"us_robotics", &"us_reactor",
+	&"us_zeus_launcher", &"us_zeus_pylon", &"us_sandbags", &"us_barricade"]
 ## M3.0 F: Russia (Malachi's list 2026-10-23: T-90M, Tiger-M, BTR, Typhoon, 2S Msta, Zeus and four
 ## single soldiers). Engineer, Cargo Truck and every building are stand-ins until his list covers them.
 const ECC_UNIT_ORDER := [&"ecc_engineer", &"ecc_cargo_truck", &"ecc_squad", &"ecc_infiltrator", &"ecc_saboteur", &"ecc_drone_operator", &"ecc_tigr", &"ecc_btr", &"ecc_typhoon", &"ecc_t90", &"ecc_zeus", &"ecc_msta", &"ecc_ka52", &"ecc_hind", &"ecc_su57", &"ecc_tu160"]
@@ -184,7 +193,9 @@ func _validate() -> void:
 			if not units.has(StringName(p)):
 				errors.append("Building %s produces missing unit %s" % [id, p])
 		for p in b.prereqs:
-			if not buildings.has(StringName(p)):
+			var ps := StringName(p)
+			var up: UnitDef = units.get(ps)
+			if not buildings.has(ps) and (up == null or not up.tags.has("upgrade")):
 				errors.append("Building %s prereq missing %s" % [id, p])
 		if b.view_scene != "" and not ResourceLoader.exists(b.view_scene):
 			errors.append("Building %s view scene missing: %s" % [id, b.view_scene])

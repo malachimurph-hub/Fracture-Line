@@ -1254,10 +1254,12 @@ func _make_card() -> Array:
 				if fe_only and not (bd.tags.has("barricade") or bd.tags.has("mine")):
 					continue
 				var why := sim.prereqs_met(pid, bd.prereqs)
+				var lock := sim.build_lock(pid, bd)
 				var funds: bool = sim.players[pid].supply >= bd.cost
+				var block := lock if lock != "" else why
 				out.append({"text": tr(bd.name_key), "sub": "$%d" % bd.cost,
-					"act": ctl.begin_place.bind(bid), "disabled": why != "" or not funds,
-					"tip": tr(bd.name_key) + (" — " + tr("HUD_NEEDS") % _prereq_names(bd.prereqs) if why != "" else (" — " + tr("REASON_FUNDS") if not funds else "")),
+					"act": ctl.begin_place.bind(bid), "disabled": block != "" or not funds,
+					"tip": tr(bd.name_key) + (" — " + tr(lock) if lock != "" else (" — " + tr("HUD_NEEDS") % _prereq_names(bd.prereqs) if why != "" else (" — " + tr("REASON_FUNDS") if not funds else ""))),
 					"accent": UiTheme.GOLD, "info": ["building", String(bid)]})
 			var hvb := ctl._filter(units, "harvester")
 			var tail := 2 if not hvb.is_empty() else 1
@@ -1495,7 +1497,12 @@ func resume_site(site: SimEntity) -> void:
 func _prereq_names(p: PackedStringArray) -> String:
 	var n: Array = []
 	for x in p:
-		n.append(tr(Content.building(x).name_key))
+		var b: BuildingDef = Content.building(x)
+		if b != null:
+			n.append(tr(b.name_key))
+		else:
+			var u: UnitDef = Content.unit(x)
+			n.append(tr(u.name_key) if u != null else String(x))
 	return ", ".join(n)
 
 # ------------------------------------------------------------------ modes

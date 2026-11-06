@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="BuildingDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/building_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"us_zeus_launcher"
+faction = &"us"
+name_key = "BLD_US_ZEUS_LAUNCHER"
+desc_key = "BLD_US_ZEUS_LAUNCHER_DESC"
+category = &"defense"
+cost = 8500
+build_time_ms = 35000
+footprint = Vector2i(4, 3)
+max_hp = 2200
+power = -11
+grid_radius = 0
+sight = 8
+prereqs = PackedStringArray("us_up_zeus")
+produces = PackedStringArray()
+is_hq = false
+is_refinery = false
+passive_income = 0
+income_amount = 0
+income_period_s = 0
+free_unit = &""
+shield_pct = 0
+view_scene = "res://view/buildings/us/zeus_launcher.tscn"
+stubs = PackedStringArray()
+weapons = PackedStringArray()
+needs_power_to_fire = true
+garrison_capacity = 0
+capturable = false
+capture_income = 0
+buildable = true
+tags = PackedStringArray("zeus_launcher")
+aux_radius = 0
+air_slots = 0

@@ -438,6 +438,24 @@ static func fly(w: SimWorld, u: SimEntity, d: UnitDef) -> void:
 	var accel_pt := maxi(1, maxs * 50 / maxi(1, int(lp["accel_ms"])))
 	var dest := u.goal
 	var loiter := false
+	var orbit := false
+	if d.tags.has("reaper"):
+		var tg := w.get_ent(u.target)
+		if tg != null and tg.alive:
+			var td := FX.dist(u.pos, tg.pos)
+			var rad := FX.ONE * 6
+			# Transit is a helicopter run. Once it is on the target it holds a wide, slow circle.
+			if not (td > rad + FX.ONE * 3 and u.goal != NONE):
+				orbit = true
+				if u.still == 0:
+					u.still = FX.iatan2(u.pos.x - tg.pos.x, u.pos.y - tg.pos.y)
+				u.still = (u.still + 4) % FX.ANG
+				var dv := FX.dir_of(u.still)
+				dest = tg.pos + Vector2i(dv.x * rad / FX.ONE, dv.y * rad / FX.ONE)
+				dest.x = clampi(dest.x, FX.HALF, w.map.w * FX.ONE - FX.HALF)
+				dest.y = clampi(dest.y, FX.HALF, w.map.h * FX.ONE - FX.HALF)
+		else:
+			u.still = 0
 	if dest == NONE and jet:
 		var t := w.get_ent(u.target)
 		if t != null and t.alive:
@@ -467,6 +485,13 @@ static func fly(w: SimWorld, u: SimEntity, d: UnitDef) -> void:
 			u.goal = NONE
 			u.path = []
 	else:
+		if orbit:
+			gs = maxs * 48 / 100
+			u.spd = mini(gs, u.spd + accel_pt) if u.spd < gs else maxi(gs, u.spd - brake_pt)
+			u.spd = maxi(u.spd, gs * 70 / 100)
+			u.dir = FX.dir_of(u.face)
+			_step(w, u, u.spd)
+			return
 		if rel > FX.ANG / 10:
 			gs = maxs / 3
 		gs = mini(gs, maxi(16, FX.isqrt(2 * brake_pt * dist)))
@@ -526,7 +551,7 @@ static func spreads(w: SimWorld, u: SimEntity) -> bool:
 	var v = _spread_def.get(u.def_id)
 	if v == null:
 		var d: UnitDef = Content.unit(u.def_id)
-		v = d.move_layer == &"air" and not d.tags.has("jet") and not d.tags.has("suicide")
+		v = d.move_layer == &"air" and not d.tags.has("jet") and not d.tags.has("suicide") and not d.tags.has("reaper")
 		_spread_def[u.def_id] = v
 	return v
 

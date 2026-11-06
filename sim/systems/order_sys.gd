@@ -46,6 +46,10 @@ static func valid_target(w: SimWorld, u: SimEntity, t: SimEntity) -> bool:
 		return false
 	if t.kind == SimEntity.Kind.UNIT and t.res_id < 0:
 		return false
+	# M4.4: the Reaper is only engageable by base defences, never by units.
+	if t.kind == SimEntity.Kind.UNIT and w.udef(t).tags.has("stealth_defense"):
+		if u.kind != SimEntity.Kind.BUILDING or w.bdef(u).category != &"defense":
+			return false
 	if not CombatSys.can_hit(w, u, t.kind == SimEntity.Kind.UNIT and w.flying(t)):
 		return false
 	return w.fog.is_visible_ent(w, u.team, t)
@@ -221,6 +225,25 @@ static func _think(w: SimWorld, u: SimEntity) -> void:
 			if not can_attack(w, u):
 				_pop(u)
 				return
+			if w.udef(u).tags.has("demo") and _demo_target(w, t) and w.tick >= u.aux_t:
+				var gap := w.edge_dist(u, t) if t.kind == SimEntity.Kind.UNIT else maxi(0, w.dist_to_building(u.pos, t) - u.radius)
+				if gap <= TILE:
+					u.goal = NONE
+					u.moving = false
+					u.target = t.id
+					o["plant"] = int(o.get("plant", 0)) + 1
+					if int(o["plant"]) >= PLANT_TICKS:
+						CombatSys.fire(w, u, t, Content.weapon(&"us_seal_charge"), 100)
+						u.aux_t = w.tick + PLANT_COOL
+						o["plant"] = 0
+					return
+				o["plant"] = 0
+				u.target = t.id
+				var dp := t.pos
+				if t.kind != SimEntity.Kind.UNIT:
+					dp = FX.tile_center(w.map.nearest_passable(FX.to_tile(u.pos).clamp(t.tile - Vector2i.ONE, t.tile + t.fp), false))
+				_goto(u, dp)
+				return
 			_engage(w, u, t)
 		"guard":
 			_guard(w, u, o)
@@ -301,6 +324,13 @@ static func _think(w: SimWorld, u: SimEntity) -> void:
 					_goto(u, cp)
 
 const CAPTURE_TICKS := 120
+const PLANT_TICKS := 60       ## M4.4 SEAL: 3 s to set a charge
+const PLANT_COOL := 400       ## 20 s before the next charge
+
+static func _demo_target(w: SimWorld, t: SimEntity) -> bool:
+	if t.kind == SimEntity.Kind.BUILDING or t.kind == SimEntity.Kind.NEUTRAL:
+		return true
+	return t.kind == SimEntity.Kind.UNIT and w.is_vehicle(t)
 
 ## M3.1 building repair (Zero Hour dozer style): next to the structure, each builder restores
 ## REPAIR_TICKS-th of its max HP per tick (a full repair takes ~30 s for one builder) and pays as

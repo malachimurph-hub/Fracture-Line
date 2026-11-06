@@ -355,10 +355,19 @@ func _near_res(c: Vector2i) -> bool:
 							_res_mask[map.idx(q)] = 1
 	return _res_mask[map.idx(c)] != 0
 
+## M4.4: a structure the player may not start (Sub Station after Nuclear Research). "" if it is allowed.
+func build_lock(pid: int, d: BuildingDef) -> String:
+	if d != null and d.id == &"us_substation" and has_completed(pid, &"us_up_nuclear"):
+		return "REASON_OBSOLETE"
+	return ""
+
 func can_place(pid: int, def_id: StringName, t: Vector2i, check_cost: bool = true, builder_ids: Array = [], ai_clear: bool = false) -> String:
 	var d: BuildingDef = Content.building(def_id)
 	if d == null or not d.buildable:
 		return "REASON_INVALID"
+	var locked := build_lock(pid, d)
+	if locked != "":
+		return locked
 	var p: SimPlayer = players[pid]
 	if check_cost and p.supply < d.cost:
 		return "REASON_FUNDS"
@@ -509,8 +518,9 @@ func step() -> void:
 	TplaSys.run(self)
 	# M2.4 roster mechanics (transports, heal auras)
 	RosterSys.run(self)
-	# M2.5 US mechanics (stealth while stationary)
+	# M2.5 US mechanics (stealth while stationary). M4.4: ZEUS fires after stealth is resolved.
 	UsSys.run(self)
+	ZeusSys.run(self)
 	# M3.3 Phase 3: the Russian mine packs up, drives and sets up again
 	MineSys.run(self)
 	if prof != null: t = _pt("tpla", t)

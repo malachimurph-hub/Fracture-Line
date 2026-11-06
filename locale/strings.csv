@@ -456,9 +456,9 @@ UNIT_US_JAVELIN_DESC,"Single soldier with a fire-and-forget anti-tank missile la
 UNIT_US_JTAC,JTAC Observer
 UNIT_US_JTAC_DESC,"Forward air controller with a carbine: wide sight, 35% stronger than a Rifleman. Sends idle aircraft at his target and boosts artillery and air strikes near him (+25% damage, tighter spread)."
 UNIT_US_SNIPER,Scout Sniper
-UNIT_US_SNIPER_DESC,Invisible while standing still. Kills infantry with one shot; useless against vehicles. Needs a Strategic Center.
+UNIT_US_SNIPER_DESC,Invisible while standing still. Kills infantry with one shot; useless against vehicles. Trained at SOCOM.
 UNIT_US_HALBERD,M1A3
-UNIT_US_HALBERD_DESC,"M1A3 main battle tank in desert tan. Heavy smoothbore gun, fast for its weight, very well armoured."
+UNIT_US_HALBERD_DESC,"M1A3 main battle tank in desert tan. Heavy smoothbore gun, fast for its weight, very well armoured. Needs the Pentagon."
 UNIT_US_LYNX,JLTV
 UNIT_US_LYNX_DESC,"Joint Light Tactical Vehicle in desert tan. Fast, with a roof machine gun. Carries five infantry."
 UNIT_US_BRADLEY,M3 Bradley
@@ -466,7 +466,7 @@ UNIT_US_BRADLEY_DESC,Woodland-camo infantry fighting vehicle with a 25mm chain g
 UNIT_US_PICKET,MAAS
 UNIT_US_PICKET_DESC,Mobile Anti Air System: launcher pods for aircraft plus a machine gun for light ground targets.
 UNIT_US_LONGREACH,M109A7
-UNIT_US_LONGREACH_DESC,"M109A7 self-propelled 155 mm howitzer. Tracked, long range, cannot hit close targets. Needs a Strategic Center."
+UNIT_US_LONGREACH_DESC,"M109A7 self-propelled 155 mm howitzer. Tracked, long range, cannot hit close targets. Needs the Pentagon."
 UNIT_US_HARRIER,Harrier Gunship
 UNIT_US_HARRIER_DESC,"Attack helicopter: missiles against vehicles, chin cannon against infantry and light vehicles. Reloads in the air, needs no airfield slot."
 UNIT_US_WRAITH,Wraith Fighter
@@ -474,25 +474,25 @@ UNIT_US_WRAITH_DESC,"Air-superiority fighter: the best anti-air in the game, one
 UNIT_US_THUNDERLANCE,Thunderlance Bomber
 UNIT_US_THUNDERLANCE_DESC,"Heavy bomber: one devastating strike, then it lands and rearms (45 s). Uses 4 airfield slots. Needs a Strategic Center."
 BLD_US_COMMAND,Headquarters
-BLD_US_COMMAND_DESC,US headquarters. Builds Dozers.
+BLD_US_COMMAND_DESC,US headquarters. Builds Dozers. The satellite uplink is live from the first second: the minimap is not a unit you train.
 BLD_US_REACTOR,Nuclear Power Plant
-BLD_US_REACTOR_DESC,Nuclear power plant. Powers the base.
+BLD_US_REACTOR_DESC,"Large containment hall. Very expensive and very powerful. Needs Nuclear Research from DARPA. Once that research is done, Sub Stations produce no power."
 BLD_US_SUPPLY_CENTER,Supply Depot
 BLD_US_SUPPLY_CENTER_DESC,Warehouse supply drop-off. Comes with an M1083A1P2 Supply Truck.
 BLD_US_BARRACKS,Barracks
-BLD_US_BARRACKS_DESC,Trains US infantry.
+BLD_US_BARRACKS_DESC,Trains Combat Squads and MK 23 teams. Needs a Sub Station. Unlocks the Supply Depot and the M777A2.
 BLD_US_GARAGE,Motor Pool
-BLD_US_GARAGE_DESC,Builds US vehicles.
+BLD_US_GARAGE_DESC,"Builds the JLTV, M3 Bradley and MAAS. The M1A3 and M109A7 also come from here once the Pentagon is up."
 BLD_US_AIRFIELD,Airfield
-BLD_US_AIRFIELD_DESC,"Builds aircraft. 6 parking slots: bomber 4, fighter 2, gunship 0. Jets land here to rearm."
-BLD_US_STRATEGY,Strategic Center
-BLD_US_STRATEGY_DESC,"Tech centre: unlocks the Scout Sniper, M109A7 howitzer, Thunderlance Bomber and Data Center."
+BLD_US_AIRFIELD_DESC,"Builds the AH-6, F-16 and UH-60. Advanced aircraft need DARPA research. 6 parking slots: heavy bomber 4, fighter 2, helicopter 0."
+BLD_US_STRATEGY,Pentagon
+BLD_US_STRATEGY_DESC,"Command building. Unlocks the Airfield, LPWS, M1A3 and M109A7, and the Data Center after it."
 BLD_US_PATRIOT,LPWS
-BLD_US_PATRIOT_DESC,"C-RAM air defence: trailer-mounted 20mm rotary gun, strong against aircraft, weak against ground targets. Needs power."
+BLD_US_PATRIOT_DESC,"C-RAM air defence: trailer-mounted 20mm rotary gun, strong against aircraft, weak against ground targets. Needs the Pentagon and power."
 BLD_US_FIREBASE,M777A2
-BLD_US_FIREBASE_DESC,Emplaced M777A2 155mm howitzer that shells ground targets at long range. Needs no power.
+BLD_US_FIREBASE_DESC,Emplaced M777A2 155mm howitzer that shells ground targets at long range. Needs a Barracks. Needs no power.
 BLD_US_DROP_ZONE,Data Center
-BLD_US_DROP_ZONE_DESC,Server hall that brings in $500 a minute. Uses a lot of power.
+BLD_US_DROP_ZONE_DESC,"Server hall that brings in $500 a minute and unlocks DARPA and SOCOM. Uses a lot of power. Needs the Pentagon."
 POWER_US_UAV,UAV Recon
 POWER_US_UAV_DESC,A drone reveals a 14-tile area for 20 s.
 POWER_US_PARADROP,Paradrop
@@ -605,7 +605,7 @@ BLD_BARRICADE_DESC,Heavy concrete barrier. One infantry squad (or one soldier) c
 UNIT_EU_FIELD_ENGINEER,Field Engineer
 UNIT_EU_FIELD_ENGINEER_DESC,"Combat engineer with a rifle. Repairs nearby vehicles while standing still, repairs structures and builds barricades."
 UNIT_US_DRONE_OPERATOR,Drone Operator
-UNIT_US_DRONE_OPERATOR_DESC,Launches a scout drone (unarmed flying recon with a wide view). The drone comes back 60 s after it is used or lost. Needs Drone Warfare from the Strategic Center.
+UNIT_US_DRONE_OPERATOR_DESC,Launches a scout drone (unarmed flying recon with a wide view). The drone comes back 60 s after it is used or lost. Trained at the Barracks once a Robotics Plant is up.
 UNIT_US_BOMB_DRONE,Bomb Drone
 UNIT_US_BOMB_DRONE_DESC,One-way attack drone. Flies to its target and detonates. Strong against vehicles.
 UNIT_US_SCOUT_DRONE,Scout Drone
@@ -723,7 +723,7 @@ MENU_TUTORIAL,First Battle
 MENU_TUTORIAL_NEW,New? Start here
 TUT_WELCOME,"Welcome, Commander. This is your first battle. Follow the steps here."
 TUT_SELECT,Tap your Dozer to select it.
-TUT_POWER,Open the build menu and place a Nuclear Power Plant.
+TUT_POWER,Open the build menu and place a Sub Station.
 TUT_BARRACKS,Good. Now build a Barracks to train infantry.
 TUT_TRAIN,Select the Barracks and train two squads.
 TUT_MOVE,"Select your soldiers, then tap the ground to move them."
@@ -731,3 +731,46 @@ TUT_ATTACK,The enemy base is to the east. Destroy it to win.
 TUT_DONE,"Well done, Commander. You are ready for Skirmish."
 TUT_SKIP,Skip tutorial
 SET_REPLAY_TUTORIAL,Replay First Battle (tutorial)
+REASON_OBSOLETE,Obsolete — Nuclear Research replaced it
+BLD_US_SUBSTATION,Sub Station
+BLD_US_SUBSTATION_DESC,"Early power yard: transformers and a switch house. Powers the base until Nuclear Research is finished, then it produces nothing."
+BLD_US_DARPA,DARPA
+BLD_US_DARPA_DESC,"Research campus. Advanced Aero, Robotics, Nuclear Research and ZEUS Defense Systems are studied here. Needs a Data Center."
+BLD_US_SOCOM,SOCOM
+BLD_US_SOCOM_DESC,"Special operations compound. Trains the Scout Sniper, Green Beret, SEAL and JTAC Observer. Needs a Data Center."
+BLD_US_ROBOTICS,Robotics Plant
+BLD_US_ROBOTICS_DESC,"Factory for the Ripsaw. Also unlocks the Reaper at the Airfield and the Drone Operator at the Barracks. Needs Robotics research."
+BLD_US_ZEUS_LAUNCHER,Zeus Launch Station
+BLD_US_ZEUS_LAUNCHER_DESC,"Ground launcher. Fires six missiles in a quick salvo at enemies inside a Zeus Pylon, then recharges for 30 seconds. Needs ZEUS research and power."
+BLD_US_ZEUS_PYLON,Zeus Pylon
+BLD_US_ZEUS_PYLON_DESC,"Sensor mast. Draws the defence line on the ground. A Zeus Launch Station only fires at targets inside this ring. Needs ZEUS research."
+UNIT_US_LITTLEBIRD,AH-6 Little Bird
+UNIT_US_LITTLEBIRD_DESC,"Light helicopter. Faster and harder to spot than the other helicopters, and much easier to shoot down. Rockets and a light gun."
+UNIT_US_F16,F-16 Fighting Falcon
+UNIT_US_F16_DESC,"Light fighter. Cheaper and less effective than the YF-22. Two missiles and one small bomb. Uses 2 airfield slots."
+UNIT_US_YF22,YF-22
+UNIT_US_YF22_DESC,"Stealth fighter. Hits harder than the F-16 and costs more. Hidden from ground troops unless they are very close; aircraft and base defences can see it. Needs Advanced Aero. Uses 2 airfield slots."
+UNIT_US_F35,F-35
+UNIT_US_F35_DESC,"Light attack bomber. Two heavy ground strikes and a gun. Needs Advanced Aero. Uses 2 airfield slots."
+UNIT_US_B1,B-1 Lancer
+UNIT_US_B1_DESC,"Heavy bomber. One devastating strike, then it lands and rearms. Needs Advanced Aero. Uses 4 airfield slots."
+UNIT_US_AH64,AH-64
+UNIT_US_AH64_DESC,"Attack helicopter. Missiles against vehicles and a chin gun against infantry. Reloads in the air. Needs Advanced Aero."
+UNIT_US_REAPER,Reaper Drone
+UNIT_US_REAPER_DESC,"Ground-strike drone built at the Airfield. Flies like a helicopter until it reaches the target, then holds a wide slow circle. Same punch as the F-35. Only base defences can detect it. Needs a Robotics Plant."
+UNIT_US_RIPSAW,Ripsaw
+UNIT_US_RIPSAW_DESC,"Unmanned robotic tank, smaller and quicker than the M1A3. Main gun is about 85% as effective against armour, with a coaxial .50 cal. No crew. Built at the Robotics Plant."
+UNIT_US_MK23,MK 23 Grenade Launcher Team
+UNIT_US_MK23_DESC,"Two soldiers, one grenade launcher. Best against infantry, decent against light vehicles, poor against tanks. Must set up before it fires."
+UNIT_US_GREEN_BERET,Green Beret
+UNIT_US_GREEN_BERET_DESC,"Stealthed infantry. Captures enemy buildings and is very effective against infantry. Trained at SOCOM."
+UNIT_US_SEAL,SEAL
+UNIT_US_SEAL_DESC,"Stealthed infantry with high health. Order one onto an enemy vehicle or building and it plants a demolition charge. Trained at SOCOM."
+UNIT_US_UP_AERO,Advanced Aero
+UNIT_US_UP_AERO_DESC,"DARPA research. Unlocks the F-35, B-1 Lancer, AH-64 and YF-22 at the Airfield."
+UNIT_US_UP_ROBOTICS,Robotics
+UNIT_US_UP_ROBOTICS_DESC,DARPA research. Unlocks the Robotics Plant.
+UNIT_US_UP_NUCLEAR,Nuclear Research
+UNIT_US_UP_NUCLEAR_DESC,DARPA research. Unlocks the Nuclear Power Plant. Sub Stations stop producing power.
+UNIT_US_UP_ZEUS,ZEUS Defense Systems
+UNIT_US_UP_ZEUS_DESC,DARPA research. Unlocks the Zeus Launch Station and the Zeus Pylon.

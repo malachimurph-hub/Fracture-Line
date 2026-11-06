@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"us_yf22"
+faction = &"us"
+name_key = "UNIT_US_YF22"
+desc_key = "UNIT_US_YF22_DESC"
+cost = 2200
+build_time_ms = 18000
+pop = 3
+prereqs = PackedStringArray("us_up_aero")
+tags = PackedStringArray("air", "jet", "fighter", "aa", "stealth_air")
+max_hp = 640
+armor_type = &"air"
+weapons = PackedStringArray("us_yf22_aam", "us_yf22_bomb")
+speed_mtps = 7500
+move_layer = &"air"
+sight = 12
+radius_mt = 620
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 0
+role = &"air_strike"
+view_scene = "res://view/units/us/yf22.tscn"
+stubs = PackedStringArray()
+loco = &"jet"
+turn_dps = 160
+accel_ms = 1200
+turret_dps = 0
+abilities = PackedStringArray()
+transport_capacity = 0
+detector = false
+air_slots = 2

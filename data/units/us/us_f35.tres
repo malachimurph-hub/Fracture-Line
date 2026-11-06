@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"us_f35"
+faction = &"us"
+name_key = "UNIT_US_F35"
+desc_key = "UNIT_US_F35_DESC"
+cost = 1900
+build_time_ms = 17000
+pop = 3
+prereqs = PackedStringArray("us_up_aero")
+tags = PackedStringArray("air", "jet", "bomber")
+max_hp = 680
+armor_type = &"air"
+weapons = PackedStringArray("us_f35_bomb", "us_f35_gun")
+speed_mtps = 7000
+move_layer = &"air"
+sight = 11
+radius_mt = 640
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 0
+role = &"air_strike"
+view_scene = "res://view/units/us/f35.tscn"
+stubs = PackedStringArray()
+loco = &"jet"
+turn_dps = 150
+accel_ms = 1200
+turret_dps = 0
+abilities = PackedStringArray()
+transport_capacity = 0
+detector = false
+air_slots = 2

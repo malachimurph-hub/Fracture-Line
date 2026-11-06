@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"us_ripsaw"
+faction = &"us"
+name_key = "UNIT_US_RIPSAW"
+desc_key = "UNIT_US_RIPSAW_DESC"
+cost = 1000
+build_time_ms = 12000
+pop = 2
+prereqs = PackedStringArray()
+tags = PackedStringArray("vehicle", "tank", "robot")
+max_hp = 680
+armor_type = &"heavy"
+weapons = PackedStringArray("us_ripsaw_gun", "us_ripsaw_50")
+speed_mtps = 2000
+move_layer = &"vehicle"
+sight = 8
+radius_mt = 440
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 0
+role = &"tank"
+view_scene = "res://view/units/us/ripsaw.tscn"
+stubs = PackedStringArray()
+loco = &""
+turn_dps = 150
+accel_ms = 700
+turret_dps = 120
+abilities = PackedStringArray()
+transport_capacity = 0
+detector = false
+air_slots = 0

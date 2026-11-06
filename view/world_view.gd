@@ -441,6 +441,8 @@ func _ensure_view(e: SimEntity) -> EntityView:
 		Palette.apply_paint(v, Content.faction_of_id(e.def_id), Palette.PAINT_BUILDINGS[e.def_id])
 	if e.kind == SimEntity.Kind.BUILDING:
 		_add_crew(v, e)
+		if Content.btag(e.def_id, "zeus_pylon"):
+			_zeus_ring(v, e)
 	v.position = _world_pos(e)
 	if e.kind == SimEntity.Kind.BUILDING or e.kind == SimEntity.Kind.NEUTRAL:
 		v.rotation.y = [0.0, PI * 0.5, PI, -PI * 0.5][e.rot]
@@ -601,6 +603,22 @@ func _visible_pos(p: Vector2i) -> bool:
 ## markers get real infantry views (same VAT soldiers, size and animation as trained troops).
 ## Crew0/1 are the anti-tank gunners (kneel to fire), the rest are riflemen loaders.
 const CREW := {&"eu_javelin_pit": [&"eu_lancer", &"eu_grenadier"]}
+## M4.4: the Zeus Pylon draws its defence disc so the player can see the line it covers.
+func _zeus_ring(v: Node3D, e: SimEntity) -> void:
+	if local_team >= 0 and e.team != local_team:
+		return
+	var radius := float(Content.building(e.def_id).aux_radius)
+	var mi := MeshInstance3D.new()
+	mi.name = "RangeRing"
+	mi.mesh = Palette.ring_mesh("circle", 0.012)
+	mi.scale = Vector3(radius, 1.0, radius)
+	mi.position = Vector3(0, 0.18, 0)
+	var col := Palette.color(sim.players[e.owner].color if e.owner >= 0 else 0)
+	col.a = 0.85
+	mi.material_override = Palette.flat(col, 0.85)
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	v.add_child(mi)
+
 func _add_crew(v: Node3D, e: SimEntity) -> void:
 	if not CREW.has(e.def_id):
 		return

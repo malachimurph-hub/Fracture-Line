@@ -112,6 +112,8 @@ func _ready() -> void:
 			await load("res://tests/m42_test.gd").run(self)   # M4.2 (0.4.2) Malachi's 20-item list
 		"m43":
 			await load("res://tests/m43_test.gd").run(self)   # M4.3 (0.4.3) Malachi's list
+		"m44":
+			await load("res://tests/m44_test.gd").run(self)   # M4.4 (0.4.4) US tech tree
 		"stall":
 			var r2 := MatchRunner.new()
 			r2.record_replay = false
@@ -2188,12 +2190,13 @@ func _m25_air() -> void:
 	var r := _us_runner(51)
 	var w := r.sim
 	var c := _zh_open(w, 7)
-	_tpla_place(w, 0, &"us_reactor", c + Vector2i(8, -8))
-	_tpla_place(w, 0, &"us_reactor", c + Vector2i(-8, -8))
+	# M4.4: power is the Sub Station; the Airfield needs the Pentagon, which needs the Motor Pool.
+	_tpla_place(w, 0, &"us_substation", c + Vector2i(8, -8))
+	_tpla_place(w, 0, &"us_substation", c + Vector2i(-8, -8))
 	_tpla_place(w, 0, &"us_barracks", c + Vector2i(8, 8))
 	_tpla_place(w, 0, &"us_garage", c + Vector2i(-8, 8))
-	var af := _tpla_place(w, 0, &"us_airfield", c)
 	_tpla_place(w, 0, &"us_strategy", c + Vector2i(0, -8))
+	var af := _tpla_place(w, 0, &"us_airfield", c)
 	w.power_dirty = true
 	for def in ["us_thunderlance", "us_wraith", "us_wraith"]:
 		r.issue({"p": 0, "t": "queue", "target": af.id, "def": def, "n": 1})
@@ -2684,21 +2687,30 @@ func _roster_m32() -> void:
 		if w.ents[id].res_id == -bar.id:
 			inside += 1
 	_check(inside == 0, "barricade troops exit")
-	# --- US research + Drone Operator
+	# --- US research + Drone Operator (M4.4: Robotics Plant, not the old Strategic Center upgrade)
 	var r2 := MatchRunner.new()
 	r2.record_replay = false
 	r2.start(make_cfg("1v1", 63, [], ["us", "tpla"]))
 	r2.ais.clear()
 	var w2 := r2.sim
 	var c2 := _zh_open(w2, 7)
-	_check(w2.prereqs_met(0, Content.unit(&"us_drone_operator").prereqs) != "", "Drone Operator locked before Drone Warfare research")
-	var sc := w2._place_building(Content.building(&"us_strategy"), 0, c2 + Vector2i(-6, -2), 0, true)
-	w2.players[0].supply = 20000
-	r2.issue({"p": 0, "t": "queue", "target": sc.id, "def": "us_up_drones", "n": 3})
+	_check(w2.prereqs_met(0, Content.unit(&"us_drone_operator").prereqs) != "", "Drone Operator locked before a Robotics Plant")
+	w2._place_building(Content.building(&"us_reactor"), 0, c2 + Vector2i(8, 6), 0, true)
+	var darpa := w2._place_building(Content.building(&"us_darpa"), 0, c2 + Vector2i(-8, -2), 0, true)
+	w2.players[0].supply = 80000
+	r2.issue({"p": 0, "t": "queue", "target": darpa.id, "def": "us_up_robotics", "n": 3})
 	_ticks(r2, 2)
-	_check(sc.queue.size() == 1, "research queues once")
-	_ticks(r2, 1400)
-	_check(w2.players[0].upgrades.has("us_up_drones") and w2.prereqs_met(0, Content.unit(&"us_drone_operator").prereqs) == "", "Strategic Center research unlocks the Drone Operator")
+	_check(darpa.queue.size() == 1, "research queues once")
+	_ticks(r2, 900)
+	_check(w2.players[0].upgrades.has("us_up_robotics"), "Robotics research completes at DARPA")
+	_check(w2.prereqs_met(0, Content.unit(&"us_drone_operator").prereqs) != "", "the operator still needs the Robotics Plant")
+	w2._place_building(Content.building(&"us_robotics"), 0, c2 + Vector2i(6, -4), 0, true)
+	_check(w2.prereqs_met(0, Content.unit(&"us_drone_operator").prereqs) == "", "Robotics Plant unlocks the Drone Operator")
+	# old saves can still queue the retired Drone Warfare upgrade at the Pentagon
+	var sc := w2._place_building(Content.building(&"us_strategy"), 0, c2 + Vector2i(-6, 8), 0, true)
+	r2.issue({"p": 0, "t": "queue", "target": sc.id, "def": "us_up_drones", "n": 1})
+	_ticks(r2, 2)
+	_check(sc.queue.has(&"us_up_drones"), "old Drone Warfare research still queues for replays")
 	var op := w2.spawn_unit(&"us_drone_operator", 0, null, FX.tile_center(c2))
 	op.pos = FX.tile_center(c2)
 	r2.issue({"p": 0, "t": "drone", "ids": [op.id], "kind": "bomb"})   # M3.5: US operators fly scout drones only

@@ -69,7 +69,7 @@ const PAINT_BUILDINGS := {&"ecc_power": 0.8, &"tpla_cc_plant": 0.8}
 ## M4.2 (Malachi): per-unit paint overrides. US aircraft and the US dozer are grey, the UH-60
 ## Black Hawk is black; every other US vehicle stays light tan.
 const US_AIR_GREY := Color("#7f868c")
-const UNIT_PAINT := {&"us_blackhawk": Color("#1d1f21"), &"us_dozer": Color("#80868a")}
+const UNIT_PAINT := {&"us_blackhawk": Color("#1d1f21"), &"us_dozer": Color("#80868a"), &"us_ripsaw": Color("#5e655f")}
 
 static func paint_for(def_id: StringName) -> Color:
 	if UNIT_PAINT.has(def_id):

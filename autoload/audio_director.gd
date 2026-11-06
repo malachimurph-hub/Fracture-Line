@@ -404,6 +404,9 @@ func _rule(faction: String, event: String) -> Dictionary:
 
 ## Unit acknowledgement / chatter for the LOCAL player's units.
 func unit_voice(faction: String, unit_id: String, event: String) -> bool:
+	var voiced: UnitDef = Content.unit(unit_id)
+	if voiced != null and voiced.tags.has("robot"):
+		return false   # M4.4: the Ripsaw has no crew and no voice lines
 	if is_drone(unit_id):   # M4.2: drones do not talk - a short motor rev for select / move / attack
 		return drone_ack(event)
 	var folder := _folder_of(faction, unit_id)

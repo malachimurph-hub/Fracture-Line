@@ -88,7 +88,7 @@ func check() -> bool:
 					return true
 			return false
 		"power":
-			return _mine(SimEntity.Kind.BUILDING, "us_reactor")
+			return _mine(SimEntity.Kind.BUILDING, "us_substation")
 		"barracks":
 			return _mine(SimEntity.Kind.BUILDING, "us_barracks")
 		"train":

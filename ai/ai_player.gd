@@ -233,8 +233,12 @@ func _next_building() -> StringName:
 	var desired := {}
 	for item in persona.opening:
 		var id := StringName(item)
-		if not Content.building(id).buildable:
-			continue   # M4.3: retired structures (German Gun Bunker / Air Defence Gun) never stall the list
+		var bd_open: BuildingDef = Content.building(id)
+		if bd_open == null or not bd_open.buildable or w.build_lock(pid, bd_open) != "":
+			continue   # M4.3: retired structures never stall the list. M4.4: an obsolete Sub Station neither.
+		var miss := w.prereqs_met(pid, bd_open.prereqs)
+		if miss != "" and Content.unit(miss) != null and Content.unit(miss).tags.has("upgrade"):
+			continue   # research-gated structures wait; they must not freeze the rest of the opening
 		desired[id] = desired.get(id, 0) + 1
 		if counts.get(id, 0) < desired[id]:
 			if id == R["refinery"] and desired[id] >= 2 and seconds() < cfg["expand_s"]:
