@@ -101,3 +101,22 @@ func ak_gl() -> void:
 func ak74_gl() -> void:
 	ak74()
 	_ugl(0.2, 0.42, 0.0)
+
+## Stand-alone 40 mm revolver launcher (MK 23 team). Same grip frame as a carbine.
+func mk23() -> void:
+	color(BLK)
+	box(Vector3(0, 0.03, -0.22), Vector3(0.045, 0.08, 0.22))                 # stock
+	box(Vector3(0, -0.04, -0.02), Vector3(0.03, 0.09, 0.04))                 # grip
+	color("#3e4329")
+	cyl(Vector3(0, 0.05, 0.08), Vector3(0, 0.05, 0.32), 0.048, 0.048, 10)   # cylinder
+	color(STEEL)
+	cyl(Vector3(0, 0.05, 0.32), Vector3(0, 0.05, 0.58), 0.012)
+	color(BLK)
+	box(Vector3(0, 0.1, 0.18), Vector3(0.02, 0.02, 0.16))                    # sight rail
+	box(Vector3(0, 0.02, 0.2), Vector3(0.05, 0.03, 0.12))                    # foregrip
+
+## Carbine with a suppressor (SEAL). Grip points match m4.
+func seal_carbine() -> void:
+	m4()
+	color("#1a1c1c")
+	cyl(Vector3(0, 0.06, 0.58), Vector3(0, 0.06, 0.74), 0.016, 0.016, 8)

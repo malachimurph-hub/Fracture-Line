@@ -11,7 +11,7 @@ extends AIPlayer
 ##    boost are automatic in the sim); the airfield is never asked for a jet it has no slot for.
 
 func roles() -> Dictionary:
-	# Once Nuclear Research is finished the Sub Station is dead weight; the plant is the power building.
+	# After Nuclear Research, new power buildings are the plant. Sub Stations already up keep producing.
 	var power: StringName = &"us_reactor" if w.players[pid].upgrades.has("us_up_nuclear") else &"us_substation"
 	return {"builder": &"us_dozer", "harvester": &"us_supply_truck", "refinery": &"us_supply_center", "power": power,
 		"bunker": &"us_firebase", "barracks": &"us_barracks", "heavy": &"us_airfield", "motor": &"us_garage",

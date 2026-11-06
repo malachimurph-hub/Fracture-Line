@@ -173,6 +173,19 @@ static func _armour(r, spec: Dictionary) -> void:
 					r.set_c(spec.get("pouch", "#444"))
 					r.box(Vector3(0.18, 1.08, 0.02), Vector3(0.06, 0.16, 0.2))
 					r.loft(Vector3(0.17, 1.12, 0.0), Vector3(-0.15, 1.5, 0.0), [[0.0, 0.025, 0.01], [1.0, 0.025, 0.01]], Vector3.FORWARD, 5)
+				"charges":   # demo satchels on the chest (SEAL)
+					r.set_c("#3a4034", 0, 0)
+					for i in 2:
+						var p := Vector3(-0.07 + float(i) * 0.14, 1.22, 0.175)
+						r.cyl(p, p + Vector3(0, 0.16, 0), 0.038, 0.038, 8)
+						r.set_c("#c9b23a", 0, 0)
+						r.cyl(p + Vector3(0, 0.06, 0), p + Vector3(0, 0.09, 0), 0.04, 0.04, 8)
+						r.set_c("#3a4034", 0, 0)
+				"gl_rounds":   # 40 mm bandolier for the assistant
+					r.set_c("#5a5e40", 0, 0)
+					for i in 4:
+						var q := Vector3(-0.1 + float(i) * 0.065, 1.22, 0.17)
+						r.cyl(q, q + Vector3(0, 0.07, 0.02), 0.028, 0.022, 6)
 
 # ------------------------------------------------------------------ back (per variant)
 static func _back(r, spec: Dictionary) -> void:
@@ -241,6 +254,13 @@ static func _back(r, spec: Dictionary) -> void:
 				"satchel_back":
 					r.set_c(pk, 0, vm)
 					r.box(Vector3(0, 1.28, -0.19), Vector3(0.22, 0.24, 0.09))
+				"gl_pack":
+					r.set_c(pk, 0, vm)
+					r.box(Vector3(0, 1.28, -0.2), Vector3(0.26, 0.28, 0.1))
+					r.set_c("#5d6340", 0, vm)
+					for k in 3:
+						var b0 := Vector3(-0.08 + float(k) * 0.08, 1.18, -0.28)
+						r.cyl(b0, b0 + Vector3(0, 0.22, 0), 0.032, 0.028, 6)
 
 ## parts -> variant mask, for a list of 4 (or fewer) per-variant options
 static func _masks(opts: Array) -> Dictionary:
@@ -321,6 +341,12 @@ static func _heads(r, spec: Dictionary) -> void:
 			"beanie":
 				r.set_c(spec.get("wrap", "#3a3d34"), 0, vm)
 				r.dome(Vector3(0, 1.715, -0.004), Vector3(0.088, 0.09, 0.1), 1.6, 4, 12)
+			"beret":   # soft cap pulled to the right, team flash on the left
+				r.set_c("#2f4a28", cm, vm)
+				r.dome(Vector3(-0.01, 1.725, -0.006), Vector3(0.1, 0.04, 0.108), 1.25, 3, 12)
+				r.loft(Vector3(0.02, 1.72, 0.0), Vector3(0.07, 1.7, 0.01), [[0.0, 0.09, 0.1], [1.0, 0.05, 0.06]], Vector3.FORWARD, 10)
+				r.set_c("#cccccc", TEAM, vm)
+				r.box(Vector3(-0.06, 1.745, 0.02), Vector3(0.028, 0.012, 0.02))
 			"hair":
 				r.set_c(hair, 0, vm)
 				r.dome(Vector3(0, 1.705, -0.01), Vector3(0.084, 0.108, 0.1), 1.45, 4, 12)

@@ -47,6 +47,8 @@ const GUNS := {
 	"m16_gl": {"butt": Vector3(0, 0.03, -0.4), "grip": Vector3(0, -0.04, -0.03), "support": Vector3(0, 0.01, 0.25)},
 	"ak_gl": {"butt": Vector3(0, 0.02, -0.4), "grip": Vector3(0, -0.04, -0.03), "support": Vector3(0, 0.02, 0.28)},
 	"ak74_gl": {"butt": Vector3(0, 0.03, -0.35), "grip": Vector3(0, -0.04, -0.03), "support": Vector3(0, 0.02, 0.28)},
+	"mk23": {"butt": Vector3(0, 0.03, -0.33), "grip": Vector3(0, -0.04, -0.02), "support": Vector3(0, 0.02, 0.2)},
+	"seal_carbine": {"butt": Vector3(0, 0.03, -0.27), "grip": Vector3(0, -0.04, -0.03), "support": Vector3(0, -0.07, 0.25)},
 }
 const STYLE := {"rpg": "launcher", "eu_launcher": "launcher", "javelin": "launcher", "pistol": "pistol", "shovel": "tool"}
 
@@ -76,6 +78,12 @@ const SPECS := {
 	"us_sniper": {"fac": "us", "gun": "sniper", "heads": ["boonie"], "backs": ["ghillie"], "armour": "vest", "kneel": 2},
 	"us_drone_operator": {"fac": "us", "gun": "m4", "heads": ["helmet+headset", "boonie+headset", "helmet+headset+goggles", "helmet+headset+nvg"], "backs": ["radio"], "chest_extra": ["controller"]},
 	"us_breacher": {"fac": "us", "gun": "shotgun", "heads": ["helmet+goggles", "helmet+nvg", "helmet+goggles", "helmet+headset"], "backs": ["satchel_back"], "thigh_pouch": true, "carrier": "#4a473c", "pouch": "#3e3d36"},
+	"us_green_beret": {"fac": "us", "gun": "m4", "heads": ["beret", "beret+headset", "beret", "beret+goggles"], "backs": ["radio"], "chest_extra": ["binoculars"],
+		"jacket": "#4e5a38", "trousers": "#455033", "camo": 2, "carrier": "#3d4a30", "pouch": "#354228", "helmet": "#2f4a28", "pack": "#3a4630", "boots": "#2a241c", "gloves": "#2c3324", "belt": "#2a3020"},
+	"us_seal": {"fac": "us", "gun": "seal_carbine", "heads": ["balaclava+headset", "balaclava", "boonie+headset", "helmet+nvg+balaclava"], "backs": ["satchel_back"], "chest_extra": ["charges"],
+		"jacket": "#2c3134", "trousers": "#262a2c", "camo": 0, "carrier": "#1e2426", "pouch": "#3a3428", "helmet": "#2a2e30", "pack": "#24282a", "boots": "#1a1a1a", "gloves": "#1a1a1a", "belt": "#1c1c1c", "kneepads": true},
+	"us_mk23_gunner": {"fac": "us", "gun": "mk23", "heads": HEADS_US, "backs": ["gl_pack", "bigpack", "gl_pack", "hydration"], "chest_extra": ["binoculars"], "kneel": 2},
+	"us_mk23_asst": {"fac": "us", "gun": "pistol", "heads": HEADS_US, "backs": ["bigpack"], "chest_extra": ["gl_rounds"], "thigh_pouch": true},
 	"eu_rifleman": {"fac": "eu", "gun": "eu_rifle_gl", "heads": HEADS_EU, "backs": ["pack", "hydration", "hydration", "pack"]},
 	"eu_lancer": {"fac": "eu", "gun": "eu_launcher", "heads": HEADS_EU, "backs": ["tube"], "kneel": 2},
 	"eu_machine_gunner": {"fac": "eu", "gun": "mg3", "heads": HEADS_EU, "backs": ["mgbox"], "chest_extra": ["ammo_belt"], "prone": true},
