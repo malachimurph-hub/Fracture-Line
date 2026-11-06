@@ -1,6 +1,6 @@
-# 0.4.4 — US tech tree
+# 0.4.4 (versionCode 28) — US tech tree
 
-Not a version bump. `project.godot` and the export presets stay at 0.4.3 / versionCode 27 until a ship is requested. No APK or AAB.
+Shipped for phone testing as a sideload APK (com.malachimurphy.fractureline). The APK itself is built outside this change.
 
 Germany, Iran and Russia are unchanged.
 
@@ -55,6 +55,12 @@ The pylon draws its ring for its owner. The launch station, while powered, fires
 ### Retired (defs kept for old saves and replays)
 
 Harrier Gunship, Wraith Fighter, Thunderlance Bomber, Breacher, and the old Drone Warfare research. Bomb Drone was never a US build item. The operator's scout drone is still the thing it launches; it is not a buildable aircraft.
+
+## Ship
+- versionName 0.4.4 / versionCode 28
+- project.godot `config/version` 0.4.4
+- sideload APK preset: package com.malachimurphy.fractureline, export `FractureLine-0.4.4.apk`
+- Play AAB preset: versionCode 28 / versionName 0.4.4 (package unchanged; AAB not built for this phone test)
 
 ## Tests
 
