@@ -9,3 +9,18 @@ tests/out/
 !audio/**/*.import
 __pycache__/
 android/
+
+# signing / secrets
+*.keystore
+*.jks
+*.p12
+keys/
+.env
+.env.*
+upload.keystore
+upload_key_secrets.txt
+*.keystore
+*.jks
+keys/
+.env
+.env.*
