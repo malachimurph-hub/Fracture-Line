@@ -22,6 +22,25 @@ Green Beret, SEAL and the MK 23 team no longer reuse the breacher, rifleman and 
 - SEAL — dark kit, balaclava, suppressed carbine, demo charges.
 - MK 23 — gunner with a revolver grenade launcher (kneels to fire); assistant with a pistol and a 40 mm bandolier.
 
+## Voices
+
+Crewed new US units use US male AI banks under `audio/voice_ai/us/`, listed in `data/audio/voice_manifest.json`. The lines are role-matched takes from the existing US cast (attack-helicopter, fighter, bomber, rifleman, sniper, observer). Lines that name a retired unit or another job were left out. Where two units would otherwise be the same speaker, the copy is pitch-shifted so they are not identical.
+
+| Unit | Folder | Source cast |
+|---|---|---|
+| AH-64 | `ah64` | Harrier gunship (includes the Hellfire call) |
+| AH-6 Little Bird | `littlebird` | same pilot, higher, no Hellfire line |
+| YF-22 | `yf22` | Wraith fighter, callsign lines dropped |
+| F-16 | `f16` | same fighter, higher |
+| F-35 | `f35` | same fighter, lower |
+| B-1 | `b1` | Thunderlance bomber, callsign lines dropped |
+| Green Beret | `green_beret` | rifleman, higher; no "Marine" / "Oorah" lines |
+| SEAL | `seal` | sniper, lower; no "sniper" callsign |
+| MK 23 | `mk23` | rifleman, lower |
+| Drone Operator | `drone_operator` | observer, higher; no "JTAC" callsign |
+
+The Ripsaw stays silent (`robot` tag, no bank). The Reaper is a drone: `AudioDirector.is_drone` now also matches the `drone` tag, so it gets the motor rev and the hum loop and no speech. It does not also play the helicopter engine loop. JTAC and Scout Sniper are unchanged.
+
 ## Power
 
 Nuclear Research only unlocks the Nuclear Power Plant. Sub Stations keep producing their +12, and a new one can still be started. The US AI still prefers the plant for *new* power buildings once the research is done; yards already built stay on the grid.

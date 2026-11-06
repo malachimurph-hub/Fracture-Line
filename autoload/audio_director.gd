@@ -35,7 +35,7 @@ const SFX := {
 const MOVE_LOOPS := {"tank": "res://audio/sfx/move_tank_loop.ogg", "ifv": "res://audio/sfx/move_ifv_loop.ogg",
 	"light": "res://audio/sfx/move_light_loop.ogg", "heli": "res://audio/sfx/move_heli_loop.ogg", "jet": "res://audio/sfx/move_jet_loop.ogg"}
 static func move_class(ud: UnitDef) -> String:
-	if ud == null or ud.tags.has("suicide") or String(ud.id).ends_with("_drone") or ud.tags.has("infantry") or not (ud.tags.has("vehicle") or ud.move_layer == &"air"):
+	if ud == null or ud.tags.has("suicide") or String(ud.id).ends_with("_drone") or ud.tags.has("drone") or ud.tags.has("infantry") or not (ud.tags.has("vehicle") or ud.move_layer == &"air"):
 		return ""
 	if ud.move_layer == &"air":
 		return "jet" if ud.tags.has("jet") else "heli"
@@ -434,10 +434,15 @@ func unit_voice(faction: String, unit_id: String, event: String) -> bool:
 	return true
 
 ## M4.2: scout / explosive drones (all factions) have no voice, only a motor hum.
+## M4.5: the tag covers drones whose id does not end in _drone (the Reaper). The operator is
+## "drone_operator", not "drone", and still speaks.
 const DRONE_ACK := "res://audio/sfx/drone_ack.ogg"
 const DRONE_LOOP := "res://audio/sfx/drone_hum_loop.ogg"
 static func is_drone(unit_id: String) -> bool:
-	return unit_id.ends_with("_drone")
+	if unit_id.ends_with("_drone"):
+		return true
+	var ud: UnitDef = Content.unit(unit_id)
+	return ud != null and ud.tags.has("drone")
 
 func drone_ack(event: String) -> bool:
 	if not event in ["select", "move", "attack", "created"]:

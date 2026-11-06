@@ -6,6 +6,7 @@ static func run(t: Node) -> void:
 	_tree(t)
 	_power(t)
 	_meshes(t)
+	_voices(t)
 	_units(t)
 	_zeus(t)
 	_reaper(t)
@@ -111,6 +112,24 @@ static func _meshes(t: Node) -> void:
 	var mk := FileAccess.get_file_as_string("res://view/units/us/mk23.tscn")
 	t._check(gb.contains("us_green_beret.res") and seal.contains("us_seal.res") and mk.contains("us_mk23_gunner.res"), "Green Beret, SEAL and MK 23 use their own soldier bakes")
 	t._check(Content.squad_members(&"us_mk23")[0][0] == "us_mk23_gunner" and Content.squad_members(&"us_mk23")[1][0] == "us_mk23_asst", "the MK 23 team is a gunner and an assistant")
+
+static func _voices(t: Node) -> void:
+	var banks := {
+		&"us_ah64": "ah64", &"us_littlebird": "littlebird", &"us_b1": "b1", &"us_f16": "f16", &"us_f35": "f35",
+		&"us_yf22": "yf22", &"us_green_beret": "green_beret", &"us_seal": "seal", &"us_mk23": "mk23",
+		&"us_drone_operator": "drone_operator",
+	}
+	for id in banks:
+		var folder: String = banks[id]
+		var v: Array = AudioDirector.variants("us", folder, "select")
+		var path := str(v[0][0]) if not v[0].is_empty() else ""
+		t._check(int(v[1]) == 1 and path.begins_with("res://audio/voice_ai/us/" + folder + "/"),
+			"%s select is a US AI bank (%s)" % [id, path])
+		t._check(not path.contains("_generic"), "%s does not fall through to a generic bank" % id)
+	t._check(Content.unit(&"us_ripsaw").tags.has("robot") and not AudioDirector.is_drone("us_ripsaw"), "the Ripsaw stays a silent robot")
+	t._check(AudioDirector.is_drone("us_reaper") and AudioDirector.is_drone("us_scout_drone") and not AudioDirector.is_drone("us_drone_operator"),
+		"the Reaper hums with the other drones; the operator still speaks")
+	t._check(AudioDirector.move_class(Content.unit(&"us_reaper")) == "", "the Reaper does not also play a helicopter engine loop")
 
 static func _units(t: Node) -> void:
 	var lb := Content.unit(&"us_littlebird")
