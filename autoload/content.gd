@@ -52,7 +52,7 @@ const SQUAD_MEMBERS := {
 	&"us_squad": [["us_rifleman", [&"us_m16"]], ["us_machine_gunner", [&"us_m240b"]], ["us_javelin", [&"us_javelin"]],
 		["us_rifleman", [&"us_m16"]], &"us", ["us_rifleman", [&"us_m16"]]],
 	# M4.4: two-man MK 23 team. The gunner carries the launcher; the assistant spots and hauls rounds.
-	&"us_mk23": [["us_grenadier", [&"us_mk23_gl"]], ["us_rifleman", [&"sidearm"]]],
+	&"us_mk23": [["us_mk23_gunner", [&"us_mk23_gl"]], ["us_mk23_asst", [&"sidearm"]]],
 	&"eu_squad": [["eu_rifleman", [&"eu_rifle"]], ["eu_machine_gunner", [&"eu_mg3"]], ["eu_lancer", [&"eu_lancer_missile"]],
 		["eu_rifleman", [&"eu_rifle"]], &"eu", ["eu_rifleman", [&"eu_rifle"]]],
 	&"tpla_squad": [["tpla_rifleman", [&"tpla_carbine"]], ["tpla_machine_gunner", [&"tpla_pkm"]], ["tpla_rocket", [&"tpla_rpg"]],

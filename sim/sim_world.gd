@@ -355,10 +355,9 @@ func _near_res(c: Vector2i) -> bool:
 							_res_mask[map.idx(q)] = 1
 	return _res_mask[map.idx(c)] != 0
 
-## M4.4: a structure the player may not start (Sub Station after Nuclear Research). "" if it is allowed.
-func build_lock(pid: int, d: BuildingDef) -> String:
-	if d != null and d.id == &"us_substation" and has_completed(pid, &"us_up_nuclear"):
-		return "REASON_OBSOLETE"
+## A structure the player may not start. "" if it is allowed.
+## Nuclear Research unlocks the plant; it does not retire the Sub Station.
+func build_lock(_pid: int, _d: BuildingDef) -> String:
 	return ""
 
 func can_place(pid: int, def_id: StringName, t: Vector2i, check_cost: bool = true, builder_ids: Array = [], ai_clear: bool = false) -> String:

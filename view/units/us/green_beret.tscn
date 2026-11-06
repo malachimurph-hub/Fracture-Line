@@ -1,7 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://view/infantry/infantry_view.gd" id="1_iv"]
-[ext_resource type="Resource" path="res://assets/models/infantry/us_breacher.res" id="2_vat"]
+[ext_resource type="Resource" path="res://assets/models/infantry/us_green_beret.res" id="2_vat"]
 
 [node name="View" type="Node3D"]
 script = ExtResource("1_iv")

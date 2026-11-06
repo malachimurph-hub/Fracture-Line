@@ -49,9 +49,8 @@ static func recompute_grid(w: SimWorld) -> void:
 			b.gridded = g
 			if b.built:
 				if d.power > 0:
-					# M4.4: once Nuclear Research is done the Sub Station produces nothing.
-					if not (d.id == &"us_substation" and w.has_completed(b.owner, &"us_up_nuclear")):
-						p.power_prod += d.power
+					# Sub Stations and the Nuclear plant both feed the base. Research only unlocks the plant.
+					p.power_prod += d.power
 				else:
 					p.power_used -= d.power
 		var low := p.power_used > p.power_prod

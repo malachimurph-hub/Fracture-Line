@@ -8,7 +8,8 @@ extends SceneTree
 ## vertex format, count and LOD chain; idempotent (mesh meta "camo").
 const PAT := {"us": 3, "eu": 1, "tpla": 2, "ecc": 0}   # M3.0 F: Russia green (pattern 0)   # M3.0: every US vehicle is desert tan
 ## M3.0 per-vehicle overrides (3 = US desert tan, 4 = woodland, unused since M3.0 all-tan)
-const PAT_FILE := {"eu/corvid": 0, "us/wraith": 0, "us/thunderlance": 0, "us/dozer": 0, "us/supply_truck": 0, "us/longreach": 0}   # pattern 0 = original US olive-green blotches (jets: their own grey)
+const PAT_FILE := {"eu/corvid": 0, "us/wraith": 0, "us/thunderlance": 0, "us/dozer": 0, "us/supply_truck": 0, "us/longreach": 0,
+	"us/f16": 0, "us/f35": 0, "us/yf22": 0, "us/b1": 0, "us/reaper": 0}   # pattern 0 keeps the painted grey (jets and the Reaper)
 
 func _initialize() -> void:
 	var paths: Array = Array(OS.get_cmdline_user_args())

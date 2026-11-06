@@ -5,6 +5,8 @@ const M33 := preload("res://tests/m33_test.gd")
 static func run(t: Node) -> void:
 	_tree(t)
 	_power(t)
+	_meshes(t)
+	_voices(t)
 	_units(t)
 	_zeus(t)
 	_reaper(t)
@@ -73,9 +75,61 @@ static func _power(t: Node) -> void:
 	t._check(w.players[0].power_prod == 17, "HQ + Sub Station make 17 power (%d)" % w.players[0].power_prod)
 	w.players[0].upgrades["us_up_nuclear"] = true
 	PowerSys.recompute_grid(w)
-	t._check(w.players[0].power_prod == 5 and sub.alive, "Nuclear Research leaves the Sub Station standing but powerless")
-	t._check(w.can_place(0, &"us_substation", hq.tile + Vector2i(-10, 0), false) == "REASON_OBSOLETE", "a new Sub Station cannot be started")
-	t._check(M33.spot(w, 0, &"us_reactor", hq.tile, 0).x >= 0, "the Nuclear Power Plant can be placed")
+	t._check(w.players[0].power_prod == 17 and sub.alive, "Nuclear Research leaves the Sub Station producing power (%d)" % w.players[0].power_prod)
+	t._check(w.can_place(0, &"us_substation", hq.tile + Vector2i(-10, 0), false) == "", "a new Sub Station can still be started")
+	var plant := w._place_building(Content.building(&"us_reactor"), 0, hq.tile + Vector2i(0, 10), 0, true)
+	PowerSys.recompute_grid(w)
+	var both := 17 + Content.building(&"us_reactor").power
+	t._check(plant.alive and w.players[0].power_prod == both, "the Nuclear plant adds power on top of the Sub Station (%d, want %d)" % [w.players[0].power_prod, both])
+
+static func _tris(path: String) -> int:
+	var n: Node = load(path).instantiate()
+	var tris := 0
+	for mi in n.find_children("*", "MeshInstance3D", true, false):
+		var m: Mesh = (mi as MeshInstance3D).mesh
+		if m != null and m.get_surface_count() > 0:
+			tris += m.surface_get_array_index_len(0) / 3
+	var scr: bool = n.get_script() != null
+	n.free()
+	return tris if scr else -tris
+
+static func _meshes(t: Node) -> void:
+	var floors := {
+		"res://view/units/us/littlebird.tscn": 500, "res://view/units/us/ah64.tscn": 1400,
+		"res://view/units/us/reaper.tscn": 800, "res://view/units/us/f16.tscn": 900,
+		"res://view/units/us/yf22.tscn": 800, "res://view/units/us/f35.tscn": 800,
+		"res://view/units/us/b1.tscn": 1200, "res://view/units/us/ripsaw.tscn": 1400,
+		"res://view/buildings/us/substation.tscn": 2500, "res://view/buildings/us/reactor.tscn": 4000,
+		"res://view/buildings/us/darpa.tscn": 1400, "res://view/buildings/us/socom.tscn": 1000,
+		"res://view/buildings/us/robotics.tscn": 1200, "res://view/buildings/us/zeus_launcher.tscn": 1400,
+		"res://view/buildings/us/zeus_pylon.tscn": 1000,
+	}
+	for path in floors:
+		var n := _tris(path)
+		t._check(n >= int(floors[path]), "%s is a fitted model (%d tris)" % [path.get_file(), n])
+	var gb := FileAccess.get_file_as_string("res://view/units/us/green_beret.tscn")
+	var seal := FileAccess.get_file_as_string("res://view/units/us/seal.tscn")
+	var mk := FileAccess.get_file_as_string("res://view/units/us/mk23.tscn")
+	t._check(gb.contains("us_green_beret.res") and seal.contains("us_seal.res") and mk.contains("us_mk23_gunner.res"), "Green Beret, SEAL and MK 23 use their own soldier bakes")
+	t._check(Content.squad_members(&"us_mk23")[0][0] == "us_mk23_gunner" and Content.squad_members(&"us_mk23")[1][0] == "us_mk23_asst", "the MK 23 team is a gunner and an assistant")
+
+static func _voices(t: Node) -> void:
+	var banks := {
+		&"us_ah64": "ah64", &"us_littlebird": "littlebird", &"us_b1": "b1", &"us_f16": "f16", &"us_f35": "f35",
+		&"us_yf22": "yf22", &"us_green_beret": "green_beret", &"us_seal": "seal", &"us_mk23": "mk23",
+		&"us_drone_operator": "drone_operator",
+	}
+	for id in banks:
+		var folder: String = banks[id]
+		var v: Array = AudioDirector.variants("us", folder, "select")
+		var path := str(v[0][0]) if not v[0].is_empty() else ""
+		t._check(int(v[1]) == 1 and path.begins_with("res://audio/voice_ai/us/" + folder + "/"),
+			"%s select is a US AI bank (%s)" % [id, path])
+		t._check(not path.contains("_generic"), "%s does not fall through to a generic bank" % id)
+	t._check(Content.unit(&"us_ripsaw").tags.has("robot") and not AudioDirector.is_drone("us_ripsaw"), "the Ripsaw stays a silent robot")
+	t._check(AudioDirector.is_drone("us_reaper") and AudioDirector.is_drone("us_scout_drone") and not AudioDirector.is_drone("us_drone_operator"),
+		"the Reaper hums with the other drones; the operator still speaks")
+	t._check(AudioDirector.move_class(Content.unit(&"us_reaper")) == "", "the Reaper does not also play a helicopter engine loop")
 
 static func _units(t: Node) -> void:
 	var lb := Content.unit(&"us_littlebird")

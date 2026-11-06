@@ -476,7 +476,7 @@ UNIT_US_THUNDERLANCE_DESC,"Heavy bomber: one devastating strike, then it lands a
 BLD_US_COMMAND,Headquarters
 BLD_US_COMMAND_DESC,US headquarters. Builds Dozers. The satellite uplink is live from the first second: the minimap is not a unit you train.
 BLD_US_REACTOR,Nuclear Power Plant
-BLD_US_REACTOR_DESC,"Large containment hall. Very expensive and very powerful. Needs Nuclear Research from DARPA. Once that research is done, Sub Stations produce no power."
+BLD_US_REACTOR_DESC,"Large containment hall. Very expensive and very powerful. Needs Nuclear Research from DARPA. Sub Stations keep producing power."
 BLD_US_SUPPLY_CENTER,Supply Depot
 BLD_US_SUPPLY_CENTER_DESC,Warehouse supply drop-off. Comes with an M1083A1P2 Supply Truck.
 BLD_US_BARRACKS,Barracks
@@ -733,7 +733,7 @@ TUT_SKIP,Skip tutorial
 SET_REPLAY_TUTORIAL,Replay First Battle (tutorial)
 REASON_OBSOLETE,Obsolete — Nuclear Research replaced it
 BLD_US_SUBSTATION,Sub Station
-BLD_US_SUBSTATION_DESC,"Early power yard: transformers and a switch house. Powers the base until Nuclear Research is finished, then it produces nothing."
+BLD_US_SUBSTATION_DESC,"Early power yard: transformers and a switch house. Keeps powering the base after the Nuclear plant is unlocked."
 BLD_US_DARPA,DARPA
 BLD_US_DARPA_DESC,"Research campus. Advanced Aero, Robotics, Nuclear Research and ZEUS Defense Systems are studied here. Needs a Data Center."
 BLD_US_SOCOM,SOCOM
@@ -771,6 +771,6 @@ UNIT_US_UP_AERO_DESC,"DARPA research. Unlocks the F-35, B-1 Lancer, AH-64 and YF
 UNIT_US_UP_ROBOTICS,Robotics
 UNIT_US_UP_ROBOTICS_DESC,DARPA research. Unlocks the Robotics Plant.
 UNIT_US_UP_NUCLEAR,Nuclear Research
-UNIT_US_UP_NUCLEAR_DESC,DARPA research. Unlocks the Nuclear Power Plant. Sub Stations stop producing power.
+UNIT_US_UP_NUCLEAR_DESC,DARPA research. Unlocks the Nuclear Power Plant. Sub Stations keep producing power.
 UNIT_US_UP_ZEUS,ZEUS Defense Systems
 UNIT_US_UP_ZEUS_DESC,DARPA research. Unlocks the Zeus Launch Station and the Zeus Pylon.

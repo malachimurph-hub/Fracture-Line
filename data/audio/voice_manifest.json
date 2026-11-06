@@ -604,6 +604,120 @@
       "veteran"
      ]
     },
+    "us_ah64": {
+     "folder": "ah64",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ]
+    },
+    "us_littlebird": {
+     "folder": "littlebird",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ]
+    },
+    "us_b1": {
+     "folder": "b1",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ]
+    },
+    "us_f16": {
+     "folder": "f16",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ]
+    },
+    "us_f35": {
+     "folder": "f35",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ]
+    },
+    "us_yf22": {
+     "folder": "yf22",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ]
+    },
+    "us_green_beret": {
+     "folder": "green_beret",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran",
+      "garrison"
+     ]
+    },
+    "us_seal": {
+     "folder": "seal",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran",
+      "garrison"
+     ]
+    },
+    "us_mk23": {
+     "folder": "mk23",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran",
+      "garrison"
+     ]
+    },
+    "us_drone_operator": {
+     "folder": "drone_operator",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran",
+      "garrison"
+     ]
+    },
     "us_squad": {
      "folder": "grunt",
      "events": [

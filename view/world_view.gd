@@ -135,8 +135,11 @@ func _air_view(id: int, e: SimEntity, ud: UnitDef, v: Node3D, p: Vector3, delta:
 		v.set_meta("_rotors", rotors)
 	for rn in rotors:
 		if rn is Node3D and spin:
-			if String(rn.get_meta("rotor_axis", "y")) == "x":
+			var axis := String(rn.get_meta("rotor_axis", "y"))
+			if axis == "x":
 				rn.rotate_object_local(Vector3.RIGHT, delta * 40.0)
+			elif axis == "z":
+				rn.rotate_object_local(Vector3.FORWARD, delta * 36.0)   # pusher prop (Reaper)
 			else:
 				rn.rotate_object_local(Vector3.UP, delta * 28.0 * float(rn.get_meta("rotor_dir", 1.0)))   # M3.2: coaxial rotors counter-rotate
 	var sh: MeshInstance3D = air_shadows.get(id)
