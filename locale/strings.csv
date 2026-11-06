@@ -475,12 +475,12 @@ UNIT_US_THUNDERLANCE,Thunderlance Bomber
 UNIT_US_THUNDERLANCE_DESC,"Heavy bomber: one devastating strike, then it lands and rearms (45 s). Uses 4 airfield slots. Needs a Strategic Center."
 BLD_US_COMMAND,Headquarters
 BLD_US_COMMAND_DESC,US headquarters. Builds Dozers. The satellite uplink is live from the first second: the minimap is not a unit you train.
-BLD_US_REACTOR,Nuclear Power Plant
-BLD_US_REACTOR_DESC,"Large containment hall. Very expensive and very powerful. Needs Nuclear Research from DARPA. Sub Stations keep producing power."
+BLD_US_REACTOR,Nuclear Power Station
+BLD_US_REACTOR_DESC,"Large containment hall. Very expensive and very powerful. Needs Nuclear Research from DARPA. Power Substations keep producing power."
 BLD_US_SUPPLY_CENTER,Supply Depot
 BLD_US_SUPPLY_CENTER_DESC,Warehouse supply drop-off. Comes with an M1083A1P2 Supply Truck.
 BLD_US_BARRACKS,Barracks
-BLD_US_BARRACKS_DESC,Trains Combat Squads and MK 23 teams. Needs a Sub Station. Unlocks the Supply Depot and the M777A2.
+BLD_US_BARRACKS_DESC,Trains Combat Squads and MK 23 teams. Needs a Power Substation. Unlocks the Supply Depot and the M777A2.
 BLD_US_GARAGE,Motor Pool
 BLD_US_GARAGE_DESC,"Builds the JLTV, M3 Bradley and MAAS. The M1A3 and M109A7 also come from here once the Pentagon is up."
 BLD_US_AIRFIELD,Airfield
@@ -723,7 +723,7 @@ MENU_TUTORIAL,First Battle
 MENU_TUTORIAL_NEW,New? Start here
 TUT_WELCOME,"Welcome, Commander. This is your first battle. Follow the steps here."
 TUT_SELECT,Tap your Dozer to select it.
-TUT_POWER,Open the build menu and place a Sub Station.
+TUT_POWER,Open the build menu and place a Power Substation.
 TUT_BARRACKS,Good. Now build a Barracks to train infantry.
 TUT_TRAIN,Select the Barracks and train two squads.
 TUT_MOVE,"Select your soldiers, then tap the ground to move them."
@@ -732,8 +732,8 @@ TUT_DONE,"Well done, Commander. You are ready for Skirmish."
 TUT_SKIP,Skip tutorial
 SET_REPLAY_TUTORIAL,Replay First Battle (tutorial)
 REASON_OBSOLETE,Obsolete — Nuclear Research replaced it
-BLD_US_SUBSTATION,Sub Station
-BLD_US_SUBSTATION_DESC,"Early power yard: transformers and a switch house. Keeps powering the base after the Nuclear plant is unlocked."
+BLD_US_SUBSTATION,Power Substation
+BLD_US_SUBSTATION_DESC,"Early power yard: transformers and a switch house. Keeps powering the base after the Nuclear Power Station is unlocked."
 BLD_US_DARPA,DARPA
 BLD_US_DARPA_DESC,"Research campus. Advanced Aero, Robotics, Nuclear Research and ZEUS Defense Systems are studied here. Needs a Data Center."
 BLD_US_SOCOM,SOCOM
@@ -771,6 +771,6 @@ UNIT_US_UP_AERO_DESC,"DARPA research. Unlocks the F-35, B-1 Lancer, AH-64 and YF
 UNIT_US_UP_ROBOTICS,Robotics
 UNIT_US_UP_ROBOTICS_DESC,DARPA research. Unlocks the Robotics Plant.
 UNIT_US_UP_NUCLEAR,Nuclear Research
-UNIT_US_UP_NUCLEAR_DESC,DARPA research. Unlocks the Nuclear Power Plant. Sub Stations keep producing power.
+UNIT_US_UP_NUCLEAR_DESC,DARPA research. Unlocks the Nuclear Power Station. Power Substations keep producing power.
 UNIT_US_UP_ZEUS,ZEUS Defense Systems
 UNIT_US_UP_ZEUS_DESC,DARPA research. Unlocks the Zeus Launch Station and the Zeus Pylon.

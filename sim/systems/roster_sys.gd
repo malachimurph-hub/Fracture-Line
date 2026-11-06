@@ -98,8 +98,24 @@ static func board(w: SimWorld, u: SimEntity, t: SimEntity) -> int:
 		return 1
 	return 0
 
+## Ask an airborne transport helicopter to land, then unload. A second tap does not restart the descent.
+static func request_air_drop(w: SimWorld, t: SimEntity) -> void:
+	if t == null or passengers(w, t).is_empty():
+		return
+	if not t.orders.is_empty() and String(t.orders[0].get("o", "")) == "drop":
+		return
+	t.orders = [{"o": "drop"}]
+	t.target = 0
+	t.path = []
+	t.path_i = 0
+	t.goal = Vector2i(-1, -1)
+
 ## Everyone out, around the transport. stun_ticks > 0 when bailing out of a wreck.
+## A helicopter that is still in the air lands first. Troops do not leave on a rope.
 static func unload(w: SimWorld, t: SimEntity, stun_ticks: int = 0) -> void:
+	if stun_ticks == 0 and w.is_air(t) and t.air_state != AirSys.PARKED:
+		request_air_drop(w, t)
+		return
 	var k := 0
 	for u: SimEntity in passengers(w, t):
 		var off := Vector2i([-1, 1, 0, 0, -1, 1, -1, 1][k % 8], [0, 0, -1, 1, -1, 1, 1, -1][k % 8])

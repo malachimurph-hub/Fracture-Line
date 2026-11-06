@@ -7,6 +7,7 @@ const M33 := preload("res://tests/m33_test.gd")
 static func run(t: Node) -> void:
 	_impact(t)
 	_landing(t)
+	_air_unload(t)
 	_mass_unload(t)
 	_smart(t)
 	_rally(t)
@@ -93,6 +94,36 @@ static func _landing(t: Node) -> void:
 	_ticks(r, 20)
 	t._check(w.flying(heli) and FX.dist(heli.pos, FX.tile_center(c)) > FX.ONE, "it lifts off with the squad on a move order")
 	t._check(sq.res_id == -heli.id, "the squad rides along")
+
+# ------------------------------------------------------------------ 6b: land before unloading (no rappel)
+static func _air_unload(t: Node) -> void:
+	var r := M33._runner(["us", "ecc"])
+	var w := r.sim
+	var c := _mid(w)
+	var heli := w.spawn_unit(&"us_blackhawk", 0, null, FX.tile_center(c))
+	var sq := w.spawn_unit(&"us_squad", 0, null, heli.pos)
+	heli.air_state = AirSys.PARKED
+	t._check(RosterSys.board(w, sq, heli) == 1, "squad boards a landed Black Hawk")
+	heli.air_state = AirSys.FLYING
+	r.sim.queue_command({"p": 0, "t": "unload", "ids": [heli.id]})
+	r.advance()
+	t._check(sq.res_id == -heli.id and heli.air_state == AirSys.LANDING, "unload in the air starts a landing; the squad stays aboard")
+	var left := -1
+	for i in 50:
+		r.advance()
+		if sq.res_id >= 0:
+			left = i
+			break
+	t._check(left >= 20 and heli.air_state == AirSys.PARKED and sq.res_id == 0 and not w.flying(heli),
+		"the squad steps out only after the helicopter has landed (after %d more ticks)" % left)
+	heli.air_state = AirSys.PARKED
+	t._check(RosterSys.board(w, sq, heli) == 1, "the squad can board again once the helicopter is down")
+	r.sim.queue_command({"p": 0, "t": "unload", "ids": [heli.id]})
+	r.advance()
+	t._check(sq.res_id == 0 and heli.air_state == AirSys.PARKED, "a helicopter already on the ground unloads immediately")
+	var wv := FileAccess.get_file_as_string("res://view/world_view.gd")
+	t._check(not wv.contains("rappel") and not wv.contains("RAPPEL") and not wv.contains("fast rope") and not wv.contains("fast-rope"),
+		"the view has no fast-rope")
 
 # ------------------------------------------------------------------ 7: mass unload
 static func _mass_unload(t: Node) -> void:

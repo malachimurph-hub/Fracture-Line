@@ -104,7 +104,7 @@ func _air_view(id: int, e: SimEntity, ud: UnitDef, v: Node3D, p: Vector3, delta:
 	var jet := ud.tags.has("jet")
 	var want := 0.0 if e.air_state == AirSys.PARKED or e.air_state == AirSys.TAXI_OUT else (JET_ALT if jet else HELI_ALT)
 	if e.air_state == AirSys.LANDING and not jet:
-		want = 0.0   # M4.3: helicopters touch down during the landing phase, before anyone boards
+		want = 0.0   # touch down before anyone boards or steps out
 	if e.air_state == AirSys.LANDING and jet:
 		want = 0.0
 		var home := sim.get_ent(e.air_home)
@@ -562,9 +562,6 @@ func on_tick(events: Array) -> void:
 					views[c.id].set_team_material(Palette.team_material(sim.players[c.owner].color))
 					if rigs.has(c.id):
 						rigs[c.id].refresh_team()
-			"unload":
-				if ev.has("b"):
-					_start_rappel(int(ev["id"]), int(ev["b"]))
 			"garrison":
 				var b := sim.get_ent(int(ev["b"]))
 				if b != null and views.has(b.id):
@@ -1304,8 +1301,6 @@ func frame(a: float, delta: float) -> void:
 				p = man[0]
 			if v is InfantryView:
 				(v as InfantryView).set_braced(not man.is_empty())
-			if rappel.has(id):
-				p = _rappel_step(id, p, delta)
 			if move_loops.has(id):
 				if is_instance_valid(move_loops[id]):
 					_move_loop(move_loops[id], e, delta)
@@ -1512,45 +1507,6 @@ func _move_loop(mv: AudioStreamPlayer3D, e: SimEntity, delta: float) -> void:
 			mv.play(randf() * 2.5)
 	elif mv.playing:
 		mv.stop()
-
-## M4.3: troops leaving a helicopter in the air slide down a fast rope (view only; the sim has
-## already put them on the ground under the helicopter).
-const RAPPEL_S := 1.4
-var rappel := {}   ## unit id -> {"h": start height, "t": seconds, "rope": MeshInstance3D}
-static var _rope_mat: StandardMaterial3D
-
-func _start_rappel(uid: int, tid: int) -> void:
-	var h: float = air_alt.get(tid, 0.0)
-	if h < 0.6:
-		return
-	var rope := MeshInstance3D.new()
-	var cm := CylinderMesh.new()
-	cm.top_radius = 0.025
-	cm.bottom_radius = 0.025
-	cm.height = 1.0
-	cm.radial_segments = 4
-	cm.rings = 1
-	rope.mesh = cm
-	if _rope_mat == null:
-		_rope_mat = Palette.flat(Color("#2b2620"), 1.0, false)
-	rope.material_override = _rope_mat
-	rope.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(rope)
-	rappel[uid] = {"h": h, "t": 0.0, "rope": rope}
-
-func _rappel_step(uid: int, p: Vector3, delta: float) -> Vector3:
-	var r: Dictionary = rappel[uid]
-	r["t"] = float(r["t"]) + delta
-	var k := clampf(float(r["t"]) / RAPPEL_S, 0.0, 1.0)
-	var h: float = r["h"]
-	var y := h * (1.0 - k * k * (3.0 - 2.0 * k))   # smoothstep slide
-	var rope: MeshInstance3D = r["rope"]
-	rope.position = Vector3(p.x, p.y + h * 0.5, p.z)
-	rope.scale = Vector3(1, h, 1)
-	if k >= 1.0:
-		rope.queue_free()
-		rappel.erase(uid)
-	return p + Vector3(0, y, 0)
 
 ## Flat arrow pointing +Z: shaft 0..1.0, head 1.0..1.8 (tiles), lies just above the ground.
 static func _arrow_mesh() -> ArrayMesh:

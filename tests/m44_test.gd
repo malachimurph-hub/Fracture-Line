@@ -26,7 +26,7 @@ static func _tree(t: Node) -> void:
 	var dc := Content.building(&"us_drop_zone")
 	var darpa := Content.building(&"us_darpa")
 	var socom := Content.building(&"us_socom")
-	t._check(sub.prereqs.has("us_command") and sub.power == 12 and sub.cost == 1000, "Sub Station: needs HQ, +12 power, $1000")
+	t._check(sub.prereqs.has("us_command") and sub.power == 11 and sub.cost == 750 and TranslationServer.translate(sub.name_key) == "Power Substation", "Power Substation: needs HQ, +11 power, $750")
 	t._check(bar.prereqs.has("us_substation") and bar.produces.has("us_squad") and bar.produces.has("us_mk23") and not bar.produces.has("us_jtac") and not bar.produces.has("us_breacher"),
 		"Barracks needs a Sub Station and trains the squad and the MK 23 team")
 	t._check(dep.prereqs.has("us_barracks") and dep.produces.has("us_supply_truck"), "Supply Depot needs the Barracks and builds supply trucks")
@@ -72,14 +72,14 @@ static func _power(t: Node) -> void:
 	var hq := M33._hq(w, 0)
 	var sub := w._place_building(Content.building(&"us_substation"), 0, hq.tile + Vector2i(8, 0), 0, true)
 	PowerSys.recompute_grid(w)
-	t._check(w.players[0].power_prod == 17, "HQ + Sub Station make 17 power (%d)" % w.players[0].power_prod)
+	t._check(w.players[0].power_prod == 16, "HQ + Power Substation make 16 power (%d)" % w.players[0].power_prod)
 	w.players[0].upgrades["us_up_nuclear"] = true
 	PowerSys.recompute_grid(w)
-	t._check(w.players[0].power_prod == 17 and sub.alive, "Nuclear Research leaves the Sub Station producing power (%d)" % w.players[0].power_prod)
+	t._check(w.players[0].power_prod == 16 and sub.alive, "Nuclear Research leaves the Power Substation producing power (%d)" % w.players[0].power_prod)
 	t._check(w.can_place(0, &"us_substation", hq.tile + Vector2i(-10, 0), false) == "", "a new Sub Station can still be started")
 	var plant := w._place_building(Content.building(&"us_reactor"), 0, hq.tile + Vector2i(0, 10), 0, true)
 	PowerSys.recompute_grid(w)
-	var both := 17 + Content.building(&"us_reactor").power
+	var both := 16 + Content.building(&"us_reactor").power
 	t._check(plant.alive and w.players[0].power_prod == both, "the Nuclear plant adds power on top of the Sub Station (%d, want %d)" % [w.players[0].power_prod, both])
 
 static func _tris(path: String) -> int:

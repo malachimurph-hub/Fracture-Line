@@ -598,11 +598,19 @@ func test_audio() -> void:
 	for b in ["Music", "SFX", "Voice", "UI"]:
 		_check(AudioServer.get_bus_index(b) >= 0, "bus " + b)
 	var bad: Array = []
-	for d in [ad.SFX, ad.UI, ad.MUSIC, ad.AMBIENT]:
+	for d in [ad.SFX, ad.UI, ad.MUSIC, ad.AMBIENT, ad.AMBIENT_ONESHOTS]:
 		for k in d:
 			if ad.stream(d[k]) == null:
 				bad.append(d[k])
 	_check(bad.is_empty(), "all SFX/UI/music/ambient streams load %s" % [bad])
+	ad.stop_ambient()
+	ad.start_field_ambience()
+	var amb_ok: bool = bool(ad.field_ambience) and not bool(ad._ambient.playing)
+	for k in ad.AMBIENT_ONESHOTS:
+		var amb_s: AudioStream = ad.stream(ad.AMBIENT_ONESHOTS[k])
+		amb_ok = amb_ok and amb_s != null and amb_s.get_length() > 0.05 and amb_s.get_length() < 3.0
+	_check(amb_ok, "field ambience starts silent; bird and breeze cues are short one-shots")
+	ad.stop_ambient()
 	var m1: AudioStream = ad.stream(ad.MUSIC["menu"])
 	_check(m1 is AudioStreamOggVorbis and (m1 as AudioStreamOggVorbis).loop, "menu music loops")
 	var pl_ok: bool = ad.BATTLE_PLAYLIST.size() >= 4

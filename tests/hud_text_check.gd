@@ -153,14 +153,24 @@ static func _icons(m, check: Callable, label: String) -> void:
 		var inf: Variant = m.hud.card[i].get("info")
 		if inf is Array and String(inf[0]) in ["unit", "building"] and (m.hud.grid_buttons[i] as HudButton).icon_tex == null:
 			probs.append("card %s has no icon" % inf[1])
+	for i in mini(m.hud.card.size(), m.hud.grid_buttons.size()):
+		var gb: HudButton = m.hud.grid_buttons[i]
+		if gb.icon_tex != null and gb.label_text != "":
+			probs.append("command caption still showing: %s" % gb.label_text.replace("\n", " "))
+		if gb.visible and not gb.disabled and gb.icon_tex == null and String(m.hud.card[i].get("text", "")) != "":
+			probs.append("command has no icon: %s" % String(m.hud.card[i].get("text", "")))
 	for box in [m.hud.sel_types, m.hud.queue_box]:
 		for c in box.get_children():
-			if c is HudButton and (c as HudButton).is_visible_in_tree() and (c as HudButton).label_text != "" \
-					and not (c as HudButton).label_text.begins_with("+") and (c as HudButton).icon_tex == null:
-				probs.append("chip '%s' has no icon" % (c as HudButton).label_text.replace("\n", " "))
+			if c is HudButton and (c as HudButton).is_visible_in_tree():
+				if (c as HudButton).icon_tex == null:
+					probs.append("chip has no icon")
+				elif (c as HudButton).label_text != "":
+					probs.append("chip caption still showing: %s" % (c as HudButton).label_text.replace("\n", " "))
 	for q in m.hud.queue_slots:
-		if (q as HudButton).label_text != "" and (q as HudButton).icon_tex == null:
-			probs.append("queue slot '%s' has no icon" % (q as HudButton).label_text)
+		if not (q as HudButton).disabled and (q as HudButton).icon_tex == null:
+			probs.append("queue slot has no icon")
+		if (q as HudButton).icon_tex != null and (q as HudButton).label_text != "":
+			probs.append("queue caption still showing")
 	check.call("icons shown (%s)" % label, probs.is_empty(), probs.slice(0, 6) if not probs.is_empty() else null)
 
 ## M3.2: every build / train / research entry has a press-and-hold info card that is fully

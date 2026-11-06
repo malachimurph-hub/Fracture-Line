@@ -69,7 +69,8 @@ const BATTLE_PLAYLIST := US_PLAYLIST
 ## M3.5: Malachi's own Russia (ru_*) and Iran (ir_*) tracks from his "Russia music" / "Iran Music"
 ## Drive folders (OGG Vorbis). Russia keeps the M3.3 "Steppe March"; the synthesized "Red Bounce"
 ## hard bass is superseded by "Moscow Techno". Iran keeps "Zagros" alongside its seven new tracks.
-## Both now have 3+ tracks, so they no longer borrow other factions' music (MIN_POOL).
+## Russia and Iran each have a full set of their own. Germany has one track and loops it.
+## No faction borrows another faction's music.
 const RU_PLAYLIST := [
 		"res://audio/music/battle_ru_steppe_march.ogg",
 		"res://audio/music/ru_red_banner_march.ogg",
@@ -96,12 +97,19 @@ const FACTION_PLAYLISTS := {
 var battle_faction: StringName = &""
 var _shuffle: Array = []
 var _last_battle := ""
-## M3.5: factions with fewer tracks than this also draw on the other factions' battle tracks, so
-## their matches differ too (only Germany, with one track of its own, still borrows).
-const MIN_POOL := 3
 var music_rng := RandomNumberGenerator.new()   ## view-only randomness for the music order
+var amb_rng := RandomNumberGenerator.new()     ## view-only randomness for occasional ambience
 var match_order: Array = []                    ## the order picked for the current match (tests)
+## desert_wind.ogg is the old continuous bed. It is not played. River is unused by matches.
 const AMBIENT := {"wind": "res://audio/ambient/desert_wind.ogg", "river": "res://audio/ambient/river.ogg"}
+## Short one-shots. The match stays quiet and plays one of these every so often.
+const AMBIENT_ONESHOTS := {
+	"bird_chirp": "res://audio/ambient/bird_chirp.ogg",
+	"bird_squawk": "res://audio/ambient/bird_squawk.ogg",
+	"breeze": "res://audio/ambient/breeze.ogg",
+}
+var field_ambience := false
+var _amb_wait := 0.0
 
 var manifest: Dictionary = {}
 var faction_audio: Dictionary = {}   ## data/audio/faction_audio.json
@@ -126,6 +134,7 @@ var music_track := ""
 
 func _init() -> void:
 	music_rng.randomize()
+	amb_rng.randomize()
 	for b in BUSES:
 		if AudioServer.get_bus_index(b) < 0:
 			AudioServer.add_bus()
@@ -280,16 +289,10 @@ func play_music(track: String) -> void:
 func battle_playlist() -> Array:
 	return FACTION_PLAYLISTS.get(battle_faction, BATTLE_PLAYLIST)
 
-## M3.5: the tracks a match of this faction shuffles: its own, plus (when it has fewer than
-## MIN_POOL) the other factions' battle tracks; the menu track only where it is the faction's own.
+## The tracks a match of this faction shuffles: its own list only. A one-track faction
+## loops that track. Other factions' music is never mixed in.
 func battle_pool() -> Array:
-	var pool: Array = battle_playlist().duplicate()
-	if pool.size() < MIN_POOL:
-		for f in FACTION_PLAYLISTS:
-			for tr_path in FACTION_PLAYLISTS[f]:
-				if not pool.has(tr_path) and tr_path != MUSIC["menu"]:
-					pool.append(tr_path)
-	return pool
+	return battle_playlist().duplicate()
 
 ## A fresh random order (Fisher-Yates on music_rng). The match never opens with the menu track
 ## or with the track the last match ended on.
@@ -319,7 +322,8 @@ func _next_battle_track() -> void:
 		_music.stop()
 		return
 	if s is AudioStreamOggVorbis:
-		(s as AudioStreamOggVorbis).loop = false
+		# One native track: loop it. Several: play through, then the next of the same faction.
+		(s as AudioStreamOggVorbis).loop = battle_playlist().size() <= 1
 	_music.stream = s
 	_music.volume_db = -5.0
 	_music.play()
@@ -328,17 +332,64 @@ func _on_music_finished() -> void:
 	if music_track == "battle":
 		_next_battle_track()
 
+## "wind" used to start the loud desert loop. It now means the quiet field bed: silence,
+## with an occasional bird and an occasional soft gust. Nothing loops.
 func play_ambient(key: String) -> void:
+	if key == "wind" or key == "field" or key == "":
+		start_field_ambience()
+		return
 	var s := stream(AMBIENT.get(key, ""))
 	if s == null:
 		_ambient.stop()
 		return
+	field_ambience = false
 	if _ambient.stream != s or not _ambient.playing:
 		_ambient.stream = s
+		_ambient.volume_db = -22.0
 		_ambient.play()
 
-func stop_ambient() -> void:
+func start_field_ambience() -> void:
+	field_ambience = true
 	_ambient.stop()
+	_amb_wait = amb_rng.randf_range(5.0, 12.0)
+
+func stop_ambient() -> void:
+	field_ambience = false
+	_amb_wait = 0.0
+	_ambient.stop()
+
+func _process(delta: float) -> void:
+	if not field_ambience or _ambient.playing:
+		return
+	_amb_wait -= delta
+	if _amb_wait > 0.0:
+		return
+	_amb_next()
+
+## Mostly silence. About half the rolls add nothing. Birds are a bit more common than a gust.
+func _amb_next() -> void:
+	var roll := amb_rng.randi_range(0, 9)
+	if roll <= 4:
+		_amb_wait = amb_rng.randf_range(8.0, 18.0)
+		return
+	if roll <= 7:
+		var key := "bird_chirp" if amb_rng.randi_range(0, 1) == 0 else "bird_squawk"
+		_play_oneshot(key, -20.0)
+		_amb_wait = amb_rng.randf_range(14.0, 30.0)
+		return
+	_play_oneshot("breeze", -24.0)
+	_amb_wait = amb_rng.randf_range(20.0, 42.0)
+
+func _play_oneshot(key: String, vol_db: float) -> void:
+	var s := stream(AMBIENT_ONESHOTS.get(key, ""))
+	if s == null:
+		_amb_wait = 10.0
+		return
+	if s is AudioStreamOggVorbis:
+		(s as AudioStreamOggVorbis).loop = false
+	_ambient.stream = s
+	_ambient.volume_db = vol_db
+	_ambient.play()
 
 func on_match_end() -> void:
 	world_root = null

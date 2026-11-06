@@ -51,14 +51,17 @@ static func run(w: SimWorld) -> void:
 			_jtac_call(w, j)
 
 # ------------------------------------------------------------------ transport helicopters
-## M4.2 (Malachi: "any aircraft transporting troops needs to land before troops can enter"):
-## an idle transport helicopter with friendly infantry on their way to board it sets down
-## (LANDING phase 0 = descending, still airborne, for HELI_LAND_TICKS), then sits PARKED (a ground
-## target that cannot fire) until it is given an order, when it lifts off again.
+## Transport helicopters land before troops board, and they land before troops step out.
+## An unload order while airborne is "drop": descend (LANDING phase 0, HELI_LAND_TICKS), sit
+## PARKED, then RosterSys unloads. There is no mid-air exit. A move order lifts off again.
+## Boarding: an idle helicopter with infantry walking up to it sets down the same way.
 const HELI_LAND_TICKS := 30
 const HELI_CALL_R := FX.ONE * 14
 
 static func _heli_transport(w: SimWorld, u: SimEntity, d: UnitDef) -> void:
+	if _drop_pending(u):
+		_heli_drop(w, u)
+		return
 	if u.air_state == FLYING:
 		if u.goal == NONE and u.orders.is_empty() and u.spd == 0 and w.tick % 4 == u.id % 4 and _boarders_near(w, u):
 			if w.map.passable(FX.to_tile(u.pos), false):
@@ -76,6 +79,51 @@ static func _heli_transport(w: SimWorld, u: SimEntity, d: UnitDef) -> void:
 		u.air_state = PARKED
 		u.air_t = 0
 		w.events.append({"t": "landed", "id": u.id})
+
+static func _drop_pending(u: SimEntity) -> bool:
+	return not u.orders.is_empty() and String(u.orders[0].get("o", "")) == "drop"
+
+static func _clear_drop(u: SimEntity) -> void:
+	if _drop_pending(u):
+		u.orders.pop_front()
+	u.goal = NONE
+	u.target = 0
+
+## Unload order while airborne: stop, descend, then the passengers step out. Never a mid-air drop.
+static func _heli_drop(w: SimWorld, u: SimEntity) -> void:
+	if RosterSys.passengers(w, u).is_empty():
+		_clear_drop(u)
+		return
+	u.target = 0
+	if u.air_state == PARKED:
+		RosterSys.unload(w, u)
+		_clear_drop(u)
+		return
+	if u.air_state != FLYING and u.air_state != LANDING:
+		u.air_state = FLYING
+		u.phase = 0
+	if u.air_state == LANDING:
+		if w.tick >= u.phase_t:
+			u.air_state = PARKED
+			u.air_t = 0
+			u.spd = 0
+			u.goal = NONE
+			w.events.append({"t": "landed", "id": u.id})
+			RosterSys.unload(w, u)
+			_clear_drop(u)
+		return
+	var tile := FX.to_tile(u.pos)
+	if u.spd > 0 and u.goal == NONE:
+		return
+	if not w.map.passable(tile, false):
+		if u.goal == NONE:
+			u.goal = FX.tile_center(w.map.nearest_passable(tile, false))
+		return
+	if u.goal != NONE or u.spd > 0:
+		return
+	u.air_state = LANDING
+	u.phase = 0
+	u.phase_t = w.tick + HELI_LAND_TICKS
 
 static func _boarders_near(w: SimWorld, t: SimEntity) -> bool:
 	for o: SimEntity in w.units_in_radius(t.pos, HELI_CALL_R):

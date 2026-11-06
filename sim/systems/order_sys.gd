@@ -208,6 +208,9 @@ static func _think(w: SimWorld, u: SimEntity) -> void:
 	match typ:
 		"":
 			_idle(w, u)
+		"drop":
+			u.target = 0   # AirSys lands the helicopter, then RosterSys unloads
+			return
 		"move":
 			u.target = 0
 			if _reached(u, o["pos"]):

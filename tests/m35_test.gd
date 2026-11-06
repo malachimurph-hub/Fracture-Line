@@ -227,41 +227,57 @@ static func _music_shuffle(t: Node) -> void:
 	var info := {}
 	for fac in [&"us", &"eu", &"tpla", &"ecc"]:
 		ad.battle_faction = fac
-		var firsts := {}
-		var orders := {}
-		for i in 24:
+		var pool: Array = ad.battle_pool()
+		var own: Array = ad.battle_playlist()
+		ok = ok and pool == own and not pool.is_empty()
+		for other in [&"us", &"eu", &"tpla", &"ecc"]:
+			if other == fac:
+				continue
+			for p in ad.FACTION_PLAYLISTS[other]:
+				ok = ok and not pool.has(p)
+		if pool.size() >= 3:
+			var firsts := {}
+			var orders := {}
+			for i in 24:
+				ad.music_track = ""
+				ad.play_music("battle")
+				var o: Array = ad.match_order
+				firsts[o[0]] = true
+				orders[str(o)] = true
+				ok = ok and o[0] != ad.MUSIC["menu"] and o.size() == pool.size() and pool.all(func(x): return o.has(x))
+			info[fac] = "%d openers, %d orders" % [firsts.size(), orders.size()]
+			ok = ok and firsts.size() >= 2 and orders.size() >= 3
+		else:
 			ad.music_track = ""
 			ad.play_music("battle")
-			var o: Array = ad.match_order
-			firsts[o[0]] = true
-			orders[str(o)] = true
-			ok = ok and o[0] != ad.MUSIC["menu"] and o.size() >= 3 and ad.battle_pool().all(func(x): return o.has(x))
-		info[fac] = "%d openers, %d orders" % [firsts.size(), orders.size()]
-		ok = ok and firsts.size() >= 2 and orders.size() >= 3
+			var solo = ad.stream(pool[0])
+			ok = ok and ad.match_order == pool and solo is AudioStreamOggVorbis and (solo as AudioStreamOggVorbis).loop
+			info[fac] = "loops %d" % pool.size()
 	ad.battle_faction = &""
 	ad.play_music("menu")
-	t._check(ok, "music: every faction's match gets its own random order, different openers, never the menu track first (Base Command stays the menu music) %s" % [info])
+	t._check(ok, "music: each faction shuffles only its own tracks (Germany loops its one track); never the menu track first %s" % [info])
 	t._check(randi() == g_before and w.rng.to_dict() == sim_before, "the music shuffle uses its own RNG (global and sim RNG untouched)")
-	# Malachi's Russia / Iran tracks: 3+ of their own, so they no longer borrow; Germany still does
 	var own_ok := true
-	for fac in [&"ecc", &"tpla"]:
+	for fac in [&"ecc", &"tpla", &"us", &"eu"]:
 		ad.battle_faction = fac
 		var pl: Array = ad.battle_playlist()
-		own_ok = own_ok and pl.size() >= ad.MIN_POOL and ad.battle_pool() == pl
-		for p in pl:
-			var st = load(p)
-			own_ok = own_ok and st is AudioStreamOggVorbis and (st as AudioStream).get_length() > 90.0
+		own_ok = own_ok and ad.battle_pool() == pl and not pl.is_empty()
+		if fac != &"eu":
+			for p in pl:
+				var st = load(p)
+				own_ok = own_ok and st is AudioStreamOggVorbis and (st as AudioStream).get_length() > 90.0
 	ad.battle_faction = &"ecc"
 	var ru: Array = ad.battle_playlist()
 	ad.battle_faction = &"tpla"
 	var ir: Array = ad.battle_playlist()
 	ad.battle_faction = &"eu"
-	var eu_borrows: bool = ad.battle_pool().size() > ad.battle_playlist().size()
+	var eu: Array = ad.battle_playlist()
 	ad.battle_faction = &""
 	own_ok = own_ok and ru.size() == 7 and ru[0].ends_with("battle_ru_steppe_march.ogg") and ru.filter(func(x): return String(x).contains("/ru_")).size() == 6
 	own_ok = own_ok and ir.size() == 8 and ir.filter(func(x): return String(x).contains("/ir_")).size() == 7
-	own_ok = own_ok and not str(ad.FACTION_PLAYLISTS).contains("red_bounce") and eu_borrows
-	t._check(own_ok, "music: Russia (Steppe March + 6 of Malachi's) and Iran (7 of Malachi's + Zagros) shuffle only their own tracks; Germany still borrows")
+	own_ok = own_ok and eu.size() == 1 and String(eu[0]).ends_with("battle_de_tiefgarage.ogg")
+	own_ok = own_ok and not str(ad.FACTION_PLAYLISTS).contains("red_bounce")
+	t._check(own_ok, "music: Russia, Iran, the US and Germany each play only their own tracks; Germany does not borrow")
 
 # ------------------------------------------------------------------ 11 Combat Squads
 const SQUADS := {
@@ -300,7 +316,7 @@ static func _squad_data(t: Node) -> void:
 		t._check(full.count(0) == 0, "%s: a full squad fires all its weapons" % sid)
 		t._check(one[ud.weapons.find(StringName(info[1]))] == 1 and one.count(0) == ud.weapons.size() - 1, "%s: the last man standing is a rifleman" % sid)
 	t._check(Content.unit(&"us_squad").weapons.has(&"us_m240b") and Content.unit(&"eu_squad").weapons.has(&"eu_mg3") and Content.unit(&"tpla_squad").weapons.has(&"tpla_pkm") and Content.unit(&"ecc_squad").weapons.has(&"ecc_pkm"), "machine guns: M240B / MG3 / PKM / PKM")
-	t._check(Content.unit(&"us_sniper") != null and Content.building(&"us_barracks").produces.has("us_sniper") and Content.building(&"eu_barracks").produces.has("eu_sturmtrupp"), "special infantry stay single units")
+	t._check(Content.unit(&"us_sniper") != null and not Content.is_squad(&"us_sniper") and Content.building(&"us_socom").produces.has("us_sniper") and Content.unit(&"eu_sturmtrupp") != null and not Content.is_squad(&"eu_sturmtrupp") and Content.building(&"eu_barracks").produces.has("eu_sturmtrupp"), "special infantry stay single units (sniper at SOCOM, Sturmtrupp at the barracks)")
 	for bid in [&"us_barricade", &"eu_barricade", &"eu_sandbags", &"us_sandbags"]:
 		if Content.building(bid) != null:
 			t._check(Content.building(bid).garrison_capacity == 1, "%s holds one squad" % bid)

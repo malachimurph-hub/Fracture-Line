@@ -130,7 +130,7 @@ static func _economy(t: Node) -> void:
 	t._check(EconSys.period_pay(Content.building(&"ecc_black_market"), 1, 29) == 400 and EconSys.period_pay(Content.building(&"ecc_black_market"), 1, 28) == 0,
 		"Minerals Mining pays $400 in one lump every 30 s")
 	var nuc := Content.building(&"us_reactor")
-	t._check(nuc.power == 64 and nuc.cost == 5200 and nuc.footprint == Vector2i(4, 4) and TranslationServer.translate(nuc.name_key) == "Nuclear Power Plant", "US Nuclear Power Plant is the late plant: +64 power, $5200, 4x4")
+	t._check(nuc.power == 64 and nuc.cost == 5200 and nuc.footprint == Vector2i(4, 4) and TranslationServer.translate(nuc.name_key) == "Nuclear Power Station", "US Nuclear Power Station is the late plant: +64 power, $5200, 4x4")
 	t._check(TranslationServer.translate("BLD_TPLA_BAZAAR") == "Oil Derrick" and TranslationServer.translate("BLD_EU_EXCHANGE") == "Automotive Plant" and TranslationServer.translate("BLD_ECC_BLACK_MARKET") == "Minerals Mining",
 		"income structures renamed (Oil Derrick, Automotive Plant, Minerals Mining)")
 	# in a match: a powered Data Center earns $500 a minute, Minerals Mining $800 even in low power

@@ -145,7 +145,9 @@ func _build() -> void:
 	deselect_btn.visible = false
 	deselect_btn.pressed.connect(func(): ctl.set_selection([]))
 	sel_panel.add_child(deselect_btn)
-	resume_btn = _hud_btn(tr("CMD_RESUME_BUILD"), Vector2(78, 44))
+	resume_btn = _hud_btn("", Vector2(78, 44))
+	resume_btn.icon_tex = CmdIcons.of("resume")
+	resume_btn.tooltip_text = tr("CMD_RESUME_BUILD")
 	resume_btn.visible = false
 	resume_btn.accent = Color("#7dff8a")
 	resume_btn.primary.connect(resume_selected_builders)
@@ -935,9 +937,13 @@ func _fill_types(units: Array) -> void:
 		if listed >= tmax:
 			break
 		listed += 1
-		var b := _hud_btn(tr(Content.unit(d).name_key), Vector2(59, 44))
+		var nm := tr(Content.unit(d).name_key)
+		var b := _hud_btn("", Vector2(59, 44))
 		b.sub = "×%d" % counts[d]
-		b.icon_tex = UnitIcons.of(d)   # M3.3 Phase 4: selection chips show the unit's icon
+		b.icon_tex = UnitIcons.of(d)   # selection chips are the unit icon; the name is the tooltip
+		b.tooltip_text = nm
+		if b.icon_tex == null:
+			b.label_text = nm
 		b.primary.connect(func():
 			var only: Array = []
 			for id in ctl.own_units_selected():
@@ -969,8 +975,8 @@ func _refresh_queue(e: SimEntity) -> void:
 	for i in QUEUE_SLOTS:
 		var q: HudButton = queue_slots[i]
 		var has := b != null and i < b.queue.size()
-		q.label_text = short_name(tr(Content.unit(b.queue[i]).name_key)) if has else ""
-		q.icon_tex = UnitIcons.of(b.queue[i]) if has else null   # M3.3 Phase 4: queue icons
+		q.icon_tex = UnitIcons.of(b.queue[i]) if has else null
+		q.label_text = "" if not has or q.icon_tex != null else short_name(tr(Content.unit(b.queue[i]).name_key))
 		q.progress = -1.0
 		q.badge = ""
 		q.disabled = not has
@@ -1025,8 +1031,9 @@ func _fill_queue(b: SimEntity) -> void:
 	var qmax := _chips_fit(QUEUE_CHIP.x, 0.0)
 	var shown := b.queue.size() if b.queue.size() <= qmax else maxi(1, _chips_fit(QUEUE_CHIP.x, 24.0))
 	for i in shown:
-		var q := _hud_btn(tr(Content.unit(b.queue[i]).name_key), QUEUE_CHIP)
+		var q := _hud_btn("", QUEUE_CHIP)
 		q.icon_tex = UnitIcons.of(b.queue[i])
+		q.tooltip_text = tr(Content.unit(b.queue[i]).name_key)
 		if i == 0:
 			var need := FX.ms_to_ticks(Content.unit(b.queue[0]).build_time_ms) * 2
 			q.progress = float(b.q_progress) / float(maxi(1, need))
@@ -1067,7 +1074,7 @@ func _paginate(full: Array) -> Array:
 	var out: Array = body.slice(card_page * per, card_page * per + per)
 	while out.size() < per:
 		out.append({"text": "", "disabled": true})
-	out.append({"text": tr("CMD_MORE"), "sub": "%d/%d" % [card_page + 1, pages], "accent": Color("#9fd3ff"), "tip": tr("CMD_MORE_TIP"),
+	out.append({"text": tr("CMD_MORE"), "glyph": "more", "sub": "%d/%d" % [card_page + 1, pages], "accent": Color("#9fd3ff"), "tip": tr("CMD_MORE_TIP"),
 		"act": func():
 			card_page += 1
 			_refresh_card()})
@@ -1081,16 +1088,19 @@ func _refresh_card() -> void:
 		if i < card.size():
 			var c: Dictionary = card[i]
 			b.visible = true
-			b.label_text = c.get("text", "")
 			b.sub = c.get("sub", "")
 			b.disabled = c.get("disabled", false)
 			b.badge = c.get("badge", "")
 			b.stub = c.get("stub", false)
 			b.progress = c.get("progress", -1.0)
 			b.accent = c.get("accent", Color(0, 0, 0, 0))
-			b.tooltip_text = c.get("tip", "")
 			b.has_info = c.has("info")
 			b.icon_tex = _entry_icon(c)
+			var cap := String(c.get("text", ""))
+			# Icons only on the command grid. The name stays on the tooltip and the info card.
+			b.label_text = "" if b.icon_tex != null else cap
+			var tip := String(c.get("tip", ""))
+			b.tooltip_text = tip if tip != "" else cap
 			b.modulate = Color(1, 1, 1, 1) if not b.disabled else Color(1, 1, 1, 0.75)
 		else:
 			b.visible = true
@@ -1111,6 +1121,9 @@ func _entry_icon(c: Dictionary) -> Texture2D:
 	var inf: Variant = c.get("info")
 	if inf is Array and (inf as Array).size() >= 2 and String(inf[0]) in ["unit", "building"]:
 		return UnitIcons.of(inf[1])
+	var g := String(c.get("glyph", ""))
+	if g != "":
+		return CmdIcons.of(g)
 	return null
 
 ## M3.2: data-driven info card (InfoCard) for a build / train / research / power entry.
@@ -1268,11 +1281,11 @@ func _make_card() -> Array:
 			while out.size() < 10 - tail:
 				out.append({"text": "", "disabled": true})
 			if not hvb.is_empty():
-				out.append({"text": tr("CMD_HARVEST"), "pin": true, "act": func():
+				out.append({"text": tr("CMD_HARVEST"), "glyph": "harvest", "pin": true, "act": func():
 					var r := ctl._nearest_resource(sim.ents[hvb[0]].pos)
 					if r != 0:
 						ctl.issue({"t": "harvest", "ids": hvb, "target": r})})
-			out.append({"text": tr("CMD_STOP"), "pin": true, "act": ctl.simple.bind("stop")})
+			out.append({"text": tr("CMD_STOP"), "glyph": "stop", "pin": true, "act": ctl.simple.bind("stop")})
 			return out
 		var ops := ctl._filter(units, "drone_operator")
 		if not ops.is_empty():   # M3.2: Drone Operator launches (one of each per operator, 60 s reload)
@@ -1290,14 +1303,14 @@ func _make_card() -> Array:
 				out.append({"text": tr(kd[1]), "sub": tr("CMD_DRONE_READY") if wait == 0 else ("—" if busy else "%ds" % ceili(wait / 20.0)),
 					"disabled": wait > 0, "act": ctl.issue.bind({"t": "drone", "ids": ops, "kind": kd[0]}), "accent": kd[2],
 					"tip": tr(Content.unit(drone).name_key + "_DESC"), "info": ["unit", String(drone)]})
-		out.append({"text": tr("CMD_AMOVE"), "act": ctl.begin_target.bind("amove"), "accent": Color("#ff9a2a"), "tip": tr("CMD_AMOVE_TIP")})
-		out.append({"text": tr("CMD_MOVE"), "act": ctl.begin_target.bind("move"), "accent": Color("#7dff8a")})
-		out.append({"text": tr("CMD_STOP"), "act": ctl.simple.bind("stop")})
-		out.append({"text": tr("CMD_GUARD"), "act": ctl.begin_target.bind("guard"), "accent": Color("#6fe3ff")})
-		out.append({"text": tr("CMD_SCATTER"), "act": ctl.simple.bind("scatter")})
+		out.append({"text": tr("CMD_AMOVE"), "glyph": "amove", "act": ctl.begin_target.bind("amove"), "accent": Color("#ff9a2a"), "tip": tr("CMD_AMOVE_TIP")})
+		out.append({"text": tr("CMD_MOVE"), "glyph": "move", "act": ctl.begin_target.bind("move"), "accent": Color("#7dff8a")})
+		out.append({"text": tr("CMD_STOP"), "glyph": "stop", "act": ctl.simple.bind("stop")})
+		out.append({"text": tr("CMD_GUARD"), "glyph": "guard", "act": ctl.begin_target.bind("guard"), "accent": Color("#6fe3ff")})
+		out.append({"text": tr("CMD_SCATTER"), "glyph": "scatter", "act": ctl.simple.bind("scatter")})
 		var hv := ctl._filter(units, "harvester")
 		if not hv.is_empty():
-			out.append({"text": tr("CMD_HARVEST"), "act": func():
+			out.append({"text": tr("CMD_HARVEST"), "glyph": "harvest", "act": func():
 				var r := ctl._nearest_resource(sim.ents[hv[0]].pos)
 				if r != 0:
 					ctl.issue({"t": "harvest", "ids": hv, "target": r})})
@@ -1305,7 +1318,7 @@ func _make_card() -> Array:
 		if not mm.is_empty():   # M3.3 Phase 3: set the excavator up where it stands
 			var me0: SimEntity = sim.ents[mm[0]]
 			var up := MineSys.unpacking(me0)
-			out.push_front({"text": tr("CMD_UNPACK_CANCEL") if up else tr("CMD_UNPACK"),
+			out.push_front({"text": tr("CMD_UNPACK_CANCEL") if up else tr("CMD_UNPACK"), "glyph": "cancel" if up else "unpack",
 				"sub": tr("HUD_UNPACKING") % ceili(MineSys.ticks_left(sim, me0) / 20.0) if up else "",
 				"act": func(): ctl.issue({"t": "unpack", "ids": mm}), "tip": tr("CMD_UNPACK_TIP"), "accent": Color("#7dff8a")})
 		var ud := Content.unit(e.def_id)
@@ -1321,11 +1334,11 @@ func _make_card() -> Array:
 					n_all += RosterSys.load_of(sim, te)
 					cap_all += Content.unit(te.def_id).transport_capacity
 			if tr_ids.size() > 1:
-				out.append({"text": tr("CMD_UNLOAD_ALL"), "sub": "%d / %d" % [n_all, cap_all], "disabled": n_all == 0,
+				out.append({"text": tr("CMD_UNLOAD_ALL"), "glyph": "unload_all", "sub": "%d / %d" % [n_all, cap_all], "disabled": n_all == 0,
 					"act": func(): ctl.issue({"t": "unload", "ids": tr_ids}), "tip": tr("CMD_UNLOAD_ALL_TIP"), "accent": Color("#ffd166")})
 		if ud.transport_capacity > 0 and units.size() == 1:
 			var n_in := RosterSys.load_of(sim, e)
-			out.append({"text": tr("CMD_UNLOAD"), "sub": "%d / %d" % [n_in, ud.transport_capacity], "disabled": n_in == 0,
+			out.append({"text": tr("CMD_UNLOAD"), "glyph": "unload", "sub": "%d / %d" % [n_in, ud.transport_capacity], "disabled": n_in == 0,
 				"act": func(): ctl.issue({"t": "unload", "ids": [e.id]}), "tip": tr("STUB_TRANSPORT"), "accent": Color("#ffd166")})
 		return out
 	if e.kind == SimEntity.Kind.NEUTRAL and e.owner == pid:
@@ -1333,37 +1346,37 @@ func _make_card() -> Array:
 		for uid3 in sim.ids:
 			if sim.ents[uid3].res_id == -e.id:
 				ng += 1
-		out.append({"text": tr("HUD_EVACUATE"), "sub": "%d / %d" % [ng, Content.building(e.def_id).garrison_capacity],
+		out.append({"text": tr("HUD_EVACUATE"), "glyph": "evacuate", "sub": "%d / %d" % [ng, Content.building(e.def_id).garrison_capacity],
 			"act": func(): ctl.issue({"t": "unload", "ids": [e.id]}), "accent": Color("#ffd166")})
 		return out
 	if e.kind != SimEntity.Kind.BUILDING:
 		return out
 	var bd2: BuildingDef = Content.building(e.def_id)
 	if not e.built:
-		out.append({"text": tr("CMD_RESUME_BUILD"), "act": resume_site.bind(e), "accent": Color("#7dff8a"), "tip": tr("CMD_RESUME_BUILD_TIP")})
-		out.append({"text": tr("CMD_CANCEL_BUILD"), "act": func(): ctl.issue({"t": "cancel_build", "target": e.id}), "tip": tr("CMD_CANCEL_BUILD_TIP")})
+		out.append({"text": tr("CMD_RESUME_BUILD"), "glyph": "resume", "act": resume_site.bind(e), "accent": Color("#7dff8a"), "tip": tr("CMD_RESUME_BUILD_TIP")})
+		out.append({"text": tr("CMD_CANCEL_BUILD"), "glyph": "cancel", "act": func(): ctl.issue({"t": "cancel_build", "target": e.id}), "tip": tr("CMD_CANCEL_BUILD_TIP")})
 		return out
 	if bd2.produces.is_empty() and bd2.garrison_capacity > 0:   # M4.2: garrison structures keep a rally point
-		out.append({"text": tr("CMD_RALLY"), "pin": true, "act": ctl.begin_target.bind("rally"), "accent": Color("#ffd166"),
+		out.append({"text": tr("CMD_RALLY"), "glyph": "rally", "pin": true, "act": ctl.begin_target.bind("rally"), "accent": Color("#ffd166"),
 			"alt": func(): ctl.issue({"t": "rally", "ids": [e.id], "clear": true})})
 	if CommandSys.is_barricade(sim, e):   # M3.2: manned barricade -> troops step out
 		var nb := 0
 		for uid2 in sim.ids:
 			if sim.ents[uid2].res_id == -e.id:
 				nb += 1
-		out.append({"text": tr("CMD_EXIT_BARRICADE"), "sub": "%d / %d" % [nb, bd2.garrison_capacity], "disabled": nb == 0,
+		out.append({"text": tr("CMD_EXIT_BARRICADE"), "glyph": "exit", "sub": "%d / %d" % [nb, bd2.garrison_capacity], "disabled": nb == 0,
 			"act": func(): ctl.issue({"t": "unload", "ids": [e.id]}), "accent": Color("#ffd166")})
 	if TplaSys.is_tunnel(sim, e):
 		var inside := TplaSys.network_units(sim, pid).size()
-		out.append({"text": tr("HUD_EVACUATE"), "sub": "%d / %d" % [inside, TplaSys.network_capacity()], "disabled": inside == 0,
+		out.append({"text": tr("HUD_EVACUATE"), "glyph": "evacuate", "sub": "%d / %d" % [inside, TplaSys.network_capacity()], "disabled": inside == 0,
 			"act": func(): ctl.issue({"t": "unload", "ids": [e.id]}), "tip": tr("HUD_EVACUATE_TIP"), "accent": Color("#ffd166")})
 	if MineSys.is_mobile_site(sim, e):   # M3.3 Phase 3: pack the excavator up to move it
 		var pk := MineSys.packing(sim, e)
-		out.append({"text": tr("CMD_PACK_CANCEL") if pk else tr("CMD_PACK"),
+		out.append({"text": tr("CMD_PACK_CANCEL") if pk else tr("CMD_PACK"), "glyph": "cancel" if pk else "pack",
 			"sub": tr("HUD_PACKING") % ceili(MineSys.ticks_left(sim, e) / 20.0) if pk else "",
 			"act": func(): ctl.issue({"t": "pack", "target": e.id}), "tip": tr("CMD_PACK_TIP"), "accent": Color("#7dff8a")})
 	if bd2.tags.has("trap"):
-		out.append({"text": tr("HUD_DETONATE"), "act": func(): ctl.issue({"t": "detonate", "ids": [e.id]}), "accent": Color("#ff6a4a"), "tip": tr("HUD_DETONATE_TIP")})
+		out.append({"text": tr("HUD_DETONATE"), "glyph": "detonate", "act": func(): ctl.issue({"t": "detonate", "ids": [e.id]}), "accent": Color("#ff6a4a"), "tip": tr("HUD_DETONATE_TIP")})
 	for uid in bd2.produces:
 		var udf: UnitDef = Content.unit(uid)
 		var why2 := sim.prereqs_met(pid, udf.prereqs)
@@ -1386,10 +1399,10 @@ func _make_card() -> Array:
 	if not bd2.produces.is_empty():
 		while out.size() < 5:
 			out.append({"text": "", "disabled": true})
-		out.append({"text": tr("CMD_RALLY"), "pin": true, "act": ctl.begin_target.bind("rally"), "accent": Color("#ffd166"),
+		out.append({"text": tr("CMD_RALLY"), "glyph": "rally", "pin": true, "act": ctl.begin_target.bind("rally"), "accent": Color("#ffd166"),
 			"alt": func(): ctl.issue({"t": "rally", "ids": [e.id], "clear": true})})
-		out.append({"text": tr("CMD_LOOP_ON") if e.repeat else tr("CMD_LOOP"), "pin": true, "act": func(): ctl.issue({"t": "repeat", "target": e.id, "flag": not e.repeat}), "tip": tr("CMD_REPEAT_TIP")})
-		out.append({"text": tr("CMD_CANCEL_LAST"), "pin": true, "act": func(): ctl.dequeue(e, -1), "disabled": e.queue.is_empty()})
+		out.append({"text": tr("CMD_LOOP_ON") if e.repeat else tr("CMD_LOOP"), "glyph": "loop_on" if e.repeat else "loop", "pin": true, "act": func(): ctl.issue({"t": "repeat", "target": e.id, "flag": not e.repeat}), "tip": tr("CMD_REPEAT_TIP")})
+		out.append({"text": tr("CMD_CANCEL_LAST"), "glyph": "cancel", "pin": true, "act": func(): ctl.dequeue(e, -1), "disabled": e.queue.is_empty()})
 	if CommandSys.can_sell(sim, pid, e) and ctl.selection.size() == 1:
 		out.append(_sell_entry(e))
 	return out
@@ -1401,7 +1414,7 @@ const SELL_CONFIRM_MS := 3000
 
 func _sell_entry(e: SimEntity) -> Dictionary:
 	var armed := _sell_arm_id == e.id and Time.get_ticks_msec() - _sell_arm_ms < SELL_CONFIRM_MS
-	return {"text": tr("CMD_SELL_CONFIRM") if armed else tr("CMD_SELL"), "sub": "+" + _money_str(CommandSys.sell_value(sim, e)), "pin": true,
+	return {"text": tr("CMD_SELL_CONFIRM") if armed else tr("CMD_SELL"), "glyph": "sell_ok" if armed else "sell", "sub": "+" + _money_str(CommandSys.sell_value(sim, e)), "pin": true,
 		"accent": Color("#ff6a4a"), "tip": tr("CMD_SELL_TIP"), "act": func(): sell_tap(e)}
 
 func sell_tap(e: SimEntity) -> void:
