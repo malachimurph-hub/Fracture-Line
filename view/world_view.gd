@@ -104,7 +104,7 @@ func _air_view(id: int, e: SimEntity, ud: UnitDef, v: Node3D, p: Vector3, delta:
 	var jet := ud.tags.has("jet")
 	var want := 0.0 if e.air_state == AirSys.PARKED or e.air_state == AirSys.TAXI_OUT else (JET_ALT if jet else HELI_ALT)
 	if e.air_state == AirSys.LANDING and not jet:
-		want = 0.0   # M4.3: helicopters touch down during the landing phase, before anyone boards
+		want = 0.0   # touch down before anyone boards or steps out
 	if e.air_state == AirSys.LANDING and jet:
 		want = 0.0
 		var home := sim.get_ent(e.air_home)
@@ -444,8 +444,6 @@ func _ensure_view(e: SimEntity) -> EntityView:
 		Palette.apply_paint(v, Content.faction_of_id(e.def_id), Palette.PAINT_BUILDINGS[e.def_id])
 	if e.kind == SimEntity.Kind.BUILDING:
 		_add_crew(v, e)
-		if Content.btag(e.def_id, "zeus_pylon"):
-			_zeus_ring(v, e)
 	v.position = _world_pos(e)
 	if e.kind == SimEntity.Kind.BUILDING or e.kind == SimEntity.Kind.NEUTRAL:
 		v.rotation.y = [0.0, PI * 0.5, PI, -PI * 0.5][e.rot]
@@ -562,9 +560,6 @@ func on_tick(events: Array) -> void:
 					views[c.id].set_team_material(Palette.team_material(sim.players[c.owner].color))
 					if rigs.has(c.id):
 						rigs[c.id].refresh_team()
-			"unload":
-				if ev.has("b"):
-					_start_rappel(int(ev["id"]), int(ev["b"]))
 			"garrison":
 				var b := sim.get_ent(int(ev["b"]))
 				if b != null and views.has(b.id):
@@ -606,21 +601,70 @@ func _visible_pos(p: Vector2i) -> bool:
 ## markers get real infantry views (same VAT soldiers, size and animation as trained troops).
 ## Crew0/1 are the anti-tank gunners (kneel to fire), the rest are riflemen loaders.
 const CREW := {&"eu_javelin_pit": [&"eu_lancer", &"eu_grenadier"]}
-## M4.4: the Zeus Pylon draws its defence disc so the player can see the line it covers.
-func _zeus_ring(v: Node3D, e: SimEntity) -> void:
-	if local_team >= 0 and e.team != local_team:
-		return
-	var radius := float(Content.building(e.def_id).aux_radius)
+## Zeus Pylon coverage. The radius is BuildingDef.aux_radius, the same disc ZeusSys uses.
+var pylon_rings: Dictionary = {}   ## entity id -> MeshInstance3D
+
+func _pylon_radius(def_id: StringName) -> float:
+	if not Content.btag(def_id, "zeus_pylon"):
+		return 0.0
+	var d := Content.building(def_id)
+	return float(d.aux_radius) if d != null else 0.0
+
+func _make_pylon_ring(owner: int) -> MeshInstance3D:
 	var mi := MeshInstance3D.new()
-	mi.name = "RangeRing"
+	mi.name = "PylonRange"
 	mi.mesh = Palette.ring_mesh("circle", 0.012)
-	mi.scale = Vector3(radius, 1.0, radius)
 	mi.position = Vector3(0, 0.18, 0)
-	var col := Palette.color(sim.players[e.owner].color if e.owner >= 0 else 0)
-	col.a = 0.85
+	var col := Palette.color(sim.players[owner].color if owner >= 0 else 0)
 	mi.material_override = Palette.flat(col, 0.85)
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	v.add_child(mi)
+	return mi
+
+func _drop_pylon_ring(id: int) -> void:
+	if not pylon_rings.has(id):
+		return
+	var n: MeshInstance3D = pylon_rings[id]
+	pylon_rings.erase(id)
+	if is_instance_valid(n):
+		n.queue_free()
+
+## Live coverage ring for a pylon, or null when it is hidden or queued to free.
+func pylon_cover(id: int) -> MeshInstance3D:
+	var n: MeshInstance3D = pylon_rings.get(id)
+	if n == null or not is_instance_valid(n) or n.is_queued_for_deletion():
+		return null
+	return n
+
+## Shown only while a friendly pylon is selected. Placement uses the ghost ring instead.
+func _sync_pylon_ranges() -> void:
+	var want := {}
+	for id in selected:
+		var e := sim.get_ent(id)
+		if e == null or not e.alive or e.kind != SimEntity.Kind.BUILDING:
+			continue
+		if local_team >= 0 and e.team != local_team:
+			continue
+		var radius := _pylon_radius(e.def_id)
+		if radius <= 0.0:
+			continue
+		want[id] = radius
+	for id in pylon_rings.keys():
+		if not want.has(id):
+			_drop_pylon_ring(id)
+	for id in want:
+		var e: SimEntity = sim.ents[id]
+		var v: EntityView = views.get(id)
+		if v == null:
+			_drop_pylon_ring(id)
+			continue
+		var mi := pylon_cover(id)
+		if mi == null:
+			mi = _make_pylon_ring(e.owner)
+			v.add_child(mi)
+			pylon_rings[id] = mi
+		mi.visible = v.visible
+		var radius: float = want[id]
+		mi.scale = Vector3(radius, 1.0, radius)
 
 func _add_crew(v: Node3D, e: SimEntity) -> void:
 	if not CREW.has(e.def_id):
@@ -708,7 +752,7 @@ func _on_fire(ev: Dictionary) -> void:
 		snd = "artillery_heavy"   # M4.3: deep boom with a long reverberant roll
 	elif cls == "salvo":
 		snd = "rocket_heavy"      # M4.3: loud launch + whoosh for rocket artillery
-	elif cls == "missile" and wd0 != null and (wd0.damage >= 120 or wd0.splash_mt >= 700):
+	elif cls == "icbm" or (cls == "missile" and wd0 != null and (wd0.damage >= 120 or wd0.splash_mt >= 700)):
 		snd = "missile_heavy"
 	elif cls == "cannon" and wd0 != null and wd0.damage >= 100:
 		snd = "cannon_heavy"
@@ -741,7 +785,11 @@ func _muzzles(src: SimEntity, v: EntityView, garrison: SimEntity, base: Vector3,
 	# M4.1: door guns / launch tubes marked Muzzle* in the model fire from those (alternating)
 	var mz: Array = _marker_muzzles(v)
 	if not mz.is_empty():
-		var mk: Node3D = mz[randi() % mz.size()]
+		var idx := randi()
+		if src.kind == SimEntity.Kind.BUILDING and Content.btag(src.def_id, "zeus_launcher"):
+			idx = int(v.get_meta("_mz_i", 0))
+			v.set_meta("_mz_i", idx + 1)
+		var mk: Node3D = mz[idx % mz.size()]
 		if is_instance_valid(mk):
 			return [mk.global_position]
 	var barrel: Node3D = v.get("barrel") if "barrel" in v else null
@@ -769,6 +817,7 @@ func _marker_muzzles(v: EntityView) -> Array:
 	if v.model != null:
 		for n in v.model.find_children("Muzzle*", "Marker3D", true, false):
 			out.append(n)
+		out.sort_custom(func(a, b): return String(a.name) < String(b.name))
 	v.set_meta("_mz", out)
 	return out
 
@@ -847,6 +896,7 @@ func _forget_view(id: int) -> void:
 	if rings.has(id):
 		rings[id].queue_free()
 		rings.erase(id)
+	_drop_pylon_ring(id)
 	views.erase(id)
 	air_alt.erase(id)
 	if air_shadows.has(id):
@@ -1304,8 +1354,6 @@ func frame(a: float, delta: float) -> void:
 				p = man[0]
 			if v is InfantryView:
 				(v as InfantryView).set_braced(not man.is_empty())
-			if rappel.has(id):
-				p = _rappel_step(id, p, delta)
 			if move_loops.has(id):
 				if is_instance_valid(move_loops[id]):
 					_move_loop(move_loops[id], e, delta)
@@ -1478,6 +1526,7 @@ func _update_rings() -> void:
 		var r := v.selection_radius * (INF_SCALE if (e.kind == SimEntity.Kind.UNIT and Content.unit(e.def_id).tags.has("infantry")) else 1.0) + 0.15
 		ring.position = v.position + Vector3(0, 0.05, 0)
 		ring.scale = Vector3(r, 1, r)
+	_sync_pylon_ranges()
 
 func marker(p: Vector2i, col: Color) -> void:
 	vfx.ring(FX.to_world(p), 0.9, col, 0.5, true)
@@ -1488,6 +1537,7 @@ var ghost_model: EntityView
 var ghost_def: StringName = &""
 var ghost_pad: MeshInstance3D
 var ghost_rings: Array = []
+var ghost_cover: MeshInstance3D   ## Zeus Pylon coverage while the placement ghost is up
 var ghost_ok_mat: StandardMaterial3D
 var ghost_bad_mat: StandardMaterial3D
 var ghost_overlay_ok: StandardMaterial3D
@@ -1512,45 +1562,6 @@ func _move_loop(mv: AudioStreamPlayer3D, e: SimEntity, delta: float) -> void:
 			mv.play(randf() * 2.5)
 	elif mv.playing:
 		mv.stop()
-
-## M4.3: troops leaving a helicopter in the air slide down a fast rope (view only; the sim has
-## already put them on the ground under the helicopter).
-const RAPPEL_S := 1.4
-var rappel := {}   ## unit id -> {"h": start height, "t": seconds, "rope": MeshInstance3D}
-static var _rope_mat: StandardMaterial3D
-
-func _start_rappel(uid: int, tid: int) -> void:
-	var h: float = air_alt.get(tid, 0.0)
-	if h < 0.6:
-		return
-	var rope := MeshInstance3D.new()
-	var cm := CylinderMesh.new()
-	cm.top_radius = 0.025
-	cm.bottom_radius = 0.025
-	cm.height = 1.0
-	cm.radial_segments = 4
-	cm.rings = 1
-	rope.mesh = cm
-	if _rope_mat == null:
-		_rope_mat = Palette.flat(Color("#2b2620"), 1.0, false)
-	rope.material_override = _rope_mat
-	rope.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(rope)
-	rappel[uid] = {"h": h, "t": 0.0, "rope": rope}
-
-func _rappel_step(uid: int, p: Vector3, delta: float) -> Vector3:
-	var r: Dictionary = rappel[uid]
-	r["t"] = float(r["t"]) + delta
-	var k := clampf(float(r["t"]) / RAPPEL_S, 0.0, 1.0)
-	var h: float = r["h"]
-	var y := h * (1.0 - k * k * (3.0 - 2.0 * k))   # smoothstep slide
-	var rope: MeshInstance3D = r["rope"]
-	rope.position = Vector3(p.x, p.y + h * 0.5, p.z)
-	rope.scale = Vector3(1, h, 1)
-	if k >= 1.0:
-		rope.queue_free()
-		rappel.erase(uid)
-	return p + Vector3(0, y, 0)
 
 ## Flat arrow pointing +Z: shaft 0..1.0, head 1.0..1.8 (tiles), lies just above the ground.
 static func _arrow_mesh() -> ArrayMesh:
@@ -1615,6 +1626,33 @@ func show_ghost(def_id: StringName, tile: Vector2i, rot: int, ok: bool, pid: int
 	ghost_arrow.position = Vector3(center.x, ghost_pad.position.y + 0.05, center.z) + fwd * (half + 0.2)
 	ghost_arrow.rotation.y = [0.0, PI * 0.5, PI, -PI * 0.5][rot]
 	ghost_arrow.visible = true
+	_sync_ghost_cover(d, center, pid)
+
+## Coverage disc for a Zeus Pylon ghost. Other buildings keep the grid rings only.
+func _sync_ghost_cover(d: BuildingDef, center: Vector3, pid: int) -> void:
+	var radius := _pylon_radius(d.id)
+	if radius <= 0.0:
+		if ghost_cover != null:
+			ghost_cover.visible = false
+		return
+	if ghost_cover == null:
+		ghost_cover = MeshInstance3D.new()
+		ghost_cover.name = "PylonRange"
+		ghost_cover.mesh = Palette.ring_mesh("circle", 0.012)
+		ghost_cover.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		ghost_root.add_child(ghost_cover)
+	var col := Palette.color(sim.players[pid].color if pid >= 0 else 0)
+	ghost_cover.material_override = Palette.flat(col, 0.85)
+	ghost_cover.position = Vector3(center.x, ghost_pad.position.y + 0.08, center.z)
+	ghost_cover.scale = Vector3(radius, 1.0, radius)
+	ghost_cover.visible = true
+
+func ghost_pylon_cover() -> MeshInstance3D:
+	if ghost_root == null or not ghost_root.visible:
+		return null
+	if ghost_cover == null or not is_instance_valid(ghost_cover) or not ghost_cover.visible:
+		return null
+	return ghost_cover
 
 func _rebuild_grid_rings(pid: int, d: BuildingDef) -> void:
 	for r in ghost_rings:
@@ -1648,6 +1686,8 @@ func hide_ghost() -> void:
 		for r in ghost_rings:
 			r.queue_free()
 		ghost_rings.clear()
+		if ghost_cover != null:
+			ghost_cover.visible = false
 
 # ---------------------------------------------------------------- rally flags
 var rally_flag: Node3D

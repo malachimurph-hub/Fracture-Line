@@ -148,7 +148,7 @@ func _build_scene() -> void:
 	AudioDirector.announcer_faction = String(runner.sim.faction_of(focus_pid))
 	AudioDirector.battle_faction = runner.sim.faction_of(focus_pid)   # M3.2 faction music
 	AudioDirector.play_music("battle")
-	AudioDirector.play_ambient("wind")
+	AudioDirector.start_field_ambience()
 	if runner.sim.tick < 10:
 		AudioDirector.announce("battle_start")
 	if bool(runner.setup_cfg.get("tutorial", false)) and local_pid >= 0:   # M4.2 (item 2)

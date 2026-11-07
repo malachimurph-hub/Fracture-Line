@@ -1,7 +1,7 @@
 # 0.4.2 (versionCode 26) - M4.2 batch
 
 Gameplay: rounds deal damage on impact (in-flight records, saved); transport helicopters land before troops
-board (unloading in the air still allowed); "Unload All" with several transports selected; smart targeting
+board (unloading in the air was still allowed then; removed later, troops now leave only after landing); "Unload All" with several transports selected; smart targeting
 (weapon-vs-armour effectiveness weights target choice); rally points only on producers / garrisonable
 structures; players can build next to Supply Stashes (AI keeps its old spacing to protect the stash economy);
 anti-tank mines / demo traps removed for every faction; "veridite seam" renamed Supply Stash.

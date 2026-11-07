@@ -505,7 +505,7 @@ func run_touch() -> void:
 		m.hud._refresh()
 		var rb: HudButton = null
 		for gb2 in m.hud.grid_buttons:
-			if gb2.visible and gb2.label_text == tr("CMD_RESUME_BUILD"):
+			if gb2.visible and gb2.tooltip_text == tr("CMD_RESUME_BUILD_TIP"):
 				rb = gb2
 		check("selected scaffold shows Resume build", rb != null)
 		if rb != null:
@@ -818,7 +818,7 @@ func run_m33() -> void:
 		check("%s: power bar has 40 segments" % fac, PowerSegBar.SEGS == 40 and (not h.power_bar.visible or h.power_bar.size.x >= 120))
 		var shown := 0
 		for q in h.queue_slots:
-			if q.label_text != "":
+			if q.icon_tex != null:
 				shown += 1
 		check("%s: 8-slot queue shows 8 of 10 queued" % fac, h.queue_slots.size() == 8 and shown == 8, shown)
 		var qr: Rect2 = h.res_panel.get_global_rect()

@@ -40,6 +40,8 @@ const CLASSES := {
 	&"tpla_sayad3_sam": "missile", &"eu_mantis_35": "quad", &"eu_mantis_gnd": "quad",
 	&"eu_tower_50cal": "mg", &"eu_pit_javelin": "missile", &"us_door_minigun": "minigun", &"eu_h145_mg": "mg", &"ecc_hind_20mm": "autocannon",
 	&"eu_gatling_gnd": "quad", &"tpla_wasp_gnd": "missile", &"us_patriot_gnd": "mg", &"ecc_zak30_gnd": "quad", &"sidearm": "rifle",
+	# ZEUS silo: a heavy ballistic round, not the small missile streak
+	&"us_zeus_missile": "icbm",
 }
 const BY_KIND := {"tracer": "rifle", "tracer_heavy": "mg", "shell": "cannon", "missile": "missile",
 	"rocket": "rocket", "rocket_salvo": "salvo", "tracer_quad": "quad", "tracer_minigun": "minigun", "flak": "flak", "grenade": "grenade",
@@ -56,6 +58,7 @@ const P := {
 	"cannon": {"spd": 36.0, "arc": 0.02, "n": 1, "gap": 0.0, "tail": 1.1, "w": 0.05, "col": Color(1.0, 0.78, 0.45), "muz": 0.42, "imp": 0.62},
 	"flak": {"spd": 42.0, "arc": 0.0, "n": 1, "gap": 0.0, "tail": 0.7, "w": 0.03, "col": Color(1.0, 0.9, 0.7), "muz": 0.2, "imp": 0.45},
 	"missile": {"spd": 14.0, "arc": 0.06, "n": 1, "gap": 0.0, "tail": 0.32, "w": 0.05, "col": Color(1.0, 0.82, 0.5), "muz": 0.16, "imp": 0.6, "trail": 0.022},
+	"icbm": {"spd": 7.0, "arc": 0.0, "n": 1, "gap": 0.0, "tail": 0.9, "w": 0.16, "col": Color(1.0, 0.62, 0.28), "muz": 1.05, "imp": 1.45, "trail": 0.04},
 	"rocket": {"spd": 17.0, "arc": 0.03, "n": 1, "gap": 0.0, "tail": 0.28, "w": 0.045, "col": Color(1.0, 0.68, 0.35), "muz": 0.15, "imp": 0.48, "trail": 0.026},
 	"salvo": {"spd": 15.0, "arc": 0.16, "n": 1, "gap": 0.0, "tail": 0.26, "w": 0.04, "col": Color(1.0, 0.66, 0.32), "muz": 0.14, "imp": 0.42, "trail": 0.03},
 	"artillery": {"spd": 0.0, "arc": 0.38, "n": 1, "gap": 0.0, "tail": 0.5, "w": 0.04, "col": Color(1.0, 0.72, 0.4), "muz": 0.65, "imp": 1.25, "trail": 0.05, "solid": true},
@@ -78,6 +81,10 @@ var queued: Array = []     ## rounds of a burst waiting for their offset [delay,
 var flashes: Array = []    ## muzzle tongues [head, tail, w, col, t, life]
 var streams: Array = []    ## flame / spray streams [from, to, t, life, kind, acc, hitk]
 var stats := {"fired": 0, "rounds": 0, "impacts": 0, "airbursts": 0, "ground_misses": 0, "trail_puffs": 0, "stream_particles": 0}
+const _ICBM_MAT := preload("res://view/materials/m3.tres")
+const ICBM_NOSE := 0.74   ## nose sits this far ahead of the mesh origin, along -Z
+var _icbm_mesh: ArrayMesh
+var _icbm_pool: Array = []
 
 func setup(w: WorldView, fx: Vfx) -> void:
 	world = w
@@ -135,6 +142,8 @@ func _launch(sh: Dictionary, dir: Vector3) -> void:
 		_arrive(sh)   # pool full: resolve at once rather than drop the impact
 		return
 	shots.append(sh)
+	if sh["c"] == "icbm":
+		_icbm_take(sh)
 	stats["rounds"] += 1
 	_muzzle(sh["c"], sh["p0"], dir, pr)
 
@@ -150,6 +159,8 @@ func _dest(sh: Dictionary) -> Vector3:
 	return to + Vector3(0, 0.02, 0) + (sh["jit"] as Vector3) * 2.0
 
 func _pos(sh: Dictionary, u: float) -> Vector3:
+	if sh["c"] == "icbm":
+		return _icbm_pos(sh, u)
 	var p0: Vector3 = sh["p0"]
 	var p := p0.lerp(_dest(sh), u) + Vector3.UP * float(sh["h"]) * 4.0 * u * (1.0 - u)
 	if sh["c"] == "rocket" or sh["c"] == "salvo":
@@ -215,6 +226,16 @@ func _muzzle(cls: String, p: Vector3, dir: Vector3, pr: Dictionary) -> void:
 			vfx.fire.emit(p, d * 1.5, 0.08, s * 0.9, s * 0.4, Color("#fff1b8"), Color(1.0, 0.55, 0.15, 0.0), 1.0)
 			for k in 3:   # back-blast
 				vfx.smoke.emit(p - d * (0.25 + k * 0.18), -d * 1.4 + Vector3(randf_range(-0.3, 0.3), 0.3, randf_range(-0.3, 0.3)), 1.3, 0.14, 0.6, Color(0.8, 0.78, 0.74, 0.55), Color(0.8, 0.78, 0.74, 0.0))
+		"icbm":
+			var up := Vector3.UP
+			vfx.fire.emit(p, up * 3.2, 0.18, s * 0.55, s * 0.28, Color("#fff1b8"), Color(1.0, 0.45, 0.1, 0.0), 1.0)
+			vfx.fire.emit(p, up * 1.4, 0.28, s * 0.85, s * 0.4, Color("#ffd27a"), Color(1.0, 0.35, 0.08, 0.0), 1.0)
+			for k in 8:
+				vfx.smoke.emit(p + Vector3(randf_range(-0.15, 0.15), 0.05, randf_range(-0.15, 0.15)), up * randf_range(1.2, 3.4) + Vector3(randf_range(-0.5, 0.5), 0, randf_range(-0.5, 0.5)), 2.4, 0.35, 1.6, Color(0.78, 0.76, 0.72, 0.7), Color(0.55, 0.53, 0.5, 0.0))
+			for k in 6:
+				var a := k * TAU / 6.0
+				vfx.smoke.emit(Vector3(p.x, 0.06, p.z) + Vector3(cos(a), 0, sin(a)) * 0.35, Vector3(cos(a), 0.15, sin(a)) * 2.2, 1.3, 0.4, 1.3, Color(DUST, 0.55), Color(DUST, 0.0))
+			vfx.ring(p, 1.5, Color(1.0, 0.82, 0.5, 0.75), 0.5, false)
 		"mortar", "rust":
 			vfx.muzzle(p, Vector3(d.x * 0.3, 1.0, d.z * 0.3).normalized(), s)
 		"grenade":
@@ -284,13 +305,13 @@ func _impact(cls: String, p: Vector3, hitk: int, s: float) -> void:
 				vfx.sparks(p, Vector3(0, 0.5, 0), 6, 1.8)
 			var ep := ground if hitk < 0 or hitk == 0 else p - Vector3(0, 0.3, 0)
 			vfx.explosion(ep, es)
-			if hitk < 0 or cls in ["artillery", "mortar"]:
+			if hitk < 0 or cls in ["artillery", "mortar", "icbm"]:
 				# shell into dirt: a spray of soil and a dust ring
 				for k in int(4 + es * 6):
 					vfx.debris.emit(ground, Vector3(randf_range(-1.6, 1.6), randf_range(2.5, 5.0), randf_range(-1.6, 1.6)) * sqrt(es), 1.4, randf_range(0.03, 0.07) * sqrt(es), 0.04, Color("#6b5a44"), Color("#4f4234"))
 				for k in 3:
 					vfx.smoke.emit(ground, Vector3(randf_range(-0.5, 0.5), randf_range(1.2, 2.2), randf_range(-0.5, 0.5)) * es, 1.6, es * 0.4, es * 1.6, Color(0.55, 0.47, 0.37, 0.7), Color(DUST, 0.0))
-			if cls == "artillery":
+			if cls == "artillery" or cls == "icbm":
 				vfx.decal(ground, es * 1.1, 1)
 			elif hitk < 0 and es >= 0.3 and randf() < 0.7:
 				vfx.decal(ground, es * 0.75, 0)   # M3.2: fresh scorch where a shell lands (pooled ring, cap 160)
@@ -317,12 +338,17 @@ func _process(delta: float) -> void:
 		var dur: float = sh["dur"]
 		var u := clampf(float(sh["t"]) / dur, 0.0, 1.0)
 		if u >= 1.0:
+			if sh["c"] == "icbm":
+				_icbm_release(sh)
 			_arrive(sh)
 			continue
 		keep.append(sh)
 		var cls: String = sh["c"]
 		var pr: Dictionary = P[cls]
 		var head := _pos(sh, u)
+		if cls == "icbm":
+			_icbm_frame(sh, head, u, delta)
+			continue
 		var tu := maxf(0.0, u - float(pr["tail"]) / float(sh["L"]))
 		var tail := _pos(sh, tu)
 		if pr.get("solid", false):
@@ -398,3 +424,154 @@ func _process(delta: float) -> void:
 	streams = ks
 	glow.end()
 	solid.end()
+
+## Ballistic climb: up out of the silo, then over onto the target. Visual only.
+func _icbm_pos(sh: Dictionary, u: float) -> Vector3:
+	var p0: Vector3 = sh["p0"]
+	var dest := _dest(sh)
+	var flat := Vector2(dest.x - p0.x, dest.z - p0.z).length()
+	var apex := maxf(2.8, flat * 0.4)
+	var ctrl := p0.lerp(dest, 0.22) + Vector3.UP * apex
+	var o := 1.0 - u
+	return p0 * (o * o) + ctrl * (2.0 * o * u) + dest * (u * u)
+
+func _icbm_frame(sh: Dictionary, head: Vector3, u: float, delta: float) -> void:
+	var back := _icbm_pos(sh, maxf(0.0, u - 0.04))
+	var fwd := head - back
+	if fwd.length_squared() < 1e-6:
+		fwd = Vector3.UP
+	else:
+		fwd = fwd.normalized()
+	var nozzle := head - fwd * (ICBM_NOSE + 0.74)
+	glow.put(nozzle, nozzle - fwd * 0.85, 0.18, Color(1.0, 0.5, 0.16, 1.0), 3.0)
+	glow.put(nozzle, nozzle - fwd * 0.28, 0.08, Color(1.0, 0.95, 0.75, 1.0), 4.0)
+	_icbm_pose(sh, head, fwd)
+	if vfx == null:
+		return
+	sh["acc"] = float(sh.get("acc", 0.0)) + delta
+	while float(sh["acc"]) >= 0.04:
+		sh["acc"] = float(sh["acc"]) - 0.04
+		stats["trail_puffs"] += 1
+		vfx.smoke.emit(nozzle, -fwd * 0.6 + Vector3(randf_range(-0.15, 0.15), 0.15, randf_range(-0.15, 0.15)), 1.8, 0.18, 0.75, Color(0.86, 0.84, 0.8, 0.72), Color(0.62, 0.6, 0.56, 0.0))
+
+func _icbm_pose(sh: Dictionary, head: Vector3, fwd: Vector3) -> void:
+	var mi: MeshInstance3D = sh.get("body")
+	if mi == null or not is_instance_valid(mi):
+		return
+	mi.visible = true
+	mi.position = head - fwd * ICBM_NOSE
+	var up := Vector3.UP if absf(fwd.dot(Vector3.UP)) < 0.92 else Vector3.FORWARD
+	mi.look_at(mi.position + fwd, up)
+
+func _icbm_take(sh: Dictionary) -> void:
+	if _icbm_mesh == null:
+		_icbm_mesh = _build_icbm_mesh()
+	var mi: MeshInstance3D
+	if not _icbm_pool.is_empty():
+		mi = _icbm_pool.pop_back()
+	elif _icbm_live() < 16:
+		mi = MeshInstance3D.new()
+		mi.name = "IcbmRound"
+		mi.mesh = _icbm_mesh
+		mi.material_override = _ICBM_MAT
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		mi.set_instance_shader_parameter(&"rust_amt", 0.18)
+		mi.set_instance_shader_parameter(&"wear_amt", 0.4)
+		mi.set_instance_shader_parameter(&"dirt_amt", 0.3)
+		add_child(mi)
+	else:
+		return
+	mi.visible = true
+	sh["body"] = mi
+
+func _icbm_live() -> int:
+	var n := 0
+	for sh in shots:
+		if sh.get("body") != null:
+			n += 1
+	return n
+
+func _icbm_release(sh: Dictionary) -> void:
+	var mi: MeshInstance3D = sh.get("body")
+	sh.erase("body")
+	if mi != null and is_instance_valid(mi):
+		mi.visible = false
+		_icbm_pool.append(mi)
+
+static func icbm_mesh() -> ArrayMesh:
+	return _build_icbm_mesh()
+
+## Same proportions as the round standing in the silo: length 1.48, body radius 0.102, dark nose, fins.
+static func _build_icbm_mesh() -> ArrayMesh:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var body := _icbm_col(Color("#5e6358"), 0)
+	var dark := _icbm_col(Color("#141616"), 16)
+	var band := _icbm_col(Color("#c4b48a"), 0)
+	var steel := _icbm_col(Color("#4a4f4b"), 6)
+	_icbm_lathe(st, [[0.74, 0.04], [0.64, 0.102], [0.1, 0.102], [-0.05, 0.088], [-0.42, 0.074], [-0.68, 0.02], [-0.74, 0.0]], 12, body)
+	_icbm_lathe(st, [[-0.38, 0.078], [-0.62, 0.03], [-0.745, 0.0]], 12, dark)
+	_icbm_band(st, 0.28, 0.104, 0.03, 12, band)
+	for i in 4:
+		_icbm_fin(st, float(i) * TAU / 4.0, steel)
+	return st.commit()
+
+static func _icbm_col(c: Color, cls: int) -> Color:
+	c.a = float(cls) / 20.0
+	return c
+
+static func _icbm_lathe(st: SurfaceTool, profile: Array, seg: int, col: Color) -> void:
+	for i in profile.size() - 1:
+		var z0: float = profile[i][0]
+		var r0: float = profile[i][1]
+		var z1: float = profile[i + 1][0]
+		var r1: float = profile[i + 1][1]
+		for k in seg:
+			var a0 := TAU * float(k) / float(seg)
+			var a1 := TAU * float(k + 1) / float(seg)
+			var p0 := Vector3(cos(a0) * r0, sin(a0) * r0, z0)
+			var p1 := Vector3(cos(a1) * r0, sin(a1) * r0, z0)
+			var q0 := Vector3(cos(a0) * r1, sin(a0) * r1, z1)
+			var q1 := Vector3(cos(a1) * r1, sin(a1) * r1, z1)
+			if r1 < 0.0005:
+				_icbm_tri(st, p0, p1, Vector3(0, 0, z1), col)
+			else:
+				_icbm_tri(st, p0, q0, q1, col)
+				_icbm_tri(st, p0, q1, p1, col)
+
+static func _icbm_band(st: SurfaceTool, z: float, r: float, h: float, seg: int, col: Color) -> void:
+	_icbm_lathe(st, [[z, r], [z + h, r]], seg, col)
+
+static func _icbm_fin(st: SurfaceTool, ang: float, col: Color) -> void:
+	var b := Basis(Vector3.FORWARD, ang)
+	var c := Vector3(0.15, 0.0, 0.48)
+	var s := Vector3(0.1, 0.012, 0.26)
+	var h := s * 0.5
+	var corners: Array = []
+	for x in [-1.0, 1.0]:
+		for y in [-1.0, 1.0]:
+			for z in [-1.0, 1.0]:
+				corners.append(b * (c + Vector3(x * h.x, y * h.y, z * h.z)))
+	# box corners: 0 -x-y-z, 1 -x-y+z, 2 -x+y-z, 3 -x+y+z, 4 +x-y-z, 5 +x-y+z, 6 +x+y-z, 7 +x+y+z
+	for face in [[0, 1, 3, 2], [4, 6, 7, 5], [0, 4, 5, 1], [2, 3, 7, 6], [0, 2, 6, 4], [1, 5, 7, 3]]:
+		_icbm_tri(st, corners[face[0]], corners[face[1]], corners[face[2]], col)
+		_icbm_tri(st, corners[face[0]], corners[face[2]], corners[face[3]], col)
+
+static func _icbm_tri(st: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, col: Color) -> void:
+	var n := (b - a).cross(c - a)
+	if n.length_squared() < 1e-12:
+		return
+	n = n.normalized()
+	var mid := (a + b + c) / 3.0
+	var axis := Vector3(0, 0, mid.z)
+	if n.dot(mid - axis) < 0.0:
+		n = -n
+		var t := b
+		b = c
+		c = t
+	for p in [a, b, c]:
+		st.set_normal(n)
+		st.set_color(col)
+		st.set_uv(Vector2.ZERO)
+		st.set_uv2(Vector2.ZERO)
+		st.add_vertex(p)

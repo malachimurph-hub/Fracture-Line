@@ -7,7 +7,7 @@ Shipped as sideload APK only (com.malachimurphy.fractureline). No Play AAB this 
 | 1 | Transport cash pop-up on unload | Fixed: floater only for depot drop-offs (events with an amount) |
 | 2 | Vehicle speed variety | Tiers in units.csv: MBTs 1450 (Scrapback 1500, Brennus 1150), SPGs 1250, IFV/AA 1750-2000, wheeled APCs 2400, light 2600-3300. Harvesters unchanged |
 | 3 | Front arrow on placement ghost | Green arrow at the exit edge, follows rotation |
-| 4 | Boarding before landing / rappel | Helis descend to ground in LANDING before troops board; mid-air unload plays a fast-rope slide (1.4 s) |
+| 4 | Boarding before landing / rappel | Helis descend to ground in LANDING before troops board. The mid-air fast-rope was removed later: troops leave only after the helicopter has landed. |
 | 5 | Iran camo net | Unbuildable; TPLA AI skips it |
 | 6 | Technical / supply pickup | Technical remounted on same Hilux-style body as the supply pickup (was Safir jeep); chrome grille + side steps; random blue/white/black/red/yellow paint |
 | 7 | Iran HQ / Workshop / Garage | New models: stone municipal hall (arched portico, cornices, clock turret, flag); glass office block; steel-clad vehicle depot with office. AO + texture bake + icons redone |

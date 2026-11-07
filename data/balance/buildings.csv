@@ -29,7 +29,7 @@ eu_minefield,BLD_EU_MINEFIELD,defense,300,4000,1,1,150,0,0,3,eu_barracks,,0,0,0,
 tpla_wasp_nest,BLD_TPLA_WASP_NEST,defense,900,10000,2,2,1000,-3,0,9,tpla_camp,,0,0,0,,0,tpla_wasp_missile|tpla_wasp_gnd,0,0,0,0,1,,,0,0,0,0
 tpla_airfield,BLD_TPLA_AIRFIELD,production,1800,16000,8,8,1800,-4,0,7,tpla_chop_shop,tpla_mirage|tpla_mig29|tpla_f16,0,0,0,,0,,0,0,0,0,1,,airfield,0,6,0,0
 us_command,BLD_US_COMMAND,base,2500,45000,4,4,5000,5,0,10,,us_dozer,1,0,0,,0,,0,0,0,0,1,,,0,0,0,0
-us_substation,BLD_US_SUBSTATION,base,1000,10000,3,3,1000,12,0,6,us_command,,0,0,0,,0,,0,0,0,0,1,,,0,0,0,0
+us_substation,BLD_US_SUBSTATION,base,750,10000,3,3,1000,11,0,6,us_command,,0,0,0,,0,,0,0,0,0,1,,,0,0,0,0
 us_reactor,BLD_US_REACTOR,base,5200,30000,4,4,2600,64,0,7,us_up_nuclear,,0,0,0,,0,,0,0,0,0,1,,,0,0,0,0
 us_supply_center,BLD_US_SUPPLY_CENTER,base,1500,15000,3,3,1500,-2,0,6,us_barracks,us_supply_truck,0,1,0,us_supply_truck,0,,0,0,0,0,1,,,0,0,0,0
 us_barracks,BLD_US_BARRACKS,production,600,10000,3,3,1200,-3,0,6,us_substation,us_squad|us_mk23|us_drone_operator,0,0,0,,0,,0,0,0,0,1,,,0,0,0,0

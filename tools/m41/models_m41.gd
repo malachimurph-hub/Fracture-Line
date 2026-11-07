@@ -239,7 +239,7 @@ func _h145m(mat: Material) -> void:
 # ---------------------------------------------------------------- structures (Germany)
 ## Shared structure shell (pad, scaffold, damage overlays, rubble, fire anchors) like M2.4's
 ## buildings_m4._make, plus extra markers (Spot* searchlights, Muzzle*).
-func _structure(short: String, fp: Vector2, top: float, mat: Material, hull_fn: Callable, turret_fn: Callable, tpos: Vector3, markers: Dictionary) -> void:
+func _structure(short: String, fp: Vector2, top: float, mat: Material, hull_fn: Callable, turret_fn: Callable, tpos: Vector3, markers: Dictionary, extra: Callable = Callable()) -> void:
 	var root := Node3D.new()
 	root.name = "View"
 	root.set_script(load("res://view/buildings/building_view.gd"))
@@ -266,6 +266,8 @@ func _structure(short: String, fp: Vector2, top: float, mat: Material, hull_fn: 
 			_marker(pv, root, k, markers["turret"][k])
 	for k in markers.get("model", {}):
 		_marker(model, root, k, markers["model"][k])
+	if extra.is_valid():
+		extra.call(model, root, mat)
 	var s = B4._scaffold(fp, top * 0.8)
 	VK._mi(model, root, "Scaffold", s.commit(mat)).visible = false
 	var l = B4._damage_light(fp, false)

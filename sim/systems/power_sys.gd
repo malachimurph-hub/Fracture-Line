@@ -49,7 +49,7 @@ static func recompute_grid(w: SimWorld) -> void:
 			b.gridded = g
 			if b.built:
 				if d.power > 0:
-					# Sub Stations and the Nuclear plant both feed the base. Research only unlocks the plant.
+					# Power Substations and the Nuclear Power Station both feed the base. Research only unlocks the station.
 					p.power_prod += d.power
 				else:
 					p.power_used -= d.power

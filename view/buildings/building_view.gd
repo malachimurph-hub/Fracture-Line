@@ -30,6 +30,8 @@ var under_construction := false
 var anim_parts: Array = []      ## M3.3: [node, kind, base rotation] - "spin" / "nod" / "door"
 var _anim_t := 0.0
 var _door_t := 0.0              ## seconds the silo hatch stays open after a launch
+var loaded_round: GeometryInstance3D   ## standing missile hidden while the hatches are open
+var _reveal_parts: Array = []   ## hatches and the loaded round, clipped with the hull while building
 var pack_rig: PackRig           ## M3.4: Minerals Mining excavator pack-up parts (null elsewhere)
 var pack_target := 0.0          ## WorldView: MineSys pack-up progress 0..1
 var pack_k := -1.0              ## shown pose (eases after the target; -1 = not posed yet)
@@ -52,6 +54,10 @@ func _ready() -> void:
 	pack_rig = PackRig.from(get_node("Model"))
 	if pack_rig != null:
 		pack_rig.pose(0.0)
+	loaded_round = get_node_or_null("Model/LoadedRound")
+	for c in get_node("Model").get_children():
+		if c is GeometryInstance3D and (c == loaded_round or String(c.get_meta("anim", "")) == "door"):
+			_reveal_parts.append(c)
 
 ## M3.4: pack-up progress from the sim (0 = set up, 1 = about to drive off). The pose follows
 ## it smoothly (a cancelled pack-up eases back out); the first call snaps (a loaded save).
@@ -102,10 +108,13 @@ func set_build_progress(k: float) -> void:
 		return
 	_prog = k
 	var done := k >= 1.0
+	var reveal_y := top_y * clampf((k - 0.12) / 0.83, 0.0, 1.0) + 0.02
 	if done:
 		if _building or scaffold == null or scaffold.visible:
 			_building = false
 			_swap(hull, null)
+			for p in _reveal_parts:
+				_swap(p, null)
 			if scaffold:
 				scaffold.visible = false
 		return
@@ -120,7 +129,10 @@ func set_build_progress(k: float) -> void:
 	# stage 1 (0..25 %): scaffold climbs; stage 2 (12..95 %): the structure rises inside it
 	if scaffold and scaffold.visible:
 		scaffold.set_instance_shader_parameter(&"reveal_y", scaffold_top * 1.05 * clampf(k / 0.25, 0.0, 1.0) - 0.02)
-	hull.set_instance_shader_parameter(&"reveal_y", top_y * clampf((k - 0.12) / 0.83, 0.0, 1.0) + 0.02)
+	hull.set_instance_shader_parameter(&"reveal_y", reveal_y)
+	for p in _reveal_parts:
+		_swap(p, MAT_REVEAL)
+		(p as GeometryInstance3D).set_instance_shader_parameter(&"reveal_y", reveal_y)
 
 ## k = hp / max_hp, or while under construction hp / the HP the scaffold has reached so far
 ## (WorldView), so a healthy site always looks clean. A site that took fire shows at most the
@@ -143,9 +155,11 @@ func set_damage(k: float, constructing: bool = false) -> void:
 
 func play_death() -> float:
 	_state = 3
-	for n in [hull, scaffold, dmg_light, dmg_heavy]:
+	for n in [hull, scaffold, dmg_light, dmg_heavy, loaded_round]:
 		if n:
 			n.visible = false
+	for a in anim_parts:
+		(a[0] as Node3D).visible = false
 	if rubble:
 		rubble.visible = true
 	_each(&"damage_amt", 0.85)
@@ -179,6 +193,8 @@ func _animate(delta: float) -> void:
 			"door":
 				var want := deg_to_rad(float(n.get_meta("open_deg", 90.0))) if _door_t > 0.0 else 0.0
 				n.rotation.z = move_toward(n.rotation.z, base.z + want, delta * (5.0 if _door_t > 0.0 else 1.6))
+	if loaded_round != null and _state < 3:
+		loaded_round.visible = _door_t <= 0.0
 	if pack_rig != null:
 		_pack_step(delta)
 

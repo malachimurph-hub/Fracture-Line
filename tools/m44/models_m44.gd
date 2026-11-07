@@ -17,27 +17,48 @@ const TW_B := Vector3(0.95, 0.08, -1.18)
 const NUC_H := 2.08
 
 func _initialize() -> void:
+	var only := OS.get_cmdline_user_args()
+	var on := func(n: String) -> bool: return only.is_empty() or only.has(n)
 	var mat: Material = load(VK.MAT_PATH)
 	struct_fac = "us"
-	_substation(mat)
-	_nuclear(mat)
-	_darpa(mat)
-	_socom(mat)
-	_robotics(mat)
-	_zeus_launcher(mat)
-	_zeus_pylon(mat)
-	_littlebird(mat)
-	_ah64(mat)
-	_reaper(mat)
-	_f16(mat)
-	_yf22(mat)
-	_f35(mat)
-	_b1(mat)
-	_ripsaw(mat)
-	_upgrade(mat, "up_aero", func(h) -> void: _up_aero(h))
-	_upgrade(mat, "up_robotics", func(h) -> void: _up_robotics(h))
-	_upgrade(mat, "up_nuclear", func(h) -> void: _up_nuclear(h))
-	_upgrade(mat, "up_zeus", func(h) -> void: _up_zeus(h))
+	if on.call("substation"):
+		_substation(mat)
+	if on.call("nuclear"):
+		_nuclear(mat)
+	if on.call("darpa"):
+		_darpa(mat)
+	if on.call("socom"):
+		_socom(mat)
+	if on.call("robotics"):
+		_robotics(mat)
+	if on.call("zeus_launcher"):
+		_zeus_launcher(mat)
+	if on.call("zeus_pylon"):
+		_zeus_pylon(mat)
+	if on.call("littlebird"):
+		_littlebird(mat)
+	if on.call("ah64"):
+		_ah64(mat)
+	if on.call("reaper"):
+		_reaper(mat)
+	if on.call("f16"):
+		_f16(mat)
+	if on.call("yf22"):
+		_yf22(mat)
+	if on.call("f35"):
+		_f35(mat)
+	if on.call("b1"):
+		_b1(mat)
+	if on.call("ripsaw"):
+		_ripsaw(mat)
+	if on.call("up_aero"):
+		_upgrade(mat, "up_aero", func(h) -> void: _up_aero(h))
+	if on.call("up_robotics"):
+		_upgrade(mat, "up_robotics", func(h) -> void: _up_robotics(h))
+	if on.call("up_nuclear"):
+		_upgrade(mat, "up_nuclear", func(h) -> void: _up_nuclear(h))
+	if on.call("up_zeus"):
+		_upgrade(mat, "up_zeus", func(h) -> void: _up_zeus(h))
 	var f := FileAccess.open("/tmp/m44_wrote.txt", FileAccess.WRITE)
 	for p in wrote:
 		f.store_line(p)
@@ -349,45 +370,192 @@ func _robotics(mat: Material) -> void:
 	)
 
 # ---------------------------------------------------------------- ZEUS launch station (4 x 3)
+## Fortified concrete silo block, scaled to the existing 4 x 3 pad (not the mountain site).
+## One shaft stays open with the loaded round; five armoured lids swing up when it fires.
+const ZS_Z := 0.16
+const ZS_RING := 0.60
+const ZS_COLLAR := 0.30
+const ZS_LID := 0.25
+const ZS_BODY := 0.102
+const FORT := "#8a8478"
+const FORT_D := "#6a655c"
+const FORT_L := "#b7b0a2"
+const ARM := "#4a4f4b"
+
+func _z_court() -> float:
+	return Y0 + 0.1
+
+func _z_lid_y() -> float:
+	return Y0 + 0.5
+
+func _z_tail() -> float:
+	return Y0 + 0.08
+
+func _z_nose() -> float:
+	return Y0 + 1.56
+
+## Centre shaft open, five closed lids around it. First entry is the loaded round.
+func _zeus_silos() -> Array:
+	var out: Array = [{"x": 0.0, "z": ZS_Z, "open": true, "side": 1.0}]
+	for i in 5:
+		var a := PI * 0.5 + TAU * float(i) / 5.0
+		out.append({"x": cos(a) * ZS_RING, "z": ZS_Z + sin(a) * ZS_RING, "open": false, "side": 1.0 if i % 2 == 0 else -1.0})
+	return out
+
 func _zeus_launcher(mat: Material) -> void:
-	_bld("zeus_launcher", Vector2(4, 3), 1.7, mat, func(g) -> void:
-		# deployed pad and outriggers
-		g.color(CON_D, Geo.CONCRETE)
-		g.cbox(Vector3(0, Y0 + 0.06, 0.15), Vector3(3.3, 0.1, 1.3), 0.015)
-		g.color(PNT_D, Geo.PAINT)
-		for s in [-1.0, 1.0]:
-			g.cbox(Vector3(s * 1.15, Y0 + 0.1, 0.85), Vector3(0.9, 0.08, 0.22), 0.01)
-			g.box(Vector3(s * 1.55, Y0 + 0.08, 0.85), Vector3(0.28, 0.16, 0.28))
-			g.box(Vector3(s * 1.15, Y0 + 0.08, -0.7), Vector3(0.28, 0.16, 0.28))
-		# six launch cells
-		for i in 6:
-			var x := -1.05 + float(i) * 0.42
-			g.color(PNT, Geo.PAINT)
-			g.cbox(Vector3(x, Y0 + 0.72, -0.05), Vector3(0.3, 1.15, 0.3), 0.02)
+	_structure("zeus_launcher", Vector2(4, 3), 1.9, mat, func(g) -> void: _zeus_hull(g), Callable(), Vector3.ZERO, _zeus_markers(),
+		func(model, root, m) -> void: _zeus_parts(model, root, m))
+
+func _zeus_markers() -> Dictionary:
+	var m := {}
+	var i := 0
+	for s in _zeus_silos():
+		var y := _z_nose() if s["open"] else _z_lid_y() + 0.02
+		m["Muzzle%d" % i] = Vector3(s["x"], y, s["z"])
+		i += 1
+	return {"model": m}
+
+func _zeus_hull(g) -> void:
+	var court := _z_court()
+	var lid_y := _z_lid_y()
+	# court slab, kept inside the 4 x 3 footprint so pathing still matches the mesh
+	g.color(FORT_D, Geo.CONCRETE)
+	g.cbox(Vector3(0.0, Y0 + 0.06, 0.15), Vector3(3.35, 0.12, 2.35), 0.02)
+	g.color(FORT, Geo.CONCRETE)
+	g.cbox(Vector3(0.0, court + 0.02, ZS_Z), Vector3(2.15, 0.08, 1.85), 0.015)
+	# side bastions and rear wall
+	g.color(FORT, Geo.CONCRETE)
+	g.cbox(Vector3(-1.52, Y0 + 0.58, 0.08), Vector3(0.32, 1.16, 1.7), 0.03)
+	g.cbox(Vector3(1.52, Y0 + 0.58, 0.08), Vector3(0.32, 1.16, 1.7), 0.03)
+	g.cbox(Vector3(0.0, Y0 + 0.62, -1.18), Vector3(2.7, 1.08, 0.34), 0.03)
+	g.color(FORT_D, Geo.CONCRETE)
+	for s in [-1.0, 1.0]:
+		g.rbox(Vector3(s * 1.32, Y0 + 0.38, 0.55), Vector3(0.46, 0.62, 0.42), Vector3(0, 0, s * -18.0))
+		g.rbox(Vector3(s * 1.28, Y0 + 0.34, -0.72), Vector3(0.4, 0.55, 0.36), Vector3(0, 0, s * -16.0))
+		g.color(ARM, Geo.STEEL)
+		g.box(Vector3(s * 1.69, Y0 + 0.62, 0.08), Vector3(0.035, 0.72, 1.15))
+		g.box(Vector3(s * 1.5, Y0 + 0.95, 0.08), Vector3(0.22, 0.06, 1.35))
+		g.color(FORT_L, Geo.CONCRETE)
+		g.box(Vector3(s * 1.5, Y0 + 1.12, 0.08), Vector3(0.28, 0.05, 1.45))
+		g.color(FORT_D, Geo.CONCRETE)
+	# low front cheeks so the court and the round read from the south camera
+	g.color(FORT, Geo.CONCRETE)
+	for s in [-1.0, 1.0]:
+		g.cbox(Vector3(s * 1.15, Y0 + 0.28, 1.12), Vector3(0.7, 0.42, 0.28), 0.02)
+	g.color(FORT_D, Geo.CONCRETE)
+	g.cbox(Vector3(0.0, Y0 + 0.16, 1.22), Vector3(1.15, 0.16, 0.16), 0.012)
+	g.color(YEL, Geo.PAINT)
+	g.hazard(Vector3(0.0, Y0 + 0.26, 1.22), 1.05, 0.045, 8)
+	# radar bunker on the rear wall, facing the court
+	g.color(FORT, Geo.CONCRETE)
+	g.cbox(Vector3(0.05, Y0 + 0.42, -0.95), Vector3(1.35, 0.72, 0.58), 0.025)
+	g.color(FORT_L, Geo.CONCRETE)
+	g.cbox(Vector3(0.05, Y0 + 0.8, -0.95), Vector3(1.45, 0.08, 0.66), 0.012)
+	g.color(STL, Geo.STEEL)
+	g.tube(Vector3(0.42, Y0 + 0.84, -0.95), Vector3(0.42, Y0 + 1.22, -0.95), 0.04, 6)
+	g.dish(Vector3(0.42, Y0 + 1.28, -0.95), 0.22, 28.0, 0.55, "#c5c8c2")
+	V4._antenna(g, Vector3(-0.42, Y0 + 0.84, -1.05), 0.85)
+	g.windows(Vector3(0.05, Y0 + 0.48, -0.65), 0.7, 0.16, 3)
+	g.color(DRK, Geo.DARK)
+	g.box(Vector3(-0.42, Y0 + 0.28, -0.655), Vector3(0.22, 0.36, 0.02))
+	g.color("#ffffff", Geo.TEAM)
+	g.box(Vector3(0.05, Y0 + 0.74, -0.655), Vector3(0.85, 0.035, 0.012))
+	g.color(STL, Geo.STEEL)
+	g.fan(Vector3(-0.55, Y0 + 0.86, -0.95), 0.1, 4, 4.0)
+	UM._lamp(g, Vector3(0.55, Y0 + 0.88, -0.62), "#fff3c4")
+	UM._lamp(g, Vector3(-1.52, Y0 + 1.18, 0.7), "#ff3a2a")
+	UM._lamp(g, Vector3(1.52, Y0 + 1.18, 0.7), "#ff3a2a")
+	# pipe runs and a cable from the bunker to the court
+	g.color("#2c2e2c", Geo.STEEL)
+	g.tube(Vector3(-1.22, Y0 + 0.2, -0.55), Vector3(-1.22, Y0 + 0.2, 0.85), 0.028, 5)
+	g.tube(Vector3(1.22, Y0 + 0.2, -0.55), Vector3(1.22, Y0 + 0.2, 0.85), 0.028, 5)
+	g.tube(Vector3(-0.35, Y0 + 0.22, -0.62), Vector3(-0.35, court + 0.05, -0.2), 0.02, 5)
+	g.tube(Vector3(0.35, Y0 + 0.78, -0.62), Vector3(0.35, court + 0.08, -0.15), 0.016, 4)
+	for s in _zeus_silos():
+		_zeus_mouth(g, s["x"], s["z"], s["open"])
+		if not s["open"]:
 			g.color(STL, Geo.STEEL)
-			g.tube(Vector3(x, Y0 + 0.2, -0.05), Vector3(x, Y0 + 1.22, -0.05), 0.09, 8)
-			g.color(DRK, Geo.DARK)
-			g.cyl(0.07, 0.07, 0.02, 8, Transform3D(Basis.IDENTITY, Vector3(x, Y0 + 1.28, -0.05)))
-			g.color(STL, Geo.STEEL)
-			g.band(0.16, 0.35, 0.02, 0.008, 8, Transform3D(Basis.IDENTITY, Vector3(x, Y0, -0.05)))
-			g.band(0.16, 1.05, 0.02, 0.008, 8, Transform3D(Basis.IDENTITY, Vector3(x, Y0, -0.05)))
-		# control cabin, generator, radar, cable run
-		g.color(PNT_D, Geo.PAINT)
-		g.cbox(Vector3(-1.4, Y0 + 0.38, -0.15), Vector3(0.55, 0.55, 0.7), 0.02)
-		g.color(GLS, Geo.GLASS)
-		g.box(Vector3(-1.4, Y0 + 0.48, 0.21), Vector3(0.36, 0.18, 0.015))
-		g.color(STL, Geo.STEEL)
-		g.cbox(Vector3(1.4, Y0 + 0.28, -0.35), Vector3(0.4, 0.4, 0.55), 0.015)
-		g.fan(Vector3(1.4, Y0 + 0.5, -0.35), 0.12, 4, 9.0)
-		g.tube(Vector3(-1.15, Y0 + 0.15, -0.15), Vector3(1.15, Y0 + 0.15, -0.55), 0.02, 5)
-		g.dish(Vector3(1.35, Y0 + 0.85, 0.35), 0.22, 25.0, 0.8, "#d0d4d0")
-		g.tube(Vector3(1.35, Y0 + 0.2, 0.35), Vector3(1.35, Y0 + 0.7, 0.35), 0.03, 6)
-		g.color("#ffffff", Geo.TEAM)
-		g.box(Vector3(0, Y0 + 1.35, -0.05), Vector3(1.6, 0.04, 0.012))
-		g.color(YEL, Geo.PAINT)
-		g.hazard(Vector3(0, Y0 + 0.14, 0.82), 1.4, 0.05, 10)
-		UM._lamp(g, Vector3(-1.4, Y0 + 0.72, -0.15), "#fff3c4")
-	)
+			var side: float = s["side"]
+			g.box(Vector3(s["x"] + side * ZS_LID, lid_y + 0.03, s["z"]), Vector3(0.06, 0.06, 0.1))
+	g.color("#ffffff", Geo.TEAM)
+	g.box(Vector3(0.0, Y0 + 1.16, -1.36), Vector3(1.1, 0.045, 0.02))
+
+func _zeus_mouth(g, x: float, z: float, open: bool) -> void:
+	var court := _z_court()
+	var lid_y := _z_lid_y()
+	var at := Transform3D(Basis.IDENTITY, Vector3(x, 0, z))
+	g.color(FORT, Geo.CONCRETE)
+	g.cyl(ZS_COLLAR, ZS_COLLAR - 0.015, lid_y - court, 12, Transform3D(Basis.IDENTITY, Vector3(x, court, z)))
+	g.color(FORT_L, Geo.CONCRETE)
+	g.cyl(ZS_COLLAR + 0.02, ZS_COLLAR + 0.02, 0.035, 12, Transform3D(Basis.IDENTITY, Vector3(x, lid_y - 0.03, z)))
+	g.color(ARM, Geo.STEEL)
+	g.ribs(ZS_COLLAR - 0.01, court + 0.04, lid_y - 0.04, 6, 0.018, 0.028, at)
+	g.color(YEL, Geo.PAINT)
+	g.band(ZS_COLLAR, court + 0.16, 0.018, 0.004, 12, at)
+	g.color(DRK, Geo.DARK)
+	g.cyl(0.18, 0.18, 0.03, 10, Transform3D(Basis.IDENTITY, Vector3(x, lid_y - 0.05, z)))
+	if not open:
+		g.color("#141616", Geo.DARK)
+		g.lathe([[lid_y - 0.2, 0.07], [lid_y - 0.06, 0.035], [lid_y - 0.02, 0.0]], 8, at)
+
+## Full round in model space. The flying mesh uses the same length and radius.
+func _zeus_round(g, x: float, z: float) -> void:
+	var tail := _z_tail()
+	var nose := _z_nose()
+	var body := tail + (nose - tail) * 0.62
+	var at := Transform3D(Basis.IDENTITY, Vector3(x, 0, z))
+	g.color("#5e6358", Geo.PAINT)
+	g.lathe([
+		[tail, 0.045], [tail + 0.06, ZS_BODY], [body, ZS_BODY],
+		[body + 0.08, ZS_BODY * 0.86], [nose - 0.28, ZS_BODY * 0.72], [nose - 0.05, 0.02], [nose, 0.0],
+	], 12, at)
+	g.color("#141616", Geo.DARK)
+	g.lathe([[nose - 0.34, ZS_BODY * 0.74], [nose - 0.08, 0.028], [nose + 0.005, 0.0]], 12, at)
+	g.color("#c4b48a", Geo.PAINT)
+	g.band(ZS_BODY, tail + 0.42, 0.028, 0.004, 12, at)
+	g.color("#ffffff", Geo.TEAM)
+	g.band(ZS_BODY, tail + 0.62, 0.018, 0.003, 12, at)
+	g.color(ARM, Geo.STEEL)
+	for i in 4:
+		var a := float(i) * TAU / 4.0
+		var fin := Transform3D(Basis(Vector3.UP, -a), Vector3(x, 0, z))
+		g.box(Vector3(ZS_BODY + 0.045, tail + 0.16, 0.0), Vector3(0.09, 0.22, 0.012), fin)
+	g.color(DRK, Geo.DARK)
+	g.cyl(0.04, 0.055, 0.04, 8, Transform3D(Basis.IDENTITY, Vector3(x, tail - 0.03, z)))
+
+func _hatch_lid(d, span: float, r: float) -> void:
+	var c := Vector3(span * r, 0.0, 0.0)
+	d.color("#5a5f56", Geo.PAINT)
+	d.cyl(r * 0.98, r * 0.98, 0.05, 12, Transform3D(Basis.IDENTITY, c))
+	d.color(ARM, Geo.STEEL)
+	d.cyl(r * 1.02, r * 1.02, 0.016, 12, Transform3D(Basis.IDENTITY, c + Vector3(0, 0.048, 0)), false)
+	for i in 4:
+		var a := float(i) * TAU / 4.0 + 0.4
+		var mid := Vector3(cos(a) * r * 0.42, 0.062, sin(a) * r * 0.42)
+		d.box(Vector3.ZERO, Vector3(r * 0.72, 0.012, 0.026), Transform3D(Basis(Vector3.UP, -a), c + mid))
+	d.color(FORT_D, Geo.CONCRETE)
+	d.cyl(r * 0.22, r * 0.22, 0.02, 8, Transform3D(Basis.IDENTITY, c + Vector3(0, 0.05, 0)))
+	d.color("#ffffff", Geo.TEAM)
+	d.box(c + Vector3(0, 0.072, 0), Vector3(r * 0.7, 0.008, 0.02))
+	d.color(STL, Geo.STEEL)
+	d.box(Vector3(0, 0.04, 0), Vector3(0.05, 0.07, 0.09))
+
+func _zeus_parts(model: Node3D, root: Node3D, mat: Material) -> void:
+	var n := 0
+	var lid_y := _z_lid_y()
+	for s in _zeus_silos():
+		if s["open"]:
+			var round = K.new()
+			_zeus_round(round, s["x"], s["z"])
+			VK._mi(model, root, "LoadedRound", round.commit(mat))
+			continue
+		var side: float = s["side"]
+		var d = K.new()
+		_hatch_lid(d, -side, ZS_LID)
+		var mi := VK._mi(model, root, "Door%d" % n, d.commit(mat), Vector3(s["x"] + side * ZS_LID, lid_y, s["z"]))
+		mi.set_meta("anim", "door")
+		mi.set_meta("open_deg", -108.0 * side)
+		n += 1
 
 # ---------------------------------------------------------------- ZEUS pylon (2 x 2) relay mast
 func _zeus_pylon(mat: Material) -> void:
@@ -829,13 +997,13 @@ func _up_nuclear(h) -> void:
 	h.band(0.28, 0.18, 0.02, 0.006, 12, Transform3D.IDENTITY)
 
 func _up_zeus(h) -> void:
-	h.color(PNT, Geo.PAINT)
-	h.cbox(Vector3(0, 0.08, 0), Vector3(0.55, 0.1, 0.35), 0.012)
-	for i in 3:
-		var x := -0.16 + float(i) * 0.16
-		h.cbox(Vector3(x, 0.38, 0), Vector3(0.12, 0.5, 0.12), 0.01)
-		h.color(STL, Geo.STEEL)
-		h.tube(Vector3(x, 0.16, 0), Vector3(x, 0.6, 0), 0.03, 6)
-		h.color(PNT, Geo.PAINT)
+	h.color(FORT, Geo.CONCRETE)
+	h.cyl(0.22, 0.2, 0.16, 12, Transform3D(Basis.IDENTITY, Vector3(0, 0.02, 0)))
+	h.color(DRK, Geo.DARK)
+	h.cyl(0.12, 0.12, 0.02, 10, Transform3D(Basis.IDENTITY, Vector3(0, 0.17, 0)))
+	h.color("#5e6358", Geo.PAINT)
+	h.lathe([[0.06, 0.045], [0.12, 0.07], [0.42, 0.07], [0.5, 0.05], [0.62, 0.0]], 10, Transform3D.IDENTITY)
+	h.color("#141616", Geo.DARK)
+	h.lathe([[0.46, 0.052], [0.58, 0.02], [0.64, 0.0]], 10, Transform3D.IDENTITY)
 	h.color(STL, Geo.STEEL)
-	h.dish(Vector3(0.28, 0.45, 0), 0.1, 30.0, 0.5)
+	h.dish(Vector3(0.28, 0.28, 0), 0.1, 30.0, 0.5)
