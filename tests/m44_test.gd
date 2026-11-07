@@ -9,6 +9,7 @@ static func run(t: Node) -> void:
 	_voices(t)
 	_units(t)
 	_zeus(t)
+	load("res://tests/zeus_silo_test.gd").run(t)
 	_reaper(t)
 	_seal(t)
 	_retired(t)

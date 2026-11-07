@@ -741,9 +741,9 @@ BLD_US_SOCOM_DESC,"Special operations compound. Trains the Scout Sniper, Green B
 BLD_US_ROBOTICS,Robotics Plant
 BLD_US_ROBOTICS_DESC,"Factory for the Ripsaw. Also unlocks the Reaper at the Airfield and the Drone Operator at the Barracks. Needs Robotics research."
 BLD_US_ZEUS_LAUNCHER,Zeus Launch Station
-BLD_US_ZEUS_LAUNCHER_DESC,"Ground launcher. Fires six missiles in a quick salvo at enemies inside a Zeus Pylon, then recharges for 30 seconds. Needs ZEUS research and power."
+BLD_US_ZEUS_LAUNCHER_DESC,"Fortified silo. Fires six heavy missiles in a quick salvo at enemies inside a Zeus Pylon, then recharges for 30 seconds. Needs ZEUS research and power."
 BLD_US_ZEUS_PYLON,Zeus Pylon
-BLD_US_ZEUS_PYLON_DESC,"Sensor mast. Draws the defence line on the ground. A Zeus Launch Station only fires at targets inside this ring. Needs ZEUS research."
+BLD_US_ZEUS_PYLON_DESC,"Sensor mast. The coverage ring shows while you place it and while the mast is selected. A Zeus Launch Station only fires at targets inside this ring. Needs ZEUS research."
 UNIT_US_LITTLEBIRD,AH-6 Little Bird
 UNIT_US_LITTLEBIRD_DESC,"Light helicopter. Faster and harder to spot than the other helicopters, and much easier to shoot down. Rockets and a light gun."
 UNIT_US_F16,F-16 Fighting Falcon
