@@ -59,7 +59,7 @@ CONCRETE, ROOF, STACK, PIPE = 9, 10, 11, 12
 BARK, NEEDLE, ROCK = 13, 14, 15
 
 TANK_PX = 2048
-PLANT_PX = 2048
+PLANT_PX = 4096
 PROP_PX = 1024
 GROUND_PX = 2048
 FIELD_HALF = 70.0  # textured ground covers 140 x 140 world units, the whole visible field
@@ -131,6 +131,27 @@ def add_tube(bm, p0, p1, radius, tag, segs=12, bevel=0.0):
         edges = [e for e in bm.edges if e not in before_e]
         try_bevel(bm, edges, bevel, 1)
     tag_new(bm, before_f, tag)
+
+
+def add_torus(bm, major, minor, tag, major_segs=18, minor_segs=6):
+    """A ring whose axis is +X, so it reads as a wheel from the side."""
+    bpy.ops.mesh.primitive_torus_add(
+        major_segments=major_segs, minor_segments=minor_segs,
+        major_radius=major, minor_radius=minor,
+        rotation=(0.0, math.pi * 0.5, 0.0),
+    )
+    obj = bpy.context.active_object
+    src = bmesh.new()
+    src.from_mesh(obj.data)
+    mesh = obj.data
+    bpy.data.objects.remove(obj, do_unlink=True)
+    bpy.data.meshes.remove(mesh)
+    src.faces.layers.int.new("tag")
+    L = lay(src)
+    for f in src.faces:
+        f[L] = tag
+    join(bm, src)
+    src.free()
 
 
 def add_cone(bm, center, radius, depth, tag, segs=10):
@@ -329,8 +350,17 @@ def wheel_parts():
     for side, x in (("L", TRACK_X), ("R", -TRACK_X)):
         for i, yv in enumerate(WHEEL_YS):
             bm = new_bm()
-            add_tube(bm, (-0.13, 0, 0), (0.13, 0, 0), WHEEL_R, RUBBER, 12)
-            add_tube(bm, (-0.145, 0, 0), (0.145, 0, 0), 0.11, STEEL, 8)
+            # Rubber tire, inner steel rim, eight spokes, a hub. The tire is a
+            # ring so the spokes stay visible from the side.
+            add_torus(bm, WHEEL_R - 0.028, 0.036, RUBBER)
+            add_torus(bm, 0.195, 0.016, STEEL, 16, 5)
+            add_tube(bm, (-0.07, 0, 0), (0.07, 0, 0), 0.055, STEEL, 10)
+            for k in range(8):
+                theta = k * 45.0
+                a = math.radians(theta)
+                # +Z rotates toward -Y under a positive X rotation.
+                add_box(bm, (0.0, -math.sin(a) * 0.125, math.cos(a) * 0.125),
+                        (0.028, 0.03, 0.12), STEEL, rot=(theta, 0, 0))
             orient(bm)
             _swatch_uvs(bm)
             out.append(("Wheel_%s_%d" % (side, i), bm, Vector((x, yv, WHEEL_Z))))
@@ -379,9 +409,10 @@ def build_hull():
     add_convex(bm, pts, PAINT, bevel=0.0)
     # Skirts take the width to 3.66 m. The front panel is raked.
     for s in (-1.0, 1.0):
+        # Skirts sit high so the road-wheel rims and spokes stay visible.
         for i, yv in enumerate((-2.85, -1.85, -0.85, 0.15, 1.15, 2.15)):
-            add_box(bm, (s * SKIRT_X, yv, 0.58), (0.055, 0.92, 0.62), PAINT, bevel=0.01, segs=1)
-        add_box(bm, (s * (SKIRT_X - 0.02), 3.05, 0.78), (0.05, 0.72, 0.42), PAINT, bevel=0.01, segs=1)
+            add_box(bm, (s * SKIRT_X, yv, 0.86), (0.055, 0.88, 0.36), PAINT, bevel=0.01, segs=1)
+        add_box(bm, (s * (SKIRT_X - 0.02), 3.05, 0.90), (0.05, 0.70, 0.30), PAINT, bevel=0.01, segs=1)
         add_box(bm, (s * 1.68, -0.15, 1.02), (0.26, 6.55, 0.045), PAINT, bevel=0.008, segs=1)
         add_tube(bm, (s * 1.15, 3.55, 1.05), (s * 1.15, 3.66, 1.08), 0.065, GLASS, 8)
         add_box(bm, (s * 1.15, 3.62, 1.18), (0.18, 0.035, 0.035), STEEL, bevel=0.003, segs=1)
@@ -740,23 +771,17 @@ def shade_tank(p, n, tag):
         col, rough, metal = (0.28, 0.30, 0.22), 0.78, 0.02
     elif tag == TURRET:
         # Dull matte tan. Roughness stays high so the paint does not flash.
-        col, rough, metal = (0.36, 0.31, 0.21), 0.92, 0.0
+        col, rough, metal = (0.55, 0.46, 0.31), 0.91, 0.0
     else:
-        col, rough, metal = (0.33, 0.28, 0.19), 0.93, 0.0
+        col, rough, metal = (0.50, 0.42, 0.28), 0.92, 0.0
     height = 0.0
     seam = 0.0
     # Authored panel seams (metres), not a noise lattice.
     if tag in (PAINT, TURRET) and abs(n.x) > 0.65:
-        for yv in (-2.4, -1.45, -0.5, 0.45, 1.4, 2.35):
-            seam = max(seam, seam_line(p, n, (0, yv, 0.9), (0, 0, 1), 0.7, 0.018))
-        for zv in (0.78, 1.15, 1.48):
-            seam = max(seam, seam_line(p, n, (0, 0.2, zv), (0, 1, 0), 3.2, 0.016))
-        # bolt row on the skirt band
-        if 0.45 < p.z < 0.95:
-            fy = (p.y + 2.6) / 0.42
-            if abs(fy - round(fy)) < 0.08 and abs(p.z - 0.78) < 0.03:
-                seam = max(seam, 1.0)
-                col = mix(col, (0.12, 0.12, 0.12), 0.7)
+        # A few wide panel breaks. Thin lines alias into stripes once mipmapped.
+        for yv in (-1.7, 0.5, 2.1):
+            seam = max(seam, seam_line(p, n, (0, yv, 0.9), (0, 0, 1), 0.7, 0.045))
+        seam = max(seam, seam_line(p, n, (0, 0.2, 1.15), (0, 1, 0), 3.2, 0.04))
     if tag == TURRET and n.z > 0.7:
         # hatch outlines and blow-out seams on the roof
         for cx, cy, hx, hy in ((0.52, 0.04, 0.22, 0.22), (-0.50, -0.08, 0.20, 0.18),
@@ -818,10 +843,11 @@ def shade_tank(p, n, tag):
         col = mix(col, (0.08, 0.07, 0.07), 0.65)
     if tag == DARK:
         col = mix(col, (0.02, 0.02, 0.02), 0.4)
-    # paint break-up, very low, only so a flat fill doesn't read as plastic
+    # Broad grime only. Anything near a cycle per metre turns into wood grain at range.
     if tag in (PAINT, TURRET, CANVAS):
-        g = (fbm(p.x * 2.4, p.y * 2.4) - 0.62) * 0.07
-        col = (max(0, min(1, col[0] + g)), max(0, min(1, col[1] + g)), max(0, min(1, col[2] + g * 0.6)))
+        g = (fbm(p.x * 0.18, p.y * 0.18) - 0.5) * 0.028
+        col = (max(0, min(1, col[0] + g)), max(0, min(1, col[1] + g)), max(0, min(1, col[2] + g * 0.5)))
+        rough = 0.90 if tag != CANVAS else rough
     if seam > 0:
         col = mix(col, (col[0] * 0.25, col[1] * 0.25, col[2] * 0.25), min(1.0, seam))
         height -= seam * 0.9
@@ -840,30 +866,21 @@ def shade_plant(p, n, tag):
     if tag == GLASS or tag == DARK:
         col, rough, metal = ((0.07, 0.09, 0.11) if tag == GLASS else (0.05, 0.05, 0.055)), 0.18 if tag == GLASS else 0.75, 0.45 if tag == GLASS else 0.1
     elif tag == ROOF:
-        col, rough, metal = (0.40, 0.44, 0.48), 0.62, 0.28
+        col, rough, metal = (0.62, 0.64, 0.66), 0.72, 0.18
     elif tag == STACK:
         col, rough, metal = (0.48, 0.50, 0.52), 0.7, 0.22
     elif tag == PIPE or tag == STEEL:
         col, rough, metal = (0.34, 0.36, 0.38), 0.48, 0.6
     else:
-        col, rough, metal = (0.56, 0.57, 0.59), 0.88, 0.02
+        col, rough, metal = (0.74, 0.72, 0.68), 0.90, 0.0
     height = 0.0
     seam = 0.0
     if tag == CONCRETE and abs(n.z) < 0.6:
-        for x0 in (-2.8, 0.0, 2.8):
-            seam = max(seam, seam_line(p, n, (x0, 0, 2.5), (0, 0, 1), 2.4, 0.045))
-        for y0 in (-4.0, -1.5, 1.5, 4.0):
-            seam = max(seam, seam_line(p, n, (0, y0, 2.5), (0, 0, 1), 2.4, 0.045))
-        for z0 in (1.6, 3.3, 4.6):
-            seam = max(seam, seam_line(p, n, (0, 0, z0), (1, 0, 0), 5.0, 0.04))
-            seam = max(seam, seam_line(p, n, (0, 0, z0), (0, 1, 0), 6.0, 0.04))
-    if tag == ROOF:
-        # corrugation across the slope
-        wave = abs(math.sin(p.x * 18.0))
-        if wave > 0.82:
-            seam = max(seam, (wave - 0.82) / 0.18)
-            height += (wave - 0.82) * 0.4
-        col = mix(col, (0.30, 0.33, 0.36), seam * 0.35)
+        for x0 in (-2.8, 2.8):
+            seam = max(seam, seam_line(p, n, (x0, 0, 2.5), (0, 0, 1), 2.4, 0.08))
+        for y0 in (-3.0, 1.5):
+            seam = max(seam, seam_line(p, n, (0, y0, 2.5), (0, 0, 1), 2.4, 0.08))
+        seam = max(seam, seam_line(p, n, (0, 0, 2.6), (1, 0, 0), 5.0, 0.07))
     if tag == STACK:
         if p.z > 8.5:
             col = mix(col, (0.14, 0.13, 0.13), smoothstep(8.5, 12.5, p.z) * 0.75)
@@ -876,8 +893,9 @@ def shade_plant(p, n, tag):
         snow = smoothstep(0.75, 0.96, n.z) * (0.45 if tag == ROOF else 0.3)
         col = mix(col, (0.80, 0.83, 0.86), snow)
     if tag in (CONCRETE, ROOF):
-        g = (fbm(p.x * 1.4, p.y * 1.4) - 0.5) * 0.035
+        g = (fbm(p.x * 0.12, p.y * 0.12) - 0.5) * 0.03
         col = tuple(max(0, min(1, c + g)) for c in col)
+        rough = 0.88 if tag == CONCRETE else 0.72
     if seam > 0 and tag == CONCRETE:
         col = mix(col, (col[0] * 0.35, col[1] * 0.35, col[2] * 0.35), min(1, seam))
         height -= seam * 0.8
@@ -1157,12 +1175,8 @@ def bake(bms, size, spacing, shade, prefix, reserve_px=0, swatch_area=SWATCH_ARE
                         scale = N / float(gi + gj)
                         gi = int(gi * scale)
                         gj = int(gj * scale)
-                    ao = float(grid[gi, gj])
-                    # The coarse ray grid stair-steps on big panels. Clamp the
-                    # floor so that error cannot paint a chevron, and keep only
-                    # a little darkening where the rays really found a crevice.
-                    ao = 0.78 + 0.22 * ao
-                    col = tuple(c * (0.86 + 0.14 * ao) for c in col)
+                    # The ray grid stair-steps. It is not written into the paint.
+                    ao = 1.0
                     py = miny + int(ky)
                     px = minx + int(kx)
                     albedo[py, px] = col
@@ -1415,32 +1429,7 @@ def ground_images():
     h = h + berm * 1.25
     lane = smoothstep_np(2.4, 0.45, np.minimum(d1, d2))
     h = h * (1.0 - pad * 0.94) * (1.0 - lane * 0.92) - 0.09 * groove
-    snow = np.array([0.62, 0.66, 0.70], np.float32)
-    dirt = np.array([0.34, 0.24, 0.15], np.float32)
-    mud = np.array([0.07, 0.05, 0.035], np.float32)
-    conc = np.array([0.40, 0.39, 0.37], np.float32)
-    nA = _fbm(X * 0.045, Y * 0.045)
-    nB = _fbm(X * 0.09 + 4.0, Y * 0.08)
-    patch = np.clip(smoothstep_np(0.30, 0.52, nA) * 0.9 + smoothstep_np(0.48, 0.68, nB) * 0.65, 0.0, 1.0)
-    alb = snow * (1.0 - patch)[..., None] + dirt * patch[..., None]
-    # Dirt under the fight, but not so wide that the frame becomes one tone.
-    battle = smoothstep_np(16.0, 5.0, np.sqrt((X + 4.0) ** 2 + (Y + 1.0) ** 2))
-    alb = alb * (1.0 - battle[..., None] * 0.45) + dirt * (battle[..., None] * 0.45)
-    # Wide wet ruts, dark enough to read from the RTS camera.
-    mud_band = np.clip(smoothstep_np(3.4, 0.35, np.minimum(d1, d2)) * 0.95 + groove * 0.85 + spur * 0.55, 0.0, 1.0)
-    alb = alb * (1.0 - mud_band[..., None]) + mud * mud_band[..., None]
-    alb = alb * (1.0 - pad[..., None] * 0.75) + conc * (pad[..., None] * 0.75)
-    # shade the low ground so the rolls read even before the sun
-    alb = alb * (0.78 + 0.22 * np.clip(h * 0.7 + 0.55, 0.0, 1.0))[..., None]
-    alb = np.clip(alb, 0.0, 1.0)
-    hf = h - groove * 0.10
-    save_png(os.path.join(OUT, "ground_albedo.png"), alb)
-    save_png(os.path.join(OUT, "ground_normal.png"), height_to_normal(hf * 16.0, 1.45))
-    rough = np.full(h.shape, 0.90, np.float32)
-    rough = np.clip(rough + patch * 0.06 - mud_band * 0.40, 0.34, 0.98)
-    cav = np.clip(1.0 - groove * 0.75 - np.clip(-hf, 0, 1) * 0.45, 0.15, 1.0)
-    orm = np.stack([cav, rough, np.zeros_like(h)], axis=-1)
-    save_png(os.path.join(OUT, "ground_orm.png"), orm)
+    # The field uses the game's winter snow texture. No review ground maps.
     return h
 
 
@@ -1699,13 +1688,16 @@ def main():
     rock_b = build_rock(19, (0.48, 0.70, 0.28))
     needle_image(os.path.join(OUT, "needle.png"))
 
-    bake([hull, turret, barrel], TANK_PX, 0.10, shade_tank, os.path.join(OUT, "m1a3"))
+    mesh_only = os.environ.get("GFX_MESH_ONLY") == "1"
+    if not mesh_only:
+        bake([hull, turret, barrel], TANK_PX, 0.10, shade_tank, os.path.join(OUT, "m1a3"))
     # reserve a top band on the plant atlas, then pack below it
     # pack_faces y0 is in pixels from the top. Bake writes the mesh; we paint the band after
     # by a second pass so dilation doesn't need to know. Easiest: bake, then overwrite the band.
     # Pipes, ribs and ladder rungs share the steel swatch so the walls keep the texels.
     # Only the big wall and roof faces get unique texels, at about the tank's density.
-    bake([plant], PLANT_PX, 0.25, shade_plant, os.path.join(OUT, "plant"), reserve_px=0, swatch_area=8.0, max_ppm=140.0)
+    if not mesh_only:
+        bake([plant], PLANT_PX, 0.25, shade_plant, os.path.join(OUT, "plant"), reserve_px=0, swatch_area=8.0, max_ppm=120.0)
     # debris shares the plant albedo's top-left. Give them explicit UVs into a swatch we paint
     # over the corner after load. We'll overwrite corner pixels of the saved images in numpy
     # by re-baking the corner into a small array and compositing via a reload.
@@ -1715,7 +1707,8 @@ def main():
                   os.path.join(OUT, "plant_normal.png"), swatch_band)
     for i, db in enumerate(debris):
         uv_into_swatch(db, PLANT_PX, swatch_band)
-    bake([tree, rock], PROP_PX, 0.08, shade_prop, os.path.join(OUT, "props"))
+    if not mesh_only:
+        bake([tree, rock], PROP_PX, 0.08, shade_prop, os.path.join(OUT, "props"))
     tread_image(os.path.join(OUT, "tread.png"))
     scorch_image(os.path.join(OUT, "scorch.png"))
     print("ground")
@@ -1745,7 +1738,7 @@ def main():
     tread_mat = make_mat("Tread", os.path.join(OUT, "tread.png"))
     plant_mat = make_mat("Plant", os.path.join(OUT, "plant_albedo.png"))
     prop_mat = make_mat("Props", os.path.join(OUT, "props_albedo.png"))
-    ground_mat = make_mat("Ground", os.path.join(OUT, "ground_albedo.png"))
+    ground_mat = make_mat("Ground", os.path.join(ROOT, "assets", "textures", "terrain", "terrain_albedo_winter.png"))
 
     hull_o = mesh_object("Hull", hull, tank_mat)
     track_o = mesh_object("Tracks", tracks, tread_mat)

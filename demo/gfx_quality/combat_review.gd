@@ -438,25 +438,29 @@ func _world() -> void:
 	var env := Environment.new()
 	var sky := Sky.new()
 	var mat := ProceduralSkyMaterial.new()
-	mat.sky_top_color = Color(0.07, 0.10, 0.16)
-	mat.sky_horizon_color = Color(0.55, 0.46, 0.36)
-	mat.ground_horizon_color = Color(0.28, 0.24, 0.20)
-	mat.ground_bottom_color = Color(0.07, 0.07, 0.07)
-	mat.sun_angle_max = 6.0
-	mat.energy_multiplier = 0.62
+	mat.sky_top_color = Color(0.55, 0.64, 0.78)
+	mat.sky_horizon_color = Color(0.78, 0.82, 0.86)
+	mat.ground_horizon_color = Color(0.70, 0.74, 0.78)
+	mat.ground_bottom_color = Color(0.42, 0.46, 0.50)
+	mat.sun_angle_max = 12.0
+	mat.energy_multiplier = 0.85
 	sky.sky_material = mat
 	env.background_mode = Environment.BG_SKY
 	env.sky = sky
-	env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
-	env.ambient_light_energy = 0.52
+	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+	env.ambient_light_color = Color("#93aad6")
+	env.ambient_light_energy = 0.68
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
-	env.tonemap_exposure = 1.22
+	env.tonemap_exposure = 0.95
 	env.tonemap_white = 6.0
+	env.adjustment_enabled = true
+	env.adjustment_saturation = 1.02
+	env.adjustment_contrast = 1.08
 	env.fog_enabled = true
 	env.fog_mode = Environment.FOG_MODE_EXPONENTIAL
-	env.fog_density = 0.007
-	env.fog_light_color = Color(0.48, 0.44, 0.38)
-	env.fog_aerial_perspective = 0.40
+	env.fog_density = 0.0022
+	env.fog_light_color = Color("#d6e0ec")
+	env.fog_aerial_perspective = 0.15
 	# A little bloom so the muzzle and the fire read warm. Threshold stays
 	# above the tank paint so the body does not blow out.
 	env.glow_enabled = true
@@ -469,19 +473,18 @@ func _world() -> void:
 	add_child(we)
 	sun = DirectionalLight3D.new()
 	sun.name = "Sun"
-	sun.light_color = Color(0.93, 0.80, 0.64)
-	sun.light_energy = 1.65
-	sun.light_specular = 0.22
+	sun.light_color = Color("#fff1e0")
+	sun.light_energy = 1.25
 	sun.shadow_enabled = true
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
-	sun.directional_shadow_max_distance = 40.0
-	sun.shadow_bias = 0.005
-	sun.shadow_normal_bias = 0.04
-	sun.shadow_blur = 0.45
+	sun.directional_shadow_max_distance = 48.0
+	sun.shadow_bias = 0.02
+	sun.shadow_normal_bias = 0.35
+	sun.shadow_blur = 0.4
 	sun.directional_shadow_blend_splits = true
-	# About 20 degrees up, warm, from the south-west. One light. The lower
-	# angle lengthens the contact shadow without dropping the field into dusk.
-	sun.rotation_degrees = Vector3(-20.0, -48.0, 0.0)
+	# Winter key light, about 34 degrees up, from the same side as before so
+	# the contact shadow still falls across the field.
+	sun.rotation_degrees = Vector3(-34.0, -48.0, 0.0)
 	add_child(sun)
 	cam = Camera3D.new()
 	cam.current = true
@@ -535,12 +538,9 @@ func _load_tank() -> void:
 	var gnd := (load("res://assets/gfx_review/ground.glb") as PackedScene).instantiate()
 	gnd.name = "Ground"
 	add_child(gnd)
-	var gm := _pbr("res://assets/gfx_review/ground_albedo.png", "res://assets/gfx_review/ground_normal.png", "res://assets/gfx_review/ground_orm.png")
-	gm.roughness = 1.0
-	gm.metallic = 0.0
-	gm.metallic_specular = 0.12
-	gm.ao_light_affect = 0.75
-	gm.normal_scale = 0.7
+	var gm := ShaderMaterial.new()
+	gm.shader = load("res://demo/gfx_quality/review_ground.gdshader")
+	gm.set_shader_parameter("t_albedo", load("res://assets/textures/terrain/terrain_albedo_winter.png"))
 	_override_meshes(gnd, gm, [])
 
 

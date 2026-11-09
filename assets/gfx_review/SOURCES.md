@@ -36,7 +36,7 @@ Roof fittings follow the SEP v3 layout. The commander's hatch is on the right, w
 
 The ammunition data link on the real vehicle is a breech interface plus the fire-control electronics inside the turret, so it has no large external box. The mesh shows the two parts that can be seen: a collar at the breech and a small housing on the roof, with a conduit between them. The under-armor auxiliary power unit sits inside the left rear hull. The mesh shows the intake louvers and a low exhaust, not an external generator. No company names are on the model.
 
-The game scale is 0.25 world units per metre. The power station is an original compact industrial hall. It is not the live power-station scene. The ground is an authored mix of snow, dirt, and wet track ruts, with a low berm so the field is not a flat plane.
+The game scale is 0.25 world units per metre. The power station in this scene is an original compact industrial hall, not a measured real building and not the live power-station scene. The ground uses the game's existing winter snow layer, not a separate review texture.
 
 ## Files
 
@@ -44,9 +44,9 @@ The game scale is 0.25 world units per metre. The power station is an original c
 |---|---|
 | `m1a3.glb` | Hull, tracks, turret, barrel, aim markers |
 | `plant.glb` | Intact hall, wreck, debris chunks, impact marker |
-| `ground.glb` | Snow field mesh |
+| `ground.glb` | Snow field mesh. Its colour is the game's winter ground array, not a map in this folder |
 | `tree.glb`, `rock.glb` | Instanced props |
-| `*_albedo.png`, `*_normal.png`, `*_orm.png` | Baked surface maps |
+| `m1a3_*.png`, `plant_*.png`, `props_*.png` | Baked surface maps for the tank, the hall, and the props |
 | `tread.png`, `tread_n.png` | Tileable track shoe |
 | `scorch.png` | Impact mark |
 | `layout.json` | Where the tank, station, trees and rocks sit |
