@@ -166,8 +166,8 @@ func _place_tank(u: float) -> void:
 	var dist := tank_start.distance_to(tank_root.position)
 	if tread_mat != null:
 		tread_mat.uv1_offset.y = dist / shoe_len
-	# Road-wheel radius is 0.30 m at 0.25 units per metre.
-	var spin := (dist - _travel) / 0.075
+	# Road-wheel radius is 0.32 m at 0.25 units per metre.
+	var spin := (dist - _travel) / 0.08
 	_travel = dist
 	for w in spinners:
 		(w as Node3D).rotate_object_local(Vector3.RIGHT, spin)
@@ -438,46 +438,50 @@ func _world() -> void:
 	var env := Environment.new()
 	var sky := Sky.new()
 	var mat := ProceduralSkyMaterial.new()
-	mat.sky_top_color = Color(0.13, 0.17, 0.28)
-	mat.sky_horizon_color = Color(0.62, 0.52, 0.46)
-	mat.ground_horizon_color = Color(0.40, 0.42, 0.46)
-	mat.ground_bottom_color = Color(0.18, 0.20, 0.22)
-	mat.sun_angle_max = 8.0
-	mat.energy_multiplier = 0.55
+	mat.sky_top_color = Color(0.07, 0.10, 0.16)
+	mat.sky_horizon_color = Color(0.55, 0.46, 0.36)
+	mat.ground_horizon_color = Color(0.28, 0.24, 0.20)
+	mat.ground_bottom_color = Color(0.07, 0.07, 0.07)
+	mat.sun_angle_max = 6.0
+	mat.energy_multiplier = 0.62
 	sky.sky_material = mat
 	env.background_mode = Environment.BG_SKY
 	env.sky = sky
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
-	env.ambient_light_energy = 0.7
+	env.ambient_light_energy = 0.52
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
-	env.tonemap_exposure = 1.2
+	env.tonemap_exposure = 1.22
+	env.tonemap_white = 6.0
 	env.fog_enabled = true
 	env.fog_mode = Environment.FOG_MODE_EXPONENTIAL
 	env.fog_density = 0.007
-	env.fog_light_color = Color(0.55, 0.58, 0.64)
-	env.fog_aerial_perspective = 0.25
-	# A little bloom so the muzzle and the fire read warm against the cool field.
-	# It is one full-screen pass; there is no second live light.
+	env.fog_light_color = Color(0.48, 0.44, 0.38)
+	env.fog_aerial_perspective = 0.40
+	# A little bloom so the muzzle and the fire read warm. Threshold stays
+	# above the tank paint so the body does not blow out.
 	env.glow_enabled = true
-	env.glow_intensity = 0.22
-	env.glow_bloom = 0.08
-	env.glow_hdr_threshold = 1.2
-	env.glow_hdr_scale = 1.0
+	env.glow_intensity = 0.10
+	env.glow_bloom = 0.05
+	env.glow_hdr_threshold = 1.55
+	env.glow_hdr_scale = 0.8
 	var we := WorldEnvironment.new()
 	we.environment = env
 	add_child(we)
 	sun = DirectionalLight3D.new()
 	sun.name = "Sun"
-	sun.light_color = Color(0.84, 0.88, 0.96)
-	sun.light_energy = 1.9
+	sun.light_color = Color(0.93, 0.80, 0.64)
+	sun.light_energy = 1.65
+	sun.light_specular = 0.22
 	sun.shadow_enabled = true
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
-	sun.directional_shadow_max_distance = 48.0
-	sun.shadow_bias = 0.015
-	sun.shadow_normal_bias = 0.25
+	sun.directional_shadow_max_distance = 40.0
+	sun.shadow_bias = 0.005
+	sun.shadow_normal_bias = 0.04
+	sun.shadow_blur = 0.45
 	sun.directional_shadow_blend_splits = true
-	# Low, cool, from the south-west. One light only, so the shadow is long and readable.
-	sun.rotation_degrees = Vector3(-16.0, -58.0, 0.0)
+	# About 20 degrees up, warm, from the south-west. One light. The lower
+	# angle lengthens the contact shadow without dropping the field into dusk.
+	sun.rotation_degrees = Vector3(-20.0, -48.0, 0.0)
 	add_child(sun)
 	cam = Camera3D.new()
 	cam.current = true
@@ -502,6 +506,12 @@ func _load_tank() -> void:
 	muzzle = tank_root.find_child("Muzzle", true, false)
 	tracks = tank_root.find_child("Tracks", true, false)
 	var body := _pbr("res://assets/gfx_review/m1a3_albedo.png", "res://assets/gfx_review/m1a3_normal.png", "res://assets/gfx_review/m1a3_orm.png")
+	# The raytraced occlusion stair-steps across the big panels, and a normal
+	# scale tilts each triangle on its own tangent. Both read as a chevron.
+	# Seams, grime and edge wear stay in the albedo. Roughness stays in the ORM.
+	body.normal_enabled = false
+	body.ao_enabled = false
+	body.metallic_specular = 0.22
 	_override_meshes(tank_root, body, ["Tracks"])
 	tread_mat = StandardMaterial3D.new()
 	tread_mat.albedo_texture = load("res://assets/gfx_review/tread.png")
@@ -514,7 +524,7 @@ func _load_tank() -> void:
 	if tracks != null:
 		tracks.material_override = tread_mat
 		tracks.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
-	for prefix in ["Wheel", "Sprocket", "Idler"]:
+	for prefix in ["Wheel", "Sprocket", "Idler", "Roller"]:
 		for n in tank_root.find_children(prefix + "*", "MeshInstance3D", true, false):
 			spinners.append(n)
 	print("GFX-SPINNERS ", spinners.size())
@@ -525,10 +535,12 @@ func _load_tank() -> void:
 	var gnd := (load("res://assets/gfx_review/ground.glb") as PackedScene).instantiate()
 	gnd.name = "Ground"
 	add_child(gnd)
-	var gm := _pbr("res://assets/gfx_review/ground_albedo.png", "res://assets/gfx_review/ground_normal.png", "")
-	gm.roughness = 0.94
+	var gm := _pbr("res://assets/gfx_review/ground_albedo.png", "res://assets/gfx_review/ground_normal.png", "res://assets/gfx_review/ground_orm.png")
+	gm.roughness = 1.0
 	gm.metallic = 0.0
-	gm.normal_scale = 1.1
+	gm.metallic_specular = 0.12
+	gm.ao_light_affect = 0.75
+	gm.normal_scale = 0.7
 	_override_meshes(gnd, gm, [])
 
 

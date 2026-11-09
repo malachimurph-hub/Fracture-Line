@@ -32,3 +32,5 @@ blender --background --factory-startup --python tools/gfx_review/author_demo.py
 ```
 
 What you should see: the tank drives in, the turret lays on the station, the gun recoils, a tracer reaches the wall, then flash, fire, smoke, debris and scorch. The station swaps to a wreck. Smoke and fire are capped and reused if the shot is played again.
+
+The M1A3 in this scene is modeled on the public M1A2 SEP v3 (hull 7.93 m, gun forward 9.77 m, width 3.66 m, roof 2.44 m), with the remote weapon station, the commander's and loader's sights, the breech data link, the under-armor power unit on the left rear hull, the bustle rack, and the sleeved gun. The in-game name stays M1A3. Dimensions and what was simplified are in `assets/gfx_review/SOURCES.md`.

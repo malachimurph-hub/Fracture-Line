@@ -18,7 +18,25 @@ Small repeated parts (wheel segments, bolts, pipe runs) share a painted swatch s
 
 ## Proportions
 
-The in-game name is M1A3. No fielded production tank has public hull and turret drawings under that designation; it was a proposed Abrams upgrade that was not built as its own vehicle. This model follows the public M1A2 instead: hull about 7.93 m, gun forward about 9.77 m, width about 3.66 m, height about 2.44 m, seven road wheels a side, rear drive sprocket, front idler, no return rollers, a shallow glacis, a low turret with the cupola on the right, a thermal sleeve and no bore evacuator, and plain side skirts rather than an add-on armor kit. The game scale is 0.25 world units per metre. The power station is an original compact industrial hall. It is not the live power-station scene.
+The in-game name stays M1A3. Malachi specified the real M1A2 SEP v3 as the counterpart. Public figures used for the mesh:
+
+| Measure | Value used |
+|---|---|
+| Hull length | 7.93 m |
+| Width over the side skirts | 3.66 m |
+| Height to the turret roof | 2.44 m |
+| Length, gun forward | 9.77 m (the muzzle sits 1.84 m past the hull nose) |
+| Ground clearance | 0.48 m |
+| Track width | 635 mm |
+| Road-wheel diameter | 0.64 m |
+
+Running gear is seven road wheels a side, a drive sprocket at the rear, an idler at the front, and two return rollers. The gun is a 120 mm tube with a thermal sleeve, a bore evacuator, and a muzzle reference sensor. It has no muzzle brake.
+
+Roof fittings follow the SEP v3 layout. The commander's hatch is on the right, with a low-profile remote weapon station over it (a 12.7 mm gun, a forward sensor, and an ammunition box). The gunner's primary sight is the armored housing on the right front of the roof. The commander's independent thermal viewer sits just ahead of his hatch. The loader's hatch is on the left, with a periscope and a shielded 7.62 mount. Blow-out panels sit on the bustle roof, and a bar basket extends behind the turret.
+
+The ammunition data link on the real vehicle is a breech interface plus the fire-control electronics inside the turret, so it has no large external box. The mesh shows the two parts that can be seen: a collar at the breech and a small housing on the roof, with a conduit between them. The under-armor auxiliary power unit sits inside the left rear hull. The mesh shows the intake louvers and a low exhaust, not an external generator. No company names are on the model.
+
+The game scale is 0.25 world units per metre. The power station is an original compact industrial hall. It is not the live power-station scene. The ground is an authored mix of snow, dirt, and wet track ruts, with a low berm so the field is not a flat plane.
 
 ## Files
 

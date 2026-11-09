@@ -26,6 +26,12 @@
     36.0,
     26.0
   ],
+  "hull_m": [
+    7.93,
+    3.66,
+    2.44
+  ],
+  "gun_forward_m": 9.77,
   "note": "Positions are Godot world units (Y up). The tank nose and the plant front are aligned at runtime from the exported empties.",
   "trees": [
     {

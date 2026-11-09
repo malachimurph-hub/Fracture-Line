@@ -4,10 +4,10 @@
 Run:
   blender --background --factory-startup --python tools/gfx_review/author_demo.py
 
-Original geometry and textures. Proportions follow public Abrams-family figures
-(hull 7.93 m, gun-forward 9.77 m, width 3.66 m, height 2.44 m) at the game's
-0.25 world-unit per metre scale. Nothing here is traced from a game or a
-commercial model. Blender is only the authoring tool.
+Original geometry and textures. The M1A3 mesh follows public M1A2 SEP v3
+figures (hull 7.93 m, gun-forward 9.77 m, width 3.66 m, roof height 2.44 m)
+at the game's 0.25 world-unit per metre scale. Nothing here is traced from a
+game or a commercial model. Blender is only the authoring tool.
 
 Outputs under assets/gfx_review/:
   m1a3.glb, plant.glb, ground.glb, tree.glb, rock.glb
@@ -27,6 +27,30 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 OUT = os.path.join(ROOT, "assets", "gfx_review")
 S = 0.25  # game units per metre (matches view/props/prop_meshes.gd)
 SHOE_M = 0.18
+
+# Public M1A2 SEP v3 layout, in metres. The in-game name stays M1A3.
+# Hull 7.93, width over the skirts 3.66, height to the turret roof 2.44,
+# gun forward 9.77, ground clearance about 0.48. Seven road wheels, a rear
+# sprocket, a front idler and two return rollers. The 120 mm tube has a
+# thermal sleeve, a bore evacuator and a muzzle reference sensor.
+HULL_NOSE_Y = 3.965
+HULL_TAIL_Y = -3.965
+GUN_FORWARD = 9.77
+MUZZLE_Y = HULL_TAIL_Y + GUN_FORWARD  # 5.805
+SKIRT_X = 1.83
+TRACK_X = 1.51
+TRACK_HALF_W = 0.3175  # 635 mm track
+WHEEL_R = 0.32
+WHEEL_Z = 0.40
+WHEEL_YS = (-2.72, -1.82, -0.92, -0.02, 0.88, 1.78, 2.68)
+SPROCKET_Y, SPROCKET_Z, SPROCKET_R = -3.52, 0.50, 0.38
+IDLER_Y, IDLER_Z, IDLER_R = 3.42, 0.44, 0.30
+ROLLER_YS = (-1.05, 1.20)
+ROLLER_Z, ROLLER_R = 0.78, 0.11
+TRUNNION_Y, TRUNNION_Z = 1.70, 1.92
+BARREL_LEN = MUZZLE_Y - TRUNNION_Y  # 4.105, muzzle 1.84 m past the hull nose
+ROOF_Z = 2.44
+RING_Y, RING_Z = 0.10, 1.62
 
 # Face tags. Track has its own tiled texture and is not packed into the atlas.
 PAINT, TURRET, STEEL, RUBBER, GLASS, DARK = 1, 2, 3, 4, 5, 6
@@ -158,6 +182,8 @@ def orient(bm):
         acc += f.normal.dot(f.calc_center_median() - c)
     if acc < 0:
         bmesh.ops.reverse_faces(bm, faces=list(bm.faces))
+    for f in bm.faces:
+        f.smooth = True
     bm.normal_update()
 
 
@@ -194,12 +220,12 @@ def shift_bm(bm, delta):
 # ---------------------------------------------------------------- tank
 def build_track(x_sign):
     bm = new_bm()
-    y_r, z_r, r_r = -3.35, 0.42, 0.36
-    y_f, z_f, r_f = 3.28, 0.40, 0.28
+    y_r, z_r, r_r = SPROCKET_Y, SPROCKET_Z, SPROCKET_R + 0.045
+    y_f, z_f, r_f = IDLER_Y, IDLER_Z, IDLER_R + 0.045
     pts = []
     y = y_r
     while y < y_f - 0.05:
-        pts.append((y, 0.08))
+        pts.append((y, 0.08))  # bottom run, just under the road wheels
         y += 0.14
     for i in range(1, 9):
         a = math.pi - i * math.pi / 9
@@ -207,7 +233,7 @@ def build_track(x_sign):
     y = y_f
     while y > y_r + 0.05:
         t = (y_f - y) / (y_f - y_r)
-        pts.append((y, 0.86 - 0.055 * math.sin(math.pi * t)))
+        pts.append((y, 0.90 - 0.045 * math.sin(math.pi * t)))
         y -= 0.14
     for i in range(1, 9):
         a = -i * math.pi / 9
@@ -221,7 +247,7 @@ def build_track(x_sign):
     n = len(pts)
     cy = sum(p[0] for p in pts) / n
     cz = sum(p[1] for p in pts) / n
-    half_w, half_th = 0.30, 0.045
+    half_w, half_th = TRACK_HALF_W, 0.045
     frames = []
     for yv, zv in pts:
         ny, nz = yv - cy, zv - cz
@@ -232,7 +258,7 @@ def build_track(x_sign):
         for sx in (1.0, -1.0):
             for sn in (1.0, -1.0):
                 vs.append(bm.verts.new((
-                    x_sign * (1.48 + sx * half_w),
+                    x_sign * (TRACK_X + sx * half_w),
                     yv + ny * sn * half_th,
                     zv + nz * sn * half_th,
                 )))
@@ -280,7 +306,7 @@ def build_track(x_sign):
         # guide horn on the bottom run, inner side, pointing up toward the wheels
         if frames[i][3] < -0.55 and i % 2 == 0:
             inner = -1.0 if x_sign > 0 else 1.0
-            hx = x_sign * 1.48 + inner * 0.30
+            hx = x_sign * TRACK_X + inner * half_w
             add_box(bm, (hx, frames[i][0], frames[i][1] + 0.07), (0.045, 0.09, 0.11), STEEL, bevel=0.004, segs=1)
     orient(bm)
     return bm
@@ -296,158 +322,180 @@ def _swatch_uvs(bm):
 
 
 def wheel_parts():
-    """Seven road wheels a side, rear sprocket, front idler. No return rollers.
+    """Seven road wheels a side, rear sprocket, front idler, two return rollers.
     Each part is its own object so the review scene can spin it. Local axle is +X.
-    Positions are the public M1A2 layout: drive sprocket at the rear, idler at the front.
     """
-    ys = [-2.55, -1.70, -0.85, 0.0, 0.85, 1.70, 2.50]
     out = []
-    for side, x in (("L", 1.48), ("R", -1.48)):
-        for i, yv in enumerate(ys):
+    for side, x in (("L", TRACK_X), ("R", -TRACK_X)):
+        for i, yv in enumerate(WHEEL_YS):
             bm = new_bm()
-            add_tube(bm, (-0.13, 0, 0), (0.13, 0, 0), 0.30, RUBBER, 12)
+            add_tube(bm, (-0.13, 0, 0), (0.13, 0, 0), WHEEL_R, RUBBER, 12)
             add_tube(bm, (-0.145, 0, 0), (0.145, 0, 0), 0.11, STEEL, 8)
             orient(bm)
             _swatch_uvs(bm)
-            out.append(("Wheel_%s_%d" % (side, i), bm, Vector((x, yv, 0.34))))
+            out.append(("Wheel_%s_%d" % (side, i), bm, Vector((x, yv, WHEEL_Z))))
         sp = new_bm()
-        add_tube(sp, (-0.12, 0, 0), (0.12, 0, 0), 0.34, STEEL, 10)
-        for k in range(10):
-            a = k * math.tau / 10.0
-            add_box(sp, (0.0, math.sin(a) * 0.40, math.cos(a) * 0.40), (0.16, 0.09, 0.10), STEEL, bevel=0.0)
+        add_tube(sp, (-0.12, 0, 0), (0.12, 0, 0), SPROCKET_R * 0.72, STEEL, 10)
+        for k in range(11):
+            a = k * math.tau / 11.0
+            add_box(sp, (0.0, math.sin(a) * (SPROCKET_R + 0.02), math.cos(a) * (SPROCKET_R + 0.02)),
+                    (0.16, 0.08, 0.09), STEEL, bevel=0.0)
         orient(sp)
         _swatch_uvs(sp)
-        out.append(("Sprocket_%s" % side, sp, Vector((x, -3.35, 0.42))))
+        out.append(("Sprocket_%s" % side, sp, Vector((x, SPROCKET_Y, SPROCKET_Z))))
         idl = new_bm()
-        add_tube(idl, (-0.10, 0, 0), (0.10, 0, 0), 0.26, STEEL, 10)
-        add_tube(idl, (-0.11, 0, 0), (0.11, 0, 0), 0.09, DARK, 8)
+        add_tube(idl, (-0.10, 0, 0), (0.10, 0, 0), IDLER_R, STEEL, 10)
+        add_tube(idl, (-0.11, 0, 0), (0.11, 0, 0), 0.10, DARK, 8)
         orient(idl)
         _swatch_uvs(idl)
-        out.append(("Idler_%s" % side, idl, Vector((x, 3.28, 0.40))))
+        out.append(("Idler_%s" % side, idl, Vector((x, IDLER_Y, IDLER_Z))))
+        for i, yv in enumerate(ROLLER_YS):
+            rr = new_bm()
+            add_tube(rr, (-0.07, 0, 0), (0.07, 0, 0), ROLLER_R, RUBBER, 8)
+            add_tube(rr, (-0.08, 0, 0), (0.08, 0, 0), 0.04, STEEL, 6)
+            orient(rr)
+            _swatch_uvs(rr)
+            out.append(("Roller_%s_%d" % (side, i), rr, Vector((x, yv, ROLLER_Z))))
     return out
 
 
 def build_hull():
     bm = new_bm()
+    # Nose at +3.965, tail at -3.965: hull length 7.93 m. Belly at 0.48 m clearance.
     pts = mirror_xy([
-        (0.55, 3.98, 0.55),
-        (1.15, 3.62, 0.50),
-        (1.22, 3.35, 1.02),
-        (1.40, 2.85, 1.28),
-        (1.58, 1.55, 1.60),
-        (1.58, -1.55, 1.62),
-        (1.52, -2.20, 1.50),
-        (1.46, -3.45, 1.38),
-        (1.30, -3.98, 1.05),
-        (1.12, -3.98, 0.52),
-        (1.02, -2.40, 0.48),
-        (1.02, 2.40, 0.48),
-        (0.62, 3.75, 0.48),
+        (0.42, HULL_NOSE_Y, 0.62),
+        (0.95, 3.72, 0.50),
+        (1.18, 3.42, 1.02),
+        (1.42, 2.78, 1.36),
+        (1.55, 2.05, 1.58),
+        (1.56, -2.15, 1.60),
+        (1.48, -3.05, 1.42),
+        (1.28, HULL_TAIL_Y, 1.12),
+        (1.08, HULL_TAIL_Y, 0.50),
+        (1.08, -2.30, 0.48),
+        (1.08, 2.15, 0.48),
+        (0.72, 3.55, 0.48),
     ])
     add_convex(bm, pts, PAINT, bevel=0.0)
-    # bevel the hull in a second pass on its own edges. A full bevel of a dense hull
-    # is expensive and can collapse; chamfer only the long silhouette by adding
-    # proud beveled plates instead (skirts, fenders, hatches).
-    # side skirts, six panels, front one raked
+    # Skirts take the width to 3.66 m. The front panel is raked.
     for s in (-1.0, 1.0):
-        for i in range(6):
-            zc = -2.55 + i * 0.95
-            ang = -18.0 * s if i == 5 else 0.0
-            add_box(bm, (s * 1.80, zc if i < 5 else 2.85, 0.62),
-                    (0.06, 0.88, 0.58), PAINT, bevel=0.012, segs=1, rot=(0, 0, ang))
-        # fender lip
-        add_box(bm, (s * 1.70, 0.15, 1.05), (0.28, 6.3, 0.05), PAINT, bevel=0.01, segs=1)
-        # front light and guard
-        add_tube(bm, (s * 1.25, 3.72, 0.95), (s * 1.25, 3.82, 0.95), 0.07, GLASS, 8)
-        add_box(bm, (s * 1.25, 3.78, 1.08), (0.20, 0.04, 0.04), STEEL, bevel=0.004, segs=1)
-    # driver hatch on the shallow glacis (~17 deg)
-    add_tube(bm, (0, 2.15, 1.42), (0, 2.55, 1.54), 0.22, TURRET, 10)
-    for k, x in enumerate((-0.10, 0.0, 0.10)):
-        add_box(bm, (x, 2.62, 1.58), (0.06, 0.05, 0.04), GLASS, bevel=0.003, segs=1)
-    # engine deck grille bars
-    for i in range(8):
-        add_box(bm, (-0.55 + i * 0.16, -2.85, 1.56), (0.05, 0.85, 0.04), DARK, bevel=0.0)
-    # rear exhaust recess
-    add_box(bm, (0, -3.95, 0.95), (0.9, 0.06, 0.42), DARK, bevel=0.0)
-    for i in range(5):
-        add_box(bm, (-0.32 + i * 0.16, -3.99, 0.95), (0.04, 0.03, 0.36), STEEL, bevel=0.0)
-    # stowage and a jerry can
-    add_box(bm, (-1.15, -2.4, 1.72), (0.42, 0.55, 0.28), CANVAS, bevel=0.02, segs=1)
-    add_box(bm, (1.15, -1.7, 1.74), (0.28, 0.42, 0.32), JERRY, bevel=0.008, segs=1)
-    # tow lugs
+        for i, yv in enumerate((-2.85, -1.85, -0.85, 0.15, 1.15, 2.15)):
+            add_box(bm, (s * SKIRT_X, yv, 0.58), (0.055, 0.92, 0.62), PAINT, bevel=0.01, segs=1)
+        add_box(bm, (s * (SKIRT_X - 0.02), 3.05, 0.78), (0.05, 0.72, 0.42), PAINT, bevel=0.01, segs=1)
+        add_box(bm, (s * 1.68, -0.15, 1.02), (0.26, 6.55, 0.045), PAINT, bevel=0.008, segs=1)
+        add_tube(bm, (s * 1.15, 3.55, 1.05), (s * 1.15, 3.66, 1.08), 0.065, GLASS, 8)
+        add_box(bm, (s * 1.15, 3.62, 1.18), (0.18, 0.035, 0.035), STEEL, bevel=0.003, segs=1)
+    # Driver's hatch on the glacis, with three periscopes.
+    add_tube(bm, (0, 2.35, 1.46), (0, 2.72, 1.58), 0.22, TURRET, 10)
+    for x in (-0.10, 0.0, 0.10):
+        add_box(bm, (x, 2.78, 1.62), (0.055, 0.045, 0.035), GLASS, bevel=0.0)
+    # Engine-deck grille.
+    for i in range(9):
+        add_box(bm, (-0.64 + i * 0.16, -2.95, 1.52), (0.045, 0.95, 0.035), DARK, bevel=0.0)
+    add_box(bm, (0, HULL_TAIL_Y - 0.01, 0.92), (1.05, 0.05, 0.46), DARK, bevel=0.0)
+    for i in range(6):
+        add_box(bm, (-0.40 + i * 0.16, HULL_TAIL_Y - 0.04, 0.92), (0.035, 0.025, 0.40), STEEL, bevel=0.0)
+    # UAAPU is under the left rear armor. Only the intake louvers and a low exhaust show.
+    for i in range(7):
+        add_box(bm, (-1.50, -3.22, 0.92 + i * 0.065), (0.045, 0.62, 0.022), DARK, bevel=0.0)
+    add_box(bm, (-1.50, -3.22, 1.14), (0.03, 0.70, 0.52), STEEL, bevel=0.004, segs=1)
+    add_box(bm, (-1.35, HULL_TAIL_Y - 0.02, 0.68), (0.16, 0.04, 0.10), DARK, bevel=0.0)
+    add_box(bm, (-1.05, -2.05, 1.72), (0.40, 0.52, 0.26), CANVAS, bevel=0.015, segs=1)
+    add_box(bm, (1.12, -1.65, 1.74), (0.26, 0.40, 0.30), JERRY, bevel=0.006, segs=1)
     for s in (-0.55, 0.55):
-        add_box(bm, (s, 3.95, 0.72), (0.10, 0.08, 0.10), STEEL, bevel=0.006, segs=1)
-    # tail lamps
-    for s in (-1.35, 1.35):
-        add_box(bm, (s, -3.99, 1.15), (0.08, 0.03, 0.05), GLASS, bevel=0.0)
+        add_box(bm, (s, HULL_NOSE_Y - 0.02, 0.70), (0.09, 0.07, 0.09), STEEL, bevel=0.004, segs=1)
+    for s in (-1.28, 1.28):
+        add_box(bm, (s, HULL_TAIL_Y - 0.02, 1.18), (0.07, 0.025, 0.045), GLASS, bevel=0.0)
     orient(bm)
     return bm
 
 
 def build_turret():
     bm = new_bm()
-    oy, oz = 0.05, 1.62
+    oy, oz = RING_Y, RING_Z
+    # Roof local z 0.82 puts the turret roof at 2.44 m. +X is the vehicle's right
+    # (commander and gunner). The loader is on the left.
     raw = [
-        (0.18, 2.05, 0.20), (0.18, 2.05, 0.52),
-        (0.62, 1.40, 0.06), (0.72, 1.35, 0.60),
-        (1.12, 0.55, 0.02), (1.18, 0.35, 0.42), (1.08, 0.55, 0.64),
-        (1.22, -0.40, 0.00), (1.24, -0.35, 0.60),
-        (1.06, -1.25, 0.02), (1.08, -1.20, 0.54),
-        (0.90, -2.32, 0.06), (0.86, -2.34, 0.48),
-        (0.20, 0.15, 0.72), (0.12, -0.90, 0.68),
-        (0.45, 1.15, 0.00), (0.80, -1.70, 0.00),
+        (0.22, 1.72, 0.16), (0.24, 1.72, 0.52),
+        (0.78, 1.15, 0.02), (0.86, 1.05, 0.58),
+        (1.35, 0.25, 0.00), (1.42, 0.10, 0.46), (1.22, 0.35, 0.78),
+        (1.45, -0.55, 0.00), (1.46, -0.45, 0.55),
+        (1.18, -1.55, 0.02), (1.16, -1.45, 0.52),
+        (0.98, -2.55, 0.06), (0.92, -2.58, 0.48),
+        (0.28, 0.25, 0.82), (0.16, -1.15, 0.78),
+        (0.55, 0.95, 0.00), (0.85, -1.85, 0.00),
     ]
     pts = [(x, y + oy, z + oz) for x, y, z in mirror_xy(raw)]
     add_convex(bm, pts, TURRET, bevel=0.0)
-    # cheek plates
     for s in (-1.0, 1.0):
-        add_box(bm, (s * 1.20, 0.45 + oy, 0.32 + oz), (0.08, 0.95, 0.46), TURRET, bevel=0.012, segs=1, rot=(0, 8 * s, 0))
-    # mantlet
-    add_box(bm, (0, 1.55 + oy, 0.30 + oz), (0.62, 0.28, 0.46), TURRET, bevel=0.02, segs=1)
-    # cupola (right) and loader hatch (left). US loader is on the left.
-    add_tube(bm, (0.48, -0.10 + oy, 0.62 + oz), (0.48, -0.10 + oy, 0.82 + oz), 0.20, TURRET, 10)
-    for k in range(6):
-        a = k * math.tau / 6
-        add_box(bm, (0.48 + math.cos(a) * 0.16, -0.10 + oy + math.sin(a) * 0.16, 0.74 + oz),
-                (0.045, 0.03, 0.035), GLASS, bevel=0.0)
-    add_box(bm, (-0.42, -0.20 + oy, 0.70 + oz), (0.36, 0.32, 0.06), TURRET, bevel=0.01, segs=1)
-    # commander's gun and loader's gun
-    add_tube(bm, (0.48, 0.05 + oy, 0.90 + oz), (0.48, 0.55 + oy, 0.90 + oz), 0.025, STEEL, 6)
-    add_box(bm, (0.48, 0.15 + oy, 0.93 + oz), (0.06, 0.16, 0.05), STEEL, bevel=0.0)
-    add_tube(bm, (-0.55, -0.05 + oy, 0.80 + oz), (-0.55, 0.28 + oy, 0.80 + oz), 0.018, STEEL, 6)
-    # gunner's sight and CITV
-    add_box(bm, (0.62, 0.85 + oy, 0.70 + oz), (0.22, 0.28, 0.16), STEEL, bevel=0.008, segs=1)
-    add_box(bm, (0.62, 1.00 + oy, 0.70 + oz), (0.16, 0.03, 0.08), GLASS, bevel=0.0)
-    add_box(bm, (-0.28, 0.55 + oy, 0.74 + oz), (0.16, 0.18, 0.14), STEEL, bevel=0.006, segs=1)
-    add_box(bm, (-0.28, 0.65 + oy, 0.74 + oz), (0.10, 0.02, 0.08), GLASS, bevel=0.0)
-    # blow-out panels and bustle rack
+        add_box(bm, (s * 1.28, 0.35 + oy, 0.28 + oz), (0.07, 1.05, 0.42), TURRET,
+                bevel=0.01, segs=1, rot=(0, 10 * s, 0))
+    add_box(bm, (0, 1.48 + oy, 0.28 + oz), (0.58, 0.26, 0.42), TURRET, bevel=0.016, segs=1)
+    # Commander's hatch, right roof, under the remote weapon station.
+    add_tube(bm, (0.52, -0.06 + oy, 0.78 + oz), (0.52, -0.06 + oy, 0.90 + oz), 0.20, TURRET, 10)
+    # Low-profile CROWS over that hatch: cradle, 12.7 mm gun, sensor, ammunition box.
+    rx, ry, rz = 0.52, -0.02 + oy, 0.98 + oz
+    add_box(bm, (rx, ry, rz), (0.46, 0.58, 0.10), STEEL, bevel=0.008, segs=1)
+    add_box(bm, (rx, ry + 0.06, rz + 0.10), (0.16, 0.28, 0.14), STEEL, bevel=0.004, segs=1)
+    add_tube(bm, (rx, ry + 0.16, rz + 0.12), (rx, ry + 1.15, rz + 0.14), 0.018, STEEL, 6)
+    add_box(bm, (rx + 0.16, ry + 0.10, rz + 0.12), (0.12, 0.16, 0.12), STEEL, bevel=0.0)
+    add_box(bm, (rx + 0.16, ry + 0.19, rz + 0.12), (0.10, 0.02, 0.07), GLASS, bevel=0.0)
+    add_box(bm, (rx - 0.20, ry - 0.02, rz + 0.08), (0.16, 0.22, 0.14), STEEL, bevel=0.0)
+    # Gunner's primary sight: the armored doghouse on the right front roof.
+    add_box(bm, (0.72, 0.92 + oy, 0.90 + oz), (0.28, 0.36, 0.16), STEEL, bevel=0.006, segs=1)
+    add_box(bm, (0.72, 1.08 + oy, 0.96 + oz), (0.22, 0.06, 0.08), STEEL, bevel=0.0)
+    add_box(bm, (0.72, 1.12 + oy, 0.90 + oz), (0.16, 0.02, 0.05), GLASS, bevel=0.0)
+    # Commander's independent thermal viewer, in front of his hatch.
+    add_box(bm, (0.22, 0.38 + oy, 0.90 + oz), (0.16, 0.18, 0.10), STEEL, bevel=0.004, segs=1)
+    add_box(bm, (0.22, 0.38 + oy, 1.02 + oz), (0.12, 0.14, 0.08), STEEL, bevel=0.0)
+    add_box(bm, (0.22, 0.46 + oy, 1.02 + oz), (0.08, 0.02, 0.05), GLASS, bevel=0.0)
+    # Loader's hatch, periscope, and the shielded 7.62 mount on the left.
+    add_box(bm, (-0.50, -0.18 + oy, 0.86 + oz), (0.36, 0.32, 0.05), TURRET, bevel=0.008, segs=1)
+    add_box(bm, (-0.50, -0.02 + oy, 0.92 + oz), (0.10, 0.08, 0.05), STEEL, bevel=0.0)
+    add_box(bm, (-0.50, 0.03 + oy, 0.92 + oz), (0.06, 0.015, 0.03), GLASS, bevel=0.0)
+    add_box(bm, (-0.78, 0.15 + oy, 0.78 + oz), (0.04, 0.28, 0.22), STEEL, bevel=0.0, rot=(0, 0, 18))
+    add_tube(bm, (-0.62, 0.22 + oy, 0.84 + oz), (-0.62, 0.85 + oy, 0.90 + oz), 0.012, STEEL, 5)
+    # Ammunition data link. The real unit is a breech interface plus the fire-control
+    # electronics inside the turret. The visible parts are this housing and the collar
+    # on the barrel at the breech. No labels.
+    add_box(bm, (0.40, 0.55 + oy, 0.90 + oz), (0.14, 0.16, 0.06), STEEL, bevel=0.003, segs=1)
+    add_tube(bm, (0.18, 1.15 + oy, 0.55 + oz), (0.40, 0.62 + oy, 0.88 + oz), 0.012, STEEL, 4)
+    # Blow-out panels on the bustle roof, then the storage basket.
     for k in range(2):
-        add_box(bm, (-0.28 + k * 0.56, -1.55 + oy, 0.66 + oz), (0.42, 0.55, 0.025), DARK, bevel=0.0)
-    add_box(bm, (0, -2.15 + oy, 0.55 + oz), (1.7, 0.08, 0.08), STEEL, bevel=0.0)
-    add_box(bm, (-0.85, -1.7 + oy, 0.55 + oz), (0.05, 0.9, 0.08), STEEL, bevel=0.0)
-    add_box(bm, (0.85, -1.7 + oy, 0.55 + oz), (0.05, 0.9, 0.08), STEEL, bevel=0.0)
-    add_box(bm, (-0.35, -1.85 + oy, 0.62 + oz), (0.55, 0.38, 0.16), CANVAS, bevel=0.02, segs=1)
-    add_box(bm, (0.40, -1.75 + oy, 0.60 + oz), (0.48, 0.32, 0.14), CANVAS, bevel=0.02, segs=1)
-    # smoke launchers
+        add_box(bm, (-0.32 + k * 0.64, -1.40 + oy, 0.80 + oz), (0.46, 0.62, 0.02), DARK, bevel=0.0)
+    add_box(bm, (0, -2.20 + oy, 0.50 + oz), (1.80, 0.85, 0.03), STEEL, bevel=0.0)
+    for s in (-0.92, 0.92):
+        add_box(bm, (s, -2.15 + oy, 0.52 + oz), (0.03, 1.00, 0.03), STEEL, bevel=0.0)
+        add_box(bm, (s, -2.15 + oy, 0.82 + oz), (0.03, 1.00, 0.03), STEEL, bevel=0.0)
+        add_box(bm, (s, -2.62 + oy, 0.67 + oz), (0.03, 0.03, 0.32), STEEL, bevel=0.0)
+    add_box(bm, (0, -2.64 + oy, 0.82 + oz), (1.84, 0.03, 0.03), STEEL, bevel=0.0)
+    add_box(bm, (0, -2.64 + oy, 0.52 + oz), (1.84, 0.03, 0.03), STEEL, bevel=0.0)
+    for i in range(7):
+        add_box(bm, (-0.75 + i * 0.25, -2.64 + oy, 0.67 + oz), (0.02, 0.02, 0.30), STEEL, bevel=0.0)
+    add_box(bm, (-0.35, -2.05 + oy, 0.62 + oz), (0.50, 0.36, 0.16), CANVAS, bevel=0.015, segs=1)
+    add_box(bm, (0.38, -1.95 + oy, 0.60 + oz), (0.42, 0.30, 0.14), CANVAS, bevel=0.015, segs=1)
     for s in (-1.0, 1.0):
-        add_box(bm, (s * 1.05, 0.95 + oy, 0.48 + oz), (0.10, 0.28, 0.16), STEEL, bevel=0.004, segs=1, rot=(0, 0, s * 28))
-    # antennas
-    add_tube(bm, (-0.70, -1.4 + oy, 0.66 + oz), (-0.70, -1.4 + oy, 1.35 + oz), 0.008, STEEL, 5)
-    add_tube(bm, (0.72, -1.55 + oy, 0.66 + oz), (0.72, -1.55 + oy, 1.20 + oz), 0.008, STEEL, 5)
+        for k in range(6):
+            add_tube(bm, (s * 1.18, 0.72 + oy + k * 0.07, 0.42 + oz),
+                     (s * 1.28, 0.78 + oy + k * 0.07, 0.52 + oz), 0.028, STEEL, 5)
+    add_tube(bm, (-0.72, -1.55 + oy, 0.80 + oz), (-0.72, -1.55 + oy, 1.55 + oz), 0.008, STEEL, 5)
+    add_tube(bm, (0.78, -1.70 + oy, 0.80 + oz), (0.78, -1.70 + oy, 1.35 + oz), 0.008, STEEL, 5)
     orient(bm)
     return bm
 
 
 def build_barrel():
     bm = new_bm()
-    # local to the trunnion. Trunnion world (0, 1.72, 1.94). Barrel extends +Y.
-    add_tube(bm, (0, 0.0, 0), (0, 0.35, 0), 0.09, TURRET, 12)
-    add_tube(bm, (0, 0.30, 0), (0, 4.05, 0), 0.055, TURRET, 12)
-    for yv in (0.8, 1.7, 2.7, 3.6):
-        add_tube(bm, (0, yv, 0), (0, yv + 0.06, 0), 0.072, STEEL, 12)
-    # muzzle and reference sensor (no bore evacuator — that bulge is a different gun)
-    add_tube(bm, (0, 3.95, 0), (0, 4.13, 0), 0.07, STEEL, 12)
-    add_box(bm, (0, 3.85, 0.07), (0.04, 0.10, 0.04), STEEL, bevel=0.0)
+    # Local to the trunnion, extending +Y. Length puts the muzzle 1.84 m past the nose.
+    # The collar at the breech is the visible ammunition-data-link interface.
+    add_tube(bm, (0, 0.0, 0), (0, 0.22, 0), 0.095, STEEL, 12)
+    add_tube(bm, (0, 0.18, 0), (0, BARREL_LEN - 0.12, 0), 0.062, TURRET, 12)
+    ev = BARREL_LEN * 0.58
+    add_tube(bm, (0, ev - 0.28, 0), (0, ev + 0.28, 0), 0.115, TURRET, 12)
+    for yv in (0.55, 1.35, 2.15, 3.05, 3.70):
+        add_tube(bm, (0, yv, 0), (0, yv + 0.05, 0), 0.078, STEEL, 10)
+    add_tube(bm, (0, BARREL_LEN - 0.16, 0), (0, BARREL_LEN, 0), 0.070, STEEL, 12)
+    add_box(bm, (0.0, BARREL_LEN - 0.26, 0.085), (0.045, 0.09, 0.04), STEEL, bevel=0.0)
     orient(bm)
     return bm
 
@@ -683,17 +731,18 @@ def shade_tank(p, n, tag):
     elif tag == RUBBER:
         col, rough, metal = (0.07, 0.07, 0.075), 0.92, 0.0
     elif tag == STEEL:
-        col, rough, metal = (0.32, 0.33, 0.34), 0.42, 0.72
+        col, rough, metal = (0.20, 0.20, 0.21), 0.66, 0.32
     elif tag == DARK:
-        col, rough, metal = (0.06, 0.06, 0.065), 0.7, 0.15
+        col, rough, metal = (0.05, 0.05, 0.052), 0.78, 0.08
     elif tag == CANVAS:
-        col, rough, metal = (0.40, 0.38, 0.30), 0.84, 0.0
+        col, rough, metal = (0.32, 0.29, 0.22), 0.90, 0.0
     elif tag == JERRY:
-        col, rough, metal = (0.34, 0.38, 0.28), 0.7, 0.05
+        col, rough, metal = (0.28, 0.30, 0.22), 0.78, 0.02
     elif tag == TURRET:
-        col, rough, metal = (0.60, 0.51, 0.36), 0.58, 0.04
+        # Dull matte tan. Roughness stays high so the paint does not flash.
+        col, rough, metal = (0.36, 0.31, 0.21), 0.92, 0.0
     else:
-        col, rough, metal = (0.64, 0.55, 0.40), 0.56, 0.04
+        col, rough, metal = (0.33, 0.28, 0.19), 0.93, 0.0
     height = 0.0
     seam = 0.0
     # Authored panel seams (metres), not a noise lattice.
@@ -710,8 +759,8 @@ def shade_tank(p, n, tag):
                 col = mix(col, (0.12, 0.12, 0.12), 0.7)
     if tag == TURRET and n.z > 0.7:
         # hatch outlines and blow-out seams on the roof
-        for cx, cy, hx, hy in ((0.48, -0.05, 0.22, 0.22), (-0.42, -0.15, 0.20, 0.18),
-                               (-0.28, -1.5, 0.24, 0.30), (0.28, -1.5, 0.24, 0.30)):
+        for cx, cy, hx, hy in ((0.52, 0.04, 0.22, 0.22), (-0.50, -0.08, 0.20, 0.18),
+                               (-0.32, -1.30, 0.26, 0.34), (0.32, -1.30, 0.26, 0.34)):
             dx, dy = abs(p.x - cx), abs(p.y - cy)
             border = min(abs(dx - hx), abs(dy - hy)) if dx < hx + 0.03 and dy < hy + 0.03 else 1.0
             if dx < hx and dy < hy:
@@ -724,15 +773,15 @@ def shade_tank(p, n, tag):
     if tag in (PAINT, TURRET) and n.y > 0.6:
         seam = max(seam, seam_line(p, n, (0, 3.4, 1.15), (1, 0, 0), 1.2, 0.016))
     # tactical number on the right cheek, star on the left. Original pixel glyphs.
-    if tag == TURRET and n.x > 0.75 and -0.15 < p.y < 0.55 and 1.85 < p.z < 2.20:
-        u = (p.y - (-0.15)) / 0.70
-        v = (p.z - 1.85) / 0.35
+    if tag == TURRET and n.x > 0.75 and 0.05 < p.y < 0.85 and 1.72 < p.z < 2.15:
+        u = (p.y - 0.05) / 0.80
+        v = (p.z - 1.72) / 0.43
         ink = max(glyph("3", (u - 0.15) / 0.28, v), glyph("1", (u - 0.52) / 0.22, v))
         if ink:
             col = mix(col, (0.10, 0.10, 0.09), 0.85)
-    if tag == TURRET and n.x < -0.75 and -0.2 < p.y < 0.45 and 1.9 < p.z < 2.22:
-        u = (p.y + 0.2) / 0.65
-        v = (p.z - 1.9) / 0.32
+    if tag == TURRET and n.x < -0.75 and 0.0 < p.y < 0.80 and 1.72 < p.z < 2.15:
+        u = p.y / 0.80
+        v = (p.z - 1.72) / 0.43
         # five-point star test in the decal square
         if 0.15 < u < 0.85 and 0.1 < v < 0.9:
             ang = math.atan2(v - 0.5, u - 0.5)
@@ -745,22 +794,33 @@ def shade_tank(p, n, tag):
         for yv in (-1.15, -0.7, 0.15):
             if abs(p.y - yv) < 0.012 and 1.55 < p.z < 2.05:
                 col = mix(col, (0.28, 0.24, 0.18), 0.45)
+    # The barrel is baked in trunnion-local space, so it sits near the origin.
+    # Keep the sleeve the same matte tan and skip the hull mud, which would
+    # otherwise cover the whole gun.
+    on_gun = tag == TURRET and abs(p.x) < 0.14 and abs(p.z) < 0.14 and 0.15 < p.y < BARREL_LEN + 0.05
+    if on_gun:
+        if abs(p.x) < 0.012 and p.z > 0.02:
+            col = mix(col, (0.10, 0.09, 0.07), 0.7)
+            height -= 0.45
+        if seam > 0:
+            col = mix(col, (col[0] * 0.25, col[1] * 0.25, col[2] * 0.25), min(1.0, seam))
+        return col, rough, metal, height
     # mud, snow dust, soot
     if tag in (PAINT, TURRET, RUBBER, CANVAS) and p.z < 0.7:
         mud = smoothstep(0.72, 0.32, p.z)
-        col = mix(col, (0.27, 0.22, 0.16), mud * (0.75 if tag != TURRET else 0.35))
+        col = mix(col, (0.14, 0.11, 0.08), mud * (0.85 if tag != TURRET else 0.4))
         rough = rough + (0.92 - rough) * mud * 0.6
-    if n.z > 0.72 and tag in (PAINT, TURRET, CANVAS):
-        snow = smoothstep(0.72, 0.95, n.z) * 0.38
-        col = mix(col, (0.78, 0.82, 0.85), snow)
-        rough = rough * (1 - snow) + 0.7 * snow
+    if n.z > 0.84 and tag in (PAINT, TURRET, CANVAS):
+        snow = smoothstep(0.84, 0.98, n.z) * 0.14
+        col = mix(col, (0.46, 0.48, 0.50), snow)
+        rough = min(1.0, rough + 0.02)
     if tag == PAINT and p.y < -3.3 and n.y < -0.4:
         col = mix(col, (0.08, 0.07, 0.07), 0.65)
     if tag == DARK:
         col = mix(col, (0.02, 0.02, 0.02), 0.4)
     # paint break-up, very low, only so a flat fill doesn't read as plastic
     if tag in (PAINT, TURRET, CANVAS):
-        g = (fbm(p.x * 3.0, p.y * 3.0) - 0.5) * 0.04
+        g = (fbm(p.x * 2.4, p.y * 2.4) - 0.62) * 0.07
         col = (max(0, min(1, col[0] + g)), max(0, min(1, col[1] + g)), max(0, min(1, col[2] + g * 0.6)))
     if seam > 0:
         col = mix(col, (col[0] * 0.25, col[1] * 0.25, col[2] * 0.25), min(1.0, seam))
@@ -768,8 +828,9 @@ def shade_tank(p, n, tag):
         rough = min(1.0, rough + seam * 0.15)
     # edge wear: bright metal only where a seam is fading out (the lip, not the gap)
     if 0.25 < seam < 0.65 and tag in (PAINT, TURRET):
-        col = mix(col, (0.55, 0.52, 0.46), 0.25)
-        metal = max(metal, 0.25)
+        col = mix(col, (0.40, 0.36, 0.28), 0.22)
+        metal = max(metal, 0.12)
+        rough = min(1.0, rough)
     return col, rough, metal, height
 
 
@@ -1097,8 +1158,11 @@ def bake(bms, size, spacing, shade, prefix, reserve_px=0, swatch_area=SWATCH_ARE
                         gi = int(gi * scale)
                         gj = int(gj * scale)
                     ao = float(grid[gi, gj])
-                    # crevice term lives in the albedo as well as ORM so it reads if AO is weak
-                    col = tuple(c * (0.62 + 0.38 * ao) for c in col)
+                    # The coarse ray grid stair-steps on big panels. Clamp the
+                    # floor so that error cannot paint a chevron, and keep only
+                    # a little darkening where the rays really found a crevice.
+                    ao = 0.78 + 0.22 * ao
+                    col = tuple(c * (0.86 + 0.14 * ao) for c in col)
                     py = miny + int(ky)
                     px = minx + int(kx)
                     albedo[py, px] = col
@@ -1148,7 +1212,7 @@ def _paint_swatches(albedo, orm, height, mask, size):
         albedo[yy:yy + 2, a:b] = (0.02, 0.02, 0.02)
         height[yy:yy + 2, a:b] = -0.8
     c, d = rect(0.18, 0.34)
-    fill(c, d, (0.30, 0.31, 0.32), 0.45, 0.7, 0.75)
+    fill(c, d, (0.20, 0.20, 0.21), 0.66, 0.32, 0.62)
     for x in range(c + 4, d, 14):
         albedo[y0:y1, x:x + 1] *= 0.75
         height[y0:y1, x:x + 1] = -0.35
@@ -1221,7 +1285,9 @@ def save_png(path, arr):
     rgba[..., :c] = arr[..., :c]
     rgba = np.flipud(rgba)
     name = os.path.basename(path)
-    im = bpy.data.images.new(name, width=w, height=h, alpha=(c == 4), float_buffer=True)
+    # Byte buffer so the PNG is 8-bit. A float image saves as 16-bit and
+    # blows the review folder up for no visible gain.
+    im = bpy.data.images.new(name, width=w, height=h, alpha=(c == 4), float_buffer=False)
     im.pixels.foreach_set(rgba.ravel())
     im.filepath_raw = path
     im.file_format = "PNG"
@@ -1336,29 +1402,45 @@ def ground_images():
     off = 0.42
     d1 = dist_field(X, Y, ax + px * off, ay + py * off, bx + px * off, by + py * off)
     d2 = dist_field(X, Y, ax - px * off, ay - py * off, bx - px * off, by - py * off)
-    groove = np.maximum(smoothstep_np(0.42, 0.06, d1), smoothstep_np(0.42, 0.06, d2))
-    corridor = smoothstep_np(2.6, 0.4, np.minimum(d1, d2))
+    groove = np.maximum(smoothstep_np(1.15, 0.12, d1), smoothstep_np(1.15, 0.12, d2))
+    corridor = smoothstep_np(6.0, 0.9, np.minimum(d1, d2))
     # a second churned track so the field is not one stripe on an empty slab
     spur = smoothstep_np(1.8, 0.3, dist_field(X, Y, -10.0, 8.0, 10.0, -6.0))
     pad = smoothstep_np(4.6, 2.0, np.sqrt((X - 6.4) ** 2 + Y ** 2))
-    h = 0.62 * (_fbm(X * 0.04 + 1.2, Y * 0.04) - 0.32)
-    h = h + 0.16 * (_fbm(X * 0.09 + 3.0, Y * 0.09) - 0.5)
-    soft = np.maximum(corridor, spur * 0.8)
-    h = h * (1.0 - pad * 0.9) * (1.0 - soft * 0.7) - 0.045 * groove
-    snow = np.array([0.86, 0.89, 0.92], np.float32)
-    dirt = np.array([0.58, 0.50, 0.40], np.float32)
-    mud = np.array([0.40, 0.33, 0.26], np.float32)
-    conc = np.array([0.68, 0.70, 0.72], np.float32)
-    patch = np.clip(smoothstep_np(0.40, 0.58, _fbm(X * 0.055, Y * 0.055)) * 0.9
-                    + smoothstep_np(0.52, 0.72, _fbm(X * 0.12 + 6.0, Y * 0.12)) * 0.55, 0.0, 1.0)
+    # Broad rolls. A ridge sits in the RTS camera's middle distance (blender +Y
+    # is Godot -Z, which that camera looks toward). The tank's lane stays flat.
+    h = 1.7 * (_fbm(X * 0.022 + 1.2, Y * 0.022) - 0.42)
+    h = h + 0.38 * (_fbm(X * 0.06 + 3.0, Y * 0.06) - 0.5)
+    berm = np.exp(-((Y - 11.0) ** 2) / 14.0) * smoothstep_np(40.0, 6.0, np.abs(X + 2.0))
+    h = h + berm * 1.25
+    lane = smoothstep_np(2.4, 0.45, np.minimum(d1, d2))
+    h = h * (1.0 - pad * 0.94) * (1.0 - lane * 0.92) - 0.09 * groove
+    snow = np.array([0.62, 0.66, 0.70], np.float32)
+    dirt = np.array([0.34, 0.24, 0.15], np.float32)
+    mud = np.array([0.07, 0.05, 0.035], np.float32)
+    conc = np.array([0.40, 0.39, 0.37], np.float32)
+    nA = _fbm(X * 0.045, Y * 0.045)
+    nB = _fbm(X * 0.09 + 4.0, Y * 0.08)
+    patch = np.clip(smoothstep_np(0.30, 0.52, nA) * 0.9 + smoothstep_np(0.48, 0.68, nB) * 0.65, 0.0, 1.0)
     alb = snow * (1.0 - patch)[..., None] + dirt * patch[..., None]
-    churn = np.clip(corridor * 0.8 + spur * 0.6 + groove, 0.0, 1.0)[..., None]
-    alb = alb * (1.0 - churn) + mud * churn
+    # Dirt under the fight, but not so wide that the frame becomes one tone.
+    battle = smoothstep_np(16.0, 5.0, np.sqrt((X + 4.0) ** 2 + (Y + 1.0) ** 2))
+    alb = alb * (1.0 - battle[..., None] * 0.45) + dirt * (battle[..., None] * 0.45)
+    # Wide wet ruts, dark enough to read from the RTS camera.
+    mud_band = np.clip(smoothstep_np(3.4, 0.35, np.minimum(d1, d2)) * 0.95 + groove * 0.85 + spur * 0.55, 0.0, 1.0)
+    alb = alb * (1.0 - mud_band[..., None]) + mud * mud_band[..., None]
     alb = alb * (1.0 - pad[..., None] * 0.75) + conc * (pad[..., None] * 0.75)
+    # shade the low ground so the rolls read even before the sun
+    alb = alb * (0.78 + 0.22 * np.clip(h * 0.7 + 0.55, 0.0, 1.0))[..., None]
     alb = np.clip(alb, 0.0, 1.0)
-    hf = h - groove * 0.06
+    hf = h - groove * 0.10
     save_png(os.path.join(OUT, "ground_albedo.png"), alb)
-    save_png(os.path.join(OUT, "ground_normal.png"), height_to_normal(hf * 6.0, 1.0))
+    save_png(os.path.join(OUT, "ground_normal.png"), height_to_normal(hf * 16.0, 1.45))
+    rough = np.full(h.shape, 0.90, np.float32)
+    rough = np.clip(rough + patch * 0.06 - mud_band * 0.40, 0.34, 0.98)
+    cav = np.clip(1.0 - groove * 0.75 - np.clip(-hf, 0, 1) * 0.45, 0.15, 1.0)
+    orm = np.stack([cav, rough, np.zeros_like(h)], axis=-1)
+    save_png(os.path.join(OUT, "ground_orm.png"), orm)
     return h
 
 
@@ -1649,11 +1731,11 @@ def main():
         scale_bm(bm, S)
     # props and ground are already in game units
 
-    trunnion = Vector((0, 1.72, 1.94)) * S
-    ring = Vector((0, 0.05, 1.62)) * S
-    muzzle = Vector((0, 1.72 + 4.13, 1.94)) * S
-    nose = Vector((0, 4.15, 1.05)) * S
-    aim = Vector((0, 2.3, 1.9)) * S
+    trunnion = Vector((0, TRUNNION_Y, TRUNNION_Z)) * S
+    ring = Vector((0, RING_Y, RING_Z)) * S
+    muzzle = Vector((0, TRUNNION_Y + BARREL_LEN, TRUNNION_Z)) * S
+    nose = Vector((0, HULL_NOSE_Y + 0.02, 1.05)) * S
+    aim = Vector((0, 2.35, 2.05)) * S
     # turret and barrel were built in world metres, then scaled, so subtract the pivot.
     shift_bm(turret, ring)
     # The barrel mesh is already in trunnion-local space (it was built at the origin, along +Y).
@@ -1713,6 +1795,27 @@ def main():
     export_glb(os.path.join(OUT, "tree.glb"), [tree_o, foliage_o])
     export_glb(os.path.join(OUT, "rock.glb"), [rock_o, rock_b_o])
 
+    layout = {
+        "metres_per_unit": 4.0,
+        "scale_from_metres": S,
+        "tank_start": [-9.0, 0.0, 2.2],
+        "tank_end": [-1.4, 0.0, 0.5],
+        "plant_pos": [6.4, 0.0, 0.0],
+        "plant_face": [-1.0, 0.0, 0.0],
+        "shoe_len": SHOE_M * S,
+        "field": [36.0, 26.0],
+        "hull_m": [HULL_NOSE_Y - HULL_TAIL_Y, SKIRT_X * 2.0, ROOF_Z],
+        "gun_forward_m": GUN_FORWARD,
+        "note": "Positions are Godot world units (Y up). The tank nose and the plant front are aligned at runtime from the exported empties.",
+    }
+    # props in godot space: blender (x, y, z) -> (x, z, -y)
+    trees = [(-14, 7.5), (-11, -8), (1.5, 9), (13, 6.5), (15, -7), (-4, 10), (9.5, -9)]
+    rocks = [(-7.5, 6.2), (3.5, -7), (12, 2.5), (-16, -4), (0.5, 11), (10, 8)]
+    layout["trees"] = [{"pos": [bx, 0.0, -by], "yaw": (i * 0.7) % 6.28, "scale": 0.85 + (i % 3) * 0.12} for i, (bx, by) in enumerate(trees)]
+    layout["rocks"] = [{"pos": [bx, 0.0, -by], "yaw": (i * 1.3) % 6.28, "scale": 0.7 + (i % 4) * 0.18} for i, (bx, by) in enumerate(rocks)]
+    with open(os.path.join(OUT, "layout.json"), "w") as f:
+        json.dump(layout, f, indent=2)
+
     tree_o.hide_render = True
     foliage_o.hide_render = True
     rock_o.hide_render = True
@@ -1737,25 +1840,6 @@ def main():
     wreck_o.hide_render = True
     preview("/tmp/gfx_plant_preview.png", (6.2, -8.0, 2.6), (0.0, 0.2, 1.0))
     preview("/tmp/gfx_plant_front.png", (0.2, 9.0, 1.8), (0.0, 0.5, 1.2))
-
-    layout = {
-        "metres_per_unit": 4.0,
-        "scale_from_metres": S,
-        "tank_start": [-9.0, 0.0, 2.2],
-        "tank_end": [-1.4, 0.0, 0.5],
-        "plant_pos": [6.4, 0.0, 0.0],
-        "plant_face": [-1.0, 0.0, 0.0],
-        "shoe_len": SHOE_M * S,
-        "field": [36.0, 26.0],
-        "note": "Positions are Godot world units (Y up). The tank nose and the plant front are aligned at runtime from the exported empties.",
-    }
-    # props in godot space: blender (x, y, z) -> (x, z, -y)
-    trees = [(-14, 7.5), (-11, -8), (1.5, 9), (13, 6.5), (15, -7), (-4, 10), (9.5, -9)]
-    rocks = [(-7.5, 6.2), (3.5, -7), (12, 2.5), (-16, -4), (0.5, 11), (10, 8)]
-    layout["trees"] = [{"pos": [bx, 0.0, -by], "yaw": (i * 0.7) % 6.28, "scale": 0.85 + (i % 3) * 0.12} for i, (bx, by) in enumerate(trees)]
-    layout["rocks"] = [{"pos": [bx, 0.0, -by], "yaw": (i * 1.3) % 6.28, "scale": 0.7 + (i % 4) * 0.18} for i, (bx, by) in enumerate(rocks)]
-    with open(os.path.join(OUT, "layout.json"), "w") as f:
-        json.dump(layout, f, indent=2)
     print("DONE", OUT)
 
 
