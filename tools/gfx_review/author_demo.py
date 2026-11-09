@@ -36,8 +36,9 @@ BARK, NEEDLE, ROCK = 13, 14, 15
 
 TANK_PX = 2048
 PLANT_PX = 2048
-PROP_PX = 512
-GROUND_PX = 1024
+PROP_PX = 1024
+GROUND_PX = 2048
+FIELD_HALF = 70.0  # textured ground covers 140 x 140 world units, the whole visible field
 # Faces smaller than this (square metres) share a material swatch instead of a private island.
 SWATCH_AREA = 0.06
 RAYS = 8
@@ -285,27 +286,45 @@ def build_track(x_sign):
     return bm
 
 
-def build_wheels():
-    bm = new_bm()
+def _swatch_uvs(bm):
+    """Tiny spinning parts share the rubber / steel tiles instead of unique islands."""
+    uv = bm.loops.layers.uv.get("UVMap") or bm.loops.layers.uv.new("UVMap")
+    L = lay(bm)
+    for f in bm.faces:
+        rect = SWATCH_RECT.get(int(f[L]), SWATCH_RECT[STEEL])
+        _assign_swatch(f, uv, rect)
+
+
+def wheel_parts():
+    """Seven road wheels a side, rear sprocket, front idler. No return rollers.
+    Each part is its own object so the review scene can spin it. Local axle is +X.
+    Positions are the public M1A2 layout: drive sprocket at the rear, idler at the front.
+    """
     ys = [-2.55, -1.70, -0.85, 0.0, 0.85, 1.70, 2.50]
-    for x in (-1.48, 1.48):
-        for yv in ys:
-            add_tube(bm, (x - 0.13, yv, 0.34), (x + 0.13, yv, 0.34), 0.30, RUBBER, 14)
-            add_tube(bm, (x - 0.15, yv, 0.34), (x + 0.15, yv, 0.34), 0.12, STEEL, 10)
-            hub_x = x - 0.22 if x > 0 else x + 0.22
-            add_tube(bm, (x - 0.16 if x > 0 else x + 0.16, yv, 0.34), (hub_x, yv, 0.34), 0.045, STEEL, 6)
-        # sprocket rear
-        add_tube(bm, (x - 0.12, -3.35, 0.42), (x + 0.12, -3.35, 0.42), 0.34, STEEL, 12)
+    out = []
+    for side, x in (("L", 1.48), ("R", -1.48)):
+        for i, yv in enumerate(ys):
+            bm = new_bm()
+            add_tube(bm, (-0.13, 0, 0), (0.13, 0, 0), 0.30, RUBBER, 12)
+            add_tube(bm, (-0.145, 0, 0), (0.145, 0, 0), 0.11, STEEL, 8)
+            orient(bm)
+            _swatch_uvs(bm)
+            out.append(("Wheel_%s_%d" % (side, i), bm, Vector((x, yv, 0.34))))
+        sp = new_bm()
+        add_tube(sp, (-0.12, 0, 0), (0.12, 0, 0), 0.34, STEEL, 10)
         for k in range(10):
-            a = k * math.tau / 10
-            ty = -3.35 + math.sin(a) * 0.40
-            tz = 0.42 + math.cos(a) * 0.40
-            add_box(bm, (x, ty, tz), (0.16, 0.08, 0.10), STEEL, bevel=0.004, segs=1)
-        # idler front
-        add_tube(bm, (x - 0.10, 3.28, 0.40), (x + 0.10, 3.28, 0.40), 0.26, STEEL, 12)
-        add_tube(bm, (x - 0.11, 3.28, 0.40), (x + 0.11, 3.28, 0.40), 0.10, DARK, 8)
-    orient(bm)
-    return bm
+            a = k * math.tau / 10.0
+            add_box(sp, (0.0, math.sin(a) * 0.40, math.cos(a) * 0.40), (0.16, 0.09, 0.10), STEEL, bevel=0.0)
+        orient(sp)
+        _swatch_uvs(sp)
+        out.append(("Sprocket_%s" % side, sp, Vector((x, -3.35, 0.42))))
+        idl = new_bm()
+        add_tube(idl, (-0.10, 0, 0), (0.10, 0, 0), 0.26, STEEL, 10)
+        add_tube(idl, (-0.11, 0, 0), (0.11, 0, 0), 0.09, DARK, 8)
+        orient(idl)
+        _swatch_uvs(idl)
+        out.append(("Idler_%s" % side, idl, Vector((x, 3.28, 0.40))))
+    return out
 
 
 def build_hull():
@@ -441,25 +460,24 @@ FRONT_Y = HALL[1] * 0.5
 def build_plant():
     bm = new_bm()
     hz = HALL[2] * 0.5
-    add_box(bm, (0, 0, hz), HALL, CONCRETE, bevel=0.07, segs=1)
-    # plinth
-    add_box(bm, (0, 0.2, 0.18), (10.4, 14.5, 0.36), CONCRETE, bevel=0.04, segs=1)
+    # Large faces stay un-bevelled so each wall is one UV island at tank-level density.
+    # The bevel read comes from the baked seam, not from a ring of sliver faces.
+    add_box(bm, (0, 0, hz), HALL, CONCRETE, bevel=0.0)
+    add_box(bm, (0, 0.2, 0.18), (10.4, 14.5, 0.36), CONCRETE, bevel=0.0)
     # pitched roof
     roof = []
     for x in (-4.35, 4.35):
         roof += [(x, -FRONT_Y - 0.15, 5.15), (x, FRONT_Y + 0.15, 5.15), (x, 0.0, 6.55)]
-    add_convex(bm, roof, ROOF, bevel=0.04)
-    # clerestory — the second roof layer
-    add_box(bm, (0, -0.3, 6.55), (3.4, 8.0, 0.85), ROOF, bevel=0.03, segs=1)
+    add_convex(bm, roof, ROOF, bevel=0.0)
+    add_box(bm, (0, -0.3, 6.55), (3.4, 8.0, 0.85), ROOF, bevel=0.0)
     for i in range(6):
         yv = -3.2 + i * 1.3
         add_box(bm, (0, yv, 7.02), (3.5, 0.08, 0.10), STEEL, bevel=0.0)
     # annex and its lower roof
-    add_box(bm, (-5.7, -0.6, 1.75), (3.5, 7.2, 3.5), CONCRETE, bevel=0.05, segs=1)
-    add_box(bm, (-5.7, -0.6, 3.62), (3.8, 7.5, 0.22), ROOF, bevel=0.02, segs=1)
-    add_box(bm, (-5.7, -0.6, 3.85), (2.2, 4.0, 0.55), ROOF, bevel=0.02, segs=1)
-    # dock in front
-    add_box(bm, (0.4, FRONT_Y + 1.35, 0.55), (7.2, 2.5, 1.1), CONCRETE, bevel=0.03, segs=1)
+    add_box(bm, (-5.7, -0.6, 1.75), (3.5, 7.2, 3.5), CONCRETE, bevel=0.0)
+    add_box(bm, (-5.7, -0.6, 3.62), (3.8, 7.5, 0.22), ROOF, bevel=0.0)
+    add_box(bm, (-5.7, -0.6, 3.85), (2.2, 4.0, 0.55), ROOF, bevel=0.0)
+    add_box(bm, (0.4, FRONT_Y + 1.35, 0.55), (7.2, 2.5, 1.1), CONCRETE, bevel=0.0)
     # door and windows on the front face, proud of the wall so they don't z-fight
     add_box(bm, (-2.3, FRONT_Y + 0.02, 1.35), (1.7, 0.06, 2.5), CONCRETE, bevel=0.015, segs=1)
     add_box(bm, (-2.3, FRONT_Y + 0.08, 1.25), (1.15, 0.08, 2.05), DARK, bevel=0.0)
@@ -510,30 +528,62 @@ def build_plant():
 
 
 def build_tree():
+    """Trunk and stub limbs only. Foliage is separate crossed cards, not a cone."""
     bm = new_bm()
-    add_tube(bm, (0, 0, 0.0), (0, 0, 0.55), 0.09, BARK, 7)
-    add_tube(bm, (0, 0, 0.45), (0, 0, 0.9), 0.06, BARK, 6)
-    add_cone(bm, (0, 0, 1.15), 0.78, 0.85, NEEDLE, 8)
-    add_cone(bm, (0, 0, 1.70), 0.58, 0.75, NEEDLE, 8)
-    add_cone(bm, (0, 0, 2.20), 0.36, 0.65, NEEDLE, 7)
+    add_tube(bm, (0, 0, 0.0), (0, 0, 0.85), 0.10, BARK, 8)
+    add_tube(bm, (0, 0, 0.75), (0, 0, 1.45), 0.055, BARK, 6)
+    for i, a in enumerate((0.3, 1.8, 3.4, 5.0)):
+        z0 = 0.85 + (i % 2) * 0.25
+        add_tube(bm, (0, 0, z0), (math.cos(a) * 0.42, math.sin(a) * 0.42, z0 + 0.38), 0.022, BARK, 5)
     orient(bm)
     return bm
 
 
-def build_rock():
+def build_foliage():
     bm = new_bm()
-    rng = np.random.default_rng(7)
+    uv = bm.loops.layers.uv.new("UVMap")
+    L = lay(bm)
+
+    def card(center, right, up, w, h):
+        c = Vector(center)
+        r = Vector(right).normalized() * (w * 0.5)
+        u = Vector(up).normalized() * (h * 0.5)
+        vs = [bm.verts.new(p) for p in (c + r + u, c - r + u, c - r - u, c + r - u)]
+        try:
+            f = bm.faces.new(vs)
+        except ValueError:
+            return
+        f[L] = NEEDLE
+        coords = [(0.98, 0.98), (0.02, 0.98), (0.02, 0.02), (0.98, 0.02)]
+        for lp, q in zip(f.loops, coords):
+            lp[uv].uv = q
+
+    for i, z in enumerate((1.15, 1.65, 2.15)):
+        span = 1.55 - i * 0.38
+        for k in range(4):
+            a = k * math.tau / 4.0 + i * 0.4
+            card((math.cos(a) * span * 0.12, math.sin(a) * span * 0.12, z),
+                 (math.cos(a), math.sin(a), 0.0), (0.0, 0.05, 1.0), span, 0.95 - i * 0.12)
+    return bm
+
+
+def build_rock(seed, scale):
+    """Angular stone, two variants. Facets stay large so the crack texture has room."""
+    bm = new_bm()
+    rng = np.random.default_rng(seed)
     pts = []
-    for i in range(16):
-        v = Vector((rng.normal(), rng.normal(), abs(rng.normal()) * 0.8))
+    for _i in range(11):
+        v = Vector((rng.uniform(-1, 1), rng.uniform(-1, 1), rng.uniform(0.05, 1.2)))
         if v.length < 1e-3:
             continue
-        v.normalize()
-        v.x *= 0.55
-        v.y *= 0.40
-        v.z *= 0.32
-        pts.append(tuple(v))
-    add_convex(bm, pts, ROCK, bevel=0.02)
+        v.x *= scale[0]
+        v.y *= scale[1]
+        v.z *= scale[2]
+        pts.append((v.x, v.y, v.z))
+    # a flat base so it sits on the snow
+    pts += [(scale[0], scale[1] * 0.4, 0.0), (-scale[0], scale[1] * 0.3, 0.0),
+            (0.0, -scale[1], 0.0), (scale[0] * 0.2, scale[1] * 0.2, scale[2] * 1.05)]
+    add_convex(bm, pts, ROCK, bevel=0.0)
     orient(bm)
     return bm
 
@@ -740,12 +790,12 @@ def shade_plant(p, n, tag):
     seam = 0.0
     if tag == CONCRETE and abs(n.z) < 0.6:
         for x0 in (-2.8, 0.0, 2.8):
-            seam = max(seam, seam_line(p, n, (x0, 0, 2.5), (0, 0, 1), 2.4, 0.025))
+            seam = max(seam, seam_line(p, n, (x0, 0, 2.5), (0, 0, 1), 2.4, 0.045))
         for y0 in (-4.0, -1.5, 1.5, 4.0):
-            seam = max(seam, seam_line(p, n, (0, y0, 2.5), (0, 0, 1), 2.4, 0.025))
+            seam = max(seam, seam_line(p, n, (0, y0, 2.5), (0, 0, 1), 2.4, 0.045))
         for z0 in (1.6, 3.3, 4.6):
-            seam = max(seam, seam_line(p, n, (0, 0, z0), (1, 0, 0), 5.0, 0.022))
-            seam = max(seam, seam_line(p, n, (0, 0, z0), (0, 1, 0), 6.0, 0.022))
+            seam = max(seam, seam_line(p, n, (0, 0, z0), (1, 0, 0), 5.0, 0.04))
+            seam = max(seam, seam_line(p, n, (0, 0, z0), (0, 1, 0), 6.0, 0.04))
     if tag == ROOF:
         # corrugation across the slope
         wave = abs(math.sin(p.x * 18.0))
@@ -776,17 +826,24 @@ def shade_plant(p, n, tag):
 def shade_prop(p, n, tag):
     p = Vector(p)
     n = Vector(n).normalized()
+    height = 0.0
     if tag == BARK:
         col, rough, metal = (0.28, 0.24, 0.20), 0.9, 0.0
     elif tag == NEEDLE:
-        col, rough, metal = (0.22, 0.30, 0.26), 0.85, 0.0
+        col, rough, metal = (0.20, 0.32, 0.24), 0.85, 0.0
     else:
-        col, rough, metal = (0.42, 0.44, 0.46), 0.9, 0.02
-    if n.z > 0.45 and tag in (NEEDLE, ROCK):
-        col = mix(col, (0.82, 0.85, 0.88), smoothstep(0.45, 0.9, n.z) * (0.75 if tag == NEEDLE else 0.55))
+        col, rough, metal = (0.50, 0.52, 0.55), 0.9, 0.02
+    if tag == ROCK:
+        crack = abs(math.sin(p.x * 22.0 + p.y * 9.0))
+        if crack > 0.86:
+            col = mix(col, (0.18, 0.19, 0.20), 0.65)
+            height = -0.7
+        grain = (fbm(p.x * 6.0, p.z * 6.0) - 0.5) * 0.06
+        col = tuple(max(0, min(1, c + grain)) for c in col)
+    if n.z > 0.55 and tag == ROCK:
+        col = mix(col, (0.84, 0.87, 0.90), smoothstep(0.55, 0.92, n.z) * 0.7)
     if tag == BARK and p.z < 0.15:
         col = mix(col, (0.18, 0.16, 0.13), 0.4)
-    height = 0.0
     if tag == BARK:
         if abs(math.sin(p.z * 40.0 + p.x * 8.0)) > 0.85:
             height -= 0.3
@@ -816,6 +873,9 @@ SWATCH_RECT = {
     GLASS: (0.36, 0.01, 0.48, 0.12),
     DARK: (0.50, 0.01, 0.64, 0.12),
     PIPE: (0.18, 0.01, 0.34, 0.16),
+    CONCRETE: (0.66, 0.01, 0.82, 0.16),
+    ROOF: (0.84, 0.01, 0.98, 0.10),
+    STACK: (0.84, 0.10, 0.98, 0.16),
 }
 
 
@@ -827,7 +887,7 @@ def _assign_swatch(face, uv, rect):
         lp[uv].uv = (u, v)
 
 
-def pack_faces(bms, size, pad, y0, swatch_area=SWATCH_AREA):
+def pack_faces(bms, size, pad, y0, swatch_area=SWATCH_AREA, max_ppm=220.0):
     for bm in bms:
         _dissolve_flat(bm)
     items = []
@@ -840,8 +900,10 @@ def pack_faces(bms, size, pad, y0, swatch_area=SWATCH_AREA):
             if area < 1e-8:
                 continue
             tag = int(f[L])
-            # Tires, bolts, pipes, glass and grilles share a tile. Walls, roof, turret and stacks do not.
-            if tag in SWATCH_RECT and (area < swatch_area or tag in (PIPE, STEEL, GLASS, DARK, RUBBER)):
+            # Undersides are never seen. Tires, bolts, pipes and small panels share a tile.
+            # The big wall and roof faces keep unique islands.
+            hidden = f.normal.z < -0.45
+            if tag in SWATCH_RECT and (hidden or area < swatch_area or tag in (PIPE, STEEL, GLASS, DARK, RUBBER)):
                 _assign_swatch(f, uv, SWATCH_RECT[tag])
                 swatched += 1
                 continue
@@ -854,7 +916,7 @@ def pack_faces(bms, size, pad, y0, swatch_area=SWATCH_AREA):
             pts = [(lp.vert.co.dot(t), lp.vert.co.dot(b)) for lp in f.loops]
             items.append((bm, f, uv, pts))
     print("  swatch faces", swatched, "unique", len(items))
-    lo, hi = 2.0, 800.0
+    lo, hi = 2.0, float(max_ppm)
     best = None
     y_limit = int(size * 0.80)  # bottom band is the shared swatches
     for _ in range(22):
@@ -968,12 +1030,12 @@ def tri_ao_grid(bvh, a, b, c, n, spacing):
     return grid
 
 
-def bake(bms, size, spacing, shade, prefix, reserve_px=0, swatch_area=SWATCH_AREA):
+def bake(bms, size, spacing, shade, prefix, reserve_px=0, swatch_area=SWATCH_AREA, max_ppm=220.0):
     t0 = time.time()
     print("bake", prefix, "px", size)
     for bm in bms:
         orient(bm)
-    ppm = pack_faces(bms, size, pad=4, y0=reserve_px, swatch_area=swatch_area)
+    ppm = pack_faces(bms, size, pad=4, y0=reserve_px, swatch_area=swatch_area, max_ppm=max_ppm)
     bvh = make_bvh(bms)
     albedo = np.zeros((size, size, 3), np.float32)
     orm = np.zeros((size, size, 3), np.float32)
@@ -991,7 +1053,7 @@ def bake(bms, size, spacing, shade, prefix, reserve_px=0, swatch_area=SWATCH_ARE
             if len(loops) < 3:
                 continue
             tag0 = int(f[L])
-            if tag0 in SWATCH_RECT and (f.calc_area() < swatch_area or tag0 in (PIPE, STEEL, GLASS, DARK, RUBBER)):
+            if tag0 in SWATCH_RECT and (f.normal.z < -0.45 or f.calc_area() < swatch_area or tag0 in (PIPE, STEEL, GLASS, DARK, RUBBER)):
                 continue
             n = f.normal.copy()
             tag = f[L]
@@ -1094,6 +1156,16 @@ def _paint_swatches(albedo, orm, height, mask, size):
     fill(e, f, (0.05, 0.07, 0.09), 0.12, 0.55, 0.9)
     g, hh = rect(0.50, 0.64)
     fill(g, hh, (0.04, 0.04, 0.045), 0.72, 0.12, 0.4)
+    c0, c1 = rect(0.66, 0.82)
+    fill(c0, c1, (0.56, 0.57, 0.59), 0.88, 0.02, 0.72)
+    for x in range(c0 + 6, c1, 18):
+        albedo[y0:y1, x:x + 2] *= 0.55
+        height[y0:y1, x:x + 2] = -0.6
+    r0, r1 = rect(0.84, 0.98)
+    mid = (y0 + y1) // 2
+    fill(r0, r1, (0.40, 0.44, 0.48), 0.62, 0.28, 0.7)
+    albedo[mid:y1, r0:r1] = (0.42, 0.40, 0.38)  # lower half of that tile reads as stack soot
+    height[y0 + 4:y0 + 6, r0:r1] = 0.4
 
 
 def dilate(img, mask, iters):
@@ -1226,11 +1298,34 @@ def smoothstep_np(e0, e1, x):
     return t * t * (3 - 2 * t)
 
 
+def _hash2(ix, iy):
+    n = np.sin(ix.astype(np.float64) * 127.1 + iy.astype(np.float64) * 311.7) * 43758.5453
+    return n - np.floor(n)
+
+
+def _vnoise(x, y):
+    x0 = np.floor(x)
+    y0 = np.floor(y)
+    fx = x - x0
+    fy = y - y0
+    fx = fx * fx * (3.0 - 2.0 * fx)
+    fy = fy * fy * (3.0 - 2.0 * fy)
+    ix = x0.astype(np.int32)
+    iy = y0.astype(np.int32)
+    return (_hash2(ix, iy) * (1 - fx) * (1 - fy) + _hash2(ix + 1, iy) * fx * (1 - fy)
+            + _hash2(ix, iy + 1) * (1 - fx) * fy + _hash2(ix + 1, iy + 1) * fx * fy)
+
+
+def _fbm(x, y):
+    return (_vnoise(x, y) * 0.62 + _vnoise(x * 2.13 + 5.2, y * 2.13) * 0.28
+            + _vnoise(x * 4.2 + 1.7, y * 4.2) * 0.10)
+
+
 def ground_images():
     size = GROUND_PX
-    # blender XY, game units. x -18..18, y -13..13
-    xs = np.linspace(-18, 18, size)
-    ys = np.linspace(13, -13, size)  # row 0 = +Y = godot -Z far side? keep consistent with UV
+    half = FIELD_HALF
+    xs = np.linspace(-half, half, size)
+    ys = np.linspace(half, -half, size)
     X, Y = np.meshgrid(xs, ys)
     # path in blender XY matching the tank's godot route (godot z = -blender y)
     # tank godot start (-9, z=2.2) -> blender (-9, -2.2); end (-1.4, z=0.5) -> (-1.4, -0.5)
@@ -1238,48 +1333,32 @@ def ground_images():
     dx, dy = bx - ax, by - ay
     ln = math.hypot(dx, dy) or 1.0
     px, py = -dy / ln, dx / ln  # perpendicular
-    off = 0.37
+    off = 0.42
     d1 = dist_field(X, Y, ax + px * off, ay + py * off, bx + px * off, by + py * off)
     d2 = dist_field(X, Y, ax - px * off, ay - py * off, bx - px * off, by - py * off)
-    # two shoe-wide ruts plus a wider churned band between them
-    groove = np.maximum(smoothstep_np(0.22, 0.04, d1), smoothstep_np(0.22, 0.04, d2))
-    corridor = smoothstep_np(1.15, 0.15, np.minimum(d1, d2))
-    # concrete pad under the plant. Plant godot (6.4, z=0) -> blender (6.4, 0)
-    pad = smoothstep_np(3.4, 1.6, np.sqrt((X - 6.4) ** 2 + (Y - 0.0) ** 2))
-    h = np.zeros_like(X)
-    # low frequency rolls
-    for i in range(size):
-        for j in range(size):
-            h[i, j] = 0.34 * (fbm(X[i, j] * 0.08 + 1.5, Y[i, j] * 0.08) - 0.42)
-            h[i, j] += 0.06 * (fbm(X[i, j] * 0.2, Y[i, j] * 0.2 + 3) - 0.5)
-    h *= (1.0 - pad * 0.95)
-    h *= (1.0 - corridor * 0.8)
-    h -= 0.03 * corridor
-    # albedo
-    snow = np.array([0.73, 0.78, 0.83], np.float32)
-    dirt = np.array([0.43, 0.38, 0.32], np.float32)
-    mud = np.array([0.30, 0.26, 0.22], np.float32)
-    conc = np.array([0.55, 0.57, 0.60], np.float32)
-    shade = np.array([0.52, 0.58, 0.64], np.float32)
-    alb = np.zeros((size, size, 3), np.float32)
-    for i in range(size):
-        # vectorize the noise patches per row
-        row_n = np.array([fbm(X[i, j] * 0.10, Y[i, j] * 0.10) for j in range(size)])
-        patch = smoothstep_np(0.46, 0.68, row_n)
-        col = snow * (1 - patch)[:, None] + dirt * patch[:, None]
-        g = groove[i, :, None]
-        col = col * (1 - g * 0.82) + mud * (g * 0.82)
-        p = pad[i, :, None]
-        col = col * (1 - p * 0.88) + conc * (p * 0.88)
-        # soft contact under the plant and in the ruts, so the dusk read survives a weak shadow map
-        cav = np.clip(-h[i] * 1.4, 0, 1) * 0.28 + groove[i] * 0.15
-        col = col * (1 - cav)[:, None] + shade * cav[:, None]
-        alb[i] = np.clip(col, 0, 1)
-    # normal from the fine height plus groove trenches
-    hf = h - groove * 0.045
+    groove = np.maximum(smoothstep_np(0.42, 0.06, d1), smoothstep_np(0.42, 0.06, d2))
+    corridor = smoothstep_np(2.6, 0.4, np.minimum(d1, d2))
+    # a second churned track so the field is not one stripe on an empty slab
+    spur = smoothstep_np(1.8, 0.3, dist_field(X, Y, -10.0, 8.0, 10.0, -6.0))
+    pad = smoothstep_np(4.6, 2.0, np.sqrt((X - 6.4) ** 2 + Y ** 2))
+    h = 0.62 * (_fbm(X * 0.04 + 1.2, Y * 0.04) - 0.32)
+    h = h + 0.16 * (_fbm(X * 0.09 + 3.0, Y * 0.09) - 0.5)
+    soft = np.maximum(corridor, spur * 0.8)
+    h = h * (1.0 - pad * 0.9) * (1.0 - soft * 0.7) - 0.045 * groove
+    snow = np.array([0.86, 0.89, 0.92], np.float32)
+    dirt = np.array([0.58, 0.50, 0.40], np.float32)
+    mud = np.array([0.40, 0.33, 0.26], np.float32)
+    conc = np.array([0.68, 0.70, 0.72], np.float32)
+    patch = np.clip(smoothstep_np(0.40, 0.58, _fbm(X * 0.055, Y * 0.055)) * 0.9
+                    + smoothstep_np(0.52, 0.72, _fbm(X * 0.12 + 6.0, Y * 0.12)) * 0.55, 0.0, 1.0)
+    alb = snow * (1.0 - patch)[..., None] + dirt * patch[..., None]
+    churn = np.clip(corridor * 0.8 + spur * 0.6 + groove, 0.0, 1.0)[..., None]
+    alb = alb * (1.0 - churn) + mud * churn
+    alb = alb * (1.0 - pad[..., None] * 0.75) + conc * (pad[..., None] * 0.75)
+    alb = np.clip(alb, 0.0, 1.0)
+    hf = h - groove * 0.06
     save_png(os.path.join(OUT, "ground_albedo.png"), alb)
-    save_png(os.path.join(OUT, "ground_normal.png"), height_to_normal(hf * 8.0, 1.0))
-    # mesh uses the coarse height
+    save_png(os.path.join(OUT, "ground_normal.png"), height_to_normal(hf * 6.0, 1.0))
     return h
 
 
@@ -1294,13 +1373,14 @@ def dist_field(X, Y, ax, ay, bx, by):
 
 def build_ground_mesh(height):
     bm = new_bm()
-    nx, ny = 80, 58
-    xs = np.linspace(-18, 18, nx)
-    ys = np.linspace(-13, 13, ny)
-    # sample height (row 0 of the image is y=+13). Image y index = (13 - by) / 26 * (size-1)
+    half = FIELD_HALF
+    nx, ny = 100, 100
+    xs = np.linspace(-half, half, nx)
+    ys = np.linspace(-half, half, ny)
+
     def sample(x, y):
-        u = (x + 18) / 36
-        v = (13 - y) / 26
+        u = (x + half) / (2.0 * half)
+        v = (half - y) / (2.0 * half)
         px = int(max(0, min(GROUND_PX - 1, u * (GROUND_PX - 1))))
         py = int(max(0, min(GROUND_PX - 1, v * (GROUND_PX - 1))))
         return float(height[py, px])
@@ -1493,12 +1573,34 @@ def preview(path, loc, target):
         traceback.print_exc()
 
 
+def needle_image(path):
+    """A small spruce sprig. Alpha is the card mask; tips carry snow."""
+    h, w = 256, 128
+    img = np.zeros((h, w, 4), np.float32)
+    yy, xx = np.mgrid[0:h, 0:w]
+    for k in range(9):
+        cx = 18 + (k % 5) * 20
+        cy = 30 + k * 22
+        dx = (xx - cx) / 7.0
+        dy = (yy - cy) / 26.0
+        m = np.clip(1.0 - (dx * dx * 1.4 + dy * dy * 0.25), 0.0, 1.0)
+        snowy = k % 3 == 0
+        col = np.array([0.78, 0.82, 0.84] if snowy else [0.16, 0.34, 0.22], np.float32)
+        img[..., :3] = np.maximum(img[..., :3], col * m[..., None])
+        img[..., 3] = np.maximum(img[..., 3], m)
+    # a darker stem
+    stem = (np.abs(xx - w * 0.5) < 3) & (yy > 20) & (yy < h - 10)
+    img[stem, :3] = (0.22, 0.16, 0.10)
+    img[stem, 3] = 1.0
+    save_png(path, img)
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     clear_scene()
     print("building tank")
     hull = build_hull()
-    join(hull, build_wheels())
+    wheels = wheel_parts()
     turret = build_turret()
     barrel = build_barrel()
     track_l = build_track(1.0)
@@ -1510,14 +1612,18 @@ def main():
     debris = build_debris()
     print("building props")
     tree = build_tree()
-    rock = build_rock()
+    foliage = build_foliage()
+    rock = build_rock(7, (0.62, 0.46, 0.36))
+    rock_b = build_rock(19, (0.48, 0.70, 0.28))
+    needle_image(os.path.join(OUT, "needle.png"))
 
     bake([hull, turret, barrel], TANK_PX, 0.10, shade_tank, os.path.join(OUT, "m1a3"))
     # reserve a top band on the plant atlas, then pack below it
     # pack_faces y0 is in pixels from the top. Bake writes the mesh; we paint the band after
     # by a second pass so dilation doesn't need to know. Easiest: bake, then overwrite the band.
     # Pipes, ribs and ladder rungs share the steel swatch so the walls keep the texels.
-    bake([plant], PLANT_PX, 0.18, shade_plant, os.path.join(OUT, "plant"), reserve_px=0, swatch_area=0.55)
+    # Only the big wall and roof faces get unique texels, at about the tank's density.
+    bake([plant], PLANT_PX, 0.25, shade_plant, os.path.join(OUT, "plant"), reserve_px=0, swatch_area=8.0, max_ppm=140.0)
     # debris shares the plant albedo's top-left. Give them explicit UVs into a swatch we paint
     # over the corner after load. We'll overwrite corner pixels of the saved images in numpy
     # by re-baking the corner into a small array and compositing via a reload.
@@ -1581,7 +1687,13 @@ def main():
     aim_o.matrix_parent_inverse = Matrix.Identity(4)
     aim_o.location = Vector(aim - ring)
 
-    export_glb(os.path.join(OUT, "m1a3.glb"), [hull_o, track_o, pivot])
+    wheel_objs = []
+    for name, bm, loc in wheels:
+        scale_bm(bm, S)
+        wo = mesh_object(name, bm, tank_mat)
+        wo.location = loc * S
+        wheel_objs.append(wo)
+    export_glb(os.path.join(OUT, "m1a3.glb"), [hull_o, track_o, pivot] + wheel_objs)
 
     plant_o = mesh_object("PlantIntact", plant, plant_mat)
     wreck_o = mesh_object("PlantWreck", wreck, plant_mat)
@@ -1594,13 +1706,19 @@ def main():
 
     ground_o = mesh_object("Ground", ground, ground_mat)
     export_glb(os.path.join(OUT, "ground.glb"), [ground_o])
-    tree_o = mesh_object("Tree", tree, prop_mat)
+    tree_o = mesh_object("Trunk", tree, prop_mat)
+    foliage_o = mesh_object("Foliage", foliage, prop_mat)
     rock_o = mesh_object("Rock", rock, prop_mat)
-    export_glb(os.path.join(OUT, "tree.glb"), [tree_o])
-    export_glb(os.path.join(OUT, "rock.glb"), [rock_o])
+    rock_b_o = mesh_object("RockB", rock_b, prop_mat)
+    export_glb(os.path.join(OUT, "tree.glb"), [tree_o, foliage_o])
+    export_glb(os.path.join(OUT, "rock.glb"), [rock_o, rock_b_o])
 
     tree_o.hide_render = True
+    foliage_o.hide_render = True
     rock_o.hide_render = True
+    rock_b_o.hide_render = True
+    for wo in wheel_objs:
+        wo.hide_render = False
     ground_o.hide_render = True
     plant_o.hide_render = True
     wreck_o.hide_render = True

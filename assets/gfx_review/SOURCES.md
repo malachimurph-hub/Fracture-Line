@@ -18,7 +18,7 @@ Small repeated parts (wheel segments, bolts, pipe runs) share a painted swatch s
 
 ## Proportions
 
-The tank follows public Abrams-family figures so it reads as the in-game M1A3: hull about 7.93 m, gun forward about 9.77 m, width about 3.66 m, height about 2.44 m. The game scale is 0.25 world units per metre, the same scale as the civilian cars. The power station is an original compact industrial hall (layered roof, pipes, two stacks) sized like a 4-tile structure. It is not the live Nuclear Power Station scene.
+The in-game name is M1A3. No fielded production tank has public hull and turret drawings under that designation; it was a proposed Abrams upgrade that was not built as its own vehicle. This model follows the public M1A2 instead: hull about 7.93 m, gun forward about 9.77 m, width about 3.66 m, height about 2.44 m, seven road wheels a side, rear drive sprocket, front idler, no return rollers, a shallow glacis, a low turret with the cupola on the right, a thermal sleeve and no bore evacuator, and plain side skirts rather than an add-on armor kit. The game scale is 0.25 world units per metre. The power station is an original compact industrial hall. It is not the live power-station scene.
 
 ## Files
 

@@ -43,6 +43,8 @@ var aim_fwd: Node3D
 var barrel: Node3D
 var muzzle: Node3D
 var tracks: MeshInstance3D
+var spinners: Array = []
+var _travel := 0.0
 var plant_root: Node3D
 var intact: Node3D
 var wreck: Node3D
@@ -161,8 +163,14 @@ func _place_tank(u: float) -> void:
 	tank_root.position = tank_start.lerp(tank_end, u)
 	if hull_fwd != null:
 		_face(tank_root, hull_fwd, tank_end - tank_start)
+	var dist := tank_start.distance_to(tank_root.position)
 	if tread_mat != null:
-		tread_mat.uv1_offset.y = tank_start.distance_to(tank_root.position) / shoe_len
+		tread_mat.uv1_offset.y = dist / shoe_len
+	# Road-wheel radius is 0.30 m at 0.25 units per metre.
+	var spin := (dist - _travel) / 0.075
+	_travel = dist
+	for w in spinners:
+		(w as Node3D).rotate_object_local(Vector3.RIGHT, spin)
 
 
 func _aim_turret(dt: float) -> void:
@@ -440,12 +448,12 @@ func _world() -> void:
 	env.background_mode = Environment.BG_SKY
 	env.sky = sky
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
-	env.ambient_light_energy = 0.42
+	env.ambient_light_energy = 0.7
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
-	env.tonemap_exposure = 1.08
+	env.tonemap_exposure = 1.2
 	env.fog_enabled = true
 	env.fog_mode = Environment.FOG_MODE_EXPONENTIAL
-	env.fog_density = 0.012
+	env.fog_density = 0.007
 	env.fog_light_color = Color(0.55, 0.58, 0.64)
 	env.fog_aerial_perspective = 0.25
 	# A little bloom so the muzzle and the fire read warm against the cool field.
@@ -460,8 +468,8 @@ func _world() -> void:
 	add_child(we)
 	sun = DirectionalLight3D.new()
 	sun.name = "Sun"
-	sun.light_color = Color(0.76, 0.81, 0.90)
-	sun.light_energy = 1.55
+	sun.light_color = Color(0.84, 0.88, 0.96)
+	sun.light_energy = 1.9
 	sun.shadow_enabled = true
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
 	sun.directional_shadow_max_distance = 48.0
@@ -471,21 +479,6 @@ func _world() -> void:
 	# Low, cool, from the south-west. One light only, so the shadow is long and readable.
 	sun.rotation_degrees = Vector3(-16.0, -58.0, 0.0)
 	add_child(sun)
-	# The detailed field is finite. A larger snow apron sits under it so the RTS camera
-	# does not look off a cliff into the sky. One extra draw, no texture of its own.
-	var apron := MeshInstance3D.new()
-	apron.name = "SnowApron"
-	var pad := PlaneMesh.new()
-	pad.size = Vector2(140.0, 140.0)
-	apron.mesh = pad
-	var snow := StandardMaterial3D.new()
-	snow.albedo_color = Color(0.40, 0.44, 0.50)
-	snow.roughness = 0.96
-	snow.metallic = 0.0
-	apron.material_override = snow
-	apron.position = Vector3(0.0, -0.06, 0.0)
-	apron.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(apron)
 	cam = Camera3D.new()
 	cam.current = true
 	cam.fov = 46.0
@@ -521,6 +514,10 @@ func _load_tank() -> void:
 	if tracks != null:
 		tracks.material_override = tread_mat
 		tracks.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+	for prefix in ["Wheel", "Sprocket", "Idler"]:
+		for n in tank_root.find_children(prefix + "*", "MeshInstance3D", true, false):
+			spinners.append(n)
+	print("GFX-SPINNERS ", spinners.size())
 	if barrel != null and muzzle != null:
 		muzzle_local = muzzle.position
 	if pivot != null:
@@ -531,7 +528,7 @@ func _load_tank() -> void:
 	var gm := _pbr("res://assets/gfx_review/ground_albedo.png", "res://assets/gfx_review/ground_normal.png", "")
 	gm.roughness = 0.94
 	gm.metallic = 0.0
-	gm.normal_scale = 0.65
+	gm.normal_scale = 1.1
 	_override_meshes(gnd, gm, [])
 
 
@@ -565,11 +562,29 @@ func _load_plant() -> void:
 
 func _load_props() -> void:
 	var mat := _pbr("res://assets/gfx_review/props_albedo.png", "res://assets/gfx_review/props_normal.png", "res://assets/gfx_review/props_orm.png")
-	_scatter("res://assets/gfx_review/tree.glb", "Tree", layout.get("trees", []), mat)
-	_scatter("res://assets/gfx_review/rock.glb", "Rock", layout.get("rocks", []), mat)
+	var trees: Array = layout.get("trees", [])
+	_scatter("res://assets/gfx_review/tree.glb", "Trunk", trees, mat)
+	var needles := StandardMaterial3D.new()
+	needles.albedo_texture = load("res://assets/gfx_review/needle.png")
+	needles.albedo_color = Color(0.55, 0.95, 0.62)
+	needles.transparency = BaseMaterial3D.TRANSPARENCY_DISABLED
+	needles.cull_mode = BaseMaterial3D.CULL_DISABLED
+	needles.roughness = 0.9
+	needles.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+	_scatter("res://assets/gfx_review/tree.glb", "Foliage", trees, needles, 0.55)
+	var rocks: Array = layout.get("rocks", [])
+	var even: Array = []
+	var odd: Array = []
+	for i in rocks.size():
+		if i % 2 == 0:
+			even.append(rocks[i])
+		else:
+			odd.append(rocks[i])
+	_scatter("res://assets/gfx_review/rock.glb", "Rock", even, mat)
+	_scatter("res://assets/gfx_review/rock.glb", "RockB", odd, mat)
 
 
-func _scatter(scene_path: String, mesh_name: String, items: Array, mat: Material) -> void:
+func _scatter(scene_path: String, mesh_name: String, items: Array, mat: Material, scale_mul := 1.0) -> void:
 	if items.is_empty():
 		return
 	var packed := load(scene_path) as PackedScene
@@ -589,7 +604,7 @@ func _scatter(scene_path: String, mesh_name: String, items: Array, mat: Material
 		var it: Dictionary = items[i]
 		var p := _v3(it["pos"])
 		var yaw := float(it.get("yaw", 0.0))
-		var sc := float(it.get("scale", 1.0))
+		var sc := float(it.get("scale", 1.0)) * scale_mul
 		var basis := Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * sc)
 		mm.set_instance_transform(i, Transform3D(basis, p))
 	var node := MultiMeshInstance3D.new()
@@ -786,8 +801,8 @@ func _apply_camera() -> void:
 		_:
 			# Steep enough that the frame stays on the detailed field. The apron only
 			# covers whatever still reaches past that mesh.
-			focus = Vector3(1.6, 0.35, 0.1)
-			eye = focus + Vector3(-0.8, 13.2, 4.6)
+			focus = Vector3(2.2, 0.45, 0.2)
+			eye = focus + Vector3(-1.8, 9.2, 6.4)
 	cam.global_position = eye
 	cam.look_at(focus, Vector3.UP)
 	if scorch_ground != null and impact_pt != null:
