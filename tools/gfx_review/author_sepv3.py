@@ -18,7 +18,7 @@ import bmesh
 from mathutils import Matrix, Vector
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-OUT = os.path.join(ROOT, "view", "units", "us", "halberd_sepv3.glb")
+OUT = os.path.join(ROOT, "assets", "gfx_review", "halberd_sepv3.glb")
 S = 0.25
 
 PAINT, STEEL, GLASS, TRACK, WRUB, WSTEEL = 0, 6, 2, 4, 7, 8
