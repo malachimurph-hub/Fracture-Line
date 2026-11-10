@@ -67,9 +67,15 @@ const FACTION_PAINT := {&"us": Color("#c9b48c"), &"eu": Color("#44523a"), &"tpla
 const PAINT_BUILDINGS := {&"ecc_power": 0.8, &"tpla_cc_plant": 0.8}
 
 ## M4.2 (Malachi): per-unit paint overrides. US aircraft and the US dozer are grey, the UH-60
-## Black Hawk is black; every other US vehicle stays light tan.
+## Black Hawk is black. The M1A3 is CARC Tan 686A. The chip is about #A08D69; the in-game
+## value is #E0C080 so baked AO, grime and the match sun still read as desert tan.
+## Every other US vehicle stays the light faction tan.
 const US_AIR_GREY := Color("#7f868c")
-const UNIT_PAINT := {&"us_blackhawk": Color("#1d1f21"), &"us_dozer": Color("#80868a"), &"us_ripsaw": Color("#5e655f")}
+const M1A3_TAN := Color("#E0C080")
+## T-90M: muted grey-olive. Darker than the first lime, still light enough to read green.
+const T90_GREEN := Color("#96A468")
+const UNIT_PAINT := {&"us_blackhawk": Color("#1d1f21"), &"us_dozer": Color("#80868a"), &"us_ripsaw": Color("#5e655f"),
+	&"us_halberd": M1A3_TAN, &"ecc_t90": T90_GREEN}
 
 static func paint_for(def_id: StringName) -> Color:
 	if UNIT_PAINT.has(def_id):

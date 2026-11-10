@@ -124,6 +124,10 @@ func build() -> void:
 	var cr := _button(tr("MENU_CREDITS"), COL_W, "Credits")
 	cr.pressed.connect(func(): GameSession.goto("res://ui/credits.tscn"))
 	_col.add_child(cr)
+	# Opt-in graphics review. It loads one isolated scene and does not change a match.
+	var gr := _button("Graphics review", COL_W, "GraphicsReview")
+	gr.pressed.connect(func(): GameSession.goto("res://demo/gfx_quality/combat_review.tscn"))
+	_col.add_child(gr)
 	if not OS.has_feature("web"):
 		var q := _button(tr("MENU_QUIT"), COL_W, "Quit")
 		q.pressed.connect(func(): get_tree().quit())
