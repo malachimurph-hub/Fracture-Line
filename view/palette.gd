@@ -72,8 +72,10 @@ const PAINT_BUILDINGS := {&"ecc_power": 0.8, &"tpla_cc_plant": 0.8}
 ## Every other US vehicle stays the light faction tan.
 const US_AIR_GREY := Color("#7f868c")
 const M1A3_TAN := Color("#E0C080")
+## T-90M: dark olive in the reference. Stored lighter so AO and grime still read green, not black.
+const T90_GREEN := Color("#B4C97A")
 const UNIT_PAINT := {&"us_blackhawk": Color("#1d1f21"), &"us_dozer": Color("#80868a"), &"us_ripsaw": Color("#5e655f"),
-	&"us_halberd": M1A3_TAN}
+	&"us_halberd": M1A3_TAN, &"ecc_t90": T90_GREEN}
 
 static func paint_for(def_id: StringName) -> Color:
 	if UNIT_PAINT.has(def_id):
