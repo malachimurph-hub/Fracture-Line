@@ -1,11 +1,11 @@
 extends SceneTree
-## Candidate only. Copies view/units/us/halberd.tscn and appends SEP v3 parts with the
-## kit8 helpers. The original hull, turret and barrel vertices are not rebuilt or moved.
+## Builds the live M1A3 from the legacy mesh plus the approved SEP v3 fittings.
+## The hull, turret plan and barrel of halberd_legacy.tscn are not rebuilt or moved.
 ##   godot --headless --path . -s res://tools/gfx_m7/halberd_v3detail.gd
 const K := preload("res://tools/gfx_m7/kit8.gd")
 const Geo := preload("res://tools/gfx_m3/geo.gd")
 const OUT := "res://view/units/us/halberd_v3detail.tscn"
-const SRC := "res://view/units/us/halberd.tscn"
+const SRC := "res://view/units/us/halberd_legacy.tscn"
 const US := "#7e8a5c"
 const US_D := "#66704a"
 const US_S := "#464a46"
