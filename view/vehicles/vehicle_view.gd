@@ -233,10 +233,11 @@ func _process(delta: float) -> void:
 		if _outriggers != null:
 			_outriggers.position.y = lerpf(0.42, 0.0, _plant_k)
 			for leg in _legs:
-				var swing := 1.05 if String(leg.name).ends_with("R") else -1.05
+				var swing := 1.50 if String(leg.name).ends_with("R") else -1.50
 				(leg as Node3D).rotation.z = lerpf(swing, 0.0, _plant_k)
 		if _radar != null:
-			_radar.rotation.x = _radar_rx + lerpf(-1.15, 0.0, _plant_k)
+			# Pantsir search radar: the node is the hinge, so this lays the panel back for travel.
+			_radar.rotation.x = _radar_rx + lerpf(-1.55, 0.0, _plant_k)
 	if not work_parts.is_empty() and not _dead:
 		_work(delta)
 	if _dead:

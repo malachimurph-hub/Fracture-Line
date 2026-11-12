@@ -12,29 +12,25 @@ func _ready() -> void:
 		(layer as CanvasLayer).visible = false
 	var spot := Vector2i(48, 48)
 	var only := OS.get_environment("FL_ONLY")
-	for spec in [["bmpt", &"ecc_bmpt", 4.2, 3], ["bmp3", &"ecc_bmp3", 4.2, 3], ["t14", &"ecc_t14", 5.4, 3],
-			["mi8", &"ecc_mi8", 7.2, 4], ["pantsir", &"ecc_pantsir", 6.4, 4]]:
+	for spec in [["bmp3", &"ecc_bmp3", 4.4], ["t14", &"ecc_t14", 5.2], ["mi8", &"ecc_mi8", 7.0],
+			["pantsir", &"ecc_pantsir", 6.2], ["tos", &"ecc_tos", 4.8], ["iskander", &"ecc_iskander", 6.6],
+			["shilka", &"ecc_zeus", 4.4]]:
 		if only != "" and spec[0] != only:
 			continue
 		var u := _unit(spec[1], spot, 0)
 		if spec[0] == "mi8":
 			u.air_state = AirSys.PARKED
 			m.world.air_alt[u.id] = 0.0
-		var beside: StringName = &"ecc_t90" if spec[0] == "bmpt" else &"ecc_bmpt"
-		var t90 := _unit(beside, spot + Vector2i(0, int(spec[3])), 0)
 		await frames(4)
-		await _frame(u, t90, spec[0] + "_play", float(spec[2]) * 1.35, 0.42)
-		await _frame(u, t90, spec[0] + "_close", float(spec[2]) * 0.9, 0.95)
-		if spec[0] == "bmpt":
-			await _hatches(u, spec[0] + "_hatches")
+		await _frame(u, null, spec[0] + "_play", float(spec[2]) * 1.25, 0.48)
+		await _frame(u, null, spec[0] + "_close", float(spec[2]) * 0.72, 0.85)
 		if spec[0] == "pantsir":
 			_plant(u)
-			await frames(3)
-			await _frame(u, t90, spec[0] + "_deployed", float(spec[2]) * 1.15, 0.55)
-		for e in [u, t90]:
-			e.alive = false
-			if m.world.views.has(e.id):
-				m.world.views[e.id].visible = false
+			await frames(2)
+			await _frame(u, null, spec[0] + "_deployed", float(spec[2]) * 1.15, 0.55)
+		u.alive = false
+		if m.world.views.has(u.id):
+			m.world.views[u.id].visible = false
 	print("=== M47 PAIR DONE")
 	get_tree().quit(0)
 
@@ -43,7 +39,7 @@ func _sun() -> Vector3:
 		return -(n as DirectionalLight3D).global_transform.basis.z
 	return Vector3(0.3, 0.8, 0.4)
 
-func _frame(u: SimEntity, t90: SimEntity, name: String, dist: float, fwd_k: float) -> void:
+func _frame(u: SimEntity, buddy: SimEntity, name: String, dist: float, fwd_k: float) -> void:
 	var v: Node3D = m.world.views[u.id]
 	var fwd: Vector3 = v.global_transform.basis.z
 	var side: Vector3 = v.global_transform.basis.x
@@ -53,7 +49,9 @@ func _frame(u: SimEntity, t90: SimEntity, name: String, dist: float, fwd_k: floa
 	add_child(cam)
 	cam.fov = 28.0
 	cam.current = true
-	var focus: Vector3 = v.global_position.lerp(m.world.views[t90.id].global_position, 0.22) + Vector3(0, 0.7, 0)
+	var focus := v.global_position + Vector3(0, 0.65, 0)
+	if buddy != null:
+		focus = v.global_position.lerp(m.world.views[buddy.id].global_position, 0.22) + Vector3(0, 0.7, 0)
 	cam.global_position = focus + side * dist * 0.75 + fwd * dist * fwd_k + Vector3(0, dist * 0.32, 0)
 	cam.look_at(focus, Vector3.UP)
 	await frames(5)
@@ -108,6 +106,8 @@ func _plant(u: SimEntity) -> void:
 	v._plant_k = 1.0
 	if v._outriggers != null:
 		v._outriggers.position.y = 0.0
+		for leg in v._legs:
+			(leg as Node3D).rotation.z = 0.0
 	if v._radar != null:
 		v._radar.rotation.x = v._radar_rx
 
