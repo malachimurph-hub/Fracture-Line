@@ -19,6 +19,12 @@ const S := 0.30
 
 func _initialize() -> void:
 	var mat: Material = load(VK.MAT_PATH)
+	var only := OS.get_cmdline_user_args()
+	if only.size() > 0 and String(only[0]) == "pantsir":
+		_pantsir(mat)
+		print("PANTSIR KIT")
+		quit(0)
+		return
 	_bmp3(mat)
 	# BMPT is the Blender mesh at res://assets/models/ecc/bmpt.glb. Do not rebuild it here.
 	_t14(mat)
@@ -342,6 +348,100 @@ func _iskander(mat: Material) -> void:
 	b.tube(Vector3(0.42, -0.02, 0.15), Vector3(0.42, 0.08, 0.85), 0.02, 6)  # erector arm
 	VK._mi(bn, root, "BarrelMesh", b.commit(mat))
 	_finish_v(root, model, h, mat, "res://view/units/ecc/iskander.tscn", 1.55, [t, b])
+
+# Pantsir-S1 on the MZKT-7930 8x8, same chassis scale as the Iskander. Search radar
+# folds by name. Outriggers are modelled planted; the view drops that node on deploy.
+func _pantsir(mat: Material) -> void:
+	var sc := 0.24
+	var root := VK._root({"selection_radius": 1.45, "bar_height": 1.65, "recoil": 0.04, "wreck_s": 8.0, "steer_max": 0.28})
+	var model := VK._n3(root, root, "Model")
+	var h = K.new()
+	var L := 12.7 * sc
+	UV8._tyres(h, 0.50, [L * 0.36, L * 0.22, -L * 0.14, -L * 0.32], 0.22, 0.16, 2, RU_S)
+	h.color(RU_D, Geo.PAINT)
+	h.cbox(Vector3(0, 0.40, -0.05), Vector3(0.82, 0.16, L * 0.92), 0.015)
+	h.color(RU, Geo.PAINT)
+	var nose := L * 0.46
+	h.xloft([[nose, K.sect(0.38, 0.46, 0.62, 0.2, 0.28, 0.22, 0.03)],
+		[nose - 0.42, K.sect(0.36, 0.48, 0.86, 0.4, 0.44, 0.34, 0.04)],
+		[nose - 0.78, K.sect(0.36, 0.48, 0.84, 0.42, 0.46, 0.34, 0.03)]])
+	h.color(GLASS_C, Geo.GLASS)
+	h.plate(Vector3(0, 0.74, nose - 0.12), Vector3(0.62, 0.22, 0.012), Vector3(-14, 0, 0))
+	for s in [-1.0, 1.0]:
+		h.box(Vector3(s * 0.40, 0.70, nose - 0.38), Vector3(0.012, 0.16, 0.26))
+		h.color(RU_S, Geo.STEEL)
+		h.tube(Vector3(s * 0.42, 0.82, nose - 0.22), Vector3(s * 0.58, 0.86, nose - 0.18), 0.012, 4)
+		h.box(Vector3(s * 0.62, 0.86, nose - 0.16), Vector3(0.05, 0.08, 0.07))
+		h.color(RU, Geo.PAINT)
+	h.color("#2b2d2c", Geo.DARK)
+	h.grille(Vector3(0, 0.52, nose - 0.02), 0.36, 0.12, 5)
+	h.color(RU_D, Geo.PAINT)
+	h.cbox(Vector3(0, 0.48, nose - 0.04), Vector3(0.7, 0.08, 0.08), 0.008)
+	# mid-body module and a door each side
+	h.color(RU, Geo.PAINT)
+	h.cbox(Vector3(0, 0.72, 0.35), Vector3(0.78, 0.36, 0.62), 0.012)
+	for s in [-1.0, 1.0]:
+		h.color(RU_D, Geo.PAINT)
+		h.box(Vector3(s * 0.40, 0.70, 0.35), Vector3(0.02, 0.24, 0.26))
+		h.color(RU_S, Geo.STEEL)
+		h.box(Vector3(s * 0.415, 0.70, 0.46), Vector3(0.012, 0.05, 0.03))
+		h.cbox(Vector3(s * 0.46, 0.55, -0.55), Vector3(0.12, 0.18, 1.05), 0.008)
+		h.box(Vector3(s * 0.50, 0.72, -0.7), Vector3(0.025, 0.025, 1.15))
+		for i in 6:
+			h.box(Vector3(s * 0.50, 0.62, -1.2 + float(i) * 0.18), Vector3(0.02, 0.16, 0.016))
+	h.ladder(Vector3(-0.52, 0.22, 0.15), 0.55, Vector3(0, 0, 1), 0.08)
+	h.color(RU_D, Geo.PAINT)
+	h.cbox(Vector3(0, 0.55, -L * 0.46), Vector3(0.78, 0.32, 0.08), 0.008)
+	V4._lamps(h, 0.26, 0.48, nose)
+	V4._antenna(h, Vector3(-0.28, 1.05, 0.2), 0.45)
+	h.color("#ffffff", Geo.TEAM)
+	h.box(Vector3(0.48, 0.62, 0.05), Vector3(0.01, 0.03, 0.4))
+	var og = K.new()
+	og.color(RU_S, Geo.STEEL)
+	for s in [-1.0, 1.0]:
+		for z in [0.85, -0.85]:
+			og.tube(Vector3(s * 0.36, 0.42, z), Vector3(s * 0.78, 0.08, z), 0.022, 6)
+			og.cbox(Vector3(s * 0.84, 0.03, z), Vector3(0.14, 0.04, 0.18), 0.004)
+	VK._mi(model, root, "Outriggers", og.commit(mat))
+	var piv := VK._n3(model, root, "TurretPivot", Vector3(0, 0.58, -0.25))
+	var t = K.new()
+	t.color(RU, Geo.PAINT)
+	t.cbox(Vector3(0, 0.06, 0.0), Vector3(0.55, 0.12, 0.48), 0.01)
+	t.color(RU_D, Geo.PAINT)
+	t.cbox(Vector3(0, 0.16, 0.22), Vector3(0.16, 0.14, 0.08), 0.006)
+	t.color(RU_S, Geo.STEEL)
+	t.tube(Vector3(0, 0.16, 0.26), Vector3(0, 0.16, 0.34), 0.09, 10)
+	for s in [-1.0, 1.0]:
+		t.color(RU_D, Geo.PAINT)
+		t.cbox(Vector3(s * 0.38, 0.14, 0.02), Vector3(0.22, 0.20, 0.5), 0.008)
+		for row in 2:
+			for col in 3:
+				var x: float = s * 0.38 + (float(col) - 1.0) * 0.055
+				var y: float = 0.08 + float(row) * 0.08
+				t.color(RU_L, Geo.PAINT)
+				t.tube(Vector3(x, y, 0.22), Vector3(x, y, 0.36), 0.022, 6)
+				t.color("#1a1c1a", Geo.DARK)
+				t.tube(Vector3(x, y, 0.32), Vector3(x, y, 0.40), 0.012, 5)
+	VK._mi(piv, root, "Turret", t.commit(mat))
+	var rd = K.new()
+	rd.color(RU, Geo.PAINT)
+	rd.cbox(Vector3(0, 0.10, 0), Vector3(0.06, 0.18, 0.06), 0.004)
+	rd.cbox(Vector3(0, 0.24, 0.02), Vector3(0.40, 0.26, 0.04), 0.006)
+	rd.color(RU_S, Geo.STEEL)
+	rd.box(Vector3(0, 0.24, 0.045), Vector3(0.30, 0.16, 0.012))
+	VK._mi(VK._n3(piv, root, "Radar", Vector3(0, 0.22, -0.08)), root, "RadarMesh", rd.commit(mat))
+	var bn := VK._n3(piv, root, "Barrel", Vector3(0, 0.16, 0.12))
+	var b = K.new()
+	b.color(RU_D, Geo.PAINT)
+	b.cbox(Vector3(0, 0, 0), Vector3(0.50, 0.06, 0.08), 0.006)
+	b.color(RU_S, Geo.STEEL)
+	for s in [-1.0, 1.0]:
+		for k in 2:
+			var y := -0.025 + float(k) * 0.05
+			b.tube(Vector3(s * 0.18, y, 0.02), Vector3(s * 0.18, y, 0.62), 0.014, 6)
+			b.tube(Vector3(s * 0.18, y, 0.56), Vector3(s * 0.18, y, 0.70), 0.02, 6)
+	VK._mi(bn, root, "BarrelMesh", b.commit(mat))
+	_finish_v(root, model, h, mat, "res://view/units/ecc/pantsir.tscn", 1.65, [t, b, og])
 
 # Mi-8. Round cabin, bulbous glazed nose, clamshell cargo doors, roof engines,
 # external tanks, tricycle gear, five-blade rotor, three-blade tail rotor.

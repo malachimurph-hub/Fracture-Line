@@ -20,15 +20,14 @@ func _ready() -> void:
 		if spec[0] == "mi8":
 			u.air_state = AirSys.PARKED
 			m.world.air_alt[u.id] = 0.0
-		var t90 := _unit(&"ecc_t90", spot + Vector2i(0, int(spec[3])), 0)
+		var beside: StringName = &"ecc_t90" if spec[0] == "bmpt" else &"ecc_bmpt"
+		var t90 := _unit(beside, spot + Vector2i(0, int(spec[3])), 0)
 		await frames(4)
 		await _frame(u, t90, spec[0] + "_play", float(spec[2]) * 1.35, 0.42)
 		await _frame(u, t90, spec[0] + "_close", float(spec[2]) * 0.9, 0.95)
 		if spec[0] == "bmpt":
 			await _hatches(u, spec[0] + "_hatches")
 		if spec[0] == "pantsir":
-			await _farside(u, "pantsir_farside")
-			await _compare(u, "pantsir_compare")
 			_plant(u)
 			await frames(3)
 			await _frame(u, t90, spec[0] + "_deployed", float(spec[2]) * 1.15, 0.55)
