@@ -586,7 +586,7 @@ BLD_ECC_AA_SITE_DESC,"Twin 30 mm rotary anti-aircraft turret. Shreds aircraft, c
 BLD_ECC_AIRFIELD,Airfield
 BLD_ECC_AIRFIELD_DESC,"Builds Su-57, Ka-52, Mi-24 Hind, Mi-8 and Tu-160. 6 parking slots: bomber 4, fighter 2, helicopter 0. Jets land here to rearm."
 BLD_ECC_MINISTRY,Ministry of Defense
-BLD_ECC_MINISTRY_DESC,"Tech centre. Researches the heavy towers, Red Dawn and the Grim Reaper. Unlocks FSB GRU, the Black Market, the T-14 and the Tu-160."
+BLD_ECC_MINISTRY_DESC,"Tech centre. Researches the heavy towers, Red Dawn and the Grim Reaper. Unlocks FSB GRU, the Black Market, the T-26 and the Tu-160."
 BLD_ECC_BLACK_MARKET,Black Market
 BLD_ECC_BLACK_MARKET_DESC,"Signals bunker and hacker hub. Needs the Ministry of Defense and draws power. Researches four hacks: grid shutdown, radar blackout, funds siphon and unit hijack."
 POWER_ECC_RECON,Recon Drone
@@ -784,7 +784,7 @@ UNIT_ECC_BMP3,BMP-3
 UNIT_ECC_BMP3_DESC,"Infantry fighting vehicle with a 100 mm gun, a 30 mm cannon and an anti-tank missile. Carries one conscript squad. Troops fire only after they step out."
 UNIT_ECC_BMPT,BMPT
 UNIT_ECC_BMPT_DESC,"Tank-support vehicle. Twin 30 mm autocannons, grenade launchers and anti-tank missiles. Strong against infantry that get close to the armour."
-UNIT_ECC_T14,T-14
+UNIT_ECC_T14,T-26
 UNIT_ECC_T14_DESC,Late tank with an unmanned turret and a 125 mm gun stronger than the T-90M. Needs a Ministry of Defense.
 UNIT_ECC_TOS,TOS-1A
 UNIT_ECC_TOS_DESC,Short-range thermobaric rocket launcher. A salvo of area blasts. Strong against infantry and bunkers. Must get close.
