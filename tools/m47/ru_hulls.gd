@@ -296,14 +296,45 @@ static func bmp3_v2(mat: Material) -> void:
 	h.color(RU_D, Geo.PAINT)
 	h.prism_x([vane[0], vane[2], vane[3], vane[1]], -1.05 * Sc, 1.05 * Sc)
 	h.color(RU, Geo.PAINT)
-	# Fender reaches the track outer face. The skirt hangs over that face down to the hub
-	# line, and stops short of the idler so the track end shows from the front.
+	# Thick fender from the hull side out to the track edge, plus the bins and lamps that
+	# fill the front-view outline above the tracks. The skirt still stops short of the idler.
 	for s in [-1.0, 1.0]:
 		var sd: float = s
-		var fen_z1 := 2.70 * Sc
-		h.box(Vector3(sd * (1.16 + 1.615) * 0.5 * Sc, 1.08 * Sc, (rear + fen_z1) * 0.5), Vector3((1.615 - 1.16) * Sc, 0.12 * Sc, fen_z1 - rear))
+		var fen_z1 := 2.50 * Sc
+		h.color(RU, Geo.PAINT)
+		h.box(Vector3(sd * (1.16 + 1.615) * 0.5 * Sc, 1.06 * Sc, (rear + fen_z1) * 0.5), Vector3((1.615 - 1.16) * Sc, 0.32 * Sc, fen_z1 - rear))
 		var sk_z1 := 2.05 * Sc
 		h.box(Vector3(sd * (1.42 + 1.615) * 0.5 * Sc, (0.36 + 1.10) * 0.5 * Sc, (rear + sk_z1) * 0.5), Vector3((1.615 - 1.42) * Sc, (1.10 - 0.36) * Sc, sk_z1 - rear))
+		# Side bins. Outer face at the fender edge, tops stay under the roof line.
+		var bins: Array = [
+			[-2.55, 1.20, 1.20, 1.82],
+			[-1.15, 1.15, 1.18, 1.78],
+			[0.15, 1.20, 1.16, 1.68],
+			[1.20, 0.80, 1.14, 1.48],
+		]
+		for bin in bins:
+			var bz: float = bin[0]
+			var bl: float = bin[1]
+			var by0: float = bin[2]
+			var by1: float = bin[3]
+			h.color(RU, Geo.PAINT)
+			h.box(Vector3(sd * 1.40 * Sc, (by0 + by1) * 0.5 * Sc, bz * Sc), Vector3(0.42 * Sc, (by1 - by0) * Sc, bl * Sc))
+			h.color(RU_S, Geo.STEEL)
+			h.box(Vector3(sd * 1.40 * Sc, by1 * Sc, bz * Sc), Vector3(0.44 * Sc, 0.025 * Sc, bl * 1.02 * Sc))
+		# Headlight cluster and guard on the fender front, above the visible track end.
+		var hx := sd * 1.40 * Sc
+		var hz := 2.22 * Sc
+		h.color(RU_D, Geo.PAINT)
+		h.box(Vector3(hx, 1.22 * Sc, hz), Vector3(0.36 * Sc, 0.24 * Sc, 0.26 * Sc))
+		h.color("#e4dcc8", Geo.LAMP)
+		h.box(Vector3(hx + sd * 0.07 * Sc, 1.26 * Sc, hz + 0.12 * Sc), Vector3(0.09 * Sc, 0.08 * Sc, 0.03 * Sc))
+		h.box(Vector3(hx - sd * 0.07 * Sc, 1.26 * Sc, hz + 0.12 * Sc), Vector3(0.09 * Sc, 0.08 * Sc, 0.03 * Sc))
+		h.box(Vector3(hx, 1.14 * Sc, hz + 0.12 * Sc), Vector3(0.06 * Sc, 0.05 * Sc, 0.03 * Sc))
+		h.color(RU_S, Geo.STEEL)
+		h.box(Vector3(hx, 1.36 * Sc, hz + 0.15 * Sc), Vector3(0.34 * Sc, 0.016 * Sc, 0.016 * Sc))
+		h.box(Vector3(hx, 1.10 * Sc, hz + 0.15 * Sc), Vector3(0.34 * Sc, 0.016 * Sc, 0.016 * Sc))
+		h.box(Vector3(hx + sd * 0.16 * Sc, 1.23 * Sc, hz + 0.15 * Sc), Vector3(0.016 * Sc, 0.26 * Sc, 0.016 * Sc))
+		h.box(Vector3(hx - sd * 0.16 * Sc, 1.23 * Sc, hz + 0.15 * Sc), Vector3(0.016 * Sc, 0.26 * Sc, 0.016 * Sc))
 	# Olive plate on the existing bow underside, facing down and forward.
 	h.color(RU, Geo.PAINT)
 	var nudge := Vector3(0, -0.025 * Sc, 0.02 * Sc)
