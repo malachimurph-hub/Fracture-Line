@@ -27,6 +27,7 @@ func _ready() -> void:
 		if spec[0] == "bmpt":
 			await _hatches(u, spec[0] + "_hatches")
 		if spec[0] == "pantsir":
+			await _farside(u, "pantsir_farside")
 			await _compare(u, "pantsir_compare")
 			_plant(u)
 			await frames(3)
@@ -61,9 +62,27 @@ func _frame(u: SimEntity, t90: SimEntity, name: String, dist: float, fwd_k: floa
 	cam.queue_free()
 	m.cam.cam.current = true
 
+func _farside(u: SimEntity, name: String) -> void:
+	var v: Node3D = m.world.views[u.id]
+	var fwd: Vector3 = v.global_transform.basis.z
+	var side: Vector3 = v.global_transform.basis.x
+	if side.dot(_sun()) > 0.0:
+		side = -side
+	var cam := Camera3D.new()
+	add_child(cam)
+	cam.fov = 28.0
+	cam.current = true
+	var focus: Vector3 = v.global_position + Vector3(0, 0.8, 0)
+	cam.global_position = focus + side * 5.4 + fwd * 2.6 + Vector3(0, 1.8, 0)
+	cam.look_at(focus, Vector3.UP)
+	await frames(5)
+	await shot(name)
+	cam.queue_free()
+	m.cam.cam.current = true
+
 func _compare(u: SimEntity, name: String) -> void:
 	var live: Node3D = m.world.views[u.id]
-	var old := (load("res://view/units/ecc/pantsir_blender.tscn") as PackedScene).instantiate() as Node3D
+	var old := (load("res://view/units/ecc/pantsir_i23d.tscn") as PackedScene).instantiate() as Node3D
 	m.add_child(old)
 	var fwd: Vector3 = live.global_transform.basis.z
 	var side: Vector3 = live.global_transform.basis.x

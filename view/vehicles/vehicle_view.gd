@@ -52,6 +52,7 @@ var _outriggers: Node3D
 var _rotor: Node3D
 var _radar: Node3D
 var _radar_rx := 0.0
+var _legs: Array = []
 
 func _ready() -> void:
 	super._ready()
@@ -75,6 +76,9 @@ func _ready() -> void:
 	_radar = find_child("Radar", true, false) as Node3D
 	if _outriggers != null:
 		_outriggers.position.y = 0.42
+		for c in _outriggers.get_children():
+			if String(c.name).begins_with("Leg"):
+				_legs.append(c)
 	if _radar != null:
 		_radar_rx = _radar.rotation.x
 	barrel = find_child("Barrel", true, false)
@@ -228,6 +232,9 @@ func _process(delta: float) -> void:
 		_plant_k = move_toward(_plant_k, plant, delta * 0.5)
 		if _outriggers != null:
 			_outriggers.position.y = lerpf(0.42, 0.0, _plant_k)
+			for leg in _legs:
+				var swing := 1.05 if String(leg.name).ends_with("R") else -1.05
+				(leg as Node3D).rotation.z = lerpf(swing, 0.0, _plant_k)
 		if _radar != null:
 			_radar.rotation.x = _radar_rx + lerpf(-1.15, 0.0, _plant_k)
 	if not work_parts.is_empty() and not _dead:
