@@ -296,35 +296,47 @@ static func bmp3_v2(mat: Material) -> void:
 	h.color(RU_D, Geo.PAINT)
 	h.prism_x([vane[0], vane[2], vane[3], vane[1]], -1.05 * Sc, 1.05 * Sc)
 	h.color(RU, Geo.PAINT)
-	# Fender shelf over the track, and the skirt band down to the wheel-hub line.
+	# Fender reaches the track outer face. The skirt hangs over that face down to the hub
+	# line, and stops short of the idler so the track end shows from the front.
 	for s in [-1.0, 1.0]:
 		var sd: float = s
-		var fen_z1 := 2.30 * Sc
-		h.box(Vector3(sd * 1.37 * Sc, 1.05 * Sc, (rear + fen_z1) * 0.5), Vector3(0.42 * Sc, 0.10 * Sc, fen_z1 - rear))
-		var sk_z1 := 2.15 * Sc
-		h.box(Vector3(sd * 1.53 * Sc, 0.72 * Sc, (rear + sk_z1) * 0.5), Vector3(0.14 * Sc, 0.72 * Sc, sk_z1 - rear))
+		var fen_z1 := 2.70 * Sc
+		h.box(Vector3(sd * (1.16 + 1.615) * 0.5 * Sc, 1.08 * Sc, (rear + fen_z1) * 0.5), Vector3((1.615 - 1.16) * Sc, 0.12 * Sc, fen_z1 - rear))
+		var sk_z1 := 2.05 * Sc
+		h.box(Vector3(sd * (1.42 + 1.615) * 0.5 * Sc, (0.36 + 1.10) * 0.5 * Sc, (rear + sk_z1) * 0.5), Vector3((1.615 - 1.42) * Sc, (1.10 - 0.36) * Sc, sk_z1 - rear))
+	# Olive plate on the existing bow underside, facing down and forward.
+	h.color(RU, Geo.PAINT)
+	var nudge := Vector3(0, -0.025 * Sc, 0.02 * Sc)
+	var lip_a := Vector3(-hull_w, 1.52 * Sc, 3.42 * Sc) + nudge
+	var lip_b := Vector3(hull_w, 1.52 * Sc, 3.42 * Sc) + nudge
+	var lip_c := Vector3(hull_w, 0.54 * Sc, 2.68 * Sc) + nudge
+	var lip_d := Vector3(-hull_w, 0.54 * Sc, 2.68 * Sc) + nudge
+	h.pane([lip_a, lip_b, lip_c, lip_d], Vector3(0, -0.4, 1))
+	h.box(Vector3(0, 0.56 * Sc, 2.25 * Sc), Vector3(hull_w * 2.0, 0.08 * Sc, 0.70 * Sc))
 	# Running gear. Upper halves sit behind the side wall; the belt is flush with it.
 	# The belt helper adds a tread slab past the outer edge and below the path, so the
 	# path sits inside the 3.23 m width and the slab's underside lands on the ground.
 	var x_out := half - 0.008
 	var x_in := x_out - 0.40 * Sc
 	var belt: Array = []
-	var z_link := 2.50
+	# Flat bottom ends behind the idler, then a clean arc around it.
+	var z_link := 2.20
 	while z_link > -3.05:
-		belt.append(Vector2(z_link, 0.07) * Sc)
+		belt.append(Vector2(z_link, 0.08) * Sc)
 		z_link -= 0.16
-	belt.append(Vector2(-3.05, 0.07) * Sc)
+	belt.append(Vector2(-3.05, 0.08) * Sc)
 	for i in 9:
 		var a := deg_to_rad(270.0 - 180.0 * float(i) / 8.0)
 		belt.append(Vector2(-3.125 + cos(a) * 0.32, 0.50 + sin(a) * 0.32) * Sc)
 	var z_top := -2.30
-	while z_top < 1.70:
+	while z_top < 1.60:
 		belt.append(Vector2(z_top, 1.05) * Sc)
 		z_top += 0.16
-	belt.append(Vector2(1.70, 1.05) * Sc)
+	belt.append(Vector2(1.60, 1.05) * Sc)
+	belt.append(Vector2(2.15, 0.96) * Sc)
 	for i in 9:
-		var a2 := deg_to_rad(90.0 - 180.0 * float(i) / 8.0)
-		belt.append(Vector2(2.575 + cos(a2) * 0.26, 0.52 + sin(a2) * 0.26) * Sc)
+		var a2 := deg_to_rad(75.0 - 185.0 * float(i) / 8.0)
+		belt.append(Vector2(2.575 + cos(a2) * 0.30, 0.52 + sin(a2) * 0.30) * Sc)
 	h.color("#4a4a4e", Geo.TRACK)
 	_run_belt(h, x_in, x_out, belt)
 	_run_belt(h, -x_out, -x_in, belt)
@@ -505,7 +517,7 @@ static func _bmp3_v2_fittings(h, Sc: float) -> void:
 	# Skirt boxes with real depth, on the outer skirt band.
 	for s in [-1.0, 1.0]:
 		var sd: float = s
-		var xo := sd * 1.62 * Sc
+		var xo := sd * 1.59 * Sc
 		h.color(RU, Geo.PAINT)
 		for bi in 5:
 			var bz := (-2.2 + float(bi) * 0.78) * Sc

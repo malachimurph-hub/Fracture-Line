@@ -41,8 +41,12 @@ func _views() -> void:
 	add_child(sun)
 	var fill := DirectionalLight3D.new()
 	fill.rotation_degrees = Vector3(-70, 140, 0)
-	fill.light_energy = 0.28
+	fill.light_energy = 0.42
 	add_child(fill)
+	var under := DirectionalLight3D.new()
+	under.rotation_degrees = Vector3(28, 0, 0)
+	under.light_energy = 0.55
+	add_child(under)
 	var model := (load("res://view/units/ecc/bmp3_v2.tscn") as PackedScene).instantiate() as Node3D
 	add_child(model)
 	var olive := Color("#8d9876")
