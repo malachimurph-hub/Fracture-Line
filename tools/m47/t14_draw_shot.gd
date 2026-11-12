@@ -31,7 +31,7 @@ func _studio() -> void:
 	fill.rotation_degrees = Vector3(-80, 180, 0)
 	fill.light_energy = 0.45
 	add_child(fill)
-	var model := (load("res://view/units/ecc/t14.tscn") as PackedScene).instantiate() as Node3D
+	var model := (load("res://view/units/ecc/t14_super.tscn") as PackedScene).instantiate() as Node3D
 	add_child(model)
 	var olive := Color("#8d9876")
 	for g in model.find_children("*", "GeometryInstance3D", true, false):
@@ -40,23 +40,21 @@ func _studio() -> void:
 	cam.projection = Camera3D.PROJECTION_ORTHOGONAL
 	add_child(cam)
 	cam.current = true
-	# Side: +X, length along Z. Ortho height frames the 4.41 length and 1.34 height.
-	cam.size = 3.15
-	cam.global_position = Vector3(9, 0.62, 0.41)
-	cam.look_at(Vector3(0, 0.62, 0.41), Vector3.UP)
+	# Side. Hull is about 2.7 long; the twin guns reach a bit past the nose.
+	cam.size = 2.05
+	cam.global_position = Vector3(8, 0.48, 0.15)
+	cam.look_at(Vector3(0, 0.48, 0.15), Vector3.UP)
 	await frames(4)
 	await shot("t14_side")
-	# Top.
-	cam.size = 2.05
-	cam.global_position = Vector3(0, 12, 0.40)
-	cam.look_at(Vector3(0, 0, 0.40), Vector3(0, 0, -1))
+	cam.size = 2.2
+	cam.global_position = Vector3(0, 10, 0.1)
+	cam.look_at(Vector3(0, 0, 0.1), Vector3(0, 0, -1))
 	await frames(3)
 	await shot("t14_top")
-	# Three-quarter.
 	cam.projection = Camera3D.PROJECTION_PERSPECTIVE
 	cam.fov = 30.0
-	cam.global_position = Vector3(4.2, 2.1, 4.4)
-	cam.look_at(Vector3(0, 0.7, 0.3), Vector3.UP)
+	cam.global_position = Vector3(3.2, 1.55, 3.1)
+	cam.look_at(Vector3(0, 0.5, 0.1), Vector3.UP)
 	await frames(3)
 	await shot("t14_quarter")
 	model.queue_free()
@@ -81,7 +79,7 @@ func _match() -> void:
 	cam.fov = 28.0
 	cam.current = true
 	var focus: Vector3 = v.global_position.lerp(m.world.views[t90.id].global_position, 0.35) + Vector3(0, 0.8, 0)
-	cam.global_position = focus + side * 8.4 + fwd * 5.6 + Vector3(0, 3.6, 0)
+	cam.global_position = focus + side * 6.4 + fwd * 4.4 + Vector3(0, 2.8, 0)
 	cam.look_at(focus, Vector3.UP)
 	await frames(5)
 	await shot("t14_match")

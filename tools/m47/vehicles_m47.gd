@@ -33,6 +33,8 @@ func _initialize() -> void:
 				HULLS.bmp3(mat)
 			"t14":
 				HULLS.t14(mat)
+			"t14_super":
+				HULLS.t14_super(mat)
 			"tos":
 				HULLS.tos(mat)
 			"iskander":

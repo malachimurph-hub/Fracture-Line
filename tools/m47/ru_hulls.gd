@@ -190,6 +190,79 @@ static func t14(mat: Material) -> void:
 	VK._mi(bn, root, "BarrelMesh", b.commit(mat))
 	_save(root, model, h, mat, "res://view/units/ecc/t14.tscn", 1.72, [t, b])
 
+static func t14_super(mat: Material) -> void:
+	# Original super-heavy for the T-14 slot. About 1.4x the live T-90 hull (1.9 x 1.4):
+	# slab sides, a wide squat turret, twin guns, and cheek launchers. No markings.
+	var root := VK._root({"selection_radius": 1.3, "bar_height": 1.28, "recoil": 0.16, "wreck_s": 8.0})
+	var model := VK._n3(root, root, "Model")
+	var h = K.new()
+	h.track_run(0.78, 2.48, 7, 0.115, 0.32, RU_S)
+	h.color(RU, Geo.PAINT)
+	h.xloft([
+		[1.38, K.sect(0.28, 0.36, 0.42, 0.40, 0.55, 0.46, 0.02)],
+		[1.02, K.sect(0.16, 0.40, 0.58, 0.58, 0.92, 0.82, 0.03)],
+		[-1.22, K.sect(0.16, 0.40, 0.58, 0.58, 0.92, 0.82, 0.03)],
+		[-1.38, K.sect(0.20, 0.36, 0.50, 0.52, 0.84, 0.74, 0.03)],
+	])
+	h.color(RU_D, Geo.PAINT)
+	h.cbox(Vector3(0, 0.52, -0.85), Vector3(1.40, 0.04, 0.70), 0.012)
+	var z0 := -1.05
+	var z1 := 1.02
+	var nskirt := 6
+	var seg := (z1 - z0) / float(nskirt)
+	for i in nskirt:
+		h.color(RU if i % 2 == 0 else RU_D, Geo.PAINT)
+		for s in [-1.0, 1.0]:
+			var side: float = s
+			h.box(Vector3(side * 0.98, 0.38, z0 + seg * (float(i) + 0.5)), Vector3(0.04, 0.16, seg - 0.02))
+	h.color("#1c1e1c", Geo.DARK)
+	h.box(Vector3(-0.28, 0.50, -1.22), Vector3(0.22, 0.06, 0.28))
+	h.box(Vector3(0.28, 0.50, -1.22), Vector3(0.22, 0.06, 0.28))
+	V4._lamps(h, 0.36, 0.40, 1.28)
+	h.color("#ffffff", Geo.TEAM)
+	h.box(Vector3(0.98, 0.40, -0.15), Vector3(0.012, 0.035, 0.42))
+	var piv := VK._n3(model, root, "TurretPivot", Vector3(0, 0.58, -0.06))
+	var t = K.new()
+	t.color(RU, Geo.PAINT)
+	t.plan_loft([
+		Vector2(-0.22, 0.58), Vector2(0.22, 0.58),
+		Vector2(0.78, 0.22), Vector2(0.82, -0.38),
+		Vector2(0.58, -0.64), Vector2(-0.58, -0.64),
+		Vector2(-0.82, -0.38), Vector2(-0.78, 0.22)],
+		0.0, 0.30, Vector2(0.90, 0.88))
+	t.color(RU_D, Geo.PAINT)
+	t.hatch(Vector3(-0.22, 0.31, -0.08), 0.10)
+	t.hatch(Vector3(0.20, 0.31, 0.06), 0.08)
+	t.color(RU_S, Geo.STEEL)
+	t.tube(Vector3(0.36, 0.32, -0.42), Vector3(0.36, 0.62, -0.44), 0.008, 4)
+	# Cheek launchers, outboard of the turret and pitched up. Visual only: the gun is ground fire.
+	var pitch := deg_to_rad(38.0)
+	var fwd := Vector3(0, sin(pitch), cos(pitch))
+	for s2 in [-1.0, 1.0]:
+		var side2: float = s2
+		var origin := Vector3(side2 * 0.96, 0.10, -0.02)
+		t.color(RU_D, Geo.PAINT)
+		t.plate(origin, Vector3(0.28, 0.18, 0.62), Vector3(-38, 0, 0))
+		t.color("#1a1c1a", Geo.DARK)
+		for row in 2:
+			for col in 2:
+				var lx: float = (float(col) - 0.5) * 0.09
+				var ly: float = (float(row) - 0.5) * 0.055
+				var p := origin + Vector3(lx, ly * cos(pitch), ly * sin(pitch))
+				t.tube(p + fwd * 0.08, p + fwd * 0.40, 0.022, 5)
+	VK._mi(piv, root, "Turret", t.commit(mat))
+	var bn := VK._n3(piv, root, "Barrel", Vector3(0, 0.12, 0.42))
+	var b = K.new()
+	b.color(RU_D, Geo.PAINT)
+	b.cbox(Vector3(0, 0, 0.02), Vector3(0.50, 0.14, 0.12), 0.012)
+	b.color(RU_S, Geo.STEEL)
+	for s3 in [-1.0, 1.0]:
+		var gx: float = s3 * 0.16
+		b.tube(Vector3(gx, 0, 0.06), Vector3(gx, 0, 1.58), 0.042, 8, 0.032)
+		b.tube(Vector3(gx, 0, 1.50), Vector3(gx, 0, 1.60), 0.038, 8)
+	VK._mi(bn, root, "BarrelMesh", b.commit(mat))
+	_save(root, model, h, mat, "res://view/units/ecc/t14_super.tscn", 1.28, [t, b])
+
 static func tos(mat: Material) -> void:
 	var root := VK._root({"selection_radius": 1.05, "bar_height": 1.4, "recoil": 0.02, "wreck_s": 7.5, "elevate": 0.55})
 	var model := VK._n3(root, root, "Model")
