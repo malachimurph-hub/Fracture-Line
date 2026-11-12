@@ -31,7 +31,7 @@ CAST = {
     "us_squad": ["us_grunt", "us_grunt", "us_grunt", "us_grunt", "us_grunt", "us_javelin"],
     "eu_squad": ["eu_grenadier", "eu_grenadier", "eu_grenadier", "eu_grenadier", "eu_grenadier", "eu_lancer"],
     "tpla_squad": ["tpla_militia", "tpla_militia", "tpla_militia", "tpla_militia", "tpla_militia", "tpla_rocket_cell"],
-    "ecc_squad": ["ecc_rifleman", "ecc_rifleman", "ecc_rifleman", "ecc_machine_gunner", "ecc_rifleman", "ecc_rpg"],
+    "ecc_squad": ["ecc_rifleman", "ecc_rifleman", "ecc_rifleman", "ecc_machine_gunner", "ecc_rpg", "ecc_rpg"],
 }
 
 

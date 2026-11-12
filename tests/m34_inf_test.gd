@@ -23,6 +23,7 @@ static func _bakes(t: Node) -> void:
 	var bad := []
 	var n := 0
 	var bytes := 0
+	var seen := {}
 	for p in _inf_scenes():
 		var v: InfantryView = (load(p[1]) as PackedScene).instantiate()
 		var vm: VatModel = v.vat
@@ -37,7 +38,9 @@ static func _bakes(t: Node) -> void:
 			bad.append("%s: %d tris, %d verts, tex %d wide, %d rows" % [p[0], tris, vm.vertex_count, vm.pos_tex.get_width(), vm.rows])
 		if vm.mesh.get_surface_count() < 1 or vm.mesh.surface_get_format(0) & Mesh.ARRAY_FORMAT_TEX_UV == 0:
 			bad.append("%s: mesh without packed colours" % p[0])
-		bytes += FileAccess.get_file_as_bytes(vm.resource_path).size()
+		if not seen.has(vm.resource_path):
+			seen[vm.resource_path] = true
+			bytes += FileAccess.get_file_as_bytes(vm.resource_path).size()
 		v.free()
 	t._check(bad.is_empty() and n >= 19, "every infantry model is the new original soldier with walk / run / aim / kneel / lean / two death clips, in the mobile budget (%d models)%s" % [n, "" if bad.is_empty() else ": " + str(bad.slice(0, 4))])
 	# 0.4.4 added three US scenes; M4.5 gives them their own bakes. The old 20 MB cap was already over.

@@ -36,6 +36,28 @@ var pack_rig: PackRig           ## M3.4: Minerals Mining excavator pack-up parts
 var pack_target := 0.0          ## WorldView: MineSys pack-up progress 0..1
 var pack_k := -1.0              ## shown pose (eases after the target; -1 = not posed yet)
 var _spin := 0.0
+var _tower: Node3D
+var _tower_kind := ""
+
+## A researched Russian tower, mounted on TowerMount or on the roof line.
+func set_tower(kind: String) -> void:
+	if kind == _tower_kind:
+		return
+	_tower_kind = kind
+	if _tower != null:
+		_tower.queue_free()
+		_tower = null
+	if kind == "":
+		return
+	var path := "res://view/buildings/ecc/tower_%s.tscn" % kind
+	if not ResourceLoader.exists(path):
+		return
+	_tower = (load(path) as PackedScene).instantiate()
+	var mount := find_child("TowerMount", true, false) as Node3D
+	_tower.position = mount.position if mount != null else Vector3(0, top_y * 0.82, 0)
+	var model := get_node_or_null("Model")
+	if model != null:
+		model.add_child(_tower)
 
 func _ready() -> void:
 	super._ready()

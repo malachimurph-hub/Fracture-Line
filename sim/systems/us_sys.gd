@@ -18,7 +18,7 @@ static func run(w: SimWorld) -> void:
 			continue
 		var tags: PackedStringArray = w.udef(u).tags
 		var still_t := tags.has("stealth_still")
-		if still_t or tags.has("setup"):
+		if still_t or tags.has("setup") or tags.has("deploy"):
 			if u.moving or u.goal != MoveSys.NONE:
 				u.still = 0
 			elif u.still < 10000:
@@ -30,6 +30,10 @@ static func run(w: SimWorld) -> void:
 			kind = "still"
 		elif tags.has("stealth_fire"):
 			hide = w.tick - u.firing_tick >= FIRE_REVEAL_TICKS
+			kind = "fire"
+		elif tags.has("stealth_combat"):
+			# Hidden until this soldier shoots or is shot. Nearby troops and detectors still spot it.
+			hide = w.tick - u.firing_tick >= FIRE_REVEAL_TICKS and w.tick - u.last_hit_tick >= FIRE_REVEAL_TICKS
 			kind = "fire"
 		elif tags.has("stealth_always"):
 			hide = true

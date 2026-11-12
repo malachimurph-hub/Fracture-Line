@@ -92,6 +92,9 @@ func _draw() -> void:
 		return
 	var sim := world.sim
 	var r := Rect2(Vector2.ZERO, size)
+	if world.local_pid >= 0 and sim.players[world.local_pid].radar_until > sim.tick:
+		draw_rect(r, Color(0.02, 0.025, 0.03, 1))
+		return
 	draw_texture_rect(base_tex, r, false)
 	var k := _scale()
 	var mem: Dictionary = sim.fog.memory.get(world.local_team, {})

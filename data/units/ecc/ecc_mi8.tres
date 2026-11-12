@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"ecc_mi8"
+faction = &"ecc"
+name_key = "UNIT_ECC_MI8"
+desc_key = "UNIT_ECC_MI8_DESC"
+cost = 1250
+build_time_ms = 14000
+pop = 3
+prereqs = PackedStringArray()
+tags = PackedStringArray("air", "helicopter", "transport")
+max_hp = 820
+armor_type = &"air"
+weapons = PackedStringArray("ecc_mi8_mg")
+speed_mtps = 3400
+move_layer = &"air"
+sight = 10
+radius_mt = 760
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 0
+role = &"transport"
+view_scene = "res://view/units/ecc/mi8.tscn"
+stubs = PackedStringArray()
+loco = &"heli"
+turn_dps = 160
+accel_ms = 1100
+turret_dps = 0
+abilities = PackedStringArray()
+transport_capacity = 8
+detector = false
+air_slots = 0

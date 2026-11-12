@@ -284,7 +284,7 @@ const SQUADS := {
 	&"us_squad": [&"us_barracks", "us_m16", "us_m240b", "us_javelin", "us_m203", [&"us_grunt", &"us_javelin"]],
 	&"eu_squad": [&"eu_barracks", "eu_rifle", "eu_mg3", "eu_lancer_missile", "eu_ag36", [&"eu_grenadier", &"eu_lancer"]],
 	&"tpla_squad": [&"tpla_camp", "tpla_carbine", "tpla_pkm", "tpla_rpg", "tpla_gp25", [&"tpla_militia", &"tpla_rocket_cell"]],
-	&"ecc_squad": [&"ecc_barracks", "ecc_ak74", "ecc_pkm", "ecc_rpg7", "ecc_gp25", [&"ecc_rifleman", &"ecc_machine_gunner", &"ecc_rpg"]],
+	&"ecc_squad": [&"ecc_barracks", "ecc_ak47", "ecc_pkm", "ecc_rpg7", "", [&"ecc_rifleman", &"ecc_machine_gunner", &"ecc_rpg"]],
 }
 
 static func _squad_data(t: Node) -> void:
@@ -304,7 +304,10 @@ static func _squad_data(t: Node) -> void:
 			elif ws == [info[2]]: mg += 1
 			elif ws == [info[3]]: at += 1
 			elif ws.has(info[4]): gl += 1
-		t._check(ms.size() == 6 and rifle == 3 and mg == 1 and at == 1 and gl == 1, "%s: 3 riflemen, MG, AT, grenadier (%d/%d/%d/%d)" % [sid, rifle, mg, at, gl])
+		if sid == &"ecc_squad":
+			t._check(ms.size() == 6 and rifle == 3 and mg == 1 and at == 2 and gl == 0, "ecc_squad: 3 AK-47, PKM, two RPG-7 (%d/%d/%d/%d)" % [rifle, mg, at, gl])
+		else:
+			t._check(ms.size() == 6 and rifle == 3 and mg == 1 and at == 1 and gl == 1, "%s: 3 riflemen, MG, AT, grenadier (%d/%d/%d/%d)" % [sid, rifle, mg, at, gl])
 		t._check(ud != null and ud.tags.has("squad") and ud.tags.has("infantry") and ud.pop == 3, "%s is a pop-3 infantry squad" % sid)
 		var b := Content.building(info[0])
 		t._check(b.produces.has(String(sid)), "%s trains the %s" % [info[0], sid])

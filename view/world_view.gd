@@ -554,6 +554,16 @@ func on_tick(events: Array) -> void:
 					vfx.rust_cloud(FX.to_world(ev["pos"]), float(ev["r"]) / FX.ONE, float(ev["ticks"]) / FX.TICK_HZ)
 			"fire":
 				_on_fire(ev)
+			"hijack":
+				var hj := sim.get_ent(int(ev["id"]))
+				if hj != null and views.has(hj.id) and hj.owner >= 0:
+					views[hj.id].set_team_material(Palette.team_material(sim.players[hj.owner].color))
+			"red_dawn":
+				if local_team < 0 or sim.player_team(int(ev["owner"])) == local_team or _visible_pos(ev["pos"]):
+					_red_dawn_planes(ev["pos"])
+			"mirv":
+				if _visible_pos(ev["pos"]):
+					_mirv_burst(ev)
 			"captured":
 				var c := sim.get_ent(int(ev["id"]))
 				if c != null and views.has(c.id):
@@ -693,6 +703,41 @@ func _crew_fire(v: Node3D) -> void:
 	for c in v.get_meta("crew", []):
 		if int(c[0]) < 2 and is_instance_valid(c[1]) and c[1].has_method("on_fire"):
 			c[1].on_fire(&"")
+
+## Red Dawn: three transports cross the drop, high enough to read as a flight and not as units.
+func _red_dawn_planes(pos: Vector2i) -> void:
+	var origin := FX.to_world(pos)
+	for i in 3:
+		var body := MeshInstance3D.new()
+		var box := BoxMesh.new()
+		box.size = Vector3(2.4, 0.22, 0.42)
+		body.mesh = box
+		var mat := StandardMaterial3D.new()
+		mat.albedo_color = Color(0.36, 0.4, 0.3)
+		mat.roughness = 0.72
+		body.material_override = mat
+		var wing := MeshInstance3D.new()
+		var wbox := BoxMesh.new()
+		wbox.size = Vector3(0.35, 0.05, 2.1)
+		wing.mesh = wbox
+		wing.material_override = mat
+		wing.position = Vector3(-0.15, 0.02, 0)
+		body.add_child(wing)
+		add_child(body)
+		var from := origin + Vector3(-22.0, 9.0, -8.0 + float(i) * 5.0)
+		var to := origin + Vector3(24.0, 8.2, -5.0 + float(i) * 5.0)
+		body.position = from
+		body.look_at(to, Vector3.UP)
+		var tw := create_tween()
+		tw.tween_property(body, "position", to, 4.2)
+		tw.tween_callback(body.queue_free)
+	AudioDirector.sfx("expl_small", origin + Vector3(0, 6, 0), -10.0)
+
+## Warheads falling out of the Grim Reaper's missile. The sim applies the damage on its own timer.
+func _mirv_burst(ev: Dictionary) -> void:
+	var apex := FX.to_world(ev["pos"]) + Vector3(0, 7.5, 0)
+	for p in ev.get("pts", []):
+		wfx.fire("rocket", [apex], Vector3.DOWN, FX.to_world(p), 0, -1, Vector3.ZERO)
 
 func _on_fire(ev: Dictionary) -> void:
 	var src := sim.get_ent(int(ev["id"]))
@@ -1393,6 +1438,14 @@ func frame(a: float, delta: float) -> void:
 				OilLoad.update(v, e.carry, ud.harvest_capacity)   # M3.5: oil drums for export in the bed
 			if v is VehicleView and ud.tags.has("artillery"):   # M3.5: raise before the shot, lower after
 				(v as VehicleView).aiming = e.target != 0 and not e.moving and sim.get_ent(e.target) != null
+			if v is VehicleView and e.def_id == &"ecc_t90":
+				var era: bool = e.owner >= 0 and bool(sim.players[e.owner].upgrades.has("ecc_up_era"))
+				if bool((v as VehicleView).get_meta("era", false)) != era:
+					(v as VehicleView).set_meta("era", era)
+					(v as VehicleView).set_reactive(era)
+			if v is VehicleView and ud.tags.has("deploy"):
+				var planted := 0.0 if e.moving or e.goal != MoveSys.NONE else clampf(float(e.still) / float(EccSys.DEPLOY_TICKS), 0.0, 1.0)
+				(v as VehicleView).set_plant(planted)
 			# M3.3: builders animate (blade / backhoe arm / crane boom) while they work at a site
 			if v is VehicleView and not (v as VehicleView).work_parts.is_empty():
 				(v as VehicleView).working = _builder_working(e)
@@ -1447,6 +1500,8 @@ func frame(a: float, delta: float) -> void:
 					v.set_damage(hpk, not e.built)
 				if v is BuildingView and (v as BuildingView).pack_rig != null:   # M3.4: pack-up pose
 					(v as BuildingView).set_pack(MineSys.progress(sim, e) if MineSys.packing(sim, e) else 0.0)
+				if v is BuildingView and String(e.def_id).begins_with("ecc_"):
+					(v as BuildingView).set_tower(EccSys.tower_of(e))
 				if rig != null:
 					rig.update(bk, delta, vfx, vis and not icon_mode)
 				if vis and not icon_mode:

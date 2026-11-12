@@ -555,6 +555,16 @@ func complete_target(screen: Vector2) -> void:
 		_set_rally(selected_buildings(), pos)
 	elif k.begins_with("power:"):
 		issue({"t": "power", "def": k.substr(6), "pos": pos})
+	elif k == "reddawn":
+		var dawn := selected_buildings()
+		if not dawn.is_empty():
+			issue({"t": "red_dawn", "ids": dawn, "pos": pos})
+			world.marker(pos, Color("#d4654a"))
+	elif k.begins_with("hack:"):
+		var vid := pick(screen)
+		var hubs := selected_buildings()
+		if vid != 0 and not hubs.is_empty():
+			issue({"t": "hack", "ids": hubs, "target": vid, "def": k.substr(5)})
 	if not (_queue_flag() and k in ["amove", "move"]):
 		cancel_mode()
 

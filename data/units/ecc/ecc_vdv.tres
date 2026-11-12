@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"ecc_vdv"
+faction = &"ecc"
+name_key = "UNIT_ECC_VDV"
+desc_key = "UNIT_ECC_VDV_DESC"
+cost = 850
+build_time_ms = 11000
+pop = 2
+prereqs = PackedStringArray()
+tags = PackedStringArray("infantry", "garrison", "squad", "stealth_combat", "parachute")
+max_hp = 300
+armor_type = &"infantry"
+weapons = PackedStringArray("ecc_ak74m", "ecc_gp25")
+speed_mtps = 1300
+move_layer = &"foot"
+sight = 8
+radius_mt = 440
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 0
+role = &"infantry"
+view_scene = "res://view/units/ecc/vdv.tscn"
+stubs = PackedStringArray()
+loco = &""
+turn_dps = 0
+accel_ms = 0
+turret_dps = 0
+abilities = PackedStringArray()
+transport_capacity = 0
+detector = false
+air_slots = 0

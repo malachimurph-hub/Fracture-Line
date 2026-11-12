@@ -42,6 +42,12 @@ const CLASSES := {
 	&"eu_gatling_gnd": "quad", &"tpla_wasp_gnd": "missile", &"us_patriot_gnd": "mg", &"ecc_zak30_gnd": "quad", &"sidearm": "rifle",
 	# ZEUS silo: a heavy ballistic round, not the small missile streak
 	&"us_zeus_missile": "icbm",
+	# Russia tree. The two ballistic trucks use the rising missile; flight time is special-cased in CombatSys.
+	&"ecc_ak47": "rifle", &"ecc_asval": "rifle", &"ecc_vss": "rifle", &"ecc_ak74u": "rifle", &"ecc_ak74m": "rifle",
+	&"ecc_bmp_100": "cannon", &"ecc_bmp_30": "autocannon", &"ecc_bmp_atgm": "missile",
+	&"ecc_bmpt_30": "autocannon", &"ecc_bmpt_gl": "grenade", &"ecc_bmpt_atgm": "missile",
+	&"ecc_t14_gun": "cannon", &"ecc_tos": "salvo", &"ecc_iskander": "icbm", &"ecc_reaper_mirv": "icbm",
+	&"ecc_mi8_mg": "mg", &"ecc_tower_bal": "autocannon", &"ecc_tower_at": "missile", &"ecc_tower_aa": "missile",
 }
 const BY_KIND := {"tracer": "rifle", "tracer_heavy": "mg", "shell": "cannon", "missile": "missile",
 	"rocket": "rocket", "rocket_salvo": "salvo", "tracer_quad": "quad", "tracer_minigun": "minigun", "flak": "flak", "grenade": "grenade",

@@ -115,7 +115,7 @@ static func _economy(t: Node) -> void:
 	var cfg := SkirmishConfig.default_setup()
 	cfg["options"]["start_money"] = 1000000
 	t._check(int(SkirmishConfig.resolve(cfg)["options"]["start_money"]) == 50000, "a resolved lobby never starts above $50k")
-	var exp := {&"us_drop_zone": [500, 60, 3800], &"tpla_bazaar": [185, 60, 2000], &"eu_exchange": [465, 60, 3000], &"ecc_black_market": [400, 30, 6500]}
+	var exp := {&"us_drop_zone": [500, 60, 3800], &"tpla_bazaar": [185, 60, 2000], &"eu_exchange": [465, 60, 3000]}
 	for id in exp:
 		var d: BuildingDef = Content.building(id)
 		t._check(d.income_amount == exp[id][0] and d.income_period_s == exp[id][1] and d.cost == exp[id][2] and d.passive_income == 0,
@@ -125,15 +125,16 @@ static func _economy(t: Node) -> void:
 			sum += EconSys.period_pay(d, 1, s)
 		t._check(sum == d.income_amount * 3, "%s pays exactly $%d over 3 periods (%d)" % [id, d.income_amount * 3, sum])
 	var dz := Content.building(&"us_drop_zone")
-	t._check(dz.power <= -5 and Content.building(&"eu_exchange").power <= -6 and Content.building(&"ecc_black_market").power == 0,
-		"Data Center and Automotive Plant use more power; Minerals Mining needs none")
-	t._check(EconSys.period_pay(Content.building(&"ecc_black_market"), 1, 29) == 400 and EconSys.period_pay(Content.building(&"ecc_black_market"), 1, 28) == 0,
-		"Minerals Mining pays $400 in one lump every 30 s")
+	var hub := Content.building(&"ecc_black_market")
+	t._check(dz.power <= -5 and Content.building(&"eu_exchange").power <= -6 and hub.power < 0 and hub.income_amount == 0,
+		"Data Center and Automotive Plant use power; the Black Market draws power and pays no wage")
+	t._check(TranslationServer.translate(hub.name_key) == "Black Market" and hub.cost == 6500 and hub.prereqs.has("ecc_ministry"),
+		"the $6500 Ministry building is still named Black Market")
 	var nuc := Content.building(&"us_reactor")
 	t._check(nuc.power == 64 and nuc.cost == 5200 and nuc.footprint == Vector2i(4, 4) and TranslationServer.translate(nuc.name_key) == "Nuclear Power Station", "US Nuclear Power Station is the late plant: +64 power, $5200, 4x4")
-	t._check(TranslationServer.translate("BLD_TPLA_BAZAAR") == "Oil Derrick" and TranslationServer.translate("BLD_EU_EXCHANGE") == "Automotive Plant" and TranslationServer.translate("BLD_ECC_BLACK_MARKET") == "Minerals Mining",
-		"income structures renamed (Oil Derrick, Automotive Plant, Minerals Mining)")
-	# in a match: a powered Data Center earns $500 a minute, Minerals Mining $800 even in low power
+	t._check(TranslationServer.translate("BLD_TPLA_BAZAAR") == "Oil Derrick" and TranslationServer.translate("BLD_EU_EXCHANGE") == "Automotive Plant",
+		"income structures renamed (Oil Derrick, Automotive Plant)")
+	# in a match: a powered Data Center earns $500 a minute. The Black Market is no longer an income building.
 	var r := _runner(["us", "ecc"])
 	var w := r.sim
 	var h0 := _hq(w, 0)
@@ -149,13 +150,13 @@ static func _economy(t: Node) -> void:
 	for id in w.ids:
 		if w.ents[id].kind == SimEntity.Kind.BUILDING and Content.building(w.ents[id].def_id).income_amount > 0:
 			nb += 1
-	t._check(nb == 2, "test setup: two income structures placed (%d)" % nb)
+	t._check(nb == 1, "test setup: the Data Center is the only income structure (%d)" % nb)
 	_ticks(r, 20 - w.tick % 20)
 	var m0: int = w.players[0].supply
 	var m1: int = w.players[1].supply
 	_ticks(r, 1200)
 	t._check(not w.players[0].low_power and w.players[0].supply - m0 == 500, "a powered Data Center earned $%d in a minute (want 500)" % (w.players[0].supply - m0))
-	t._check(w.players[1].low_power and w.players[1].supply - m1 == 800, "Minerals Mining earned $%d in a minute in low power (want 800)" % (w.players[1].supply - m1))
+	t._check(w.players[1].supply - m1 == 0, "the Black Market earned nothing in a minute ($%d)" % (w.players[1].supply - m1))
 	# saves keep it
 	var w2 := SimWorld.new()
 	w2.deserialize(w.serialize())
