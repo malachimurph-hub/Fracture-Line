@@ -83,74 +83,112 @@ static func bmp3(mat: Material) -> void:
 	_save(root, model, h, mat, "res://view/units/ecc/bmp3.tscn", 0.95, [t, b])
 
 static func t14(mat: Material) -> void:
-	# Bigger than the T-90 (hull 1.9 long, roof about 0.47, half-width 0.68): longer, wider, taller.
-	var root := VK._root({"selection_radius": 1.35, "bar_height": 1.55, "recoil": 0.16, "wreck_s": 8.0})
+	# Drawing millimetres at the live T-90 width scale (1.53 u / 3.78 m). Hull 8.879 m,
+	# roof 2.132 m, top of the roof station 3.320 m, width 4.000 m, gun forward 10.889 m.
+	var S := 1.53 / 3.78
+	var root := VK._root({"selection_radius": 1.75, "bar_height": 1.72, "recoil": 0.16, "wreck_s": 8.0})
 	var model := VK._n3(root, root, "Model")
 	var h = K.new()
-	var L := 2.65
-	var sx := 0.66
-	h.track_run(sx, L * 0.94, 7, 0.108, 0.22, RU_S)
-	h.color(RU_D, Geo.PAINT)
-	h.cbox(Vector3(0, 0.46, -0.22), Vector3(1.42, 0.50, 1.70), 0.016)
-	h.xloft([[L * 0.50, K.sect(0.14, 0.22, 0.30, 0.22, 0.36, 0.28, 0.02)],
-		[L * 0.34, K.sect(0.16, 0.30, 0.52, 0.48, 0.66, 0.58, 0.02)],
-		[L * 0.16, K.sect(0.16, 0.32, 0.60, 0.62, 0.74, 0.66, 0.015)]])
+	var wx: float = 1.56 * S
+	var tw: float = 0.56 * S
+	var wr: float = 0.35 * S
+	var wy: float = 0.40 * S
+	var spacing: float = 5.491 / 6.0
+	for side_i in [-1.0, 1.0]:
+		var sx: float = side_i * wx
+		var front := Vector2(3.40 * S, 0.52 * S)
+		var rear := Vector2(-3.62 * S, 0.50 * S)
+		VK._track(h, sx - tw * 0.5, sx + tw * 0.5, rear, 0.40 * S, front, 0.34 * S, 0.98 * S)
+		for i in 7:
+			var zm: float = 2.50 - spacing * float(i)
+			h.wheel(Vector3(sx, wy, zm * S), wr, tw * 0.92, false, "#6e736c", 14)
+		h.sprocket(Vector3(sx, 0.50 * S, -3.62 * S), 0.32 * S, tw * 0.72, 9, RU_S)
+		h.sprocket(Vector3(sx, 0.52 * S, 3.40 * S), 0.28 * S, tw * 0.66, 0, RU_S)
+		h.color(RU_S, Geo.STEEL)
+		for k in 3:
+			var zr: float = lerpf(-1.6, 1.8, float(k) / 2.0)
+			h.tube(Vector3(sx - tw * 0.28, 0.86 * S, zr * S), Vector3(sx + tw * 0.28, 0.86 * S, zr * S), 0.07 * S, 6)
+	# Two-plane glacis: shallow upper plate from the nose back to the flat roof, steep lower plate down to the belly.
 	h.color(RU, Geo.PAINT)
-	h.cbox(Vector3(0, 0.58, L * 0.08), Vector3(1.05, 0.04, 0.70), 0.006)
+	h.xloft([
+		[4.44 * S, K.sect(1.32 * S, 1.40 * S, 1.48 * S, 0.62 * S, 0.90 * S, 0.74 * S, 0.02 * S)],
+		[4.02 * S, K.sect(0.50 * S, 1.15 * S, 1.62 * S, 1.02 * S, 1.52 * S, 0.98 * S, 0.03 * S)],
+		[2.55 * S, K.sect(0.48 * S, 1.52 * S, 2.132 * S, 1.10 * S, 1.82 * S, 1.154 * S, 0.04 * S)],
+		[-4.05 * S, K.sect(0.48 * S, 1.52 * S, 2.132 * S, 1.10 * S, 1.82 * S, 1.154 * S, 0.04 * S)],
+		[-4.44 * S, K.sect(0.55 * S, 1.35 * S, 1.92 * S, 1.02 * S, 1.55 * S, 1.02 * S, 0.03 * S)],
+	])
 	for i in 3:
-		h.hatch(Vector3(-0.22 + float(i) * 0.22, 0.62, L * 0.10), 0.08)
-	# Full-length skirts. The lower edge steps so the big wheels stay visible.
-	var nskirt := 8
-	var z0 := -L * 0.40
-	var z1 := L * 0.32
-	var seg := (z1 - z0) / float(nskirt)
+		h.color(RU_D, Geo.PAINT)
+		h.hatch(Vector3((-0.50 + float(i) * 0.50) * S, 2.16 * S, 1.70 * S), 0.20 * S)
+	# Skirts outside the track. The lower edge steps so the upper arc of each wheel stays the only part covered.
+	var nskirt := 10
+	var z0: float = -3.40 * S
+	var z1: float = 3.20 * S
+	var seg: float = (z1 - z0) / float(nskirt)
+	var skirt_x: float = 1.975 * S
 	for i2 in nskirt:
-		var yb: float = 0.20 if i2 % 2 == 0 else 0.32
+		var yb: float = 0.50 * S if i2 % 2 == 0 else 0.72 * S
+		var yt: float = 1.55 * S
 		h.color(RU if i2 % 2 == 0 else RU_D, Geo.PAINT)
 		for s in [-1.0, 1.0]:
 			var side: float = s
-			h.box(Vector3(side * 0.78, (yb + 0.56) * 0.5, z0 + seg * (float(i2) + 0.5)), Vector3(0.018, 0.56 - yb, seg - 0.02))
+			h.box(Vector3(side * skirt_x, (yb + yt) * 0.5, z0 + seg * (float(i2) + 0.5)), Vector3(0.045 * S, yt - yb, seg * 1.02))
+	# Rear bar cage proud of the stern, plus side fuel tanks and exhaust slots above the skirt.
 	h.color(RU_S, Geo.STEEL)
-	for i3 in 8:
-		var x: float = -0.42 + float(i3) * 0.12
-		h.box(Vector3(x, 0.42, -L * 0.50), Vector3(0.012, 0.42, 0.012))
-	h.box(Vector3(0, 0.62, -L * 0.50), Vector3(0.90, 0.014, 0.014))
-	h.box(Vector3(0, 0.24, -L * 0.50), Vector3(0.90, 0.014, 0.014))
-	h.box(Vector3(-0.42, 0.42, -L * 0.50), Vector3(0.014, 0.40, 0.014))
-	h.box(Vector3(0.42, 0.42, -L * 0.50), Vector3(0.014, 0.40, 0.014))
-	V4._lamps(h, 0.28, 0.36, L * 0.48)
-	V4._antenna(h, Vector3(0.28, 0.64, 0.05), 0.75)
-	h.color("#ffffff", Geo.TEAM)
-	h.box(Vector3(0.72, 0.40, -0.2), Vector3(0.012, 0.03, 0.45))
-	var piv := VK._n3(model, root, "TurretPivot", Vector3(0, 0.62, -0.42))
-	var t = K.new()
-	t.color(RU, Geo.PAINT)
-	t.plan_loft([Vector2(-0.10, 0.52), Vector2(0.10, 0.52), Vector2(0.42, 0.10), Vector2(0.38, -0.32),
-		Vector2(-0.38, -0.32), Vector2(-0.42, 0.10)], 0.0, 0.32, Vector2(0.55, 0.62))
-	t.color(RU, Geo.PAINT)
-	t.cbox(Vector3(0.14, 0.38, -0.08), Vector3(0.14, 0.10, 0.18), 0.006)
-	t.color(RU_S, Geo.STEEL)
-	t.tube(Vector3(0.14, 0.40, 0.02), Vector3(0.14, 0.40, 0.28), 0.014, 5)
-	t.color(RU_D, Geo.PAINT)
-	t.box(Vector3(-0.28, 0.10, 0.28), Vector3(0.10, 0.12, 0.16))
-	t.box(Vector3(0.28, 0.10, 0.28), Vector3(0.10, 0.12, 0.16))
-	t.color(GLASS_C, Geo.GLASS)
-	t.box(Vector3(-0.28, 0.12, 0.36), Vector3(0.08, 0.08, 0.012))
-	t.box(Vector3(0.28, 0.12, 0.36), Vector3(0.08, 0.08, 0.012))
-	t.color(RU_S, Geo.STEEL)
+	for i3 in 7:
+		var xb: float = lerpf(-1.05, 1.05, float(i3) / 6.0)
+		h.box(Vector3(xb * S, 1.25 * S, -4.62 * S), Vector3(0.04 * S, 0.85 * S, 0.04 * S))
+	h.box(Vector3(0, 1.64 * S, -4.62 * S), Vector3(2.20 * S, 0.04 * S, 0.04 * S))
+	h.box(Vector3(0, 0.86 * S, -4.62 * S), Vector3(2.20 * S, 0.04 * S, 0.04 * S))
+	h.box(Vector3(0, 1.25 * S, -4.52 * S), Vector3(2.20 * S, 0.04 * S, 0.04 * S))
 	for s2 in [-1.0, 1.0]:
 		var side2: float = s2
+		h.color(RU_D, Geo.PAINT)
+		h.box(Vector3(side2 * 1.35 * S, 1.78 * S, -3.05 * S), Vector3(0.36 * S, 0.32 * S, 0.78 * S))
+		h.color("#1c1e1c", Geo.DARK)
+		h.box(Vector3(side2 * 1.20 * S, 1.72 * S, -3.70 * S), Vector3(0.22 * S, 0.10 * S, 0.36 * S))
+	V4._lamps(h, 0.42 * S, 1.05 * S, 4.20 * S)
+	h.color("#ffffff", Geo.TEAM)
+	h.box(Vector3(skirt_x, 1.15 * S, -0.4 * S), Vector3(0.012 * S, 0.04 * S, 0.55 * S))
+	var roof_y: float = 2.132 * S
+	var piv := VK._n3(model, root, "TurretPivot", Vector3(0, roof_y, 0.15 * S))
+	var t = K.new()
+	t.color(RU, Geo.PAINT)
+	# Tall faceted block: narrow wedge nose, flat cheeks, roof shifted aft so the front face slopes.
+	t.plan_loft([
+		Vector2(-0.20 * S, 0.98 * S), Vector2(0.20 * S, 0.98 * S),
+		Vector2(1.08 * S, 0.38 * S), Vector2(1.12 * S, -0.80 * S),
+		Vector2(0.72 * S, -1.42 * S), Vector2(-0.72 * S, -1.42 * S),
+		Vector2(-1.12 * S, -0.80 * S), Vector2(-1.08 * S, 0.38 * S)],
+		0.0, 0.86 * S, Vector2(0.88, 0.82), Vector2(0.0, -0.48 * S))
+	t.color(RU_D, Geo.PAINT)
+	t.box(Vector3(-0.55 * S, 0.16 * S, 0.55 * S), Vector3(0.22 * S, 0.18 * S, 0.28 * S))
+	t.box(Vector3(0.55 * S, 0.16 * S, 0.55 * S), Vector3(0.22 * S, 0.18 * S, 0.28 * S))
+	t.box(Vector3(-0.85 * S, 0.28 * S, -1.15 * S), Vector3(0.22 * S, 0.20 * S, 0.28 * S))
+	t.box(Vector3(0.85 * S, 0.28 * S, -1.15 * S), Vector3(0.22 * S, 0.20 * S, 0.28 * S))
+	t.color(GLASS_C, Geo.GLASS)
+	t.box(Vector3(-0.55 * S, 0.18 * S, 0.70 * S), Vector3(0.16 * S, 0.10 * S, 0.015 * S))
+	t.box(Vector3(0.55 * S, 0.18 * S, 0.70 * S), Vector3(0.16 * S, 0.10 * S, 0.015 * S))
+	t.color(RU, Geo.PAINT)
+	# Roof station. Its top is the 3.320 m overall height.
+	t.cbox(Vector3(0.42 * S, 1.02 * S, -0.15 * S), Vector3(0.32 * S, 0.32 * S, 0.40 * S), 0.02 * S)
+	t.color(RU_S, Geo.STEEL)
+	t.tube(Vector3(0.42 * S, 1.02 * S, 0.06 * S), Vector3(0.42 * S, 1.04 * S, 0.42 * S), 0.018 * S, 5)
+	t.tube(Vector3(-0.25 * S, 0.88 * S, -1.05 * S), Vector3(-0.25 * S, 1.188 * S, -1.08 * S), 0.012 * S, 4)
+	for s3 in [-1.0, 1.0]:
+		var side3: float = s3
 		for i4 in 5:
-			var z: float = -0.18 + float(i4) * 0.08
-			t.tube(Vector3(side2 * 0.36, 0.06, z), Vector3(side2 * 0.46, 0.10, z + 0.04), 0.018, 5)
+			var zt: float = 0.25 * S - float(i4) * 0.24 * S
+			t.tube(Vector3(side3 * 0.95 * S, 0.08 * S, zt), Vector3(side3 * 1.28 * S, 0.18 * S, zt + 0.06 * S), 0.035 * S, 5)
 	VK._mi(piv, root, "Turret", t.commit(mat))
-	var bn := VK._n3(piv, root, "Barrel", Vector3(0, 0.16, 0.36))
+	var bn := VK._n3(piv, root, "Barrel", Vector3(0, 0.30 * S, 0.72 * S))
 	var b = K.new()
+	var blen: float = (6.4495 - 0.15 - 0.72) * S
 	b.color(RU_S, Geo.STEEL)
-	b.tube(Vector3(0, 0, 0.0), Vector3(0, 0, 1.70), 0.036, 8, 0.028)
-	b.box(Vector3(0.05, 0.02, 1.62), Vector3(0.03, 0.024, 0.06))
+	b.tube(Vector3(0, 0, 0), Vector3(0, 0, blen), 0.085 * S, 8, 0.062 * S)
+	b.box(Vector3(0.055 * S, 0.02 * S, blen - 0.06 * S), Vector3(0.03 * S, 0.022 * S, 0.14 * S))
 	VK._mi(bn, root, "BarrelMesh", b.commit(mat))
-	_save(root, model, h, mat, "res://view/units/ecc/t14.tscn", 1.55, [t, b])
+	_save(root, model, h, mat, "res://view/units/ecc/t14.tscn", 1.72, [t, b])
 
 static func tos(mat: Material) -> void:
 	var root := VK._root({"selection_radius": 1.05, "bar_height": 1.4, "recoil": 0.02, "wreck_s": 7.5, "elevate": 0.55})

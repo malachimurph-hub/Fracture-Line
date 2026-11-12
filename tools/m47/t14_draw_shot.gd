@@ -40,23 +40,23 @@ func _studio() -> void:
 	cam.projection = Camera3D.PROJECTION_ORTHOGONAL
 	add_child(cam)
 	cam.current = true
-	# Side: +X, length along Z. Ortho size covers the 4.7 unit length.
-	cam.size = 5.2
-	cam.global_position = Vector3(8, 0.7, 0.3)
-	cam.look_at(Vector3(0, 0.7, 0.3), Vector3.UP)
+	# Side: +X, length along Z. Ortho height frames the 4.41 length and 1.34 height.
+	cam.size = 3.15
+	cam.global_position = Vector3(9, 0.62, 0.41)
+	cam.look_at(Vector3(0, 0.62, 0.41), Vector3.UP)
 	await frames(4)
 	await shot("t14_side")
 	# Top.
-	cam.size = 5.4
-	cam.global_position = Vector3(0, 12, 0.2)
-	cam.look_at(Vector3(0, 0, 0.2), Vector3(0, 0, -1))
+	cam.size = 2.05
+	cam.global_position = Vector3(0, 12, 0.40)
+	cam.look_at(Vector3(0, 0, 0.40), Vector3(0, 0, -1))
 	await frames(3)
 	await shot("t14_top")
 	# Three-quarter.
 	cam.projection = Camera3D.PROJECTION_PERSPECTIVE
-	cam.fov = 32.0
-	cam.global_position = Vector3(3.4, 1.8, 3.6)
-	cam.look_at(Vector3(0, 0.6, 0.2), Vector3.UP)
+	cam.fov = 30.0
+	cam.global_position = Vector3(4.2, 2.1, 4.4)
+	cam.look_at(Vector3(0, 0.7, 0.3), Vector3.UP)
 	await frames(3)
 	await shot("t14_quarter")
 	model.queue_free()
@@ -81,7 +81,7 @@ func _match() -> void:
 	cam.fov = 28.0
 	cam.current = true
 	var focus: Vector3 = v.global_position.lerp(m.world.views[t90.id].global_position, 0.35) + Vector3(0, 0.8, 0)
-	cam.global_position = focus + side * 6.2 + fwd * 4.2 + Vector3(0, 3.2, 0)
+	cam.global_position = focus + side * 8.4 + fwd * 5.6 + Vector3(0, 3.6, 0)
 	cam.look_at(focus, Vector3.UP)
 	await frames(5)
 	await shot("t14_match")
