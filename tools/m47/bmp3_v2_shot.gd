@@ -31,17 +31,17 @@ func _views() -> void:
 	e.background_mode = Environment.BG_COLOR
 	e.background_color = Color(0.93, 0.91, 0.86)
 	e.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	e.ambient_light_color = Color(0.78, 0.76, 0.72)
-	e.ambient_light_energy = 0.9
+	e.ambient_light_color = Color(0.62, 0.60, 0.55)
+	e.ambient_light_energy = 0.55
 	env.environment = e
 	add_child(env)
 	var sun := DirectionalLight3D.new()
 	sun.rotation_degrees = Vector3(-42, -55, 0)
-	sun.light_energy = 1.2
+	sun.light_energy = 1.05
 	add_child(sun)
 	var fill := DirectionalLight3D.new()
 	fill.rotation_degrees = Vector3(-70, 140, 0)
-	fill.light_energy = 0.55
+	fill.light_energy = 0.28
 	add_child(fill)
 	var model := (load("res://view/units/ecc/bmp3_v2.tscn") as PackedScene).instantiate() as Node3D
 	add_child(model)
