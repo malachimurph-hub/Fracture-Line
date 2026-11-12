@@ -32,6 +32,16 @@ func _initialize() -> void:
 		if String(mi.name).begins_with("Hull"):
 			mi.name = "Hull"
 			mi.set_meta("moves", true)
+		elif String(mi.name).begins_with("TracksFar"):
+			mi.name = "TracksFar"
+			mi.set_meta("moves", true)
+			mi.visibility_range_begin = 18.0
+			mi.visibility_range_begin_margin = 4.0
+		elif String(mi.name).begins_with("Tracks"):
+			mi.name = "Tracks"
+			mi.set_meta("moves", true)
+			mi.visibility_range_end = 24.0
+			mi.visibility_range_end_margin = 5.0
 		elif String(mi.name).begins_with("Turret") and not String(mi.name).begins_with("TurretPivot"):
 			mi.name = "Turret"
 		elif String(mi.name).begins_with("BarrelMesh"):

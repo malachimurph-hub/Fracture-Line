@@ -70,7 +70,7 @@ Buildings stay on `tools/m47/models_m47.gd`. The seven new vehicles are rebuilt 
 | Vehicle | Published size used | Running gear | What the mesh is built around |
 | --- | --- | --- | --- |
 | BMP-3 | 7.14 x 3.23 x 2.30 m | 6 road wheels, rear sprocket | Boat bow, trim vane, three front hatches, bow machine guns, 100 mm with a 30 mm under it, two rear doors, water jets |
-| BMPT | T-90 hull, about 7 m, same scale as the T-90 | 6 road wheels | Blender mesh (`assets/models/ecc/bmpt.glb`). Low turret, twin 30 mm, a two-tube launcher each side, open bow hatches, boxy skirts, slatted rear. The old procedural scene is `bmpt_legacy.tscn` |
+| BMPT | T-90 hull, about 7 m, same scale as the T-90 | 6 road wheels | Blender mesh (`assets/models/ecc/bmpt.glb`). Turret aft, twin 30 mm, a two-tube launcher each side, closed front deck, track links, boxy skirts, slatted rear. The old procedural scene is `bmpt_legacy.tscn` |
 | T-14 | hull about 8.7 x 3.5 m | 7 road wheels, return rollers | Three crew hatches in a row, low unmanned turret, long gun, rear slat basket |
 | TOS-1A | T-72 hull | 6 road wheels | Cab hatches, 24 tubes as 3 rows of 8 on an elevating box |
 | Iskander-M | MZKT-7930, about 13 x 3 m | 8x8, first two axles steer | Forward cab, twin canisters with nose cones, spare wheel |

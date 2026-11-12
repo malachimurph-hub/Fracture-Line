@@ -26,6 +26,7 @@ RUB = rgba("#141413", RUBBER)
 STL = rgba("#3a3d38", STEEL)
 GLS = rgba("#243038", GLASS)
 LMP = rgba("#f2efe4", LAMP)
+TRK = rgba("#2c2c2a", TRACK)
 WH_R = rgba("#161615", WHEEL_R)
 WH_S = rgba("#3a3d38", WHEEL_S)
 TEAM_C = rgba("#ffffff", TEAM)
@@ -92,6 +93,95 @@ def cyl(bm, p0, p1, r, segs, col, uv=(0.0, 0.0), uv2=(0.0, 0.0)):
     faces = added(bm, prev)
     paint(bm, faces, col, uv, uv2)
     return faces
+
+def oriented_box(bm, center, tangent, normal, size, col, uv):
+    """size is (across, thickness, along). thickness follows normal."""
+    t = Vector(tangent).normalized()
+    n = Vector(normal).normalized()
+    r = n.cross(t).normalized()
+    prev = born(bm)
+    res = bmesh.ops.create_cube(bm, size=1.0)
+    c = Vector(center)
+    for v in res["verts"]:
+        p = c + r * (v.co.x * size[0]) + n * (v.co.z * size[1]) + t * (v.co.y * size[2])
+        v.co = G(p.x, p.y, p.z)
+    faces = added(bm, prev)
+    paint(bm, faces, col, uv, (0.0, 0.0))
+    return faces
+
+def _resample(pts, step):
+    out = [pts[0]]
+    acc = 0.0
+    for i in range(1, len(pts)):
+        a = Vector(pts[i - 1])
+        b = Vector(pts[i])
+        seg = (b - a).length
+        if seg < 1e-6:
+            continue
+        while acc + seg >= step:
+            t = (step - acc) / seg
+            out.append(a.lerp(b, t))
+            a = out[-1]
+            seg = (b - a).length
+            acc = 0.0
+        acc += seg
+    return out
+
+def track_loop():
+    """Closed belt outside the wheels, (y, z) in Godot space."""
+    z0, z1 = -0.90, 0.90
+    ys, yi = 0.18, 0.17
+    rs, ri = 0.20, 0.175
+    raw = []
+    for i in range(14):
+        t = i / 13.0
+        raw.append(Vector((0.03, z1 - 0.14 - t * (z1 - z0 - 0.28))))
+    for i in range(1, 8):
+        a = math.radians(270 - 180 * i / 7.0)
+        raw.append(Vector((ys + math.sin(a) * rs, z0 + math.cos(a) * rs)))
+    for i in range(14):
+        t = i / 13.0
+        raw.append(Vector((0.36, z0 + 0.14 + t * (z1 - z0 - 0.28))))
+    for i in range(1, 7):
+        a = math.radians(90 - 180 * i / 6.0)
+        raw.append(Vector((yi + math.sin(a) * ri, z1 + math.cos(a) * ri)))
+    raw.append(raw[0])
+    return _resample([(p.x, p.y) for p in raw], 0.105)
+
+def add_tracks(parent):
+    """One shoe and a guide tooth per link, both sides. UV.x is distance along the run so the match shader can scroll it."""
+    fine = fresh()
+    coarse = fresh()
+    pts = track_loop()
+    center = Vector((0.19, 0.0))
+    along = 0.0
+    n = len(pts)
+    for i in range(n):
+        p = Vector(pts[i])
+        nxt = Vector(pts[(i + 1) % n])
+        prv = Vector(pts[(i - 1) % n])
+        tangent3 = Vector((0.0, nxt.x - prv.x, nxt.y - prv.y))
+        if tangent3.length < 1e-6:
+            continue
+        tangent3.normalize()
+        outward2 = (p - center).normalized()
+        outward3 = Vector((0.0, outward2.x, outward2.y))
+        seg = (nxt - p).length
+        for s in (-1.0, 1.0):
+            c = (s * 0.50, p.x, p.y)
+            uv = (along, 0.5)
+            oriented_box(fine, c, tangent3, outward3, (0.105, 0.018, 0.072), TRK, uv)
+            horn = Vector(c) - outward3 * 0.02
+            oriented_box(fine, (horn.x, horn.y, horn.z), tangent3, outward3, (0.026, 0.028, 0.032), TRK, uv)
+        # far stand-in: one quad-thick band, no teeth
+        if i % 2 == 0:
+            for s in (-1.0, 1.0):
+                c = (s * 0.50, p.x, p.y)
+                oriented_box(coarse, c, tangent3, outward3, (0.09, 0.012, seg * 1.7), TRK, (along, 0.5))
+        along += seg
+    to_obj(fine, "Tracks", parent)
+    far = to_obj(coarse, "TracksFar", parent)
+    return far
 
 def wheel(bm, c, r, w, segs=12):
     """Road wheel. UV is the godot-space centre so the match shader can spin it."""
@@ -167,11 +257,6 @@ def build():
         # slats at the back of the skirt
         for i in range(5):
             box(h, (s * 0.60, 0.26 + i * 0.04, -0.72), (0.02, 0.012, 0.16), OLIVE_D)
-        # bow grenade station on the front corner: round shield and an open lid
-        cyl(h, (s * 0.28, 0.50, 0.72), (s * 0.28, 0.58, 0.72), 0.15, 16, OLIVE)
-        lid = cyl(h, (s * 0.28, 0.59, 0.72), (s * 0.28, 0.61, 0.72), 0.14, 16, OLIVE_L)
-        pivot = G(s * 0.28, 0.59, 0.58)
-        bmesh.ops.rotate(h, cent=pivot, matrix=Matrix.Rotation(math.radians(-80), 4, "X"), verts=list({v for f in lid for v in f.verts}))
         # headlights and tow hooks on the glacis
         box(h, (s * 0.22, 0.24, 1.00), (0.06, 0.04, 0.03), LMP)
         cyl(h, (s * 0.16, 0.16, 0.98), (s * 0.16, 0.16, 1.04), 0.012, 6, STL)
@@ -188,16 +273,13 @@ def build():
         wheel(h, (s * 0.50, 0.16, 0.90), 0.12, 0.08, 12)     # idler
         for k, z in enumerate((-0.35, 0.15)):
             cyl(h, (s * 0.50 - 0.04, 0.34, z), (s * 0.50 + 0.04, 0.34, z), 0.035, 8, WH_S, (0.34, z), (s * 0.50, 0.035))
-        # track shoes, top and bottom
-        for i in range(15):
-            z = -0.78 + i * 0.112
-            box(h, (s * 0.50, 0.035, z), (0.09, 0.02, 0.07), RUB)
-            box(h, (s * 0.50, 0.33, z), (0.08, 0.018, 0.07), RUB)
     # team colour pip, same idea as the other vehicles (not a parade stripe)
     box(h, (0.64, 0.40, -0.1), (0.01, 0.03, 0.35), TEAM_C)
     hull = to_obj(h, "Hull", root)
+    add_tracks(root)
 
-    piv = empty("TurretPivot", (0.0, 0.50, 0.02), root)
+    # Turret sits aft of the hull centre, over the rear road wheels. Children move with it.
+    piv = empty("TurretPivot", (0.0, 0.50, -0.38), root)
     t = fresh()
     deck = box(t, (0, 0.04, 0.0), (0.78, 0.07, 0.52), OLIVE)
     bevel(t, deck, 0.01)
