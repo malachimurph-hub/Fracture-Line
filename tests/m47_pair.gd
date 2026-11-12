@@ -12,8 +12,8 @@ func _ready() -> void:
 		(layer as CanvasLayer).visible = false
 	var spot := Vector2i(48, 48)
 	var only := OS.get_environment("FL_ONLY")
-	for spec in [["bmp3", &"ecc_bmp3", 4.4], ["t14", &"ecc_t14", 5.2], ["mi8", &"ecc_mi8", 7.0],
-			["pantsir", &"ecc_pantsir", 6.2], ["tos", &"ecc_tos", 4.8], ["iskander", &"ecc_iskander", 6.6],
+	for spec in [["bmp3", &"ecc_bmp3", 4.6], ["t14", &"ecc_t14", 6.4], ["mi8", &"ecc_mi8", 7.0],
+			["pantsir", &"ecc_pantsir", 12.0], ["tos", &"ecc_tos", 4.8], ["iskander", &"ecc_iskander", 6.6],
 			["shilka", &"ecc_zeus", 4.4]]:
 		if only != "" and spec[0] != only:
 			continue

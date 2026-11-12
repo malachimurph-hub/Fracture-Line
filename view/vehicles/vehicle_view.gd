@@ -237,7 +237,7 @@ func _process(delta: float) -> void:
 				(leg as Node3D).rotation.z = lerpf(swing, 0.0, _plant_k)
 		if _radar != null:
 			# Pantsir search radar: the node is the hinge, so this lays the panel back for travel.
-			_radar.rotation.x = _radar_rx + lerpf(-1.55, 0.0, _plant_k)
+			_radar.rotation.x = _radar_rx + lerpf(-1.70, 0.0, _plant_k)
 	if not work_parts.is_empty() and not _dead:
 		_work(delta)
 	if _dead:
