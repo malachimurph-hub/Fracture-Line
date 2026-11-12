@@ -28,7 +28,7 @@ func _unit_allowed(ud: UnitDef) -> bool:
 			return false
 	if ud.id == &"ecc_msta" or ud.id == &"ecc_tos" or ud.id == &"ecc_iskander":
 		return _count_type(ud.id) < 2 + combat_units().size() / 10
-	if ud.id == &"ecc_reaper":
+	if ud.id == &"ecc_reaper" or ud.id == &"ecc_pantsir":
 		return _count_type(ud.id) < 2
 	if ud.id == &"ecc_alfa" or ud.id == &"ecc_spetsnaz" or ud.id == &"ecc_vdv":
 		return _count_type(ud.id) < 1 + combat_units().size() / 12

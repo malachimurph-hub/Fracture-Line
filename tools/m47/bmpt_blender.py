@@ -18,9 +18,10 @@ def rgba(hex_s, cls):
     r, g, b = int(h[0:2], 16) / 255.0, int(h[2:4], 16) / 255.0, int(h[4:6], 16) / 255.0
     return (r, g, b, cls / 20.0)
 
-OLIVE = rgba("#5a6448", PAINT)
-OLIVE_D = rgba("#4a533c", PAINT)
-OLIVE_L = rgba("#6b7353", PAINT)
+# Mid grey-green. The match sun and grime darken it; #5a6448 went near-black.
+OLIVE = rgba("#84906e", PAINT)
+OLIVE_D = rgba("#6c745c", PAINT)
+OLIVE_L = rgba("#98a480", PAINT)
 CAP = rgba("#c8c4a4", PAINT)       # lighter missile-mouth caps; luminance survives the paint mix
 RUB = rgba("#141413", RUBBER)
 STL = rgba("#3a3d38", STEEL)
@@ -128,25 +129,26 @@ def _resample(pts, step):
     return out
 
 def track_loop():
-    """Closed belt outside the wheels, (y, z) in Godot space."""
-    z0, z1 = -0.90, 0.90
-    ys, yi = 0.18, 0.17
-    rs, ri = 0.20, 0.175
+    """Belt tucked inside the hull. Idler low under the glacis, sprocket under the rear.
+    The top run sits behind the skirts. (y, z) in Godot space."""
+    z0, z1 = -0.80, 0.60
+    ys, yi = 0.18, 0.13
+    rs, ri = 0.15, 0.11
     raw = []
-    for i in range(14):
-        t = i / 13.0
-        raw.append(Vector((0.03, z1 - 0.14 - t * (z1 - z0 - 0.28))))
-    for i in range(1, 8):
-        a = math.radians(270 - 180 * i / 7.0)
+    for i in range(16):
+        t = i / 15.0
+        raw.append(Vector((0.035, z1 - 0.06 - t * (z1 - z0 - 0.20))))
+    for i in range(1, 9):
+        a = math.radians(270 - 180 * i / 8.0)
         raw.append(Vector((ys + math.sin(a) * rs, z0 + math.cos(a) * rs)))
-    for i in range(14):
-        t = i / 13.0
-        raw.append(Vector((0.36, z0 + 0.14 + t * (z1 - z0 - 0.28))))
-    for i in range(1, 7):
-        a = math.radians(90 - 180 * i / 6.0)
+    for i in range(16):
+        t = i / 15.0
+        raw.append(Vector((0.30, z0 + 0.08 + t * (z1 - z0 - 0.18))))
+    for i in range(1, 8):
+        a = math.radians(90 - 180 * i / 7.0)
         raw.append(Vector((yi + math.sin(a) * ri, z1 + math.cos(a) * ri)))
     raw.append(raw[0])
-    return _resample([(p.x, p.y) for p in raw], 0.105)
+    return _resample([(p.x, p.y) for p in raw], 0.086)
 
 def add_tracks(parent):
     """One shoe and a guide tooth per link, both sides. UV.x is distance along the run so the match shader can scroll it."""
@@ -170,9 +172,9 @@ def add_tracks(parent):
         for s in (-1.0, 1.0):
             c = (s * 0.50, p.x, p.y)
             uv = (along, 0.5)
-            oriented_box(fine, c, tangent3, outward3, (0.105, 0.018, 0.072), TRK, uv)
-            horn = Vector(c) - outward3 * 0.02
-            oriented_box(fine, (horn.x, horn.y, horn.z), tangent3, outward3, (0.026, 0.028, 0.032), TRK, uv)
+            oriented_box(fine, c, tangent3, outward3, (0.10, 0.015, 0.058), TRK, uv)
+            horn = Vector(c) - outward3 * 0.018
+            oriented_box(fine, (horn.x, horn.y, horn.z), tangent3, outward3, (0.022, 0.024, 0.026), TRK, uv)
         # far stand-in: one quad-thick band, no teeth
         if i % 2 == 0:
             for s in (-1.0, 1.0):
@@ -268,14 +270,14 @@ def build():
     # six road wheels, rear sprocket, front idler, return rollers
     for s in (-1.0, 1.0):
         for i in range(6):
-            z = -0.68 + i * (1.36 / 5.0)
+            z = -0.52 + i * (0.92 / 5.0)
             wheel(h, (s * 0.50, 0.145, z), 0.125, 0.10, 12)
-        wheel(h, (s * 0.50, 0.17, -0.90), 0.155, 0.09, 12)   # sprocket
+        wheel(h, (s * 0.50, 0.18, -0.80), 0.145, 0.09, 12)   # rear sprocket, under the hull
         for k in range(8):
             a = k * math.tau / 8.0
-            box(h, (s * 0.50, 0.17 + math.sin(a) * 0.15, -0.90 + math.cos(a) * 0.15), (0.07, 0.035, 0.04), WH_S,
-                (0.17, -0.90), (s * 0.50, 0.155))
-        wheel(h, (s * 0.50, 0.16, 0.90), 0.12, 0.08, 12)     # idler
+            box(h, (s * 0.50, 0.18 + math.sin(a) * 0.14, -0.80 + math.cos(a) * 0.14), (0.07, 0.032, 0.038), WH_S,
+                (0.18, -0.80), (s * 0.50, 0.145))
+        wheel(h, (s * 0.50, 0.13, 0.60), 0.10, 0.07, 10)     # front idler, low under the glacis
         for k, z in enumerate((-0.35, 0.15)):
             cyl(h, (s * 0.50 - 0.04, 0.34, z), (s * 0.50 + 0.04, 0.34, z), 0.035, 8, WH_S, (0.34, z), (s * 0.50, 0.035))
     # team colour pip, same idea as the other vehicles (not a parade stripe)

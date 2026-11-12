@@ -13,7 +13,7 @@ The Ministry unlocks FSB GRU ($4200, âˆ’6 power) and the Black Market ($6500, âˆ
 | Step | Unlocks |
 |---|---|
 | Barracks | Conscript squad. Drone Operator once the Ministry exists. |
-| Vehicle Factory | Tiger-M, BTR, Typhoon, BMP-3, T-90M, Shilka, 2S Msta, TOS-1A, BMPT, Iskander, T-14 (needs Ministry), Grim Reaper (needs research), Engineer. Also Balanced Tower and Reactive Armour. |
+| Vehicle Factory | Tiger-M, BTR, Typhoon, BMP-3, T-90M, Shilka, 2S Msta, TOS-1A, BMPT, Iskander, Pantsir (needs Ministry), T-14 (needs Ministry), Grim Reaper (needs research), Engineer. Also Balanced Tower and Reactive Armour. |
 | Airfield | Su-57, Ka-52, Mi-24, Mi-8, Tu-160 (needs Ministry). |
 | Ministry | Anti-Armor Tower, Anti-Air Tower, Red Dawn, Grim Reaper research. |
 | FSB GRU | FSB Alfa, Spetsnaz, VDV Spetsnaz. |
@@ -39,6 +39,7 @@ Costs are supply. Time is build time. Speed is milli-tiles per second.
 | 2S Msta | 1400 | 15 s | 3 | 480 | 1250 | Unchanged. |
 | TOS-1A | 1750 | 16 s | 3 | 700 | 1100 | 12-rocket clip, 32 demolition, 4.8 tile range, 1.5 tile splash. |
 | Iskander | 2400 | 20 s | 3 | 540 | 1250 | One 260 demolition missile, 15 tile range. 5 s setup. |
+| Pantsir | 2100 | 20 s | 3 | 640 | 1400 | Needs the Ministry. 8 s deploy. 30 mm plus missiles out to 12 tiles. A planted Pantsir can engage aircraft that only base defences could hit. |
 | Grim Reaper | 5200 | 42 s | 4 | 680 | 880 | Research. 8 s deploy. One missile, six 95-damage warheads, 1.7 tile splash. No build cap. |
 | Mi-8 | 1250 | 14 s | 3 | 820 | 3400 | Carries 8. Door gun. Lands to load, same as the other helicopters. US Black Hawk is 4460. |
 
@@ -69,15 +70,16 @@ Buildings stay on `tools/m47/models_m47.gd`. The seven new vehicles are rebuilt 
 
 | Vehicle | Published size used | Running gear | What the mesh is built around |
 | --- | --- | --- | --- |
-| BMP-3 | 7.14 x 3.23 x 2.30 m | 6 road wheels, rear sprocket | Boat bow, trim vane, three front hatches, bow machine guns, 100 mm with a 30 mm under it, two rear doors, water jets |
-| BMPT | T-90 hull, about 7 m, same scale as the T-90 | 6 road wheels | Blender mesh (`assets/models/ecc/bmpt.glb`). Turret aft, twin 30 mm, a two-tube launcher each side, flush closed bow lids, track links, boxy skirts, slatted rear. The old procedural scene is `bmpt_legacy.tscn` |
-| T-14 | hull about 8.7 x 3.5 m | 7 road wheels, return rollers | Three crew hatches in a row, low unmanned turret, long gun, rear slat basket |
+| BMP-3 | 7.14 x 3.23 x 2.30 m | 6 road wheels, rear sprocket | Blender mesh (`assets/models/ecc/bmp3.glb`). Boat bow, trim vane, three closed front hatches, 100 mm with the 30 mm beside it, three smoke pots a side, rear doors. The old scene is `bmp3_legacy.tscn` |
+| BMPT | T-90 hull, about 7 m, same scale as the T-90 | 6 road wheels | Blender mesh (`assets/models/ecc/bmpt.glb`). Turret aft, twin 30 mm, a two-tube launcher each side, flush closed bow lids. The track run is tucked under the hull: idler low under the glacis, sprocket at the rear, top run behind the skirts. The old procedural scene is `bmpt_legacy.tscn` |
+| T-14 | hull about 8.7 x 3.5 m, roughly a quarter longer than the T-90 in the top-down photo | 7 road wheels | Blender mesh (`assets/models/ecc/t14.glb`). Three closed crew hatches in a row, low unmanned turret set back, long gun, sensor block, rear slat basket. The old scene is `t14_legacy.tscn` |
 | TOS-1A | T-72 hull | 6 road wheels | Cab hatches, 24 tubes as 3 rows of 8 on an elevating box |
 | Iskander-M | MZKT-7930, about 13 x 3 m | 8x8, first two axles steer | Forward cab, twin canisters with nose cones, spare wheel |
-| Mi-8 | fuselage about 18 m, rotor about 21 m | tricycle gear | Bulbous glazed nose, clamshell rear doors, roof engines, 5-blade main rotor, 3-blade tail rotor on the left. Drawn smaller so it sits with the other helicopters |
+| Pantsir | MZKT-7930 8x8 | 4 axles, front pair steers | Blender mesh (`assets/models/ecc/pantsir.glb`). Cab forward, mid module, search radar that rises on deploy, twin 30 mm, six-tube packs each side, outriggers. No badge or lettering |
+| Mi-8 | fuselage about 18 m, rotor about 21 m | tricycle gear | Blender mesh (`assets/models/ecc/mi8.glb`). Bulbous glazed nose, clamshell rear doors, roof intakes, stub pylons with rocket pods, 5-blade main rotor, 3-blade tail rotor on the left. Drawn larger than the old helicopter, still short of the full 18 m so it can share a pad. The old scene is `mi8_legacy.tscn` |
 | Grim Reaper | about 22.7 m at the T-90 scale, 16x16 | 8 axles, evenly spaced, first two steer | Split cabs beside a rounded canister nose, ribbed canister, side lockers and a ladder, outriggers that drop when it deploys |
 
-The Grim Reaper is not a named launcher in the game. The mesh follows the 16-wheel TEL in `docs/m4_7/refs/` (eight axles, split cabs under the canister nose, ribbed tube). Parade stripes and the star are not on the model. Reference photos in that folder are not imported. The BMPT photos are there too. These hulls use the T-90 olive so they stay green under the match sun; the older Russian vehicles stay the faction grey. The Mi-8 fuselage is still the game's helicopter size.
+The Grim Reaper is not a named launcher in the game. The mesh follows the 16-wheel TEL in `docs/m4_7/refs/` (eight axles, split cabs under the canister nose, ribbed tube). Parade stripes, stars and badges are not on any of these models. Reference photos in that folder are not imported. The BMPT, BMP-3, Mi-8, T-14 and Pantsir are Blender meshes. Their shared paint is `#8d9876`, the grey-green that still reads as the parade olive under the match sun. The T-90 and the Grim Reaper stay on `#96A468`. The older Russian vehicles stay the faction grey.
 
 Conscripts are their own bakes (`ecc_con_flora`, `ecc_con_emr`, `ecc_con_olive`, `ecc_con_wood_rpg`, `ecc_con_flora_rpg`, `ecc_con_pkm`): wood AK-47, RPG-7 with a loaded round, wood-furniture PKM, helmets, a field cap, a side cap, vests and pouches. Flora and woodland use the blotch pattern on different cloth, EMR the fine digital pattern, olive a plain colour. The squad icon is the whole group. Spetsnaz and VDV still use the existing special-forces sculpts. The PKM gunner lies down to fire; standing, he carries the gun.
 

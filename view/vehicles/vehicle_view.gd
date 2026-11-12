@@ -50,6 +50,8 @@ var plant := 0.0                 ## 0 travelling, 1 outriggers down (Grim Reaper
 var _plant_k := 0.0
 var _outriggers: Node3D
 var _rotor: Node3D
+var _radar: Node3D
+var _radar_rx := 0.0
 
 func _ready() -> void:
 	super._ready()
@@ -70,8 +72,11 @@ func _ready() -> void:
 		pack_rig.pose(1.0)
 	_outriggers = find_child("Outriggers", true, false) as Node3D
 	_rotor = find_child("Rotor", true, false) as Node3D
+	_radar = find_child("Radar", true, false) as Node3D
 	if _outriggers != null:
 		_outriggers.position.y = 0.42
+	if _radar != null:
+		_radar_rx = _radar.rotation.x
 	barrel = find_child("Barrel", true, false)
 	if barrel != null:
 		_barrel_z = barrel.position.z
@@ -219,9 +224,12 @@ func set_plant(k: float) -> void:
 func _process(delta: float) -> void:
 	if _rotor != null and not _dead:
 		_rotor.rotate_y(delta * 18.0)
-	if _outriggers != null and not _dead:
+	if (_outriggers != null or _radar != null) and not _dead:
 		_plant_k = move_toward(_plant_k, plant, delta * 0.5)
-		_outriggers.position.y = lerpf(0.42, 0.0, _plant_k)
+		if _outriggers != null:
+			_outriggers.position.y = lerpf(0.42, 0.0, _plant_k)
+		if _radar != null:
+			_radar.rotation.x = _radar_rx + lerpf(-1.15, 0.0, _plant_k)
 	if not work_parts.is_empty() and not _dead:
 		_work(delta)
 	if _dead:

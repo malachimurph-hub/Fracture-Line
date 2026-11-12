@@ -101,6 +101,7 @@ ecc_bmpt,UNIT_ECC_BMPT,1600,16000,3,,vehicle|tank,1180,heavy,ecc_bmpt_30|ecc_bmp
 ecc_t14,UNIT_ECC_T14,1900,18000,4,ecc_ministry,vehicle|tank,1400,heavy,ecc_t14_gun,1520,vehicle,8,620,0,0,0,tank,,,80,1100,90,0,0,0
 ecc_tos,UNIT_ECC_TOS,1750,16000,3,,vehicle|artillery,700,light,ecc_tos,1100,vehicle,8,640,0,0,0,artillery,,,70,1200,40,0,0,0
 ecc_iskander,UNIT_ECC_ISKANDER,2400,20000,3,,vehicle|artillery|setup,540,light,ecc_iskander,1250,vehicle,9,700,0,0,0,artillery,,,60,1400,30,0,0,0
+ecc_pantsir,UNIT_ECC_PANTSIR,2100,20000,3,ecc_ministry,vehicle|aa|deploy|deploy_aa,640,light,ecc_pantsir_gun|ecc_pantsir_sam,1400,vehicle,12,900,0,0,0,anti_air,,,70,1200,90,0,0,0
 ecc_reaper,UNIT_ECC_REAPER,5200,42000,4,ecc_up_reaper,vehicle|artillery|deploy,680,light,ecc_reaper_mirv,880,vehicle,10,780,0,0,0,artillery,,,50,1600,20,0,0,0
 ecc_mi8,UNIT_ECC_MI8,1250,14000,3,,air|helicopter|transport,820,air,ecc_mi8_mg,3400,air,10,760,0,0,0,transport,,heli,160,1100,0,8,0,0
 ecc_up_tower_bal,UNIT_ECC_UP_TOWER_BAL,800,20000,0,,upgrade,1,infantry,,0,foot,0,100,0,0,0,upgrade,,,0,0,0,0,0,0

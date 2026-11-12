@@ -1042,6 +1042,18 @@
      ],
      "alias_of": "ecc_msta"
     },
+    "ecc_pantsir": {
+     "folder": "zeus",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ],
+     "alias_of": "ecc_zeus"
+    },
     "ecc_mi8": {
      "folder": "ka52",
      "events": [

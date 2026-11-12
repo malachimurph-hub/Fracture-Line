@@ -47,8 +47,12 @@ static func valid_target(w: SimWorld, u: SimEntity, t: SimEntity) -> bool:
 	if t.kind == SimEntity.Kind.UNIT and t.res_id < 0:
 		return false
 	# M4.4: the Reaper is only engageable by base defences, never by units.
+	# A deployed Pantsir is the one unit that joins that net.
 	if t.kind == SimEntity.Kind.UNIT and w.udef(t).tags.has("stealth_defense"):
-		if u.kind != SimEntity.Kind.BUILDING or w.bdef(u).category != &"defense":
+		var net := u.kind == SimEntity.Kind.BUILDING and w.bdef(u).category == &"defense"
+		if not net and u.kind == SimEntity.Kind.UNIT and w.udef(u).tags.has("deploy_aa"):
+			net = u.still >= EccSys.DEPLOY_TICKS and not u.moving and u.goal == MoveSys.NONE
+		if not net:
 			return false
 	if not CombatSys.can_hit(w, u, t.kind == SimEntity.Kind.UNIT and w.flying(t)):
 		return false

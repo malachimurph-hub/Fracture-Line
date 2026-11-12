@@ -94,6 +94,18 @@ static func _defense_mask(w: SimWorld, u: SimEntity) -> int:
 			r = maxi(r, bd.aux_radius * FX.ONE)
 		if w.dist_to_building(u.pos, b) <= r:
 			mask |= 1 << b.team
+	# A planted Pantsir sees the same aircraft the base defences see.
+	for id2 in w.ids:
+		var p: SimEntity = w.ents[id2]
+		if not p.alive or p.kind != SimEntity.Kind.UNIT or p.res_id < 0 or p.team < 0:
+			continue
+		if not w.enemies(p.team, u.team) or not w.udef(p).tags.has("deploy_aa"):
+			continue
+		if p.moving or p.goal != MoveSys.NONE or p.still < EccSys.DEPLOY_TICKS:
+			continue
+		var reach: int = w.udef(p).sight * FX.ONE
+		if FX.dist2(p.pos, u.pos) <= reach * reach:
+			mask |= 1 << p.team
 	return mask
 
 ## YF-22: hidden from ground troops unless they are on top of it. Aircraft, detectors and

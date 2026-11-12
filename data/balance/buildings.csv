@@ -43,7 +43,7 @@ ecc_hq,BLD_ECC_HQ,base,2500,45000,4,4,5000,5,0,10,,ecc_engineer,1,0,0,,0,,0,0,0,
 ecc_power,BLD_ECC_POWER,base,1600,20000,4,4,1500,19,0,7,,,0,0,0,,0,,0,0,0,0,1,,,0,0,0,0
 ecc_depot,BLD_ECC_DEPOT,base,1500,15000,3,3,1500,-2,0,6,ecc_power,ecc_cargo_truck,0,1,0,ecc_cargo_truck,0,,0,0,0,0,1,,,0,0,0,0
 ecc_barracks,BLD_ECC_BARRACKS,production,600,10000,3,3,1200,-3,0,6,ecc_power,ecc_squad|ecc_drone_operator,0,0,0,,0,,0,0,0,0,1,,,0,0,0,0
-ecc_factory,BLD_ECC_FACTORY,production,1600,16000,4,4,1900,-4,0,6,ecc_barracks,ecc_tigr|ecc_btr|ecc_typhoon|ecc_bmp3|ecc_t90|ecc_zeus|ecc_msta|ecc_tos|ecc_bmpt|ecc_iskander|ecc_t14|ecc_reaper|ecc_engineer|ecc_up_tower_bal|ecc_up_era,0,0,0,,0,,0,0,0,0,1,,,0,0,0,0
+ecc_factory,BLD_ECC_FACTORY,production,1600,16000,4,4,1900,-4,0,6,ecc_barracks,ecc_tigr|ecc_btr|ecc_typhoon|ecc_bmp3|ecc_t90|ecc_zeus|ecc_msta|ecc_tos|ecc_bmpt|ecc_iskander|ecc_pantsir|ecc_t14|ecc_reaper|ecc_engineer|ecc_up_tower_bal|ecc_up_era,0,0,0,,0,,0,0,0,0,1,,,0,0,0,0
 ecc_bunker,BLD_ECC_BUNKER,defense,1000,12000,2,2,1400,-3,0,9,ecc_barracks,,0,0,0,,0,ecc_silo_missile,1,0,0,0,1,,,0,0,0,0
 ecc_aa_site,BLD_ECC_AA_SITE,defense,1000,12000,2,2,1200,-3,0,10,ecc_barracks,,0,0,0,,0,ecc_zak30|ecc_zak30_gnd,1,0,0,0,1,,,0,0,0,0
 ecc_airfield,BLD_ECC_AIRFIELD,production,1800,16000,8,8,1800,-4,0,7,ecc_factory,ecc_su57|ecc_ka52|ecc_tu160|ecc_hind|ecc_mi8,0,0,0,,0,,0,0,0,0,1,,airfield,0,6,0,0

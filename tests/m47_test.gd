@@ -24,7 +24,7 @@ static func _tree(t: Node) -> void:
 	var bar: BuildingDef = Content.building(&"ecc_barracks")
 	t._check(bar.produces.has("ecc_squad") and not bar.produces.has("ecc_infiltrator") and not bar.produces.has("ecc_saboteur"), "Barracks trains conscripts only, plus the operator")
 	var fac: BuildingDef = Content.building(&"ecc_factory")
-	for id in ["ecc_bmp3", "ecc_bmpt", "ecc_tos", "ecc_iskander", "ecc_t14", "ecc_reaper", "ecc_zeus", "ecc_up_tower_bal", "ecc_up_era"]:
+	for id in ["ecc_bmp3", "ecc_bmpt", "ecc_tos", "ecc_iskander", "ecc_pantsir", "ecc_t14", "ecc_reaper", "ecc_zeus", "ecc_up_tower_bal", "ecc_up_era"]:
 		t._check(fac.produces.has(id), "factory menu includes %s" % id)
 	var air: BuildingDef = Content.building(&"ecc_airfield")
 	t._check(air.produces.has("ecc_mi8") and air.produces.has("ecc_ka52"), "Airfield builds the Mi-8 and keeps the Ka-52")
@@ -83,6 +83,9 @@ static func _vehicles(t: Node) -> void:
 	var reap := Content.unit(&"ecc_reaper")
 	t._check(isk.cost < reap.cost and isk.tags.has("setup") and not isk.prereqs.has("ecc_up_reaper"), "Iskander is the mid-tier missile truck")
 	t._check(reap.prereqs.has("ecc_up_reaper") and reap.tags.has("deploy") and reap.cost >= 5000 and Content.weapon(&"ecc_reaper_mirv").splash_mt > 0, "Grim Reaper is researched, expensive, and must deploy")
+	var pan := Content.unit(&"ecc_pantsir")
+	var sam: WeaponDef = Content.weapon(&"ecc_pantsir_sam")
+	t._check(pan.prereqs.has("ecc_ministry") and pan.tags.has("deploy") and pan.tags.has("deploy_aa") and sam.targets_air and not sam.targets_ground and sam.range_mt > Content.weapon(&"ecc_tower_aa").range_mt and sam.range_mt < Content.weapon(&"tpla_sayad3_sam").range_mt, "Pantsir is a late factory air-defence truck")
 	var mi := Content.unit(&"ecc_mi8")
 	var hawk := Content.unit(&"us_blackhawk")
 	t._check(mi.tags.has("helicopter") and mi.tags.has("transport") and mi.transport_capacity >= 6 and mi.speed_mtps < hawk.speed_mtps and mi.air_slots == 0, "Mi-8 is a slower transport helicopter")
@@ -207,6 +210,28 @@ static func _sim(t: Node) -> void:
 	var vh := victim.hp
 	CombatSys.land_all(w)
 	t._check(not victim.alive or victim.hp < vh, "the warheads hit the squad underneath")
+	# Pantsir: no shot until the outriggers plant, and only then can it engage a defence-only aircraft.
+	var aa := w.spawn_unit(&"ecc_pantsir", 0, null, hq.pos + Vector2i(FX.ONE * 6, FX.ONE * 2))
+	var drone := w.spawn_unit(&"us_reaper", 1, null, aa.pos + Vector2i(0, FX.ONE * 8))
+	drone.air_state = AirSys.FLYING
+	var shilka := w.spawn_unit(&"ecc_zeus", 0, null, aa.pos + Vector2i(FX.ONE * 2, 0))
+	w.fog.disabled = true
+	w.rebuild_spatial()
+	aa.still = 0
+	aa.moving = false
+	aa.goal = MoveSys.NONE
+	UsSys.run(w)
+	t._check(not OrderSys.valid_target(w, aa, drone), "Pantsir cannot target that aircraft until it deploys")
+	CombatSys._ensure(aa, Content.unit(aa.def_id))
+	w.flight.clear()
+	CombatSys._fire_unit(w, aa, drone)
+	t._check(w.flight.is_empty(), "Pantsir cannot fire until the outriggers plant")
+	aa.still = EccSys.DEPLOY_TICKS
+	UsSys.run(w)
+	t._check(OrderSys.valid_target(w, aa, drone), "a deployed Pantsir can target the aircraft only base defences could hit")
+	t._check(not OrderSys.valid_target(w, shilka, drone), "the Shilka still cannot target that aircraft")
+	CombatSys._fire_unit(w, aa, drone)
+	t._check(not w.flight.is_empty(), "once deployed the Pantsir fires")
 
 static func _tris(path: String) -> int:
 	var n: Node = load(path).instantiate()
@@ -223,7 +248,7 @@ static func _meshes(t: Node) -> void:
 		"res://view/units/ecc/bmp3.tscn": 1400, "res://view/units/ecc/bmpt.tscn": 1400,
 		"res://view/units/ecc/t14.tscn": 1600, "res://view/units/ecc/tos.tscn": 1400,
 		"res://view/units/ecc/iskander.tscn": 1600, "res://view/units/ecc/reaper.tscn": 1800,
-		"res://view/units/ecc/mi8.tscn": 900,
+		"res://view/units/ecc/mi8.tscn": 900, "res://view/units/ecc/pantsir.tscn": 1400,
 		"res://view/buildings/ecc/fsb.tscn": 800, "res://view/buildings/ecc/black_market.tscn": 1000,
 		"res://view/buildings/ecc/tower_bal.tscn": 80,
 	}
@@ -232,7 +257,10 @@ static func _meshes(t: Node) -> void:
 		t._check(n >= int(floors[path]), "%s is a fitted model (%d tris)" % [path.get_file(), n])
 	var reaper: Node = load("res://view/units/ecc/reaper.tscn").instantiate()
 	var mi8: Node = load("res://view/units/ecc/mi8.tscn").instantiate()
-	t._check(reaper.find_child("Outriggers", true, false) != null and mi8.find_child("Rotor", true, false) != null, "Grim Reaper has outriggers and the Mi-8 has a rotor")
+	t._check(reaper.find_child("Outriggers", true, false) != null and mi8.find_child("Rotor", true, false) != null and mi8.find_child("TailRotor", true, false) != null, "Grim Reaper has outriggers and the Mi-8 has a rotor")
+	var pantsir: Node = load("res://view/units/ecc/pantsir.tscn").instantiate()
+	t._check(pantsir.find_child("Outriggers", true, false) != null and pantsir.find_child("Radar", true, false) != null, "Pantsir has outriggers and a radar")
+	pantsir.free()
 	reaper.free()
 	mi8.free()
 	var t90: Node = load("res://view/units/ecc/t90.tscn").instantiate()
@@ -249,14 +277,14 @@ static func _meshes(t: Node) -> void:
 
 static func _voices(t: Node) -> void:
 	var units: Dictionary = AudioDirector.manifest["factions"]["ecc"]["units"]
-	for pair in [["ecc_alfa", "infiltrator"], ["ecc_spetsnaz", "infiltrator"], ["ecc_vdv", "rifleman"], ["ecc_bmp3", "btr"], ["ecc_t14", "t90"], ["ecc_mi8", "ka52"], ["ecc_reaper", "msta"], ["ecc_zeus", "zeus"]]:
+	for pair in [["ecc_alfa", "infiltrator"], ["ecc_spetsnaz", "infiltrator"], ["ecc_vdv", "rifleman"], ["ecc_bmp3", "btr"], ["ecc_t14", "t90"], ["ecc_mi8", "ka52"], ["ecc_reaper", "msta"], ["ecc_zeus", "zeus"], ["ecc_pantsir", "zeus"]]:
 		var folder := String(units[pair[0]]["folder"])
 		var v: Array = AudioDirector.variants("ecc", folder, "select")
 		t._check(folder == pair[1] and not v[0].is_empty() and str(v[0][0]).contains("/ecc/" + folder + "/"), "%s speaks with the male %s bank" % [pair[0], pair[1]])
 
 static func _text(t: Node) -> void:
 	var banned := ["Lockheed", "Boeing", "Kalashnikov", "Uralvagonzavod", "Rostec", "EA ", "Zero Hour"]
-	for id in [&"ecc_bmp3", &"ecc_bmpt", &"ecc_t14", &"ecc_tos", &"ecc_iskander", &"ecc_reaper", &"ecc_mi8", &"ecc_alfa", &"ecc_fsb", &"ecc_black_market", &"ecc_zeus"]:
+	for id in [&"ecc_bmp3", &"ecc_bmpt", &"ecc_t14", &"ecc_tos", &"ecc_iskander", &"ecc_pantsir", &"ecc_reaper", &"ecc_mi8", &"ecc_alfa", &"ecc_fsb", &"ecc_black_market", &"ecc_zeus"]:
 		var d = Content.unit(id) if Content.unit(id) != null else Content.building(id)
 		var text := TranslationServer.translate(d.name_key) + " " + TranslationServer.translate(d.desc_key)
 		t._check(TranslationServer.translate(d.name_key) != d.name_key, "%s has a name" % id)

@@ -794,6 +794,8 @@ UNIT_ECC_REAPER,Grim Reaper Artillery
 UNIT_ECC_REAPER_DESC,Heavy missile truck. Outriggers plant before it can fire. One missile rises and splits into six warheads. No build limit. Needs Grim Reaper research. Expensive.
 UNIT_ECC_MI8,Mi-8
 UNIT_ECC_MI8_DESC,Transport helicopter with a door machine gun. Carries 8 infantry. Troops board and unload only after it lands. Slower than the US transports.
+UNIT_ECC_PANTSIR,Pantsir
+UNIT_ECC_PANTSIR_DESC,Long-range anti-air truck. Outriggers plant and the radar rises before it can fire. Once deployed it can hit aircraft that only base defences could reach. Needs a Ministry of Defense.
 UNIT_ECC_UP_TOWER_BAL,Balanced Tower
 UNIT_ECC_UP_TOWER_BAL_DESC,Research at the Vehicle Factory. Afterwards any Russian structure can be fitted with a balanced gun tower.
 UNIT_ECC_UP_TOWER_AT,Anti-Armor Tower
