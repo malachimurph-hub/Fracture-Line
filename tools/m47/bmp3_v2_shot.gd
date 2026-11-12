@@ -91,10 +91,17 @@ func _views() -> void:
 	await shot("photo34")
 	# Gameplay camera: 40 deg pitch, 32 deg FOV, default distance 32.4. T-90 on the right for scale.
 	var t90 := (load("res://view/units/ecc/t90.tscn") as PackedScene).instantiate() as Node3D
-	t90.position = Vector3(2.4, 0, 0)
+	t90.position = Vector3(1.55, 0, 0)
 	add_child(t90)
-	model.position = Vector3(-2.0, 0, 0)
+	model.position = Vector3(-1.75, 0, 0)
 	cam.projection = Camera3D.PROJECTION_PERSPECTIVE
+	cam.fov = 34.0
+	cam.global_position = Vector3(0.0, 2.35, 5.8)
+	cam.look_at(Vector3(-0.1, 0.65, 0.0), Vector3.UP)
+	await frames(4)
+	await shot("compare")
+	t90.position = Vector3(2.4, 0, 0)
+	model.position = Vector3(-2.0, 0, 0)
 	cam.fov = 32.0
 	var focus := Vector3(0.2, 0.4, 0)
 	var pitch := deg_to_rad(40.0)
