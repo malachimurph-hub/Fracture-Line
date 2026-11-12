@@ -14,6 +14,10 @@ func _initialize() -> void:
 	var bar_h := float(args[2]) if args.size() > 2 else 1.4
 	var sel_r := float(args[3]) if args.size() > 3 else 1.1
 	var mat: Material = load(MAT_PATH)
+	if args.size() > 4 and args[4] != "":
+		mat = (mat as Material).duplicate()
+		(mat as ShaderMaterial).set_shader_parameter("albedo_tex", load(args[4]))
+		(mat as ShaderMaterial).set_shader_parameter("albedo_amount", 0.85)
 	var src: Node = (load(glb) as PackedScene).instantiate()
 	var model := _find(src, "Model")
 	if model == null:

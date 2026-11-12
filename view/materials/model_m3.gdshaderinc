@@ -26,6 +26,9 @@ uniform sampler2D rust_tex : source_color, hint_default_white, filter_linear_mip
 // Replaces the old derivative (dFdx/fwidth) bump + edge tricks that showed 2x2-pixel blocks.
 uniform sampler2D detail_n : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D stencil_tex : source_color, hint_default_transparent, filter_linear_mipmap, repeat_enable;
+// Optional photo albedo. amount 0 leaves every other vehicle on vertex colours.
+uniform sampler2D albedo_tex : source_color, hint_default_white, filter_linear_mipmap_anisotropic;
+uniform float albedo_amount = 0.0;
 uniform float stencil_amount = 0.6;
 instance uniform vec4 team_color : source_color = vec4(0.18, 0.5, 0.88, 1.0);
 instance uniform float rust_amt = 0.15;
@@ -145,6 +148,10 @@ void fragment() {
 			base = mix(base, srgb_to_linear(paint_color.rgb) * clamp(sqrt(l / 0.2), 0.6, 1.2), paint_color.a);
 			painted = true;
 		}
+	}
+	if (albedo_amount > 0.0 && (cls == 0 || cls == 20)) {
+		float dl = dot(srgb_to_linear(texture(albedo_tex, UV).rgb), vec3(0.2126, 0.7152, 0.0722));
+		base *= mix(1.0, clamp(dl / 0.22, 0.45, 1.55), albedo_amount);
 	}
 	float metal = 0.3;
 	float rough = 0.62;
