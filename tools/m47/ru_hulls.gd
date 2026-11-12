@@ -13,6 +13,34 @@ const RU_S := "#3a3d38"
 const GLASS_C := "#2a3a46"
 const S := 0.30
 
+## Track belt for one side. path is a closed loop of Vector2(z, y). x0 is the inner edge, x1 the outer.
+static func _run_belt(h, x0: float, x1: float, path: Array) -> void:
+	h.color("#2c2b28", Geo.TRACK)
+	var ctr := Vector3.ZERO
+	for p in path:
+		ctr += Vector3((x0 + x1) * 0.5, p.y, p.x)
+	ctr /= float(path.size())
+	var s := 0.0
+	var n := path.size()
+	for i in n:
+		var a: Vector2 = path[i]
+		var b: Vector2 = path[(i + 1) % n]
+		var ln := a.distance_to(b)
+		if ln < 0.001:
+			continue
+		var pa0 := Vector3(x0, a.y, a.x)
+		var pa1 := Vector3(x1, a.y, a.x)
+		var pb0 := Vector3(x0, b.y, b.x)
+		var pb1 := Vector3(x1, b.y, b.x)
+		h.uv = Vector2(s, 0.0)
+		var nrm: Vector3 = (Vector3(0, (a.y + b.y) * 0.5, (a.x + b.x) * 0.5) - ctr).normalized()
+		VK._quad_uv(h, [pa0, pa1, pb1, pb0], [Vector2(s, 0), Vector2(s, 1), Vector2(s + ln, 1), Vector2(s + ln, 0)], nrm)
+		var dir := Vector3(0, b.y - a.y, b.x - a.x) / ln
+		var up := Vector3(1, 0, 0).cross(dir).normalized()
+		var mid := Vector3(x1, (a.y + b.y) * 0.5, (a.x + b.x) * 0.5)
+		h.box(Vector3.ZERO, Vector3(0.016, 0.055, ln), Transform3D(Basis(Vector3(1, 0, 0), up, dir), mid))
+		s += ln
+
 static func bmp3(mat: Material) -> void:
 	# Hull 7.14 x 3.23 m at the live T-90 width scale. The glacis is one flat plate
 	# from a low nose up to the roof. The hull side starts at the top of the track.
@@ -21,36 +49,47 @@ static func bmp3(mat: Material) -> void:
 	var root := VK._root({"selection_radius": 1.5, "bar_height": 0.98, "recoil": 0.1, "wreck_s": 7.5})
 	var model := VK._n3(root, root, "Model")
 	var h = K.new()
-	# Big road wheels. The track top is where the hull side starts.
+	# Hull lower edge. Wheels are centred just under it and overlap it slightly.
+	# The belt stays inside the hull side, curls up the stern, and rises to the nose.
 	var y_bot := 0.84
 	var y_roof := 1.58
 	var z_nose := 3.48
 	var z_break := 1.72
-	var wx := 1.22 * Sc
-	var tw := 0.48 * Sc
-	var wr := 0.38 * Sc
-	var wy := 0.44 * Sc
+	var y_edge := y_bot * Sc
+	var r_w := 0.34 * Sc
+	var y_w := y_edge - 0.02
+	var z_sp := -3.20 * Sc
+	var r_sp := 0.38 * Sc
+	var z_id := 2.25 * Sc
+	var r_id := 0.30 * Sc
+	var z_nw := 3.22 * Sc
+	var y_nw := y_edge + 0.06
+	var r_nw := 0.13 * Sc
+	# Belt centred on the wheel line, just under the hull. No bar beneath the wheels.
+	var y_hi := y_edge - 0.006
+	var y_lo := y_w - 0.015
+	var belt: Array = []
+	belt.append(Vector2(z_sp + 0.06, y_hi))
+	belt.append(Vector2(z_id, y_hi))
+	belt.append(Vector2(z_nw - 0.02, y_nw + r_nw * 0.6))
+	for i in 5:
+		var a := deg_to_rad(90.0 - 180.0 * float(i) / 4.0)
+		belt.append(Vector2(z_nw, y_nw) + Vector2(cos(a), sin(a)) * (r_nw + 0.01))
+	belt.append(Vector2(z_id + r_id * 0.85, y_w))
+	belt.append(Vector2(z_id, y_lo))
+	belt.append(Vector2(z_sp + 0.08, y_lo))
+	for i3 in 6:
+		var a3 := deg_to_rad(-40.0 - 180.0 * float(i3) / 5.0)
+		belt.append(Vector2(z_sp, y_w) + Vector2(cos(a3), sin(a3)) * (r_sp * 0.95))
 	for side_i in [-1.0, 1.0]:
-		var sx: float = side_i * wx
-		var rear := Vector2(-2.15 * Sc, 0.48 * Sc)
-		var front := Vector2(1.88 * Sc, 0.46 * Sc)
-		VK._track(h, sx - tw * 0.5, sx + tw * 0.5, rear, 0.38 * Sc, front, 0.30 * Sc, 0.90 * Sc)
-		for i in 6:
-			var zm: float = lerpf(-1.55, 1.28, float(i) / 5.0)
-			h.wheel(Vector3(sx, wy, zm * Sc), wr, tw * 0.78, false, "#6e736c", 12)
-		h.sprocket(Vector3(sx, 0.48 * Sc, -2.15 * Sc), 0.32 * Sc, tw * 0.70, 10, RU_S)
-		h.sprocket(Vector3(sx, 0.46 * Sc, 1.88 * Sc), 0.26 * Sc, tw * 0.62, 0, RU_S)
-		# Side wall of the belt, so the run reads in profile and not only in three-quarter.
-		h.color("#2a2926", Geo.TRACK)
-		var outer: float = sx + float(side_i) * tw * 0.55
-		h.box(Vector3(outer, 0.12 * Sc, -0.14 * Sc), Vector3(0.025 * Sc, 0.16 * Sc, 3.70 * Sc))
-		h.box(Vector3(outer, 0.76 * Sc, -0.14 * Sc), Vector3(0.025 * Sc, 0.14 * Sc, 3.30 * Sc))
-		h.box(Vector3(outer, 0.44 * Sc, -2.15 * Sc), Vector3(0.025 * Sc, 0.62 * Sc, 0.10 * Sc))
-		h.box(Vector3(outer, 0.42 * Sc, 1.88 * Sc), Vector3(0.025 * Sc, 0.58 * Sc, 0.10 * Sc))
-		h.color(RU_S, Geo.STEEL)
-		for k in 3:
-			var zr: float = lerpf(-0.30, 0.45, float(k) / 2.0)
-			h.tube(Vector3(sx - tw * 0.22, 0.78 * Sc, zr * Sc), Vector3(sx + tw * 0.22, 0.78 * Sc, zr * Sc), 0.07 * Sc, 6)
+		var sx: float = side_i * 0.36
+		_run_belt(h, side_i * 0.28, side_i * 0.44, belt)
+		for i4 in 6:
+			var zm: float = lerpf(-2.30, 1.35, float(i4) / 5.0) * Sc
+			h.wheel(Vector3(sx, y_w, zm), r_w, 0.13, false, "#6e736c", 12)
+		h.sprocket(Vector3(sx, y_w, z_sp), r_sp * 0.92, 0.13, 10, RU_S)
+		h.sprocket(Vector3(sx, y_w, z_id), r_id * 0.92, 0.12, 0, RU_S)
+		h.wheel(Vector3(sx, y_nw, z_nw), r_nw, 0.08, false, "#6e736c", 10)
 	# Flat bottom at the track top, flat roof. No undercut.
 	h.color(RU, Geo.PAINT)
 	var body := K.sect(y_bot * Sc, 1.18 * Sc, y_roof * Sc, 1.15 * Sc, 1.42 * Sc, 1.08 * Sc, 0.05 * Sc)
@@ -108,21 +147,6 @@ static func bmp3(mat: Material) -> void:
 	h.color("#c4483a", Geo.LAMP)
 	h.box(Vector3(-0.52 * Sc, 1.22 * Sc, -3.54 * Sc), Vector3(0.08 * Sc, 0.045 * Sc, 0.018 * Sc))
 	h.box(Vector3(0.52 * Sc, 1.22 * Sc, -3.54 * Sc), Vector3(0.08 * Sc, 0.045 * Sc, 0.018 * Sc))
-	# Skirt panel along the top of the track. The wheels stay visible below it.
-	var nskirt := 6
-	var z0 := -2.20 * Sc
-	var z1 := 1.55 * Sc
-	var seg := (z1 - z0) / float(nskirt)
-	var skirt_x := 1.55 * Sc
-	for i2 in nskirt:
-		h.color(RU if i2 % 2 == 0 else RU_D, Geo.PAINT)
-		var zc: float = z0 + seg * (float(i2) + 0.5)
-		for s3 in [-1.0, 1.0]:
-			var side3: float = s3
-			h.box(Vector3(side3 * skirt_x, 0.78 * Sc, zc), Vector3(0.028 * Sc, 0.22 * Sc, seg - 0.03 * Sc))
-			h.color(RU_S, Geo.STEEL)
-			h.box(Vector3(side3 * (skirt_x + 0.016 * Sc), 0.86 * Sc, zc), Vector3(0.01 * Sc, 0.01 * Sc, 0.01 * Sc))
-			h.color(RU if i2 % 2 == 0 else RU_D, Geo.PAINT)
 	# Roof, sides and stern covered so the flat plates do not read as open planes.
 	var ry := 1.60 * Sc
 	h.color(RU_D, Geo.PAINT)
@@ -178,7 +202,7 @@ static func bmp3(mat: Material) -> void:
 	h.color(RU_S, Geo.STEEL)
 	h.tube(Vector3(1.50 * Sc, 1.24 * Sc, -2.05 * Sc), Vector3(1.46 * Sc, 1.05 * Sc, -2.45 * Sc), 0.032 * Sc, 5)
 	h.color("#ffffff", Geo.TEAM)
-	h.box(Vector3(skirt_x, 0.82 * Sc, -0.1 * Sc), Vector3(0.012 * Sc, 0.035 * Sc, 0.42 * Sc))
+	h.box(Vector3(1.40 * Sc, 1.15 * Sc, -0.1 * Sc), Vector3(0.012 * Sc, 0.04 * Sc, 0.42 * Sc))
 	var piv := VK._n3(model, root, "TurretPivot", Vector3(0, y_roof * Sc, 0.28 * Sc))
 	var t = K.new()
 	t.color(RU, Geo.PAINT)
