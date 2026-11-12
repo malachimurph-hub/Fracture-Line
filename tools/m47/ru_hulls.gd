@@ -191,19 +191,19 @@ static func t14(mat: Material) -> void:
 	_save(root, model, h, mat, "res://view/units/ecc/t14.tscn", 1.72, [t, b])
 
 static func t14_super(mat: Material) -> void:
-	# Original super-heavy for the T-14 slot. Same silhouette as the approved first pass.
-	# The front idler sits inside the track loop. Cheek pods are visual only.
+	# Original super-heavy for the T-14 slot. Turret is narrower than the hull.
+	# Cheek pods fire the secondary missile. The twin cannons stay on the barrel.
 	var root := VK._root({"selection_radius": 1.3, "bar_height": 1.32, "recoil": 0.16, "wreck_s": 8.0})
 	var model := VK._n3(root, root, "Model")
 	var h = K.new()
 	for side_i in [-1.0, 1.0]:
 		var sx: float = side_i * 0.78
-		VK._track(h, sx - 0.15, sx + 0.15, Vector2(-1.12, 0.16), 0.14, Vector2(1.02, 0.145), 0.105, 0.33)
+		VK._track(h, sx - 0.15, sx + 0.15, Vector2(-1.12, 0.16), 0.14, Vector2(0.84, 0.16), 0.09, 0.33)
 		for i in 7:
-			var zw: float = lerpf(-0.80, 0.74, float(i) / 6.0)
+			var zw: float = lerpf(-0.82, 0.66, float(i) / 6.0)
 			h.wheel(Vector3(sx, 0.132, zw), 0.110, 0.26, false, "#6e736c", 10)
 		h.sprocket(Vector3(sx, 0.16, -1.12), 0.12, 0.20, 8, RU_S)
-		h.wheel(Vector3(sx, 0.145, 1.02), 0.086, 0.22, false, RU_S, 10)
+		h.wheel(Vector3(sx, 0.16, 0.84), 0.068, 0.16, false, RU_S, 10)
 		h.color(RU_S, Geo.STEEL)
 		for k in 3:
 			var zr: float = lerpf(-0.45, 0.50, float(k) / 2.0)
@@ -239,9 +239,15 @@ static func t14_super(mat: Material) -> void:
 	h.color(RU_S, Geo.STEEL)
 	for s2 in [-1.0, 1.0]:
 		var side2: float = s2
-		h.box(Vector3(side2 * 0.26, 0.22, 1.36), Vector3(0.045, 0.04, 0.05))
-		h.tube(Vector3(side2 * 0.26, 0.20, 1.38), Vector3(side2 * 0.26, 0.15, 1.43), 0.012, 4)
-		h.box(Vector3(side2 * 0.34, 0.28, -1.40), Vector3(0.04, 0.05, 0.045))
+		h.box(Vector3(side2 * 0.22, 0.32, 1.34), Vector3(0.04, 0.035, 0.04))
+		h.box(Vector3(side2 * 0.34, 0.30, -1.39), Vector3(0.035, 0.04, 0.035))
+		h.color("#1a1c1a", Geo.DARK)
+		h.box(Vector3(side2 * 0.86, 0.40, -1.18), Vector3(0.03, 0.05, 0.14))
+		h.color(RU_D, Geo.PAINT)
+		h.box(Vector3(side2 * 0.78, 0.24, 1.02), Vector3(0.26, 0.08, 0.012))
+		h.box(Vector3(side2 * 0.78, 0.22, -1.22), Vector3(0.26, 0.10, 0.012))
+		h.cbox(Vector3(side2 * 0.91, 0.48, 0.10), Vector3(0.018, 0.09, 0.20), 0.004)
+		h.color(RU_S, Geo.STEEL)
 		h.tube(Vector3(side2 * 0.72, 0.50, 0.55), Vector3(side2 * 0.70, 0.46, -0.35), 0.012, 4)
 		h.tube(Vector3(side2 * 0.70, 0.46, -0.35), Vector3(side2 * 0.68, 0.50, -1.15), 0.012, 4)
 	h.color(RU_D, Geo.PAINT)
@@ -250,68 +256,78 @@ static func t14_super(mat: Material) -> void:
 		h.cyl(0.065, 0.065, 0.16, 8, Transform3D(Basis.IDENTITY, Vector3(side3 * 0.62, 0.50, -1.12)))
 		h.jerrycan(Vector3(side3 * 0.78, 0.52, -0.95), 90.0 if side3 > 0.0 else -90.0)
 	h.color("#2a2c2a", Geo.DARK)
-	h.box(Vector3(0.52, 0.36, 0.92), Vector3(0.12, 0.035, 0.18))
-	h.box(Vector3(0.52, 0.40, 0.92), Vector3(0.12, 0.035, 0.18))
+	h.box(Vector3(0.22, 0.50, 1.12), Vector3(0.10, 0.03, 0.16))
+	h.box(Vector3(0.22, 0.535, 1.10), Vector3(0.10, 0.03, 0.16))
 	for s4 in [-1.0, 1.0]:
 		var side4: float = s4
 		h.color(RU_S, Geo.STEEL)
-		h.box(Vector3(side4 * 0.34, 0.40, 1.30), Vector3(0.11, 0.08, 0.02))
-		h.box(Vector3(side4 * 0.34, 0.445, 1.312), Vector3(0.10, 0.012, 0.012))
-		h.box(Vector3(side4 * 0.34, 0.355, 1.312), Vector3(0.10, 0.012, 0.012))
+		h.plate(Vector3(side4 * 0.30, 0.50, 1.18), Vector3(0.14, 0.08, 0.02), Vector3(-22, 0, 0))
 		h.color("#ffe6b0", Geo.LAMP)
-		h.box(Vector3(side4 * 0.34, 0.40, 1.316), Vector3(0.055, 0.038, 0.012))
+		h.plate(Vector3(side4 * 0.30, 0.508, 1.195), Vector3(0.07, 0.042, 0.01), Vector3(-22, 0, 0))
 		h.color("#c4483a", Geo.LAMP)
-		h.box(Vector3(side4 * 0.48, 0.32, -1.395), Vector3(0.07, 0.035, 0.014))
+		h.box(Vector3(side4 * 0.46, 0.34, -1.385), Vector3(0.06, 0.03, 0.012))
 	h.color("#ffffff", Geo.TEAM)
 	h.box(Vector3(0.98, 0.40, -0.15), Vector3(0.012, 0.035, 0.42))
 	var piv := VK._n3(model, root, "TurretPivot", Vector3(0, 0.58, -0.06))
 	var t = K.new()
 	t.color(RU, Geo.PAINT)
 	t.plan_loft([
-		Vector2(-0.22, 0.58), Vector2(0.22, 0.58),
-		Vector2(0.78, 0.22), Vector2(0.82, -0.38),
-		Vector2(0.58, -0.64), Vector2(-0.58, -0.64),
-		Vector2(-0.82, -0.38), Vector2(-0.78, 0.22)],
+		Vector2(-0.14, 0.58), Vector2(0.14, 0.58),
+		Vector2(0.54, 0.24), Vector2(0.56, -0.36),
+		Vector2(0.40, -0.64), Vector2(-0.40, -0.64),
+		Vector2(-0.56, -0.36), Vector2(-0.54, 0.24)],
 		0.0, 0.30, Vector2(0.90, 0.88))
 	t.color(RU_D, Geo.PAINT)
-	t.hatch(Vector3(-0.24, 0.315, -0.10), 0.12)
-	t.hatch(Vector3(0.22, 0.315, 0.02), 0.10)
-	t.cbox(Vector3(0.0, 0.14, -0.58), Vector3(0.78, 0.16, 0.20), 0.01)
-	t.box(Vector3(0.30, 0.24, -0.52), Vector3(0.18, 0.08, 0.14))
-	t.box(Vector3(-0.32, 0.18, 0.46), Vector3(0.12, 0.08, 0.10))
-	t.box(Vector3(0.16, 0.22, 0.48), Vector3(0.08, 0.07, 0.08))
+	t.cyl(0.07, 0.07, 0.05, 8, Transform3D(Basis.IDENTITY, Vector3(-0.16, 0.30, -0.08)))
+	t.hatch(Vector3(-0.16, 0.36, -0.08), 0.08)
+	t.hatch(Vector3(0.14, 0.315, 0.06), 0.08)
+	for k in 3:
+		var ang := deg_to_rad(-40.0 + float(k) * 40.0)
+		t.box(Vector3(-0.16 + cos(ang) * 0.09, 0.34, -0.08 + sin(ang) * 0.07), Vector3(0.025, 0.02, 0.018))
+	t.cbox(Vector3(0.0, 0.12, -0.56), Vector3(0.58, 0.14, 0.16), 0.008)
+	t.box(Vector3(0.16, 0.22, -0.48), Vector3(0.12, 0.06, 0.10))
+	t.cbox(Vector3(0.18, 0.16, 0.40), Vector3(0.10, 0.08, 0.14), 0.006)
+	t.box(Vector3(-0.22, 0.20, 0.42), Vector3(0.06, 0.05, 0.05))
+	t.box(Vector3(0.22, 0.22, 0.36), Vector3(0.05, 0.04, 0.05))
 	t.color(GLASS_C, Geo.GLASS)
-	t.box(Vector3(-0.32, 0.18, 0.515), Vector3(0.08, 0.045, 0.012))
-	t.box(Vector3(0.16, 0.22, 0.525), Vector3(0.045, 0.04, 0.012))
+	t.box(Vector3(0.18, 0.16, 0.475), Vector3(0.06, 0.04, 0.01))
+	t.box(Vector3(-0.22, 0.20, 0.45), Vector3(0.035, 0.025, 0.008))
+	t.color(RU, Geo.PAINT)
+	t.cbox(Vector3(0.20, 0.38, -0.18), Vector3(0.10, 0.06, 0.12), 0.006)
 	t.color(RU_S, Geo.STEEL)
-	t.tube(Vector3(-0.30, 0.32, -0.22), Vector3(-0.30, 0.46, -0.22), 0.012, 5)
-	t.dish(Vector3(-0.30, 0.46, -0.22), 0.075, 28.0, 0.35, "#8d9876")
-	t.color(RU_S, Geo.STEEL)
-	t.box(Vector3(0.42, 0.31, -0.36), Vector3(0.03, 0.02, 0.03))
-	t.tube(Vector3(0.42, 0.32, -0.36), Vector3(0.42, 0.58, -0.37), 0.006, 3)
-	t.tube(Vector3(0.42, 0.40, -0.36), Vector3(0.26, 0.32, -0.24), 0.005, 3)
+	t.tube(Vector3(0.20, 0.40, -0.10), Vector3(0.20, 0.41, 0.12), 0.012, 5)
+	t.tube(Vector3(-0.16, 0.32, -0.28), Vector3(-0.16, 0.46, -0.28), 0.012, 5)
+	t.dish(Vector3(-0.16, 0.46, -0.28), 0.07, 28.0, 0.35, "#8d9876")
+	t.box(Vector3(0.26, 0.31, -0.34), Vector3(0.025, 0.018, 0.025))
+	t.tube(Vector3(0.26, 0.32, -0.34), Vector3(0.26, 0.56, -0.35), 0.006, 3)
+	t.tube(Vector3(0.26, 0.40, -0.34), Vector3(0.12, 0.32, -0.22), 0.005, 3)
 	for s5 in [-1.0, 1.0]:
 		var side5: float = s5
 		t.color(RU_S, Geo.STEEL)
+		t.tube(Vector3(side5 * 0.32, 0.32, 0.05), Vector3(side5 * 0.32, 0.32, -0.28), 0.006, 3)
+		t.tube(Vector3(side5 * 0.48, 0.16, -0.05), Vector3(side5 * 0.48, 0.28, -0.05), 0.008, 3)
+		t.tube(Vector3(side5 * 0.48, 0.16, -0.22), Vector3(side5 * 0.48, 0.28, -0.22), 0.008, 3)
 		for i3 in 4:
-			var zs: float = 0.22 - float(i3) * 0.045
-			t.tube(Vector3(side5 * 0.70, 0.10, zs), Vector3(side5 * 0.84, 0.18, zs + 0.10), 0.013, 4)
+			var zs: float = 0.28 - float(i3) * 0.04
+			t.tube(Vector3(side5 * 0.46, 0.12, zs), Vector3(side5 * 0.56, 0.20, zs + 0.08), 0.012, 4)
 	var pitch := deg_to_rad(38.0)
 	var fwd := Vector3(0, sin(pitch), cos(pitch))
 	for s6 in [-1.0, 1.0]:
 		var side6: float = s6
-		var origin := Vector3(side6 * 0.98, 0.12, 0.0)
+		var origin := Vector3(side6 * 0.68, 0.14, 0.02)
 		var mk := Marker3D.new()
 		mk.name = "PodMuzzleL" if side6 < 0.0 else "PodMuzzleR"
 		mk.position = origin + fwd * 0.42
 		piv.add_child(mk)
 		mk.owner = root
 		t.color(RU_S, Geo.STEEL)
-		t.box(Vector3(side6 * 0.86, 0.14, -0.02), Vector3(0.20, 0.045, 0.07))
+		t.box(Vector3(side6 * 0.58, 0.16, 0.0), Vector3(0.16, 0.04, 0.06))
+		t.color(RU_S, Geo.STEEL)
+		t.plate(origin, Vector3(0.26, 0.20, 0.52), Vector3(-38, 0, 0))
 		t.color(RU, Geo.PAINT)
-		t.plate(origin, Vector3(0.30, 0.22, 0.58), Vector3(-38, 0, 0))
+		t.plate(origin + fwd * 0.012, Vector3(0.20, 0.15, 0.46), Vector3(-38, 0, 0))
 		t.color("#141615", Geo.DARK)
-		t.plate(origin + fwd * 0.015, Vector3(0.20, 0.14, 0.48), Vector3(-38, 0, 0))
+		t.plate(origin + fwd * 0.02, Vector3(0.16, 0.11, 0.40), Vector3(-38, 0, 0))
 		for row in 2:
 			for col in 2:
 				var lx: float = (float(col) - 0.5) * 0.09
@@ -325,7 +341,7 @@ static func t14_super(mat: Material) -> void:
 	var bn := VK._n3(piv, root, "Barrel", Vector3(0, 0.12, 0.42))
 	var b = K.new()
 	b.color(RU_D, Geo.PAINT)
-	b.cbox(Vector3(0, 0, 0.06), Vector3(0.58, 0.18, 0.18), 0.014)
+	b.cbox(Vector3(0, 0, 0.06), Vector3(0.48, 0.16, 0.16), 0.012)
 	b.color(RU_S, Geo.STEEL)
 	for s7 in [-1.0, 1.0]:
 		var gx: float = s7 * 0.16
