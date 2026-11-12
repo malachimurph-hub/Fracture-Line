@@ -827,6 +827,20 @@ func _muzzles(src: SimEntity, v: EntityView, garrison: SimEntity, base: Vector3,
 		if out.is_empty():
 			out.append(v.position + Vector3(0, 0.35, 0))
 		return out
+	# Dual-purpose pod missiles alternate the cheek launchers. The main gun keeps the barrel.
+	if v.model != null and wid != &"":
+		var pod_wd: WeaponDef = Content.weapon(wid)
+		if pod_wd != null and pod_wd.vfx == &"missile" and pod_wd.targets_air and pod_wd.targets_ground:
+			var pods: Array = []
+			for n in v.model.find_children("PodMuzzle*", "Marker3D", true, false):
+				pods.append(n)
+			if not pods.is_empty():
+				pods.sort_custom(func(a, b): return String(a.name) < String(b.name))
+				var idx := int(v.get_meta("_pod_i", 0))
+				v.set_meta("_pod_i", idx + 1)
+				var pod: Node3D = pods[idx % pods.size()]
+				if is_instance_valid(pod):
+					return [pod.global_position]
 	# M4.1: door guns / launch tubes marked Muzzle* in the model fire from those (alternating)
 	var mz: Array = _marker_muzzles(v)
 	if not mz.is_empty():

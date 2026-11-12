@@ -301,6 +301,11 @@ static func t14_super(mat: Material) -> void:
 	for s6 in [-1.0, 1.0]:
 		var side6: float = s6
 		var origin := Vector3(side6 * 0.98, 0.12, 0.0)
+		var mk := Marker3D.new()
+		mk.name = "PodMuzzleL" if side6 < 0.0 else "PodMuzzleR"
+		mk.position = origin + fwd * 0.42
+		piv.add_child(mk)
+		mk.owner = root
 		t.color(RU_S, Geo.STEEL)
 		t.box(Vector3(side6 * 0.86, 0.14, -0.02), Vector3(0.20, 0.045, 0.07))
 		t.color(RU, Geo.PAINT)

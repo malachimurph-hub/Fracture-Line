@@ -98,7 +98,7 @@ ecc_spetsnaz,UNIT_ECC_SPETSNAZ,1200,14000,2,,infantry|garrison|squad|stealth_com
 ecc_vdv,UNIT_ECC_VDV,850,11000,2,,infantry|garrison|squad|stealth_combat|parachute,300,infantry,ecc_ak74m|ecc_gp25,1300,foot,8,440,0,0,0,infantry,,,0,0,0,0,0,0
 ecc_bmp3,UNIT_ECC_BMP3,1150,13000,2,,vehicle|transport|ifv,960,light,ecc_bmp_100|ecc_bmp_30|ecc_bmp_atgm,1650,vehicle,9,580,0,0,0,ifv,,,140,900,150,6,0,0
 ecc_bmpt,UNIT_ECC_BMPT,1600,16000,3,,vehicle|tank,1180,heavy,ecc_bmpt_30|ecc_bmpt_gl|ecc_bmpt_atgm,1350,vehicle,8,600,0,0,0,tank,,,90,1000,110,0,0,0
-ecc_t14,UNIT_ECC_T14,1900,18000,4,ecc_ministry,vehicle|tank,1400,heavy,ecc_t14_gun,1520,vehicle,8,620,0,0,0,tank,,,80,1100,90,0,0,0
+ecc_t14,UNIT_ECC_T14,1900,18000,4,ecc_ministry,vehicle|tank,1400,heavy,ecc_t14_gun|ecc_t14_pod,1520,vehicle,8,620,0,0,0,tank,,,80,1100,90,0,0,0
 ecc_tos,UNIT_ECC_TOS,1750,16000,3,,vehicle|artillery,700,light,ecc_tos,1100,vehicle,8,640,0,0,0,artillery,,,70,1200,40,0,0,0
 ecc_iskander,UNIT_ECC_ISKANDER,2400,20000,3,,vehicle|artillery|setup,540,light,ecc_iskander,1250,vehicle,9,700,0,0,0,artillery,,,60,1400,30,0,0,0
 ecc_pantsir,UNIT_ECC_PANTSIR,2100,20000,3,ecc_ministry,vehicle|aa|deploy|deploy_aa,640,light,ecc_pantsir_gun|ecc_pantsir_sam,1400,vehicle,12,900,0,0,0,anti_air,,,70,1200,90,0,0,0

@@ -51,30 +51,36 @@ _surfaces = [{
 }]
 metadata/ao_baked = true
 
-[node name="View" type="Node3D" unique_id=930657109]
+[node name="View" type="Node3D" unique_id=683348775]
 script = ExtResource("1_mbtta")
 recoil = 0.16
 wreck_s = 8.0
 selection_radius = 1.3
 bar_height = 1.32
 
-[node name="Model" type="Node3D" parent="." unique_id=942567693]
+[node name="Model" type="Node3D" parent="." unique_id=757209353]
 
-[node name="TurretPivot" type="Node3D" parent="Model" unique_id=246658442]
+[node name="TurretPivot" type="Node3D" parent="Model" unique_id=982475606]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.58, -0.06)
 
-[node name="Turret" type="MeshInstance3D" parent="Model/TurretPivot" unique_id=938225760]
+[node name="PodMuzzleL" type="Marker3D" parent="Model/TurretPivot" unique_id=1996791150]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.98, 0.37857783, 0.3309645)
+
+[node name="PodMuzzleR" type="Marker3D" parent="Model/TurretPivot" unique_id=1954666955]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.98, 0.37857783, 0.3309645)
+
+[node name="Turret" type="MeshInstance3D" parent="Model/TurretPivot" unique_id=233671900]
 mesh = SubResource("ArrayMesh_mbtta")
 
-[node name="Barrel" type="Node3D" parent="Model/TurretPivot" unique_id=1210891162]
+[node name="Barrel" type="Node3D" parent="Model/TurretPivot" unique_id=1784611751]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0.42)
 
-[node name="BarrelMesh" type="MeshInstance3D" parent="Model/TurretPivot/Barrel" unique_id=1715604799]
+[node name="BarrelMesh" type="MeshInstance3D" parent="Model/TurretPivot/Barrel" unique_id=1170171798]
 mesh = SubResource("ArrayMesh_1hrel")
 
-[node name="Hull" type="MeshInstance3D" parent="Model" unique_id=706301157]
+[node name="Hull" type="MeshInstance3D" parent="Model" unique_id=788470569]
 mesh = SubResource("ArrayMesh_x0li6")
 metadata/moves = true
 
-[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=985330183]
+[node name="HealthBarAnchor" type="Marker3D" parent="." unique_id=1487818352]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.32, 0)
