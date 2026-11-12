@@ -70,14 +70,14 @@ Buildings stay on `tools/m47/models_m47.gd`. The seven new vehicles are rebuilt 
 | Vehicle | Published size used | Running gear | What the mesh is built around |
 | --- | --- | --- | --- |
 | BMP-3 | 7.14 x 3.23 x 2.30 m | 6 road wheels, rear sprocket | Boat bow, trim vane, three front hatches, bow machine guns, 100 mm with a 30 mm under it, two rear doors, water jets |
-| BMPT | T-72 hull, about 6.95 m | 6 road wheels | Glacis ERA, fender grenade launchers, twin 30 mm, four Ataka tubes in two pods |
+| BMPT | T-90 hull, about 7 m, same scale as the T-90 | 6 road wheels | Low turret, twin 30 mm on a cradle, a two-tube launcher each side, round bow hatches, boxy skirts, slatted rear |
 | T-14 | hull about 8.7 x 3.5 m | 7 road wheels, return rollers | Three crew hatches in a row, low unmanned turret, long gun, rear slat basket |
 | TOS-1A | T-72 hull | 6 road wheels | Cab hatches, 24 tubes as 3 rows of 8 on an elevating box |
 | Iskander-M | MZKT-7930, about 13 x 3 m | 8x8, first two axles steer | Forward cab, twin canisters with nose cones, spare wheel |
 | Mi-8 | fuselage about 18 m, rotor about 21 m | tricycle gear | Bulbous glazed nose, clamshell rear doors, roof engines, 5-blade main rotor, 3-blade tail rotor on the left. Drawn smaller so it sits with the other helicopters |
-| Grim Reaper | fictional, MZKT-79221 proportions, about 22 m, 16x16 | 8 axles, first two steer | Forward cab, one canister, erector, four outriggers that drop when it deploys |
+| Grim Reaper | about 22.7 m at the T-90 scale, 16x16 | 8 axles, evenly spaced, first two steer | Split cabs beside a rounded canister nose, ribbed canister, side lockers and a ladder, outriggers that drop when it deploys |
 
-The Grim Reaper is not a real launcher. Its chassis follows the Topol-M TEL's axle count and cab-forward layout, scaled down so the map camera can frame it. The Mi-8 is the same kind of compromise: the rotor and the nose are the real aircraft, the overall length is the game's helicopter size.
+The Grim Reaper is not a named launcher in the game. The mesh follows the 16-wheel TEL in `docs/m4_7/refs/` (eight axles, split cabs under the canister nose, ribbed tube). Parade stripes and the star are not on the model. Reference photos in that folder are not imported. The BMPT photos are there too. These hulls use the T-90 olive so they stay green under the match sun; the older Russian vehicles stay the faction grey. The Mi-8 fuselage is still the game's helicopter size.
 
 Conscripts are their own bakes (`ecc_con_flora`, `ecc_con_emr`, `ecc_con_olive`, `ecc_con_wood_rpg`, `ecc_con_flora_rpg`, `ecc_con_pkm`): wood AK-47, RPG-7 with a loaded round, wood-furniture PKM, helmets, a field cap, a side cap, vests and pouches. Flora and woodland use the blotch pattern on different cloth, EMR the fine digital pattern, olive a plain colour. The squad icon is the whole group. Spetsnaz and VDV still use the existing special-forces sculpts. The PKM gunner lies down to fire; standing, he carries the gun.
 
