@@ -11,12 +11,12 @@ func _ready() -> void:
 	for layer in m.find_children("*", "CanvasLayer", true, false):
 		(layer as CanvasLayer).visible = false
 	var spot := Vector2i(48, 48)
-	for spec in [["bmpt", &"ecc_bmpt", 4.4, 3], ["reaper", &"ecc_reaper", 8.5, 4]]:
+	for spec in [["bmpt", &"ecc_bmpt", 4.2, 3]]:
 		var u := _unit(spec[1], spot, 0)
 		var t90 := _unit(&"ecc_t90", spot + Vector2i(0, int(spec[3])), 0)
 		await frames(4)
 		await _frame(u, t90, spec[0] + "_play", float(spec[2]) * 1.35, 0.42)
-		await _frame(u, t90, spec[0] + "_close", float(spec[2]), 0.62)
+		await _frame(u, t90, spec[0] + "_close", float(spec[2]) * 0.9, 0.95)
 		for e in [u, t90]:
 			e.alive = false
 			if m.world.views.has(e.id):

@@ -20,7 +20,7 @@ const S := 0.30
 func _initialize() -> void:
 	var mat: Material = load(VK.MAT_PATH)
 	_bmp3(mat)
-	_bmpt(mat)
+	# BMPT is the Blender mesh at res://assets/models/ecc/bmpt.glb. Do not rebuild it here.
 	_t14(mat)
 	_tos(mat)
 	_iskander(mat)

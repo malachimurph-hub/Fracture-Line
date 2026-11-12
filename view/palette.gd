@@ -74,11 +74,12 @@ const US_AIR_GREY := Color("#7f868c")
 const M1A3_TAN := Color("#E0C080")
 ## T-90M: muted grey-olive. Darker than the first lime, still light enough to read green.
 const T90_GREEN := Color("#96A468")
+## Photo olive. #96A468 reads lime under the match sun, so the newer hulls use the darker chip.
+const MUTED_OLIVE := Color("#5a6448")
 const UNIT_PAINT := {&"us_blackhawk": Color("#1d1f21"), &"us_dozer": Color("#80868a"), &"us_ripsaw": Color("#5e655f"),
 	&"us_halberd": M1A3_TAN, &"ecc_t90": T90_GREEN,
-	# The faction grey reads as black on these hulls under the match sun. Same olive as the T-90.
-	&"ecc_bmp3": T90_GREEN, &"ecc_bmpt": T90_GREEN, &"ecc_t14": T90_GREEN, &"ecc_tos": T90_GREEN,
-	&"ecc_iskander": T90_GREEN, &"ecc_mi8": T90_GREEN, &"ecc_reaper": T90_GREEN}
+	&"ecc_bmp3": MUTED_OLIVE, &"ecc_bmpt": MUTED_OLIVE, &"ecc_t14": MUTED_OLIVE, &"ecc_tos": MUTED_OLIVE,
+	&"ecc_iskander": MUTED_OLIVE, &"ecc_mi8": MUTED_OLIVE, &"ecc_reaper": T90_GREEN}
 
 static func paint_for(def_id: StringName) -> Color:
 	if UNIT_PAINT.has(def_id):
