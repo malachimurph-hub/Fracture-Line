@@ -31,6 +31,8 @@ func _initialize() -> void:
 		match String(name):
 			"bmp3":
 				HULLS.bmp3(mat)
+			"bmp3_v2":
+				HULLS.bmp3_v2(mat)
 			"t14":
 				HULLS.t14(mat)
 			"t14_super":

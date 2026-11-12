@@ -251,6 +251,123 @@ static func bmp3(mat: Material) -> void:
 	VK._mi(bn, root, "BarrelMesh", b.commit(mat))
 	_save(root, model, h, mat, "res://view/units/ecc/bmp3.tscn", 1.12, [t, b])
 
+## Stage 2 blockout. Plain grey, no stowage. Does not replace bmp3() or ecc_bmp3.
+## Approved metres, drawn at 0.405 u/m. +Z bow, +X starboard, root on the ground under the hull centre.
+static func bmp3_v2(_mat: Material) -> void:
+	var Sc := 0.405
+	var grey := StandardMaterial3D.new()
+	grey.albedo_color = Color(0.62, 0.63, 0.65)
+	grey.roughness = 0.92
+	grey.vertex_color_use_as_albedo = false
+	var root := VK._root({"selection_radius": 1.5, "bar_height": 1.05, "recoil": 0.1, "wreck_s": 7.5})
+	var model := VK._n3(root, root, "Model")
+	var h = K.new()
+	h.plain = true
+	h.color("#9a9a9e", Geo.PAINT)
+	var rear := -3.525 * Sc
+	var bow := 3.525 * Sc
+	var brk := 2.15 * Sc
+	var half := 1.615 * Sc
+	var sill := 0.14 * Sc
+	var y0 := 0.36 * Sc
+	var ytub := 0.42 * Sc
+	var y1 := 1.55 * Sc
+	var ynose := 0.72 * Sc
+	# Flat mid-body. Belly at the tub clearance; side walls flush down to the wheel-hub line.
+	h.box(Vector3(0, (ytub + y1) * 0.5, (rear + brk) * 0.5), Vector3((half - sill) * 2.0, y1 - ytub, brk - rear))
+	for s in [-1.0, 1.0]:
+		var side: float = s
+		h.box(Vector3(side * (half - sill * 0.5), (y0 + y1) * 0.5, (rear + brk) * 0.5), Vector3(sill, y1 - y0, brk - rear))
+	# One flat glacis: the top edge is a single plane from the low nose up to the roof.
+	h.prism_x([Vector2(brk, y0), Vector2(bow, ynose), Vector2(brk, y1)], -half, half)
+	var along := Vector2(2.15 - 3.525, 1.55 - 0.72).normalized()
+	var out_n := Vector2(along.y, -along.x)
+	var nose := Vector2(3.525, 0.72)
+	var vane: Array = []
+	for k in [0.04, 0.58]:
+		var p: Vector2 = nose + along * k
+		vane.append((p + out_n * 0.012) * Sc)
+		vane.append((p + out_n * 0.034) * Sc)
+	# Quad order around the thin plate: inner near, outer near, outer far, inner far.
+	h.prism_x([vane[0], vane[2], vane[3], vane[1]], -1.30 * Sc, 1.30 * Sc)
+	# Running gear. Upper halves sit behind the side wall; the belt is flush with it.
+	# The belt helper adds a tread slab past the outer edge and below the path, so the
+	# path sits inside the 3.23 m width and the slab's underside lands on the ground.
+	var x_out := half - 0.008
+	var x_in := x_out - 0.40 * Sc
+	var belt: Array = []
+	belt.append(Vector2(2.50, 0.07) * Sc)
+	belt.append(Vector2(-3.05, 0.07) * Sc)
+	for i in 9:
+		var a := deg_to_rad(270.0 - 180.0 * float(i) / 8.0)
+		belt.append(Vector2(-3.125 + cos(a) * 0.32, 0.50 + sin(a) * 0.32) * Sc)
+	belt.append(Vector2(-2.30, 1.05) * Sc)
+	belt.append(Vector2(1.70, 1.05) * Sc)
+	for i in 9:
+		var a2 := deg_to_rad(90.0 - 180.0 * float(i) / 8.0)
+		belt.append(Vector2(2.575 + cos(a2) * 0.26, 0.52 + sin(a2) * 0.26) * Sc)
+	h.color("#4a4a4e", Geo.TRACK)
+	_run_belt(h, x_in, x_out, belt)
+	_run_belt(h, -x_out, -x_in, belt)
+	var stations: Array = [1.00, 1.72, 2.48, 3.22, 4.40, 5.18]
+	for stn in stations:
+		var zc: float = (-3.525 + float(stn)) * Sc
+		for s2 in [-1.0, 1.0]:
+			var side2: float = s2
+			var wc := Vector3(side2 * (x_out - 0.20 * Sc), 0.36 * Sc, zc)
+			h.uv = Vector2(wc.y, wc.z)
+			h.uv2 = Vector2(wc.x, 0.355 * Sc)
+			h.color("#3e3e42", Geo.WHEEL_RUBBER)
+			h.tube(wc - Vector3(0.15 * Sc, 0, 0), wc + Vector3(0.15 * Sc, 0, 0), 0.355 * Sc, 14)
+	# Rear sprocket, smaller front idler, three return rollers under the top run.
+	for s3 in [-1.0, 1.0]:
+		var side3: float = s3
+		var xc: float = side3 * (x_out - 0.20 * Sc)
+		var sp := Vector3(xc, 0.50 * Sc, -3.125 * Sc)
+		var idl := Vector3(xc, 0.52 * Sc, 2.575 * Sc)
+		h.uv = Vector2(sp.y, sp.z)
+		h.uv2 = Vector2(sp.x, 0.28 * Sc)
+		h.color("#5a5a5e", Geo.WHEEL_STEEL)
+		h.tube(sp - Vector3(0.14 * Sc, 0, 0), sp + Vector3(0.14 * Sc, 0, 0), 0.28 * Sc, 12)
+		h.uv = Vector2(idl.y, idl.z)
+		h.uv2 = Vector2(idl.x, 0.22 * Sc)
+		h.tube(idl - Vector3(0.12 * Sc, 0, 0), idl + Vector3(0.12 * Sc, 0, 0), 0.22 * Sc, 12)
+		for rz in [-1.525, -0.125, 1.275]:
+			var rc := Vector3(xc, 0.95 * Sc, float(rz) * Sc)
+			h.uv = Vector2(rc.y, rc.z)
+			h.uv2 = Vector2(rc.x, 0.10 * Sc)
+			h.tube(rc - Vector3(0.10 * Sc, 0, 0), rc + Vector3(0.10 * Sc, 0, 0), 0.10 * Sc, 8)
+	h.uv = Vector2.ZERO
+	h.uv2 = Vector2.ZERO
+	var piv := VK._n3(model, root, "TurretPivot", Vector3(0, 1.55 * Sc, 0.645 * Sc))
+	var t = K.new()
+	t.plain = true
+	t.color("#8e8e92", Geo.PAINT)
+	# 1.75 m wide, 2.00 m long. Front face is the mantlet, 1.11 m forward of the pivot.
+	t.box(Vector3(0, 0.315 * Sc, 0.11 * Sc), Vector3(1.75 * Sc, 0.63 * Sc, 2.00 * Sc))
+	t.box(Vector3(0.28 * Sc, 0.715 * Sc, -0.20 * Sc), Vector3(0.30 * Sc, 0.17 * Sc, 0.34 * Sc))
+	VK._mi(piv, root, "Turret", t.commit(grey))
+	var bn := VK._n3(piv, root, "Barrel", Vector3(0, 0.33 * Sc, 1.11 * Sc))
+	var b = K.new()
+	b.plain = true
+	b.color("#6e6e72", Geo.STEEL)
+	b.box(Vector3(0.03 * Sc, 0, -0.02 * Sc), Vector3(0.52 * Sc, 0.26 * Sc, 0.16 * Sc))
+	b.tube(Vector3(-0.12 * Sc, 0, 0), Vector3(-0.12 * Sc, 0, 1.90 * Sc), 0.070 * Sc, 8)
+	b.tube(Vector3(0.18 * Sc, 0, 0), Vector3(0.18 * Sc, 0, 1.62 * Sc), 0.032 * Sc, 8)
+	VK._mi(bn, root, "BarrelMesh", b.commit(grey))
+	var m100 := Marker3D.new()
+	m100.name = "GunMuzzle100"
+	m100.position = Vector3(-0.12 * Sc, 0, 1.90 * Sc)
+	bn.add_child(m100)
+	m100.owner = root
+	var m30 := Marker3D.new()
+	m30.name = "GunMuzzle30"
+	m30.position = Vector3(0.18 * Sc, 0, 1.62 * Sc)
+	bn.add_child(m30)
+	m30.owner = root
+	print("  bmp3_v2 plan m: hull 7.05 roof 1.55 edge 0.36 nose 0.72 break 2.15 pivot z 0.645 barrel y 1.88 muzzle z 3.655")
+	_save(root, model, h, grey, "res://view/units/ecc/bmp3_v2.tscn", 1.05, [t, b])
+
 static func t14(mat: Material) -> void:
 	# Drawing millimetres at the live T-90 width scale (1.53 u / 3.78 m). Hull 8.879 m,
 	# roof 2.132 m, top of the roof station 3.320 m, width 4.000 m, gun forward 10.889 m.
