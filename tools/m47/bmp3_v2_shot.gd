@@ -45,6 +45,9 @@ func _views() -> void:
 	add_child(fill)
 	var model := (load("res://view/units/ecc/bmp3_v2.tscn") as PackedScene).instantiate() as Node3D
 	add_child(model)
+	var olive := Color("#8d9876")
+	for g in model.find_children("*", "GeometryInstance3D", true, false):
+		(g as GeometryInstance3D).set_instance_shader_parameter(&"paint_color", olive)
 	_measure(model)
 	var cam := Camera3D.new()
 	cam.projection = Camera3D.PROJECTION_ORTHOGONAL
@@ -66,6 +69,16 @@ func _views() -> void:
 	cam.look_at(Vector3.ZERO, Vector3(1, 0, 0))
 	await frames(3)
 	await shot("top")
+	cam.projection = Camera3D.PROJECTION_PERSPECTIVE
+	cam.fov = 28.0
+	cam.global_position = Vector3(3.3, 1.55, 3.5)
+	cam.look_at(Vector3(0, 0.7, 0.15), Vector3.UP)
+	await frames(3)
+	await shot("front34")
+	cam.global_position = Vector3(-3.1, 1.45, -3.4)
+	cam.look_at(Vector3(0, 0.65, -0.15), Vector3.UP)
+	await frames(3)
+	await shot("rear34")
 	# Gameplay camera: 40 deg pitch, 32 deg FOV, default distance 32.4. T-90 on the right for scale.
 	var t90 := (load("res://view/units/ecc/t90.tscn") as PackedScene).instantiate() as Node3D
 	t90.position = Vector3(2.4, 0, 0)
