@@ -38,6 +38,8 @@ const GUNS := {
 	"smg": {"butt": Vector3(0, 0.04, -0.2), "grip": Vector3(0, -0.04, -0.02), "support": Vector3(0, -0.05, 0.14)},
 	"pistol": {"butt": Vector3(0, 0.0, -0.05), "grip": Vector3(0, -0.03, -0.01), "support": Vector3(0.02, -0.045, 0.0)},
 	"rpg": {"shoulder": Vector3(0, 0.065, -0.28), "grip": Vector3(0, -0.03, -0.02), "support": Vector3(0, -0.02, 0.2)},
+	"rpg7": {"shoulder": Vector3(0, 0.065, -0.28), "grip": Vector3(0, -0.03, -0.02), "support": Vector3(0, -0.02, 0.2)},
+	"pkm_ru": {"butt": Vector3(0, 0.0, -0.39), "grip": Vector3(0, -0.04, -0.02), "support": Vector3(0, 0.02, 0.28)},
 	"eu_launcher": {"shoulder": Vector3(0, 0.04, -0.22), "grip": Vector3(0, -0.03, 0.0), "support": Vector3(0, -0.03, 0.22)},
 	"javelin": {"shoulder": Vector3(0, 0.035, -0.15), "grip": Vector3(0.15, -0.02, 0.0), "support": Vector3(0, 0.04, 0.38)},
 	"shovel": {"grip": Vector3(0, 0, 0.0), "support": Vector3(0, 0, 0.45)},
@@ -50,7 +52,7 @@ const GUNS := {
 	"mk23": {"butt": Vector3(0, 0.03, -0.33), "grip": Vector3(0, -0.04, -0.02), "support": Vector3(0, 0.02, 0.2)},
 	"seal_carbine": {"butt": Vector3(0, 0.03, -0.27), "grip": Vector3(0, -0.04, -0.03), "support": Vector3(0, -0.07, 0.25)},
 }
-const STYLE := {"rpg": "launcher", "eu_launcher": "launcher", "javelin": "launcher", "pistol": "pistol", "shovel": "tool"}
+const STYLE := {"rpg": "launcher", "rpg7": "launcher", "eu_launcher": "launcher", "javelin": "launcher", "pistol": "pistol", "shovel": "tool"}
 
 ## faction looks (original palettes): US coyote-brown blotch camo, German spot camo,
 ## Iranian-style militia in plain olive / mixed civilian kit, Russian fine green camo
@@ -105,6 +107,19 @@ const SPECS := {
 		"jacket": "#343734", "trousers": "#2c2e2c", "camo": 0, "carrier": "#2a2c2b", "pouch": "#202221", "helmet": "#2c2e2d", "pack": "#2a2c2b", "gloves": "#1a1a1a", "boots": "#1a1a1a"},
 	"ecc_saboteur": {"fac": "ecc", "gun": "pistol", "heads": ["beanie", "balaclava", "beanie+headset", "balaclava"], "backs": ["satchel_back"], "chest_extra": ["satchel"], "armour": "chest_rig",
 		"jacket": "#43493a", "trousers": "#363b2e", "camo": 0, "wrap": "#2e322a", "kneepads": false},
+	# Conscript squad. Four different cloths, not one tint: Flora blotch, EMR digital, plain olive, woodland.
+	"ecc_con_flora": {"fac": "ecc", "gun": "ak", "heads": ["helmet_ru"], "backs": ["pack"], "chest_extra": ["binoculars"],
+		"jacket": "#9aaa48", "trousers": "#7c8c3c", "camo": 1, "carrier": "#6a5a34", "pouch": "#a08040", "helmet": "#8a9844", "pack": "#6e6238", "boots": "#3a3428", "belt": "#4a4030", "kneepads": false},
+	"ecc_con_emr": {"fac": "ecc", "gun": "ak", "heads": ["helmet_ru+goggles"], "backs": ["hydration"],
+		"jacket": "#c4d4b0", "trousers": "#a8bc98", "camo": 2, "carrier": "#6a7860", "pouch": "#5a6848", "helmet": "#b0c4a0", "pack": "#6a7460", "boots": "#2a2a24", "belt": "#3a4034"},
+	"ecc_con_olive": {"fac": "ecc", "gun": "ak", "heads": ["cap"], "backs": [""], "rolled": true, "armour": "chest_rig",
+		"jacket": "#6e7828", "trousers": "#5c6424", "camo": 0, "carrier": "#5a5018", "pouch": "#8a7030", "helmet": "#626818", "boots": "#2e2a22", "belt": "#3a3420", "kneepads": false, "gloves": ""},
+	"ecc_con_wood_rpg": {"fac": "ecc", "gun": "rpg7", "heads": ["beanie"], "backs": ["rockets"], "kneel": 2, "armour": "chest_rig",
+		"jacket": "#24361c", "trousers": "#7a4830", "camo": 1, "carrier": "#3a3224", "pouch": "#6a4030", "helmet": "#3a4030", "wrap": "#2e3424", "boots": "#241c16", "belt": "#2a2418", "kneepads": false},
+	"ecc_con_flora_rpg": {"fac": "ecc", "gun": "rpg7", "heads": ["pilotka"], "backs": ["rockets"], "kneel": 2,
+		"jacket": "#8a9a40", "trousers": "#6e7c38", "camo": 1, "carrier": "#5a6840", "pouch": "#8a7040", "helmet": "#62743c", "boots": "#322c22", "belt": "#3a3820", "kneepads": true},
+	"ecc_con_pkm": {"fac": "ecc", "gun": "pkm_ru", "heads": ["helmet_ru"], "backs": ["mgbox"], "chest_extra": ["ammo_belt"], "prone": true,
+		"jacket": "#3a4a32", "trousers": "#2c3828", "camo": 2, "carrier": "#2e3a28", "pouch": "#5a4a30", "helmet": "#3a4c30", "pack": "#2a3424", "boots": "#241e18", "belt": "#2e3224"},
 }
 
 func _initialize() -> void:

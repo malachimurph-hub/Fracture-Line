@@ -200,8 +200,11 @@ func set_variant(seed: int) -> void:
 		(inst as MultiMeshInstance3D).set_instance_shader_parameter(&"skin_tone", SKIN_TONES[((h if k == 0 else hk) / 5) % SKIN_TONES.size()])
 		var tint0 := 0.94 + float(((h if k == 0 else hk) / 11) % 7) * 0.02
 		var dirt0 := 0.55
-		if String(squad_id).begins_with("ecc_"):
-			# Conscripts do not match: different cloth, dirt and kit from man to man.
+		if squad_id == &"ecc_squad":
+			# The mismatch is the baked cloth (Flora, EMR, woodland, olive), so the tint stays near 1.
+			tint0 = 0.96 + float(((h if k == 0 else hk) / 11) % 4) * 0.02
+			dirt0 = 0.22 + float(((h if k == 0 else hk) / 3) % 4) * 0.06
+		elif String(squad_id).begins_with("ecc_"):
 			tint0 = 0.76 + float(((h if k == 0 else hk) / 11) % 9) * 0.055
 			dirt0 = 0.32 + float(((h if k == 0 else hk) / 3) % 6) * 0.09
 		if squad_id in [&"ecc_alfa", &"ecc_spetsnaz", &"ecc_vdv"]:

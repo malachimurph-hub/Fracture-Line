@@ -65,9 +65,21 @@ Hacks and Red Dawn need the building powered. One shared cooldown per player, no
 
 ## Models and voices
 
-New vehicles and the two buildings are built with the kit8 loft / track / tyre pipeline (`tools/m47/models_m47.gd`). The Grim Reaper has an `Outriggers` mesh that plants while it stands still. The Mi-8 rotor spins. FSB GRU and the Black Market carry a `TowerMount`; other Russian structures take the tower at roof height (`top_y`).
+Buildings stay on `tools/m47/models_m47.gd`. The seven new vehicles are rebuilt in `tools/m47/vehicles_m47.gd` to published proportions (tracked family 0.30 model-units per metre, the same ballpark as the T-90's 1.9-unit hull). Russian green, road wheels or the real axle count, skirts or ERA, hatches, sights, antennas, exhausts, and baked AO.
 
-Conscripts, Spetsnaz and VDV reuse the existing Russian soldier bakes (rifleman, RPG, PKM, infiltrator, grenadier). A conscript squad tints and dirts each man differently so the kit does not match. Special forces are darker. Squad icons are the whole group.
+| Vehicle | Published size used | Running gear | What the mesh is built around |
+| --- | --- | --- | --- |
+| BMP-3 | 7.14 x 3.23 x 2.30 m | 6 road wheels, rear sprocket | Boat bow, trim vane, three front hatches, bow machine guns, 100 mm with a 30 mm under it, two rear doors, water jets |
+| BMPT | T-72 hull, about 6.95 m | 6 road wheels | Glacis ERA, fender grenade launchers, twin 30 mm, four Ataka tubes in two pods |
+| T-14 | hull about 8.7 x 3.5 m | 7 road wheels, return rollers | Three crew hatches in a row, low unmanned turret, long gun, rear slat basket |
+| TOS-1A | T-72 hull | 6 road wheels | Cab hatches, 24 tubes as 3 rows of 8 on an elevating box |
+| Iskander-M | MZKT-7930, about 13 x 3 m | 8x8, first two axles steer | Forward cab, twin canisters with nose cones, spare wheel |
+| Mi-8 | fuselage about 18 m, rotor about 21 m | tricycle gear | Bulbous glazed nose, clamshell rear doors, roof engines, 5-blade main rotor, 3-blade tail rotor on the left. Drawn smaller so it sits with the other helicopters |
+| Grim Reaper | fictional, MZKT-79221 proportions, about 22 m, 16x16 | 8 axles, first two steer | Forward cab, one canister, erector, four outriggers that drop when it deploys |
+
+The Grim Reaper is not a real launcher. Its chassis follows the Topol-M TEL's axle count and cab-forward layout, scaled down so the map camera can frame it. The Mi-8 is the same kind of compromise: the rotor and the nose are the real aircraft, the overall length is the game's helicopter size.
+
+Conscripts are their own bakes (`ecc_con_flora`, `ecc_con_emr`, `ecc_con_olive`, `ecc_con_wood_rpg`, `ecc_con_flora_rpg`, `ecc_con_pkm`): wood AK-47, RPG-7 with a loaded round, wood-furniture PKM, helmets, a field cap, a side cap, vests and pouches. Flora and woodland use the blotch pattern on different cloth, EMR the fine digital pattern, olive a plain colour. The squad icon is the whole group. Spetsnaz and VDV still use the existing special-forces sculpts. The PKM gunner lies down to fire; standing, he carries the gun.
 
 New voices are the existing male Russian banks: Alfa and Spetsnaz use the infiltrator, VDV the rifleman, BMP-3 the BTR, BMPT and T-14 the T-90M, the missile trucks the Msta, the Mi-8 the Ka-52. Shilka keeps the old Zeus lines.
 

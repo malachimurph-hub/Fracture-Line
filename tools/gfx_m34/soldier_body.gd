@@ -341,6 +341,10 @@ static func _heads(r, spec: Dictionary) -> void:
 			"beanie":
 				r.set_c(spec.get("wrap", "#3a3d34"), 0, vm)
 				r.dome(Vector3(0, 1.715, -0.004), Vector3(0.088, 0.09, 0.1), 1.6, 4, 12)
+			"pilotka":
+				r.set_c(hc, cm, vm)
+				r.loft(Vector3(0, 1.72, -0.01), Vector3(0.02, 1.7, 0.0), [[0.0, 0.09, 0.1], [1.0, 0.04, 0.05]], Vector3.FORWARD, 10)
+				r.box(Vector3(0.06, 1.7, 0.01), Vector3(0.05, 0.012, 0.08))
 			"beret":   # soft cap pulled to the right, team flash on the left
 				r.set_c("#2f4a28", cm, vm)
 				r.dome(Vector3(-0.01, 1.725, -0.006), Vector3(0.1, 0.04, 0.108), 1.25, 3, 12)

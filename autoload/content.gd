@@ -59,9 +59,10 @@ const SQUAD_MEMBERS := {
 		["eu_rifleman", [&"eu_rifle"]], &"eu", ["eu_rifleman", [&"eu_rifle"]]],
 	&"tpla_squad": [["tpla_rifleman", [&"tpla_carbine"]], ["tpla_machine_gunner", [&"tpla_pkm"]], ["tpla_rocket", [&"tpla_rpg"]],
 		["tpla_rifleman", [&"tpla_carbine"]], &"tpla", ["tpla_rifleman", [&"tpla_carbine"]]],
-	# Conscript squad: 3 AK-47, 1 PKM, 2 RPG-7. The last listed soldier falls first.
-	&"ecc_squad": [["ecc_rifleman", [&"ecc_ak47"]], ["ecc_machine_gunner", [&"ecc_pkm"]], ["ecc_rpg", [&"ecc_rpg7"]],
-		["ecc_rpg", [&"ecc_rpg7"]], ["ecc_rifleman", [&"ecc_ak47"]], ["ecc_rifleman", [&"ecc_ak47"]]],
+	# Conscripts: three different rifles, two RPG-7s, one PKM. Each man is his own bake
+	# (Flora, EMR, plain olive, woodland) so the squad does not match. Last listed falls first.
+	&"ecc_squad": [["ecc_con_flora", [&"ecc_ak47"]], ["ecc_con_pkm", [&"ecc_pkm"]], ["ecc_con_wood_rpg", [&"ecc_rpg7"]],
+		["ecc_con_flora_rpg", [&"ecc_rpg7"]], ["ecc_con_emr", [&"ecc_ak47"]], ["ecc_con_olive", [&"ecc_ak47"]]],
 	# FSB GRU. Spetsnaz: one VSS, two suppressed AK-74U. VDV: two riflemen with underbarrel grenades.
 	&"ecc_spetsnaz": [["ecc_infiltrator", [&"ecc_vss"]], ["ecc_rifleman", [&"ecc_ak74u"]], ["ecc_rifleman", [&"ecc_ak74u"]]],
 	&"ecc_vdv": [["ecc_grenadier", [&"ecc_ak74m", &"ecc_gp25"]], ["ecc_grenadier", [&"ecc_ak74m", &"ecc_gp25"]]],

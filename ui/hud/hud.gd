@@ -1426,8 +1426,8 @@ func _ecc_commands(out: Array, e: SimEntity, bd: BuildingDef) -> void:
 		if not p.upgrades.has(up):
 			continue
 		var cost: int = int(EccSys.TOWER_COST[kind])
-		var fitted := EccSys.tower_of(e) == kind
-		var key := "CMD_TOWER_" + kind.to_upper()
+		var fitted: bool = EccSys.tower_of(e) == kind
+		var key: String = "CMD_TOWER_" + kind.to_upper()
 		out.append({"text": tr(key), "glyph": "tower_" + kind, "sub": tr("HUD_FITTED") if fitted else "$%d" % cost,
 			"disabled": fitted or p.supply < cost, "accent": Color("#d7c07a"),
 			"tip": tr(key + "_TIP"),
@@ -1443,7 +1443,7 @@ func _ecc_commands(out: Array, e: SimEntity, bd: BuildingDef) -> void:
 			if not p.upgrades.has(EccSys.HACKS[kind]["up"]):
 				continue
 			var wait2 := EccSys.ready_in(sim, pid, "ecc_hack_" + kind)
-			var hk := "CMD_HACK_" + kind.to_upper()
+			var hk: String = "CMD_HACK_" + kind.to_upper()
 			out.append({"text": tr(hk), "glyph": "hack_" + kind,
 				"sub": tr("CMD_DRONE_READY") if wait2 == 0 else "%ds" % ceili(float(wait2) / 20.0),
 				"disabled": wait2 != 0 or not e.powered, "accent": Color("#7dff8a"),
