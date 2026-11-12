@@ -257,6 +257,11 @@ def build():
         # slats at the back of the skirt
         for i in range(5):
             box(h, (s * 0.60, 0.26 + i * 0.04, -0.72), (0.02, 0.012, 0.16), OLIVE_D)
+        # closed bow hatch: thin lid, a low rim, a small rear hinge. No ring, no open cover.
+        cyl(h, (s * 0.30, 0.478, 0.48), (s * 0.30, 0.490, 0.48), 0.132, 18, OLIVE_D)
+        cyl(h, (s * 0.30, 0.488, 0.48), (s * 0.30, 0.500, 0.48), 0.112, 18, OLIVE)
+        box(h, (s * 0.30, 0.498, 0.35), (0.055, 0.010, 0.016), STL)
+        box(h, (s * 0.30, 0.502, 0.56), (0.022, 0.005, 0.010), STL)
         # headlights and tow hooks on the glacis
         box(h, (s * 0.22, 0.24, 1.00), (0.06, 0.04, 0.03), LMP)
         cyl(h, (s * 0.16, 0.16, 0.98), (s * 0.16, 0.16, 1.04), 0.012, 6, STL)

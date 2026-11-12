@@ -17,6 +17,7 @@ func _ready() -> void:
 		await frames(4)
 		await _frame(u, t90, spec[0] + "_play", float(spec[2]) * 1.35, 0.42)
 		await _frame(u, t90, spec[0] + "_close", float(spec[2]) * 0.9, 0.95)
+		await _hatches(u, spec[0] + "_hatches")
 		for e in [u, t90]:
 			e.alive = false
 			if m.world.views.has(e.id):
@@ -41,6 +42,24 @@ func _frame(u: SimEntity, t90: SimEntity, name: String, dist: float, fwd_k: floa
 	cam.current = true
 	var focus: Vector3 = v.global_position.lerp(m.world.views[t90.id].global_position, 0.22) + Vector3(0, 0.7, 0)
 	cam.global_position = focus + side * dist * 0.75 + fwd * dist * fwd_k + Vector3(0, dist * 0.32, 0)
+	cam.look_at(focus, Vector3.UP)
+	await frames(5)
+	await shot(name)
+	cam.queue_free()
+	m.cam.cam.current = true
+
+func _hatches(u: SimEntity, name: String) -> void:
+	var v: Node3D = m.world.views[u.id]
+	var fwd: Vector3 = v.global_transform.basis.z
+	var side: Vector3 = v.global_transform.basis.x
+	if side.dot(_sun()) < 0.0:
+		side = -side
+	var cam := Camera3D.new()
+	add_child(cam)
+	cam.fov = 30.0
+	cam.current = true
+	var focus: Vector3 = v.global_position + fwd * 0.48 + Vector3(0, 0.55, 0)
+	cam.global_position = focus + side * 1.15 + fwd * 1.35 + Vector3(0, 0.85, 0)
 	cam.look_at(focus, Vector3.UP)
 	await frames(5)
 	await shot(name)
