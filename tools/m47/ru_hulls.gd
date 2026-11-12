@@ -263,22 +263,40 @@ static func bmp3_v2(mat: Material) -> void:
 	h.color(RU, Geo.PAINT)
 	var rear := -3.525 * Sc
 	var brk := 2.08 * Sc
-	var half := 1.615 * Sc
-	var y0 := 0.36 * Sc
-	# One hull, 3.25 m wide, sides straight out over the tracks and down to the hub line.
-	var hull_w := 1.625 * Sc
+	var half := 1.625 * Sc
+	# Hull wall is inboard of the tracks. Front view: roof about 2.04 m, the side
+	# about 2.32 m at the fender step, tracks about 3.25 m. The side tapers in toward the roof.
+	var y_wall := 1.18 * Sc
 	var y_rear := 1.85 * Sc
 	var y_deck := 2.00 * Sc
 	var rise := (-3.525 + 2.30) * Sc
-	h.prism_x([Vector2(rear, y0), Vector2(rise, y0), Vector2(rise, y_deck), Vector2(rear, y_rear)], -hull_w, hull_w)
-	h.prism_x([Vector2(rise, y0), Vector2(brk, y0), Vector2(brk, y_deck), Vector2(rise, y_deck)], -hull_w, hull_w)
-	# Same bow profile as before, now the full hull width. The lower edge kicks back over the idler.
-	h.prism_x([
-		Vector2(brk, y_deck),
-		Vector2(3.525 * Sc, 1.60 * Sc),
-		Vector2(2.625 * Sc, 0.50 * Sc),
-		Vector2(brk, y0),
-	], -hull_w, hull_w)
+	var w_bot := 1.16 * Sc
+	var w_mid := 1.08 * Sc
+	var w_top := 1.02 * Sc
+	var chm := 0.09 * Sc
+	var hull_w := 1.00 * Sc
+	h.xloft([
+		[rear, K.sect(y_wall, (y_wall + y_rear) * 0.5, y_rear, w_bot * 0.90, w_mid * 0.92, w_top * 0.88, chm * 0.75)],
+		[rear + 0.10 * Sc, K.sect(y_wall, (y_wall + y_rear) * 0.5, y_rear, w_bot, w_mid, w_top, chm)],
+		[rise, K.sect(y_wall, (y_wall + y_deck) * 0.5, y_deck, w_bot, w_mid, w_top, chm)],
+		[brk - 0.06 * Sc, K.sect(y_wall, (y_wall + y_deck) * 0.5, y_deck, w_bot, w_mid, w_top, chm)],
+		[brk, K.sect(y_wall, (y_wall + y_deck) * 0.5, y_deck, w_bot * 0.96, w_mid * 0.96, w_top * 0.94, chm)],
+	])
+	h.prism_x([Vector2(rear, 0.42 * Sc), Vector2(brk, 0.42 * Sc), Vector2(brk, y_wall), Vector2(rear, y_wall)], -0.92 * Sc, 0.92 * Sc)
+	# Bow stays on the traced profile. Width closes toward the nose so the corners are cut.
+	var bow_z := [2.07, 2.625, 3.525]
+	var bow_yt := [2.00, 1.849, 1.60]
+	var bow_yb := [1.18, 0.50, 1.54]
+	var bow_w := [1.12, 1.02, 0.84]
+	var bow_secs: Array = []
+	for bi in bow_z.size():
+		var y0b: float = float(bow_yb[bi]) * Sc
+		var y1b: float = float(bow_yt[bi]) * Sc
+		var wbb: float = float(bow_w[bi]) * Sc
+		var wtb: float = wbb * 0.90
+		var chb: float = minf(0.06 * Sc, (y1b - y0b) * 0.25)
+		bow_secs.append([float(bow_z[bi]) * Sc, K.sect(y0b, (y0b + y1b) * 0.5, y1b, wbb, (wbb + wtb) * 0.5, wtb, chb)])
+	h.xloft(bow_secs)
 	var n0 := Vector2(3.525, 1.60)
 	var n1 := Vector2(2.72, 0.58)
 	var vane_d := (n1 - n0).normalized()
@@ -293,21 +311,49 @@ static func bmp3_v2(mat: Material) -> void:
 	h.color(RU_D, Geo.PAINT)
 	h.prism_x([vane[0], vane[2], vane[3], vane[1]], -hull_w, hull_w)
 	h.color(RU, Geo.PAINT)
-	# Headlight clusters on the front corners of the wide hull, above the visible track end.
+	# Fender over each track: crowned top, chamfered lip, thin skirt. The front angles down over the idler.
+	var fen_prof := [
+		Vector2(1.14, 1.08),
+		Vector2(1.14, 1.18),
+		Vector2(1.38, 1.24),
+		Vector2(1.52, 1.16),
+		Vector2(1.62, 1.02),
+		Vector2(1.50, 0.98),
+	]
+	var fen_z := [-3.48, -3.28, 1.65, 2.15, 2.50, 2.90]
+	var fen_dy := [0.12, 0.0, 0.0, 0.06, 0.26, 0.48]
 	for s in [-1.0, 1.0]:
 		var sd: float = s
-		var hx := sd * 1.42 * Sc
-		var hz := 2.15 * Sc
+		var secs: Array = []
+		for fi in fen_z.size():
+			var poly: Array = []
+			for p in fen_prof:
+				poly.append(Vector2(sd * p.x * Sc, (p.y - float(fen_dy[fi])) * Sc))
+			secs.append([float(fen_z[fi]) * Sc, poly])
+		h.color(RU, Geo.PAINT)
+		h.xloft(secs)
 		h.color(RU_D, Geo.PAINT)
-		h.box(Vector3(hx, 1.18 * Sc, hz), Vector3(0.32 * Sc, 0.22 * Sc, 0.18 * Sc))
+		var x_a := sd * 1.50 * Sc
+		var x_b := sd * 1.64 * Sc
+		h.prism_x([
+			Vector2(-3.30 * Sc, 0.55 * Sc),
+			Vector2(2.10 * Sc, 0.55 * Sc),
+			Vector2(2.10 * Sc, 1.02 * Sc),
+			Vector2(-3.30 * Sc, 1.02 * Sc),
+		], minf(x_a, x_b), maxf(x_a, x_b))
+		# Headlight cluster and guard on the fender's front corner.
+		var hx := sd * 1.36 * Sc
+		var hz := 1.95 * Sc
+		h.color(RU_D, Geo.PAINT)
+		h.box(Vector3(hx, 1.20 * Sc, hz), Vector3(0.28 * Sc, 0.16 * Sc, 0.16 * Sc))
 		h.color("#e4dcc8", Geo.LAMP)
-		h.box(Vector3(hx + sd * 0.07 * Sc, 1.22 * Sc, hz + 0.08 * Sc), Vector3(0.08 * Sc, 0.07 * Sc, 0.03 * Sc))
-		h.box(Vector3(hx - sd * 0.07 * Sc, 1.22 * Sc, hz + 0.08 * Sc), Vector3(0.08 * Sc, 0.07 * Sc, 0.03 * Sc))
+		h.box(Vector3(hx + sd * 0.06 * Sc, 1.22 * Sc, hz + 0.08 * Sc), Vector3(0.07 * Sc, 0.06 * Sc, 0.03 * Sc))
+		h.box(Vector3(hx - sd * 0.06 * Sc, 1.22 * Sc, hz + 0.08 * Sc), Vector3(0.07 * Sc, 0.06 * Sc, 0.03 * Sc))
 		h.color(RU_S, Geo.STEEL)
-		h.box(Vector3(hx, 1.30 * Sc, hz + 0.10 * Sc), Vector3(0.30 * Sc, 0.016 * Sc, 0.016 * Sc))
-		h.box(Vector3(hx, 1.08 * Sc, hz + 0.10 * Sc), Vector3(0.30 * Sc, 0.016 * Sc, 0.016 * Sc))
-		h.box(Vector3(hx + sd * 0.14 * Sc, 1.19 * Sc, hz + 0.10 * Sc), Vector3(0.016 * Sc, 0.22 * Sc, 0.016 * Sc))
-		h.box(Vector3(hx - sd * 0.14 * Sc, 1.19 * Sc, hz + 0.10 * Sc), Vector3(0.016 * Sc, 0.22 * Sc, 0.016 * Sc))
+		h.box(Vector3(hx, 1.30 * Sc, hz + 0.09 * Sc), Vector3(0.26 * Sc, 0.014 * Sc, 0.014 * Sc))
+		h.box(Vector3(hx, 1.12 * Sc, hz + 0.09 * Sc), Vector3(0.26 * Sc, 0.014 * Sc, 0.014 * Sc))
+		h.box(Vector3(hx + sd * 0.12 * Sc, 1.21 * Sc, hz + 0.09 * Sc), Vector3(0.014 * Sc, 0.18 * Sc, 0.014 * Sc))
+		h.box(Vector3(hx - sd * 0.12 * Sc, 1.21 * Sc, hz + 0.09 * Sc), Vector3(0.014 * Sc, 0.18 * Sc, 0.014 * Sc))
 	# Olive plate on the existing bow underside, facing down and forward.
 	h.color(RU, Geo.PAINT)
 	var nudge := Vector3(0, -0.025 * Sc, 0.02 * Sc)
@@ -317,7 +363,7 @@ static func bmp3_v2(mat: Material) -> void:
 	var lip_d := Vector3(-hull_w, 0.54 * Sc, 2.68 * Sc) + nudge
 	h.pane([lip_a, lip_b, lip_c, lip_d], Vector3(0, -0.4, 1))
 	h.box(Vector3(0, 0.56 * Sc, 2.25 * Sc), Vector3(hull_w * 2.0, 0.08 * Sc, 0.70 * Sc))
-	# Running gear. Upper halves sit behind the side wall; the belt is flush with it.
+	# Running gear. The fender covers the upper run; the belt outer face is about 3.25 m.
 	# The belt helper adds a tread slab past the outer edge and below the path, so the
 	# path sits inside the 3.23 m width and the slab's underside lands on the ground.
 	var x_out := half - 0.008
@@ -509,11 +555,7 @@ static func _bmp3_v2_fittings(h, Sc: float) -> void:
 	for js in [-0.95, 0.95]:
 		var jx: float = js
 		h.tube(Vector3(jx * Sc, 0.50 * Sc, -3.50 * Sc), Vector3(jx * Sc, 0.50 * Sc, -3.57 * Sc), 0.07 * Sc, 6)
-	# Bow lights and tow hooks.
-	h.color("#d8d2c4", Geo.LAMP)
-	for ls in [-1.42, 1.42]:
-		var lx: float = ls
-		h.box(Vector3(lx * Sc, 1.12 * Sc, 2.15 * Sc), Vector3(0.10 * Sc, 0.07 * Sc, 0.08 * Sc))
+	# Tow hooks on the lower bow.
 	h.color(RU_S, Geo.STEEL)
 	for hk in [-0.55, 0.55]:
 		var kx: float = hk

@@ -83,6 +83,12 @@ func _views() -> void:
 	cam.look_at(Vector3(0, 0.65, -0.15), Vector3.UP)
 	await frames(3)
 	await shot("rear34")
+	# High front quarter, close to the reference photo's angle.
+	cam.fov = 32.0
+	cam.global_position = Vector3(3.6, 2.15, 2.6)
+	cam.look_at(Vector3(0.15, 0.75, 0.35), Vector3.UP)
+	await frames(3)
+	await shot("photo34")
 	# Gameplay camera: 40 deg pitch, 32 deg FOV, default distance 32.4. T-90 on the right for scale.
 	var t90 := (load("res://view/units/ecc/t90.tscn") as PackedScene).instantiate() as Node3D
 	t90.position = Vector3(2.4, 0, 0)
