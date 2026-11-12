@@ -41,10 +41,15 @@ func _studio() -> void:
 	add_child(cam)
 	cam.current = true
 	cam.size = 1.95
+	# Light the side the camera sees, so the lowered edge is not lost in shadow.
+	sun.rotation_degrees = Vector3(-35, -70, 0)
+	fill.light_energy = 0.7
 	cam.global_position = Vector3(-8, 0.55, 0.05)
 	cam.look_at(Vector3(0, 0.55, 0.05), Vector3.UP)
 	await frames(4)
 	await shot("bmp3_side")
+	sun.rotation_degrees = Vector3(-55, 30, 0)
+	fill.light_energy = 0.45
 	cam.projection = Camera3D.PROJECTION_PERSPECTIVE
 	cam.fov = 28.0
 	cam.global_position = Vector3(3.4, 1.7, 3.6)

@@ -49,43 +49,27 @@ static func bmp3(mat: Material) -> void:
 	var root := VK._root({"selection_radius": 1.5, "bar_height": 0.98, "recoil": 0.1, "wreck_s": 7.5})
 	var model := VK._n3(root, root, "Model")
 	var h = K.new()
-	# The hull's lower edge is the wheel centre line. Wheels overlap the lower half of the side.
-	# The belt follows that edge, curls up the stern, and rises to the nose tip.
+	# Roof, turret and bow plate stay at the earlier height. Wheels stay at that run's size and height.
+	# The side walls are extended down to the wheel-centre line afterwards.
 	var y_bot := 0.84
 	var y_roof := 1.58
 	var z_nose := 3.48
 	var z_break := 1.72
-	var y_edge := y_bot * Sc
-	var r_w := 0.38 * Sc
-	var y_w := y_edge
-	var z_sp := -3.20 * Sc
-	var r_sp := 0.40 * Sc
-	var z_id := 2.20 * Sc
-	var r_id := 0.32 * Sc
-	var z_nw := 3.10 * Sc
-	var y_nw := y_edge + 0.02
-	var r_nw := 0.10 * Sc
-	var belt: Array = []
-	belt.append(Vector2(z_sp + 0.05, y_edge + 0.01))
-	belt.append(Vector2(z_id, y_edge + 0.01))
-	belt.append(Vector2(z_nw - 0.02, y_nw + r_nw * 0.4))
-	for i in 5:
-		var a := deg_to_rad(80.0 - 170.0 * float(i) / 4.0)
-		belt.append(Vector2(z_nw, y_nw) + Vector2(cos(a), sin(a)) * (r_nw + 0.01))
-	belt.append(Vector2(z_id + r_id * 0.7, y_edge))
-	belt.append(Vector2(z_sp + 0.06, y_edge - 0.01))
-	for i3 in 6:
-		var a3 := deg_to_rad(-30.0 - 200.0 * float(i3) / 5.0)
-		belt.append(Vector2(z_sp, y_edge) + Vector2(cos(a3), sin(a3)) * (r_sp * 0.72))
+	var wx := 1.22 * Sc
+	var tw := 0.48 * Sc
+	var wr := 0.38 * Sc
+	var wy := 0.44 * Sc
 	for side_i in [-1.0, 1.0]:
-		var sx: float = side_i * 0.36
-		_run_belt(h, side_i * 0.28, side_i * 0.43, belt)
-		for i4 in 6:
-			var zm: float = lerpf(-2.25, 1.30, float(i4) / 5.0) * Sc
-			h.wheel(Vector3(sx, y_w, zm), r_w, 0.14, false, "#6e736c", 12)
-		h.sprocket(Vector3(sx, y_w, z_sp), r_sp * 0.9, 0.13, 10, RU_S)
-		h.sprocket(Vector3(sx, y_w, z_id), r_id * 0.9, 0.12, 0, RU_S)
-		h.wheel(Vector3(sx, y_nw, z_nw), r_nw, 0.08, false, "#6e736c", 10)
+		var sx: float = side_i * wx
+		var rear := Vector2(-2.15 * Sc, 0.48 * Sc)
+		var front := Vector2(1.88 * Sc, 0.46 * Sc)
+		VK._track(h, sx - tw * 0.5, sx + tw * 0.5, rear, 0.38 * Sc, front, 0.30 * Sc, 0.90 * Sc)
+		for i in 6:
+			var zm: float = lerpf(-1.55, 1.28, float(i) / 5.0)
+			h.wheel(Vector3(sx, wy, zm * Sc), wr, tw * 0.78, false, "#6e736c", 12)
+		h.sprocket(Vector3(sx, 0.48 * Sc, -2.15 * Sc), 0.32 * Sc, tw * 0.70, 10, RU_S)
+		h.sprocket(Vector3(sx, 0.46 * Sc, 1.88 * Sc), 0.26 * Sc, tw * 0.62, 0, RU_S)
+		h.wheel(Vector3(sx, 0.72 * Sc, 2.85 * Sc), 0.11 * Sc, tw * 0.55, false, "#6e736c", 10)
 	# Flat bottom at the track top, flat roof. No undercut.
 	h.color(RU, Geo.PAINT)
 	var body := K.sect(y_bot * Sc, 1.18 * Sc, y_roof * Sc, 1.15 * Sc, 1.42 * Sc, 1.08 * Sc, 0.05 * Sc)
@@ -118,13 +102,18 @@ static func bmp3(mat: Material) -> void:
 		h.plate(lamp, Vector3(0.28 * Sc, 0.16 * Sc, 0.05 * Sc), Vector3(-gang, 0, 0))
 		h.color("#ffe6b0", Geo.LAMP)
 		h.plate(lamp + gn * (0.02 * Sc), Vector3(0.16 * Sc, 0.09 * Sc, 0.02 * Sc), Vector3(-gang, 0, 0))
-	# Skirt sits on the hull edge, above the wheel centres. It does not hang below the hull.
-	var sk_z0 := -2.55 * Sc
-	var sk_z1 := 1.45 * Sc
-	h.color(RU_D, Geo.PAINT)
+	# Side walls and rear plate extended down to the wheel-centre line. The bow's lower edge rises to the nose tip.
+	var y_low := wy
+	var y_high := y_bot * Sc + 0.03
+	var z_rise := 1.35 * Sc
+	var side_x := 0.58
+	h.color(RU, Geo.PAINT)
 	for s3 in [-1.0, 1.0]:
 		var side3: float = s3
-		h.box(Vector3(side3 * 0.52, y_edge + 0.04, (sk_z0 + sk_z1) * 0.5), Vector3(0.02, 0.08, sk_z1 - sk_z0))
+		h.box(Vector3(side3 * side_x, (y_low + y_high) * 0.5, (-3.48 * Sc + z_rise) * 0.5), Vector3(0.025, y_high - y_low, z_rise + 3.48 * Sc))
+		h.prism_x([Vector2(z_rise, y_bot * Sc), Vector2(z_nose * Sc, y_bot * Sc), Vector2(z_rise, y_low)], side3 * (side_x - 0.02), side3 * (side_x + 0.02))
+	h.color(RU, Geo.PAINT)
+	h.box(Vector3(0, (y_low + y_high) * 0.5, -3.52 * Sc), Vector3(1.15 * Sc, y_high - y_low, 0.04 * Sc))
 	# Hatches on the flat roof, periscopes in front of them.
 	h.color(RU, Geo.PAINT)
 	h.hatch(Vector3(0, 1.60 * Sc, 1.48 * Sc), 0.22 * Sc)
