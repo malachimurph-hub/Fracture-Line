@@ -265,22 +265,19 @@ static func bmp3_v2(mat: Material) -> void:
 	var brk := 2.08 * Sc
 	var half := 1.615 * Sc
 	var y0 := 0.36 * Sc
-	var ytub := 0.42 * Sc
-	# Upper hull is inset from the tracks. Front view: hull about 2.32 m, tracks 3.23 m.
-	var hull_w := 1.16 * Sc
+	# One hull, 3.25 m wide, sides straight out over the tracks and down to the hub line.
+	var hull_w := 1.625 * Sc
 	var y_rear := 1.85 * Sc
 	var y_deck := 2.00 * Sc
-	var y_fen := 1.02 * Sc
 	var rise := (-3.525 + 2.30) * Sc
-	h.prism_x([Vector2(rear, y_fen), Vector2(rise, y_fen), Vector2(rise, y_deck), Vector2(rear, y_rear)], -hull_w, hull_w)
-	h.prism_x([Vector2(rise, y_fen), Vector2(brk, y_fen), Vector2(brk, y_deck), Vector2(rise, y_deck)], -hull_w, hull_w)
-	h.prism_x([Vector2(rear, ytub), Vector2(brk, ytub), Vector2(brk, y_fen), Vector2(rear, y_fen)], -hull_w * 0.92, hull_w * 0.92)
-	# Short upper glacis to a nose at 1.60 m, then the lower plate kicks back over the idler.
+	h.prism_x([Vector2(rear, y0), Vector2(rise, y0), Vector2(rise, y_deck), Vector2(rear, y_rear)], -hull_w, hull_w)
+	h.prism_x([Vector2(rise, y0), Vector2(brk, y0), Vector2(brk, y_deck), Vector2(rise, y_deck)], -hull_w, hull_w)
+	# Same bow profile as before, now the full hull width. The lower edge kicks back over the idler.
 	h.prism_x([
 		Vector2(brk, y_deck),
 		Vector2(3.525 * Sc, 1.60 * Sc),
 		Vector2(2.625 * Sc, 0.50 * Sc),
-		Vector2(brk, y_fen),
+		Vector2(brk, y0),
 	], -hull_w, hull_w)
 	var n0 := Vector2(3.525, 1.60)
 	var n1 := Vector2(2.72, 0.58)
@@ -294,47 +291,23 @@ static func bmp3_v2(mat: Material) -> void:
 		vane.append((p + vane_n * 0.01) * Sc)
 		vane.append((p + vane_n * 0.045) * Sc)
 	h.color(RU_D, Geo.PAINT)
-	h.prism_x([vane[0], vane[2], vane[3], vane[1]], -1.05 * Sc, 1.05 * Sc)
+	h.prism_x([vane[0], vane[2], vane[3], vane[1]], -hull_w, hull_w)
 	h.color(RU, Geo.PAINT)
-	# Thick fender from the hull side out to the track edge, plus the bins and lamps that
-	# fill the front-view outline above the tracks. The skirt still stops short of the idler.
+	# Headlight clusters on the front corners of the wide hull, above the visible track end.
 	for s in [-1.0, 1.0]:
 		var sd: float = s
-		var fen_z1 := 2.50 * Sc
-		h.color(RU, Geo.PAINT)
-		h.box(Vector3(sd * (1.16 + 1.615) * 0.5 * Sc, 1.06 * Sc, (rear + fen_z1) * 0.5), Vector3((1.615 - 1.16) * Sc, 0.32 * Sc, fen_z1 - rear))
-		var sk_z1 := 2.05 * Sc
-		h.box(Vector3(sd * (1.42 + 1.615) * 0.5 * Sc, (0.36 + 1.10) * 0.5 * Sc, (rear + sk_z1) * 0.5), Vector3((1.615 - 1.42) * Sc, (1.10 - 0.36) * Sc, sk_z1 - rear))
-		# Side bins. Outer face at the fender edge, tops stay under the roof line.
-		var bins: Array = [
-			[-2.55, 1.20, 1.20, 1.82],
-			[-1.15, 1.15, 1.18, 1.78],
-			[0.15, 1.20, 1.16, 1.68],
-			[1.20, 0.80, 1.14, 1.48],
-		]
-		for bin in bins:
-			var bz: float = bin[0]
-			var bl: float = bin[1]
-			var by0: float = bin[2]
-			var by1: float = bin[3]
-			h.color(RU, Geo.PAINT)
-			h.box(Vector3(sd * 1.40 * Sc, (by0 + by1) * 0.5 * Sc, bz * Sc), Vector3(0.42 * Sc, (by1 - by0) * Sc, bl * Sc))
-			h.color(RU_S, Geo.STEEL)
-			h.box(Vector3(sd * 1.40 * Sc, by1 * Sc, bz * Sc), Vector3(0.44 * Sc, 0.025 * Sc, bl * 1.02 * Sc))
-		# Headlight cluster and guard on the fender front, above the visible track end.
-		var hx := sd * 1.40 * Sc
-		var hz := 2.22 * Sc
+		var hx := sd * 1.42 * Sc
+		var hz := 2.15 * Sc
 		h.color(RU_D, Geo.PAINT)
-		h.box(Vector3(hx, 1.22 * Sc, hz), Vector3(0.36 * Sc, 0.24 * Sc, 0.26 * Sc))
+		h.box(Vector3(hx, 1.18 * Sc, hz), Vector3(0.32 * Sc, 0.22 * Sc, 0.18 * Sc))
 		h.color("#e4dcc8", Geo.LAMP)
-		h.box(Vector3(hx + sd * 0.07 * Sc, 1.26 * Sc, hz + 0.12 * Sc), Vector3(0.09 * Sc, 0.08 * Sc, 0.03 * Sc))
-		h.box(Vector3(hx - sd * 0.07 * Sc, 1.26 * Sc, hz + 0.12 * Sc), Vector3(0.09 * Sc, 0.08 * Sc, 0.03 * Sc))
-		h.box(Vector3(hx, 1.14 * Sc, hz + 0.12 * Sc), Vector3(0.06 * Sc, 0.05 * Sc, 0.03 * Sc))
+		h.box(Vector3(hx + sd * 0.07 * Sc, 1.22 * Sc, hz + 0.08 * Sc), Vector3(0.08 * Sc, 0.07 * Sc, 0.03 * Sc))
+		h.box(Vector3(hx - sd * 0.07 * Sc, 1.22 * Sc, hz + 0.08 * Sc), Vector3(0.08 * Sc, 0.07 * Sc, 0.03 * Sc))
 		h.color(RU_S, Geo.STEEL)
-		h.box(Vector3(hx, 1.36 * Sc, hz + 0.15 * Sc), Vector3(0.34 * Sc, 0.016 * Sc, 0.016 * Sc))
-		h.box(Vector3(hx, 1.10 * Sc, hz + 0.15 * Sc), Vector3(0.34 * Sc, 0.016 * Sc, 0.016 * Sc))
-		h.box(Vector3(hx + sd * 0.16 * Sc, 1.23 * Sc, hz + 0.15 * Sc), Vector3(0.016 * Sc, 0.26 * Sc, 0.016 * Sc))
-		h.box(Vector3(hx - sd * 0.16 * Sc, 1.23 * Sc, hz + 0.15 * Sc), Vector3(0.016 * Sc, 0.26 * Sc, 0.016 * Sc))
+		h.box(Vector3(hx, 1.30 * Sc, hz + 0.10 * Sc), Vector3(0.30 * Sc, 0.016 * Sc, 0.016 * Sc))
+		h.box(Vector3(hx, 1.08 * Sc, hz + 0.10 * Sc), Vector3(0.30 * Sc, 0.016 * Sc, 0.016 * Sc))
+		h.box(Vector3(hx + sd * 0.14 * Sc, 1.19 * Sc, hz + 0.10 * Sc), Vector3(0.016 * Sc, 0.22 * Sc, 0.016 * Sc))
+		h.box(Vector3(hx - sd * 0.14 * Sc, 1.19 * Sc, hz + 0.10 * Sc), Vector3(0.016 * Sc, 0.22 * Sc, 0.016 * Sc))
 	# Olive plate on the existing bow underside, facing down and forward.
 	h.color(RU, Geo.PAINT)
 	var nudge := Vector3(0, -0.025 * Sc, 0.02 * Sc)
@@ -545,24 +518,6 @@ static func _bmp3_v2_fittings(h, Sc: float) -> void:
 	for hk in [-0.55, 0.55]:
 		var kx: float = hk
 		h.box(Vector3(kx * Sc, 0.70 * Sc, 2.95 * Sc), Vector3(0.08 * Sc, 0.05 * Sc, 0.12 * Sc))
-	# Skirt boxes with real depth, on the outer skirt band.
-	for s in [-1.0, 1.0]:
-		var sd: float = s
-		var xo := sd * 1.59 * Sc
-		h.color(RU, Geo.PAINT)
-		for bi in 5:
-			var bz := (-2.2 + float(bi) * 0.78) * Sc
-			h.box(Vector3(xo, 0.82 * Sc, bz), Vector3(0.07 * Sc, 0.22 * Sc, 0.48 * Sc))
-			h.color(RU_S, Geo.STEEL)
-			h.box(Vector3(xo + sd * 0.01 * Sc, 0.92 * Sc, bz), Vector3(0.02 * Sc, 0.03 * Sc, 0.40 * Sc))
-			h.color(RU, Geo.PAINT)
-		h.color(RU_S, Geo.STEEL)
-		h.box(Vector3(sd * 1.20 * Sc, 2.02 * Sc, -0.6 * Sc), Vector3(0.03 * Sc, 0.03 * Sc, 1.6 * Sc))
-		if sd < 0.0:
-			h.tube(Vector3(xo, 0.95 * Sc, -1.9 * Sc), Vector3(xo, 0.95 * Sc, -0.7 * Sc), 0.014 * Sc, 4)
-		else:
-			h.box(Vector3(xo, 0.78 * Sc, 0.4 * Sc), Vector3(0.05 * Sc, 0.06 * Sc, 0.32 * Sc))
-			h.tube(Vector3(xo, 0.88 * Sc, -1.5 * Sc), Vector3(xo, 1.00 * Sc, -0.8 * Sc), 0.015 * Sc, 4)
 	h.uv = Vector2.ZERO
 	h.uv2 = Vector2.ZERO
 
