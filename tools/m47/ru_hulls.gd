@@ -259,7 +259,7 @@ static func bmp3_v2(_mat: Material) -> void:
 	grey.albedo_color = Color(0.62, 0.63, 0.65)
 	grey.roughness = 0.92
 	grey.vertex_color_use_as_albedo = false
-	var root := VK._root({"selection_radius": 1.5, "bar_height": 1.05, "recoil": 0.1, "wreck_s": 7.5})
+	var root := VK._root({"selection_radius": 1.5, "bar_height": 1.12, "recoil": 0.1, "wreck_s": 7.5})
 	var model := VK._n3(root, root, "Model")
 	var h = K.new()
 	h.plain = true
@@ -271,16 +271,27 @@ static func bmp3_v2(_mat: Material) -> void:
 	var sill := 0.14 * Sc
 	var y0 := 0.36 * Sc
 	var ytub := 0.42 * Sc
-	var y1 := 1.55 * Sc
+	# Re-measured on the four-view, track bottom on the ground, hull length held at 7.05 m.
+	# Rear deck 1.85 m, up to 2.00 m by 2.30 m from the rear plate, then flat to the glacis.
+	var y_rear := 1.85 * Sc
+	var y_deck := 2.00 * Sc
 	var ynose := 0.72 * Sc
-	# Flat mid-body. Belly at the tub clearance; side walls flush down to the wheel-hub line.
-	h.box(Vector3(0, (ytub + y1) * 0.5, (rear + brk) * 0.5), Vector3((half - sill) * 2.0, y1 - ytub, brk - rear))
+	var rise := (-3.525 + 2.30) * Sc
+	var deck := [Vector2(rear, ytub), Vector2(rise, ytub), Vector2(rise, y_deck), Vector2(rear, y_rear)]
+	var flat := [Vector2(rise, ytub), Vector2(brk, ytub), Vector2(brk, y_deck), Vector2(rise, y_deck)]
+	var sill_deck := [Vector2(rear, y0), Vector2(rise, y0), Vector2(rise, y_deck), Vector2(rear, y_rear)]
+	var sill_flat := [Vector2(rise, y0), Vector2(brk, y0), Vector2(brk, y_deck), Vector2(rise, y_deck)]
+	h.prism_x(deck, -(half - sill), half - sill)
+	h.prism_x(flat, -(half - sill), half - sill)
 	for s in [-1.0, 1.0]:
 		var side: float = s
-		h.box(Vector3(side * (half - sill * 0.5), (y0 + y1) * 0.5, (rear + brk) * 0.5), Vector3(sill, y1 - y0, brk - rear))
-	# One flat glacis: the top edge is a single plane from the low nose up to the roof.
-	h.prism_x([Vector2(brk, y0), Vector2(bow, ynose), Vector2(brk, y1)], -half, half)
-	var along := Vector2(2.15 - 3.525, 1.55 - 0.72).normalized()
+		var x_a: float = minf(side * (half - sill), side * half)
+		var x_b: float = maxf(side * (half - sill), side * half)
+		h.prism_x(sill_deck, x_a, x_b)
+		h.prism_x(sill_flat, x_a, x_b)
+	# One flat glacis from the same nose point up to the new roof height.
+	h.prism_x([Vector2(brk, y0), Vector2(bow, ynose), Vector2(brk, y_deck)], -half, half)
+	var along := Vector2(2.15 - 3.525, 2.00 - 0.72).normalized()
 	var out_n := Vector2(along.y, -along.x)
 	var nose := Vector2(3.525, 0.72)
 	var vane: Array = []
@@ -339,34 +350,42 @@ static func bmp3_v2(_mat: Material) -> void:
 			h.tube(rc - Vector3(0.10 * Sc, 0, 0), rc + Vector3(0.10 * Sc, 0, 0), 0.10 * Sc, 8)
 	h.uv = Vector2.ZERO
 	h.uv2 = Vector2.ZERO
-	var piv := VK._n3(model, root, "TurretPivot", Vector3(0, 1.55 * Sc, 0.645 * Sc))
+	# Turret body centre 3.85 m from the rear plate. The 2 m box then shares the drawn rear face.
+	var piv_z := -3.525 + 3.85 - 0.11
+	var piv_y := 2.00
+	var piv := VK._n3(model, root, "TurretPivot", Vector3(0, piv_y * Sc, piv_z * Sc))
 	var t = K.new()
 	t.plain = true
 	t.color("#8e8e92", Geo.PAINT)
-	# 1.75 m wide, 2.00 m long. Front face is the mantlet, 1.11 m forward of the pivot.
-	t.box(Vector3(0, 0.315 * Sc, 0.11 * Sc), Vector3(1.75 * Sc, 0.63 * Sc, 2.00 * Sc))
-	t.box(Vector3(0.28 * Sc, 0.715 * Sc, -0.20 * Sc), Vector3(0.30 * Sc, 0.17 * Sc, 0.34 * Sc))
+	# Roof of the turret box at 2.42 m. Sight block tops out at 2.55 m.
+	var tur_h := 2.42 - piv_y
+	t.box(Vector3(0, tur_h * 0.5 * Sc, 0.11 * Sc), Vector3(1.75 * Sc, tur_h * Sc, 2.00 * Sc))
+	var sight_top := 2.55 - piv_y
+	t.box(Vector3(0.28 * Sc, (sight_top - 0.065) * Sc, -0.20 * Sc), Vector3(0.30 * Sc, 0.13 * Sc, 0.34 * Sc))
 	VK._mi(piv, root, "Turret", t.commit(grey))
-	var bn := VK._n3(piv, root, "Barrel", Vector3(0, 0.33 * Sc, 1.11 * Sc))
+	# Barrel axis at 2.15 m. 100 mm reaches the drawing's visible muzzle, 7.15 m from the rear plate.
+	var gun_y := 2.15 - piv_y
+	var muzzle_z := (-3.525 + 7.15) - (piv_z + 1.11)
+	var bn := VK._n3(piv, root, "Barrel", Vector3(0, gun_y * Sc, 1.11 * Sc))
 	var b = K.new()
 	b.plain = true
 	b.color("#6e6e72", Geo.STEEL)
 	b.box(Vector3(0.03 * Sc, 0, -0.02 * Sc), Vector3(0.52 * Sc, 0.26 * Sc, 0.16 * Sc))
-	b.tube(Vector3(-0.12 * Sc, 0, 0), Vector3(-0.12 * Sc, 0, 1.90 * Sc), 0.070 * Sc, 8)
-	b.tube(Vector3(0.18 * Sc, 0, 0), Vector3(0.18 * Sc, 0, 1.62 * Sc), 0.032 * Sc, 8)
+	b.tube(Vector3(-0.12 * Sc, 0, 0), Vector3(-0.12 * Sc, 0, muzzle_z * Sc), 0.070 * Sc, 8)
+	b.tube(Vector3(0.18 * Sc, 0, 0), Vector3(0.18 * Sc, 0, (muzzle_z - 0.22) * Sc), 0.032 * Sc, 8)
 	VK._mi(bn, root, "BarrelMesh", b.commit(grey))
 	var m100 := Marker3D.new()
 	m100.name = "GunMuzzle100"
-	m100.position = Vector3(-0.12 * Sc, 0, 1.90 * Sc)
+	m100.position = Vector3(-0.12 * Sc, 0, muzzle_z * Sc)
 	bn.add_child(m100)
 	m100.owner = root
 	var m30 := Marker3D.new()
 	m30.name = "GunMuzzle30"
-	m30.position = Vector3(0.18 * Sc, 0, 1.62 * Sc)
+	m30.position = Vector3(0.18 * Sc, 0, (muzzle_z - 0.22) * Sc)
 	bn.add_child(m30)
 	m30.owner = root
-	print("  bmp3_v2 plan m: hull 7.05 roof 1.55 edge 0.36 nose 0.72 break 2.15 pivot z 0.645 barrel y 1.88 muzzle z 3.655")
-	_save(root, model, h, grey, "res://view/units/ecc/bmp3_v2.tscn", 1.05, [t, b])
+	print("  bmp3_v2 m: roof %.3f-2.00 edge 0.36 pivot z %.3f y %.3f gun y 2.15 muzzle from rear 7.15" % [1.85, piv_z, piv_y])
+	_save(root, model, h, grey, "res://view/units/ecc/bmp3_v2.tscn", 1.12, [t, b])
 
 static func t14(mat: Material) -> void:
 	# Drawing millimetres at the live T-90 width scale (1.53 u / 3.78 m). Hull 8.879 m,
