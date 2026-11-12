@@ -49,46 +49,42 @@ static func bmp3(mat: Material) -> void:
 	var root := VK._root({"selection_radius": 1.5, "bar_height": 0.98, "recoil": 0.1, "wreck_s": 7.5})
 	var model := VK._n3(root, root, "Model")
 	var h = K.new()
-	# Hull lower edge. Wheels are centred just under it and overlap it slightly.
-	# The belt stays inside the hull side, curls up the stern, and rises to the nose.
+	# The hull's lower edge is the wheel centre line. Wheels overlap the lower half of the side.
+	# The belt follows that edge, curls up the stern, and rises to the nose tip.
 	var y_bot := 0.84
 	var y_roof := 1.58
 	var z_nose := 3.48
 	var z_break := 1.72
 	var y_edge := y_bot * Sc
-	var r_w := 0.34 * Sc
-	var y_w := y_edge - 0.02
+	var r_w := 0.38 * Sc
+	var y_w := y_edge
 	var z_sp := -3.20 * Sc
-	var r_sp := 0.38 * Sc
-	var z_id := 2.25 * Sc
-	var r_id := 0.30 * Sc
-	var z_nw := 3.22 * Sc
-	var y_nw := y_edge + 0.06
-	var r_nw := 0.13 * Sc
-	# Belt centred on the wheel line, just under the hull. No bar beneath the wheels.
-	var y_hi := y_edge - 0.006
-	var y_lo := y_w - 0.015
+	var r_sp := 0.40 * Sc
+	var z_id := 2.20 * Sc
+	var r_id := 0.32 * Sc
+	var z_nw := 3.10 * Sc
+	var y_nw := y_edge + 0.02
+	var r_nw := 0.10 * Sc
 	var belt: Array = []
-	belt.append(Vector2(z_sp + 0.06, y_hi))
-	belt.append(Vector2(z_id, y_hi))
-	belt.append(Vector2(z_nw - 0.02, y_nw + r_nw * 0.6))
+	belt.append(Vector2(z_sp + 0.05, y_edge + 0.01))
+	belt.append(Vector2(z_id, y_edge + 0.01))
+	belt.append(Vector2(z_nw - 0.02, y_nw + r_nw * 0.4))
 	for i in 5:
-		var a := deg_to_rad(90.0 - 180.0 * float(i) / 4.0)
+		var a := deg_to_rad(80.0 - 170.0 * float(i) / 4.0)
 		belt.append(Vector2(z_nw, y_nw) + Vector2(cos(a), sin(a)) * (r_nw + 0.01))
-	belt.append(Vector2(z_id + r_id * 0.85, y_w))
-	belt.append(Vector2(z_id, y_lo))
-	belt.append(Vector2(z_sp + 0.08, y_lo))
+	belt.append(Vector2(z_id + r_id * 0.7, y_edge))
+	belt.append(Vector2(z_sp + 0.06, y_edge - 0.01))
 	for i3 in 6:
-		var a3 := deg_to_rad(-40.0 - 180.0 * float(i3) / 5.0)
-		belt.append(Vector2(z_sp, y_w) + Vector2(cos(a3), sin(a3)) * (r_sp * 0.95))
+		var a3 := deg_to_rad(-30.0 - 200.0 * float(i3) / 5.0)
+		belt.append(Vector2(z_sp, y_edge) + Vector2(cos(a3), sin(a3)) * (r_sp * 0.72))
 	for side_i in [-1.0, 1.0]:
 		var sx: float = side_i * 0.36
-		_run_belt(h, side_i * 0.28, side_i * 0.44, belt)
+		_run_belt(h, side_i * 0.28, side_i * 0.43, belt)
 		for i4 in 6:
-			var zm: float = lerpf(-2.30, 1.35, float(i4) / 5.0) * Sc
-			h.wheel(Vector3(sx, y_w, zm), r_w, 0.13, false, "#6e736c", 12)
-		h.sprocket(Vector3(sx, y_w, z_sp), r_sp * 0.92, 0.13, 10, RU_S)
-		h.sprocket(Vector3(sx, y_w, z_id), r_id * 0.92, 0.12, 0, RU_S)
+			var zm: float = lerpf(-2.25, 1.30, float(i4) / 5.0) * Sc
+			h.wheel(Vector3(sx, y_w, zm), r_w, 0.14, false, "#6e736c", 12)
+		h.sprocket(Vector3(sx, y_w, z_sp), r_sp * 0.9, 0.13, 10, RU_S)
+		h.sprocket(Vector3(sx, y_w, z_id), r_id * 0.9, 0.12, 0, RU_S)
 		h.wheel(Vector3(sx, y_nw, z_nw), r_nw, 0.08, false, "#6e736c", 10)
 	# Flat bottom at the track top, flat roof. No undercut.
 	h.color(RU, Geo.PAINT)
@@ -122,6 +118,13 @@ static func bmp3(mat: Material) -> void:
 		h.plate(lamp, Vector3(0.28 * Sc, 0.16 * Sc, 0.05 * Sc), Vector3(-gang, 0, 0))
 		h.color("#ffe6b0", Geo.LAMP)
 		h.plate(lamp + gn * (0.02 * Sc), Vector3(0.16 * Sc, 0.09 * Sc, 0.02 * Sc), Vector3(-gang, 0, 0))
+	# Skirt sits on the hull edge, above the wheel centres. It does not hang below the hull.
+	var sk_z0 := -2.55 * Sc
+	var sk_z1 := 1.45 * Sc
+	h.color(RU_D, Geo.PAINT)
+	for s3 in [-1.0, 1.0]:
+		var side3: float = s3
+		h.box(Vector3(side3 * 0.52, y_edge + 0.04, (sk_z0 + sk_z1) * 0.5), Vector3(0.02, 0.08, sk_z1 - sk_z0))
 	# Hatches on the flat roof, periscopes in front of them.
 	h.color(RU, Geo.PAINT)
 	h.hatch(Vector3(0, 1.60 * Sc, 1.48 * Sc), 0.22 * Sc)
