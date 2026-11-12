@@ -80,7 +80,7 @@ const T90_GREEN := Color("#96A468")
 const MUTED_OLIVE := Color("#8d9876")
 const UNIT_PAINT := {&"us_blackhawk": Color("#1d1f21"), &"us_dozer": Color("#80868a"), &"us_ripsaw": Color("#5e655f"),
 	&"us_halberd": M1A3_TAN, &"ecc_t90": T90_GREEN,
-	&"ecc_bmp3": MUTED_OLIVE, &"ecc_bmpt": MUTED_OLIVE, &"ecc_t14": MUTED_OLIVE, &"ecc_tos": MUTED_OLIVE,
+	&"ecc_bmp3": T90_GREEN, &"ecc_bmpt": MUTED_OLIVE, &"ecc_t14": MUTED_OLIVE, &"ecc_tos": MUTED_OLIVE,
 	&"ecc_iskander": MUTED_OLIVE, &"ecc_mi8": MUTED_OLIVE, &"ecc_pantsir": MUTED_OLIVE,
 	&"ecc_zeus": MUTED_OLIVE, &"ecc_reaper": T90_GREEN}
 

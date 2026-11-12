@@ -49,9 +49,13 @@ func _views() -> void:
 	add_child(under)
 	var model := (load("res://view/units/ecc/bmp3_v2.tscn") as PackedScene).instantiate() as Node3D
 	add_child(model)
-	var olive := Color("#8d9876")
+	var olive := Color("#96A468")
 	for g in model.find_children("*", "GeometryInstance3D", true, false):
-		(g as GeometryInstance3D).set_instance_shader_parameter(&"paint_color", olive)
+		var gi := g as GeometryInstance3D
+		gi.set_instance_shader_parameter(&"paint_color", olive)
+		gi.set_instance_shader_parameter(&"rust_amt", 0.2)
+		gi.set_instance_shader_parameter(&"wear_amt", 0.55)
+		gi.set_instance_shader_parameter(&"dirt_amt", 0.7)
 	_measure(model)
 	var cam := Camera3D.new()
 	cam.projection = Camera3D.PROJECTION_ORTHOGONAL
@@ -93,6 +97,12 @@ func _views() -> void:
 	var t90 := (load("res://view/units/ecc/t90.tscn") as PackedScene).instantiate() as Node3D
 	t90.position = Vector3(1.55, 0, 0)
 	add_child(t90)
+	for g in t90.find_children("*", "GeometryInstance3D", true, false):
+		var gi := g as GeometryInstance3D
+		gi.set_instance_shader_parameter(&"paint_color", olive)
+		gi.set_instance_shader_parameter(&"rust_amt", 0.2)
+		gi.set_instance_shader_parameter(&"wear_amt", 0.55)
+		gi.set_instance_shader_parameter(&"dirt_amt", 0.7)
 	model.position = Vector3(-1.75, 0, 0)
 	cam.projection = Camera3D.PROJECTION_PERSPECTIVE
 	cam.fov = 34.0

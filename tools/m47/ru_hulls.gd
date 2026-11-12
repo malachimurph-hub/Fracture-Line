@@ -35,10 +35,6 @@ static func _run_belt(h, x0: float, x1: float, path: Array) -> void:
 		h.uv = Vector2(s, 0.0)
 		var nrm: Vector3 = (Vector3(0, (a.y + b.y) * 0.5, (a.x + b.x) * 0.5) - ctr).normalized()
 		VK._quad_uv(h, [pa0, pa1, pb1, pb0], [Vector2(s, 0), Vector2(s, 1), Vector2(s + ln, 1), Vector2(s + ln, 0)], nrm)
-		var dir := Vector3(0, b.y - a.y, b.x - a.x) / ln
-		var up := Vector3(1, 0, 0).cross(dir).normalized()
-		var mid := Vector3(x1, (a.y + b.y) * 0.5, (a.x + b.x) * 0.5)
-		h.box(Vector3.ZERO, Vector3(0.016, 0.055, ln), Transform3D(Basis(Vector3(1, 0, 0), up, dir), mid))
 		s += ln
 
 static func bmp3(mat: Material) -> void:
@@ -260,7 +256,7 @@ static func bmp3_v2(mat: Material) -> void:
 	var model := VK._n3(root, root, "Model")
 	var h = K.new()
 	h.plain = true
-	h.color(RU, Geo.PAINT)
+	h.camo(RU, 2)
 	var rear := -3.525 * Sc
 	var brk := 2.08 * Sc
 	var half := 1.625 * Sc
@@ -308,9 +304,9 @@ static func bmp3_v2(mat: Material) -> void:
 		var p: Vector2 = n0 + (n1 - n0) * k
 		vane.append((p + vane_n * 0.01) * Sc)
 		vane.append((p + vane_n * 0.045) * Sc)
-	h.color(RU_D, Geo.PAINT)
+	h.camo(RU_D, 2)
 	h.prism_x([vane[0], vane[2], vane[3], vane[1]], -hull_w, hull_w)
-	h.color(RU, Geo.PAINT)
+	h.camo(RU, 2)
 	# Fender over each track: crowned top, chamfered lip, thin skirt. The front angles down over the idler.
 	var fen_prof := [
 		Vector2(1.14, 1.08),
@@ -330,9 +326,9 @@ static func bmp3_v2(mat: Material) -> void:
 			for p in fen_prof:
 				poly.append(Vector2(sd * p.x * Sc, (p.y - float(fen_dy[fi])) * Sc))
 			secs.append([float(fen_z[fi]) * Sc, poly])
-		h.color(RU, Geo.PAINT)
+		h.camo(RU, 2)
 		h.xloft(secs)
-		h.color(RU_D, Geo.PAINT)
+		h.camo(RU_D, 2)
 		var x_a := sd * 1.50 * Sc
 		var x_b := sd * 1.64 * Sc
 		h.prism_x([
@@ -344,7 +340,7 @@ static func bmp3_v2(mat: Material) -> void:
 		# Headlight cluster and guard on the fender's front corner.
 		var hx := sd * 1.36 * Sc
 		var hz := 1.95 * Sc
-		h.color(RU_D, Geo.PAINT)
+		h.camo(RU_D, 2)
 		h.cbox(Vector3(hx, 1.22 * Sc, hz), Vector3(0.36 * Sc, 0.22 * Sc, 0.22 * Sc), 0.016 * Sc)
 		h.color("#e4dcc8", Geo.LAMP)
 		h.box(Vector3(hx + sd * 0.06 * Sc, 1.22 * Sc, hz + 0.08 * Sc), Vector3(0.07 * Sc, 0.06 * Sc, 0.03 * Sc))
@@ -355,7 +351,7 @@ static func bmp3_v2(mat: Material) -> void:
 		h.box(Vector3(hx + sd * 0.12 * Sc, 1.21 * Sc, hz + 0.09 * Sc), Vector3(0.014 * Sc, 0.18 * Sc, 0.014 * Sc))
 		h.box(Vector3(hx - sd * 0.12 * Sc, 1.21 * Sc, hz + 0.09 * Sc), Vector3(0.014 * Sc, 0.18 * Sc, 0.014 * Sc))
 	# Olive plate on the existing bow underside, facing down and forward.
-	h.color(RU, Geo.PAINT)
+	h.camo(RU, 2)
 	var nudge := Vector3(0, -0.025 * Sc, 0.02 * Sc)
 	var lip_a := Vector3(-hull_w, 1.52 * Sc, 3.42 * Sc) + nudge
 	var lip_b := Vector3(hull_w, 1.52 * Sc, 3.42 * Sc) + nudge
@@ -373,7 +369,7 @@ static func bmp3_v2(mat: Material) -> void:
 	var z_link := 2.20
 	while z_link > -3.05:
 		belt.append(Vector2(z_link, 0.08) * Sc)
-		z_link -= 0.16
+		z_link -= 0.32
 	belt.append(Vector2(-3.05, 0.08) * Sc)
 	for i in 9:
 		var a := deg_to_rad(270.0 - 180.0 * float(i) / 8.0)
@@ -381,7 +377,7 @@ static func bmp3_v2(mat: Material) -> void:
 	var z_top := -2.30
 	while z_top < 1.60:
 		belt.append(Vector2(z_top, 1.05) * Sc)
-		z_top += 0.16
+		z_top += 0.32
 	belt.append(Vector2(1.60, 1.05) * Sc)
 	belt.append(Vector2(2.15, 0.96) * Sc)
 	for i in 9:
@@ -400,14 +396,11 @@ static func bmp3_v2(mat: Material) -> void:
 			h.uv = Vector2(wc.y, wc.z)
 			h.uv2 = Vector2(wc.x, wr)
 			h.color("#2a2c28", Geo.WHEEL_RUBBER)
-			h.tube(wc - Vector3(0.15 * Sc, 0, 0), wc + Vector3(0.15 * Sc, 0, 0), wr, 10)
+			h.tube(wc - Vector3(0.15 * Sc, 0, 0), wc + Vector3(0.15 * Sc, 0, 0), wr, 8)
 			h.color("#5c5e58", Geo.WHEEL_STEEL)
 			h.tube(wc - Vector3(0.05 * Sc, 0, 0), wc + Vector3(0.05 * Sc, 0, 0), wr * 0.42, 6)
 			var cap := wc + Vector3(side2 * 0.15 * Sc, 0, 0)
 			h.tube(cap, cap + Vector3(side2 * 0.02 * Sc, 0, 0), wr * 0.34, 6)
-			for lug in 6:
-				var la := TAU * float(lug) / 6.0
-				h.box(cap + Vector3(side2 * 0.016 * Sc, sin(la) * wr * 0.46, cos(la) * wr * 0.46), Vector3(0.016 * Sc, wr * 0.14, wr * 0.14))
 	# Rear sprocket, smaller front idler, three return rollers under the top run.
 	for s3 in [-1.0, 1.0]:
 		var side3: float = s3
@@ -441,7 +434,7 @@ static func bmp3_v2(mat: Material) -> void:
 	var piv := VK._n3(model, root, "TurretPivot", Vector3(0, piv_y * Sc, piv_z * Sc))
 	var t = K.new()
 	t.plain = true
-	t.color(RU, Geo.PAINT)
+	t.camo(RU, 2)
 	# Circular turret, roof still 2.42 m. A mantlet carries the guns forward of the ring.
 	var tur_h := 2.42 - piv_y
 	var yh := tur_h * Sc
@@ -454,25 +447,25 @@ static func bmp3_v2(mat: Material) -> void:
 	t.plan_loft(ring, 0.0, yh, Vector2(0.94, 0.94))
 	# Commander panoramic sight on a mount, gunner's block, cheek armor and a rear box.
 	# Sizes are in the same range as the T-90's sight housings.
-	t.color(RU_D, Geo.PAINT)
+	t.camo(RU_D, 2)
 	t.cbox(Vector3(0.30 * Sc, (tur_h + 0.05) * Sc, -0.16 * Sc), Vector3(0.18 * Sc, 0.08 * Sc, 0.20 * Sc), 0.012 * Sc)
-	t.color(RU, Geo.PAINT)
+	t.camo(RU, 2)
 	t.cbox(Vector3(0.30 * Sc, (tur_h + 0.18) * Sc, -0.16 * Sc), Vector3(0.26 * Sc, 0.18 * Sc, 0.24 * Sc), 0.016 * Sc)
 	t.color(GLASS_C, Geo.GLASS)
 	t.box(Vector3(0.30 * Sc, (tur_h + 0.20) * Sc, -0.02 * Sc), Vector3(0.14 * Sc, 0.08 * Sc, 0.02 * Sc))
-	t.color(RU_D, Geo.PAINT)
+	t.camo(RU_D, 2)
 	t.cbox(Vector3(-0.26 * Sc, (tur_h + 0.04) * Sc, 0.12 * Sc), Vector3(0.16 * Sc, 0.06 * Sc, 0.18 * Sc), 0.01 * Sc)
-	t.color(RU, Geo.PAINT)
+	t.camo(RU, 2)
 	t.cbox(Vector3(-0.26 * Sc, (tur_h + 0.14) * Sc, 0.12 * Sc), Vector3(0.24 * Sc, 0.16 * Sc, 0.24 * Sc), 0.014 * Sc)
 	t.color(GLASS_C, Geo.GLASS)
 	t.box(Vector3(-0.26 * Sc, (tur_h + 0.16) * Sc, 0.25 * Sc), Vector3(0.14 * Sc, 0.07 * Sc, 0.02 * Sc))
-	t.color(RU_D, Geo.PAINT)
+	t.camo(RU_D, 2)
 	for s_ck in [-1.0, 1.0]:
 		t.cbox(Vector3(float(s_ck) * 0.46 * Sc, 0.12 * Sc, -0.28 * Sc), Vector3(0.24 * Sc, 0.16 * Sc, 0.26 * Sc), 0.012 * Sc)
 	t.cbox(Vector3(0, 0.14 * Sc, -0.58 * Sc), Vector3(0.50 * Sc, 0.16 * Sc, 0.18 * Sc), 0.012 * Sc)
 	for s_sm in [-1.0, 1.0]:
 		var sms: float = s_sm
-		t.color(RU, Geo.PAINT)
+		t.camo(RU, 2)
 		t.cbox(Vector3(sms * 0.56 * Sc, 0.16 * Sc, 0.10 * Sc), Vector3(0.12 * Sc, 0.20 * Sc, 0.42 * Sc), 0.012 * Sc)
 		t.color(RU_S, Geo.STEEL)
 		for si in 6:
@@ -483,11 +476,11 @@ static func bmp3_v2(mat: Material) -> void:
 			t.tube(p0, p1, 0.05 * Sc, 6)
 	t.color(RU_S, Geo.STEEL)
 	t.tube(Vector3(0.18 * Sc, yh, -0.36 * Sc), Vector3(0.18 * Sc, yh + 0.045 * Sc, -0.36 * Sc), 0.18 * Sc, 8)
-	t.color(RU, Geo.PAINT)
+	t.camo(RU, 2)
 	t.cbox(Vector3(0.18 * Sc, yh + 0.07 * Sc, -0.36 * Sc), Vector3(0.28 * Sc, 0.05 * Sc, 0.28 * Sc), 0.01 * Sc)
 	t.color(RU_S, Geo.STEEL)
 	t.tube(Vector3(-0.16 * Sc, yh, 0.04 * Sc), Vector3(-0.16 * Sc, yh + 0.04 * Sc, 0.04 * Sc), 0.16 * Sc, 8)
-	t.color(RU, Geo.PAINT)
+	t.camo(RU, 2)
 	t.cbox(Vector3(-0.16 * Sc, yh + 0.065 * Sc, 0.04 * Sc), Vector3(0.24 * Sc, 0.045 * Sc, 0.24 * Sc), 0.008 * Sc)
 	t.color(RU_S, Geo.STEEL)
 	t.tube(Vector3(0.08 * Sc, yh, -0.50 * Sc), Vector3(0.08 * Sc, yh + 0.32 * Sc, -0.50 * Sc), 0.015 * Sc, 4)
@@ -505,7 +498,7 @@ static func bmp3_v2(mat: Material) -> void:
 	b.cbox(Vector3(0.26 * Sc, 0.0, 0.0), Vector3(0.10 * Sc, 0.14 * Sc, 0.12 * Sc), 0.01 * Sc)
 	b.tube(Vector3(-0.12 * Sc, 0, 0.06 * Sc), Vector3(-0.12 * Sc, 0, muzzle_z * Sc), 0.055 * Sc, 8)
 	var zf := muzzle_z * 0.38
-	b.color(RU_D, Geo.PAINT)
+	b.camo(RU_D, 2)
 	b.tube(Vector3(-0.12 * Sc, 0, (zf - 0.08) * Sc), Vector3(-0.12 * Sc, 0, (zf + 0.08) * Sc), 0.080 * Sc, 8)
 	b.color(RU_S, Geo.STEEL)
 	b.tube(Vector3(-0.12 * Sc, 0, muzzle_z * Sc - 0.06 * Sc), Vector3(-0.12 * Sc, 0, muzzle_z * Sc), 0.070 * Sc, 8)
@@ -533,13 +526,13 @@ static func _bmp3_v2_fittings(h, Sc: float) -> void:
 	# Driver hatch and the two troop hatches, proud of the glacis, with periscope blocks.
 	h.color(RU_S, Geo.STEEL)
 	h.cbox(Vector3(0, 2.04 * Sc, 1.72 * Sc), Vector3(0.62 * Sc, 0.05 * Sc, 0.50 * Sc), 0.012 * Sc)
-	h.color(RU, Geo.PAINT)
+	h.camo(RU, 2)
 	h.cbox(Vector3(0, 2.09 * Sc, 1.72 * Sc), Vector3(0.48 * Sc, 0.08 * Sc, 0.38 * Sc), 0.014 * Sc)
 	for hs in [-1.0, 1.0]:
 		var hx: float = hs
 		h.color(RU_S, Geo.STEEL)
 		h.cbox(Vector3(hx * 0.46 * Sc, 2.035 * Sc, 1.48 * Sc), Vector3(0.42 * Sc, 0.05 * Sc, 0.38 * Sc), 0.01 * Sc)
-		h.color(RU, Geo.PAINT)
+		h.camo(RU, 2)
 		h.cbox(Vector3(hx * 0.46 * Sc, 2.08 * Sc, 1.48 * Sc), Vector3(0.32 * Sc, 0.07 * Sc, 0.28 * Sc), 0.012 * Sc)
 		h.color(RU_S, Geo.STEEL)
 		h.cbox(Vector3(hx * 0.46 * Sc, 2.14 * Sc, 1.60 * Sc), Vector3(0.10 * Sc, 0.08 * Sc, 0.12 * Sc), 0.008 * Sc)
@@ -563,7 +556,7 @@ static func _bmp3_v2_fittings(h, Sc: float) -> void:
 	for tie in 6:
 		h.box(Vector3(-0.85 * Sc, 1.93 * Sc, (-3.15 + float(tie) * 0.28) * Sc), Vector3(0.06 * Sc, 0.04 * Sc, 0.08 * Sc))
 		h.box(Vector3(0.85 * Sc, 1.93 * Sc, (-3.15 + float(tie) * 0.28) * Sc), Vector3(0.06 * Sc, 0.04 * Sc, 0.08 * Sc))
-	h.color(RU_D, Geo.PAINT)
+	h.camo(RU_D, 2)
 	# Grille is a row of slats on the port rear face, not a dark slab.
 	h.color(RU_S, Geo.STEEL)
 	for gi in 6:
@@ -571,7 +564,7 @@ static func _bmp3_v2_fittings(h, Sc: float) -> void:
 	# Two rear doors: a proud frame and a recessed panel.
 	for ds in [-0.28, 0.32]:
 		var dx: float = ds
-		h.color(RU, Geo.PAINT)
+		h.camo(RU, 2)
 		h.box(Vector3(dx * Sc, 0.78 * Sc, -3.55 * Sc), Vector3(0.34 * Sc, 0.46 * Sc, 0.03 * Sc))
 		h.color(RU_S, Geo.STEEL)
 		h.box(Vector3(dx * Sc, 1.02 * Sc, -3.56 * Sc), Vector3(0.42 * Sc, 0.04 * Sc, 0.025 * Sc))
@@ -606,7 +599,7 @@ static func _bmp3_v2_fittings(h, Sc: float) -> void:
 			h.cbox(Vector3(sd * 1.16 * Sc, 1.34 * Sc, float(cz) * Sc), Vector3(0.08 * Sc, 0.08 * Sc, 0.10 * Sc), 0.01 * Sc)
 		for fz in [-2.4, -1.5, -0.5, 0.6]:
 			h.cbox(Vector3(sd * 1.42 * Sc, 1.30 * Sc, float(fz) * Sc), Vector3(0.16 * Sc, 0.045 * Sc, 0.32 * Sc), 0.008 * Sc)
-		h.color(RU_D, Geo.PAINT)
+		h.camo(RU_D, 2)
 		h.cbox(Vector3(sd * 1.36 * Sc, 1.32 * Sc, -2.15 * Sc), Vector3(0.28 * Sc, 0.14 * Sc, 0.42 * Sc), 0.014 * Sc)
 		h.cbox(Vector3(sd * 1.34 * Sc, 1.30 * Sc, -1.55 * Sc), Vector3(0.24 * Sc, 0.12 * Sc, 0.32 * Sc), 0.012 * Sc)
 		h.color(RU_S, Geo.STEEL)
@@ -626,11 +619,11 @@ static func _bmp3_v2_fittings(h, Sc: float) -> void:
 	# Raised rear-deck hatches, a grille block, antenna bases and a rail.
 	h.color(RU_S, Geo.STEEL)
 	h.tube(Vector3(0.40 * Sc, 1.94 * Sc, -2.35 * Sc), Vector3(0.40 * Sc, 2.00 * Sc, -2.35 * Sc), 0.22 * Sc, 8)
-	h.color(RU, Geo.PAINT)
+	h.camo(RU, 2)
 	h.cbox(Vector3(0.40 * Sc, 2.03 * Sc, -2.35 * Sc), Vector3(0.32 * Sc, 0.06 * Sc, 0.32 * Sc), 0.01 * Sc)
 	h.color(RU_S, Geo.STEEL)
 	h.tube(Vector3(-0.36 * Sc, 1.90 * Sc, -2.90 * Sc), Vector3(-0.36 * Sc, 1.96 * Sc, -2.90 * Sc), 0.18 * Sc, 8)
-	h.color(RU, Geo.PAINT)
+	h.camo(RU, 2)
 	h.cbox(Vector3(-0.36 * Sc, 1.99 * Sc, -2.90 * Sc), Vector3(0.26 * Sc, 0.05 * Sc, 0.26 * Sc), 0.008 * Sc)
 	h.color("#2a2c28", Geo.DARK)
 	h.cbox(Vector3(-0.28 * Sc, 1.94 * Sc, -3.05 * Sc), Vector3(0.55 * Sc, 0.06 * Sc, 0.48 * Sc), 0.01 * Sc)

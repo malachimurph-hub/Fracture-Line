@@ -827,6 +827,12 @@ func _muzzles(src: SimEntity, v: EntityView, garrison: SimEntity, base: Vector3,
 		if out.is_empty():
 			out.append(v.position + Vector3(0, 0.35, 0))
 		return out
+	# BMP-3: the 100 mm and the missile leave the main muzzle, the 30 mm the coaxial one.
+	if src.def_id == &"ecc_bmp3" and v.model != null and wid != &"":
+		var which := "GunMuzzle30" if wid == &"ecc_bmp_30" else "GunMuzzle100"
+		var mk := v.model.find_child(which, true, false) as Node3D
+		if mk != null and is_instance_valid(mk):
+			return [mk.global_position]
 	# Dual-purpose pod missiles alternate the cheek launchers. The main gun keeps the barrel.
 	if v.model != null and wid != &"":
 		var pod_wd: WeaponDef = Content.weapon(wid)
