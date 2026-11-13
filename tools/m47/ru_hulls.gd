@@ -2376,7 +2376,7 @@ static func mzkt_missile(mat: Material) -> void:
 
 ## Module A, anti-air. Unwired. ModuleRoot sits on ModuleMount.
 ## +Z points at the cab. The bed runs z = -4.03 to 3.53 m and x = ±1.575 m.
-## The cab roof is 3.29 m. The front cabinet is 3.45 m, just above that roof.
+## The cab roof is 3.29 m. The front cabinet is 3.35 m, just above that roof.
 ## The rear deck is 3.05 m. The 4.29 m sheet line is the turret housing top, not the box.
 ## TurretYaw points the guns forward at yaw 0. WeaponPivot elevates the racks and the guns.
 ## The search hinge is not named Radar, and the guns are not named Barrel: VehicleView claims both.
@@ -2390,7 +2390,7 @@ static func mzkt_aa(mat: Material) -> void:
 	h.color("#96A468", Geo.CONCRETE)
 	h.box(Vector3(0, 0.01 * Sc, -0.14 * Sc), Vector3(3.04 * Sc, 0.14 * Sc, 7.56 * Sc))
 	h.box(Vector3(0, 0.28 * Sc, -0.14 * Sc), Vector3(2.56 * Sc, 0.64 * Sc, 7.52 * Sc))
-	# Rear deck, roof at 3.05 m. Front cabinet steps up to 3.45 m, just over the cab.
+	# Rear deck, roof at 3.05 m. Front cabinet steps up to 3.35 m, just over the cab.
 	# Both start above the stowed jack arms.
 	h.cbox(Vector3(0, 0.96 * Sc, -1.28 * Sc), Vector3(2.96 * Sc, 0.94 * Sc, 5.10 * Sc), 0.03 * Sc)
 	h.cbox(Vector3(0, 1.11 * Sc, 2.35 * Sc), Vector3(2.84 * Sc, 1.24 * Sc, 2.50 * Sc), 0.028 * Sc)
@@ -2518,7 +2518,7 @@ static func _aa_turret(root: Node3D, mat: Material, Sc: float) -> int:
 	var dish = K.new()
 	dish.plain = true
 	# Array 1.90 m across and 1.80 m tall, 0.28 m deep. Dark face, frame, ribs.
-	# Raised pose leans 10 degrees. Stow at -128 drops the far edge onto the rear deck.
+	# Raised pose leans 10 degrees. Stow at -132 drops the far edge onto the rear deck.
 	dish.color("#3a3d38", Geo.STEEL)
 	dish.box(Vector3(0, 0.98 * Sc, -0.04 * Sc), Vector3(1.90 * Sc, 1.80 * Sc, 0.16 * Sc))
 	dish.box(Vector3(0, 1.80 * Sc, 0.08 * Sc), Vector3(1.90 * Sc, 0.12 * Sc, 0.14 * Sc))
