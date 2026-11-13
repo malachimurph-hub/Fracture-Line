@@ -43,6 +43,8 @@ func _initialize() -> void:
 				HULLS.iskander(mat)
 			"mi8":
 				HULLS.mi8(mat)
+			"mi8_v2":
+				HULLS.mi8_v2(mat)
 			"pantsir":
 				HULLS.pantsir(mat)
 			"shilka":

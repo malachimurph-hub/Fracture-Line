@@ -1274,6 +1274,134 @@ static func mi8(mat: Material) -> void:
 	UV8._rotor(model, root, mat, "TailRotor", Vector3(-0.12, 0.82, -2.12), 0.38, 3, true)
 	_save(root, model, h, mat, "res://view/units/ecc/mi8.tscn", 1.45, [])
 
+## Stage 2 blockout of the armed Mi-8T. Unwired. The live mi8.tscn is not touched.
+## 0.311 u/m, same as the BMP-3 v2 and the T-90 hull. +Z is the nose. The tail rotor is
+## on the starboard side (+X): published Mi-8T, and the side the audit read as right.
+static func mi8_v2(mat: Material) -> void:
+	var Sc := 0.311
+	var root := VK._root({"selection_radius": 2.4, "bar_height": 1.55, "recoil": 0.0, "wreck_s": 8.0})
+	var model := VK._n3(root, root, "Model")
+	var h = K.new()
+	h.plain = true
+	h.color("#8d8f8a", Geo.PAINT)
+	# Fuselage 18.22 m, origin on the ground under the midpoint. Nose +9.11 m, tail -9.11 m.
+	var zn := 9.11 * Sc
+	var zc := 6.4 * Sc
+	var zcab := 5.2 * Sc
+	var zaft := -0.2 * Sc
+	var zbo := -1.6 * Sc
+	var yb := 0.70 * Sc
+	var ym := 1.70 * Sc
+	var yr := 2.55 * Sc
+	h.xloft([
+		[zn, K.sect(yb + 0.35 * Sc, ym - 0.15 * Sc, yr - 0.55 * Sc, 0.28 * Sc, 0.42 * Sc, 0.22 * Sc, 0.06 * Sc)],
+		[zc, K.sect(yb + 0.15 * Sc, ym, yr - 0.15 * Sc, 0.85 * Sc, 1.15 * Sc, 0.72 * Sc, 0.10 * Sc)],
+		[zcab, K.sect(yb, ym, yr, 1.05 * Sc, 1.25 * Sc, 0.95 * Sc, 0.12 * Sc)],
+		[zaft, K.sect(yb, ym, yr, 1.05 * Sc, 1.25 * Sc, 0.95 * Sc, 0.12 * Sc)],
+		[zbo, K.sect(yb + 0.25 * Sc, ym - 0.15 * Sc, yr - 0.45 * Sc, 0.55 * Sc, 0.72 * Sc, 0.42 * Sc, 0.08 * Sc)],
+	])
+	# Glazed nose. A few flat panes, not a frame-by-frame cockpit.
+	h.color("#3e4850", Geo.GLASS)
+	h.pane([Vector3(-0.42 * Sc, 1.35 * Sc, 7.55 * Sc), Vector3(0.42 * Sc, 1.35 * Sc, 7.55 * Sc), Vector3(0.28 * Sc, 2.05 * Sc, 6.85 * Sc), Vector3(-0.28 * Sc, 2.05 * Sc, 6.85 * Sc)], Vector3(0, 0.3, 1))
+	h.pane([Vector3(-0.95 * Sc, 1.15 * Sc, 6.7 * Sc), Vector3(-0.55 * Sc, 1.15 * Sc, 7.35 * Sc), Vector3(-0.35 * Sc, 1.95 * Sc, 6.95 * Sc), Vector3(-0.85 * Sc, 1.95 * Sc, 6.35 * Sc)], Vector3(-1, 0, 0.4))
+	h.pane([Vector3(0.95 * Sc, 1.15 * Sc, 6.7 * Sc), Vector3(0.55 * Sc, 1.15 * Sc, 7.35 * Sc), Vector3(0.35 * Sc, 1.95 * Sc, 6.95 * Sc), Vector3(0.85 * Sc, 1.95 * Sc, 6.35 * Sc)], Vector3(1, 0, 0.4))
+	h.pane([Vector3(-0.35 * Sc, 2.15 * Sc, 6.5 * Sc), Vector3(0.35 * Sc, 2.15 * Sc, 6.5 * Sc), Vector3(0.28 * Sc, 2.35 * Sc, 5.7 * Sc), Vector3(-0.28 * Sc, 2.35 * Sc, 5.7 * Sc)], Vector3(0, 1, 0))
+	# Round cabin portholes, four a side, as the Mi-8T drawing.
+	for s in [-1.0, 1.0]:
+		for i in 4:
+			var zz: float = (4.4 - float(i) * 1.15) * Sc
+			h.pane([
+				Vector3(s * 1.22 * Sc, 1.35 * Sc, zz - 0.16 * Sc), Vector3(s * 1.22 * Sc, 1.35 * Sc, zz + 0.16 * Sc),
+				Vector3(s * 1.22 * Sc, 1.72 * Sc, zz + 0.16 * Sc), Vector3(s * 1.22 * Sc, 1.72 * Sc, zz - 0.16 * Sc)],
+				Vector3(s, 0, 0))
+	# Twin engine cowlings. Mi-8T intakes face forward. No Mi-17 side filters.
+	h.color("#7c7e79", Geo.PAINT)
+	for s2 in [-1.0, 1.0]:
+		h.tube(Vector3(s2 * 0.55 * Sc, 2.85 * Sc, 3.4 * Sc), Vector3(s2 * 0.55 * Sc, 2.85 * Sc, 0.6 * Sc), 0.42 * Sc, 8, 0.36 * Sc)
+		h.color("#2c3034", Geo.DARK)
+		h.tube(Vector3(s2 * 0.55 * Sc, 2.85 * Sc, 3.42 * Sc), Vector3(s2 * 0.55 * Sc, 2.85 * Sc, 3.55 * Sc), 0.30 * Sc, 8)
+		h.color("#7c7e79", Geo.PAINT)
+	# Mast over the engine deck, hub at 4.75 m. The drawing puts it here, not over the cockpit.
+	h.color("#6e706c", Geo.STEEL)
+	var hub := Vector3(0, 4.75 * Sc, 1.6 * Sc)
+	h.tube(Vector3(0, 3.15 * Sc, hub.z), hub, 0.18 * Sc, 8)
+	# Tail boom, tapering, then the fin and the tailplane.
+	h.color("#8d8f8a", Geo.PAINT)
+	h.tube(Vector3(0, 1.55 * Sc, zbo), Vector3(0, 1.85 * Sc, -8.3 * Sc), 0.42 * Sc, 8, 0.16 * Sc)
+	h.plate(Vector3(0, 2.55 * Sc, -8.70 * Sc), Vector3(0.08 * Sc, 1.35 * Sc, 0.82 * Sc), Vector3(0, 0, 0))
+	h.plate(Vector3(0, 1.95 * Sc, -7.70 * Sc), Vector3(1.15 * Sc, 0.06 * Sc, 0.42 * Sc), Vector3(0, 0, 0))
+	# Tricycle gear. Main wheels outboard of the fuselage, track about 4.5 m.
+	h.color("#5c5e5a", Geo.STEEL)
+	h.tube(Vector3(0, 1.15 * Sc, 6.6 * Sc), Vector3(0, 0.18 * Sc, 6.9 * Sc), 0.06 * Sc, 5)
+	h.tyre(Vector3(-0.12 * Sc, 0.16 * Sc, 6.95 * Sc), 0.16 * Sc, 0.10 * Sc, true, "#3a3d40", 8)
+	h.tyre(Vector3(0.12 * Sc, 0.16 * Sc, 6.95 * Sc), 0.16 * Sc, 0.10 * Sc, true, "#3a3d40", 8)
+	for sg in [-1.0, 1.0]:
+		var gx: float = sg * 2.25 * Sc
+		h.tube(Vector3(sg * 0.7 * Sc, 0.85 * Sc, 1.7 * Sc), Vector3(gx, 0.22 * Sc, 1.9 * Sc), 0.07 * Sc, 5)
+		h.tyre(Vector3(gx, 0.28 * Sc, 1.95 * Sc), 0.28 * Sc, 0.16 * Sc, false, "#3a3d40", 8)
+	# Six rocket pods, three a side, on a spar. Published Mi-8T load. The drawing shows the row
+	# but not a countable number.
+	h.color("#4a4c48", Geo.STEEL)
+	for side in [-1.0, 1.0]:
+		h.tube(Vector3(side * 1.15 * Sc, 1.05 * Sc, 4.6 * Sc), Vector3(side * 1.55 * Sc, 0.45 * Sc, -0.4 * Sc), 0.05 * Sc, 5)
+		h.tube(Vector3(side * 1.2 * Sc, 1.5 * Sc, 3.2 * Sc), Vector3(side * 1.5 * Sc, 1.05 * Sc, 2.2 * Sc), 0.04 * Sc, 4)
+	var pods: Array = []
+	for side2 in [-1.0, 1.0]:
+		var tag := "R" if side2 > 0.0 else "L"
+		for i in 3:
+			var pz: float = (4.3 - float(i) * 1.7) * Sc
+			var px: float = side2 * 1.55 * Sc
+			var py: float = 0.32 * Sc
+			h.color("#3c3e3a", Geo.DARK)
+			h.tube(Vector3(px, py, pz - 0.85 * Sc), Vector3(px, py, pz + 0.85 * Sc), 0.16 * Sc, 8)
+			var mk := Marker3D.new()
+			mk.name = "PodMuzzle%s%d" % [tag, i + 1]
+			mk.position = Vector3(px, py, pz + 0.90 * Sc)
+			model.add_child(mk)
+			mk.owner = root
+			pods.append(mk.name)
+	# Port cabin door and the two rear clamshells, shut, each its own mesh.
+	var parts: Array = []
+	parts.append(_mi8_plate(model, root, mat, "DoorPort", Vector3(-1.28 * Sc, 1.55 * Sc, 2.4 * Sc), Vector3(0.04 * Sc, 1.15 * Sc, 1.15 * Sc)))
+	parts.append(_mi8_plate(model, root, mat, "ClamshellL", Vector3(-0.42 * Sc, 1.45 * Sc, -0.55 * Sc), Vector3(0.70 * Sc, 1.35 * Sc, 0.06 * Sc)))
+	parts.append(_mi8_plate(model, root, mat, "ClamshellR", Vector3(0.42 * Sc, 1.45 * Sc, -0.55 * Sc), Vector3(0.70 * Sc, 1.35 * Sc, 0.06 * Sc)))
+	# Five main blades. Hub is the Rotor pivot.
+	var rotor := VK._n3(model, root, "Rotor", hub)
+	rotor.set_meta("rotor_axis", "y")
+	parts.append(_mi8_rotor(rotor, root, mat, 10.645 * Sc, 5, false))
+	# Three tail blades. Starboard of the fin (+X).
+	var tail_at := Vector3(0.22 * Sc, 2.55 * Sc, -8.70 * Sc)
+	var tail := VK._n3(model, root, "TailRotor", tail_at)
+	tail.set_meta("rotor_axis", "x")
+	parts.append(_mi8_rotor(tail, root, mat, 1.955 * Sc, 3, true))
+	print("  mi8_v2 pods ", pods, " hub m ", hub / Sc)
+	_save(root, model, h, mat, "res://view/units/ecc/mi8_v2.tscn", 1.55, parts)
+
+static func _mi8_plate(model: Node, root: Node, mat: Material, name: String, c: Vector3, s: Vector3):
+	var g = K.new()
+	g.plain = true
+	g.color("#9a9c96", Geo.PAINT)
+	g.box(c, s)
+	VK._mi(model, root, name, g.commit(mat))
+	return g
+
+static func _mi8_rotor(pivot: Node, root: Node, mat: Material, radius: float, n: int, on_x: bool):
+	var g = K.new()
+	g.plain = true
+	g.color("#2e302e", Geo.STEEL)
+	if on_x:
+		g.tube(Vector3(-0.04, 0, 0), Vector3(0.06, 0, 0), 0.08, 6)
+		for i in n:
+			var a := TAU * float(i) / float(n)
+			g.box(Vector3(0, 0, radius * 0.5), Vector3(0.025, 0.08, radius), Transform3D(Basis(Vector3.RIGHT, -a), Vector3.ZERO))
+	else:
+		g.tube(Vector3(0, -0.02, 0), Vector3(0, 0.08, 0), 0.12, 6)
+		for i in n:
+			var a2 := TAU * float(i) / float(n)
+			g.box(Vector3(radius * 0.5, 0.04, 0), Vector3(radius, 0.03, 0.10), Transform3D(Basis(Vector3.UP, -a2), Vector3.ZERO))
+	VK._mi(pivot, root, "RotorMesh", g.commit(mat))
+	return g
+
 static func shilka(mat: Material) -> void:
 	var root := VK._root({"selection_radius": 0.85, "bar_height": 1.45, "recoil": 0.04, "wreck_s": 7.5})
 	var model := VK._n3(root, root, "Model")
