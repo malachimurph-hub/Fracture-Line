@@ -331,6 +331,8 @@ The 4,290 mm line on the sheet is the top of the Pantsir body. The bare deck is 
 
 The comparison frame scales the sheet so that side view spans the same pixels as the blockout's 12.67 m, noses to the left. The sheet still shows the turret and the equipment body. Those are module A. The blockout leaves that bed empty.
 
+Stage 3 refines the cab and the engine bay only. The bed, `ModuleMount` and the four jack markers stay. The nose is a faceted rake with two windscreen panes and a roof lip at 3.290 m. The cab has a door, a small side window and a grab handle each side, mirrors out to 4.076 m, and a bumper with a grille, lamps and tow hooks. The engine bay is a separate block with side and roof louvres, an intake, an exhaust and a ladder each side. Fuel and battery boxes sit in the open span, with skirts and fenders over the wheel pairs. Godot 4.7.2 measured this pass at 4,524 triangles. The shared kit material is unchanged. Camo baking is later.
+
 ## What was checked, and what was not
 
 Checked in the repo: `ecc_factory.produces`, the five Russian artillery and anti-air definitions, their weapon `range_mt`, `UnitDef.detector` and `shield_aura_*`, `UsSys` stealth masks, `TplaSys.DETECT`, `RosterSys` jammer and heal aura, `PowerSys` shields, `CombatSys._fire_unit`, `OrderSys.max_range`, `EccSys.DEPLOY_TICKS`, `UsSys.SETUP_TICKS`, `VehicleView` plant and elevate, the Pantsir and Iskander builders in `ru_hulls.gd`, and `MapDef.size` on every map. The five reference photos were read.

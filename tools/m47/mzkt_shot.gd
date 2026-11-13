@@ -68,6 +68,12 @@ func _views() -> void:
 	sun.rotation_degrees = Vector3(-40, 30, 0)
 	await frames(3)
 	await shot("three_quarter")
+	var cab := Vector3(0.15, 0.85, 1.35)
+	cam.global_position = cab + Vector3(2.15, 0.75, 1.35)
+	cam.look_at(cab, Vector3.UP)
+	sun.rotation_degrees = Vector3(-36, 40, 0)
+	await frames(3)
+	await shot("cab")
 	# Lineup on one ground line, noses toward +Z, gaps measured from each mesh.
 	var lineup: Array[Node3D] = [truck]
 	var paths := ["res://view/units/ecc/t90.tscn", "res://view/units/ecc/bmp3_v2.tscn", "res://view/units/ecc/mi8_v2.tscn"]

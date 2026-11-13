@@ -1704,6 +1704,16 @@ static func shilka(mat: Material) -> void:
 	VK._mi(bn, root, "BarrelMesh", b.commit(mat))
 	_save(root, model, h, mat, "res://view/units/ecc/zeus.tscn", 1.45, [t, b])
 
+## Box ladder. The kit ladder is a tube per rung and blows the triangle budget.
+static func _mzkt_ladder(h, x: float, y0: float, z: float, hgt: float) -> void:
+	h.color("#3a3d38", Geo.STEEL)
+	var w := hgt * 0.16
+	h.box(Vector3(x, y0 + hgt * 0.5, z - w), Vector3(0.018, hgt, 0.018))
+	h.box(Vector3(x, y0 + hgt * 0.5, z + w), Vector3(0.018, hgt, 0.018))
+	for i in 6:
+		var y := y0 + hgt * (float(i) + 0.5) / 6.0
+		h.box(Vector3(x, y, z), Vector3(0.016, 0.014, w * 2.0))
+
 ## Round truck tyre. The kit tread lugs read as spikes at a 1.50 m diameter.
 static func _mzkt_tyre(h, c: Vector3, r: float, w: float, steers: bool) -> void:
 	var keep_uv: Vector2 = h.uv
@@ -1751,70 +1761,112 @@ static func mzkt_base(mat: Material) -> void:
 		var zz: float = [z1, z2, z3, z4][i] * Sc
 		for side in [-sx, sx]:
 			_mzkt_tyre(h, Vector3(side, wr, zz), wr, tw, i < 2)
-	# Frame stays inside the tyres. Belly at 0.48 m, top meeting the deck.
-	var zf0 := 5.70
-	var zf1 := -6.12
+	# Rails sit inside the tyres. The belly stays low so the wheels are not buried in a slab.
+	var zf0 := 5.55
+	var zf1 := -6.05
 	h.camo("#738252", 2)
-	h.cbox(Vector3(0, 0.98 * Sc, (zf0 + zf1) * 0.5 * Sc), Vector3(0.72 * Sc, 0.96 * Sc, (zf0 - zf1) * Sc), 0.02 * Sc)
+	h.cbox(Vector3(0, 0.70 * Sc, (zf0 + zf1) * 0.5 * Sc), Vector3(0.52 * Sc, 0.36 * Sc, (zf0 - zf1) * Sc), 0.015 * Sc)
 	for s in [-1.0, 1.0]:
-		h.cbox(Vector3(s * 0.46 * Sc, 0.97 * Sc, (zf0 + zf1) * 0.5 * Sc), Vector3(0.18 * Sc, 0.98 * Sc, (zf0 - zf1) * Sc), 0.012 * Sc)
-	# Empty bed, 3.150 m wide. Top at 1.62 m. It starts behind the engine bay.
-	var d0 := 1.45
+		h.cbox(Vector3(s * 0.42 * Sc, 1.00 * Sc, (zf0 + zf1) * 0.5 * Sc), Vector3(0.16 * Sc, 0.88 * Sc, (zf0 - zf1) * Sc), 0.012 * Sc)
+	# Empty bed, 3.150 m wide. Top at 1.62 m. It starts where the engine bay ends.
+	var d0 := 1.48
 	var d1 := -6.08
 	h.camo("#96A468", 2)
 	h.cbox(Vector3(0, 1.54 * Sc, (d0 + d1) * 0.5 * Sc), Vector3(3.15 * Sc, 0.16 * Sc, (d0 - d1) * Sc), 0.018 * Sc)
 	for pair in [[z1, z2], [z3, z4]]:
 		var zc: float = (pair[0] + pair[1]) * 0.5
-		var span: float = absf(pair[0] - pair[1]) + 1.35
+		var span: float = absf(pair[0] - pair[1]) + 1.25
 		for s2 in [-1.0, 1.0]:
 			h.camo("#738252", 2)
-			h.cbox(Vector3(s2 * sx, 1.58 * Sc, zc * Sc), Vector3(tw * 0.92, 0.07 * Sc, span * Sc), 0.01 * Sc)
+			h.cbox(Vector3(s2 * sx, 1.56 * Sc, zc * Sc), Vector3(tw * 1.02, 0.08 * Sc, span * Sc), 0.01 * Sc)
+			h.box(Vector3(s2 * sx, 1.50 * Sc, zc * Sc), Vector3(tw * 0.55, 0.06 * Sc, span * 0.92 * Sc))
 			h.color("#2a2c28", Geo.DARK)
-			h.box(Vector3(s2 * sx, 0.72 * Sc, (zc - span * 0.48) * Sc), Vector3(tw * 0.55, 0.22 * Sc, 0.035 * Sc))
-	# Bumper carries the extra 225 mm. Rear cap stops at the 1,000 mm overhang.
+			h.box(Vector3(s2 * sx, 0.70 * Sc, (zc - span * 0.48) * Sc), Vector3(tw * 0.5, 0.28 * Sc, 0.03 * Sc))
+	# Skirts only in the open span, so they do not cut the tyres.
 	h.camo("#738252", 2)
-	h.cbox(Vector3(0, 1.10 * Sc, 6.14 * Sc), Vector3(2.35 * Sc, 1.05 * Sc, 0.40 * Sc), 0.018 * Sc)
-	h.cbox(Vector3(0, 1.05 * Sc, -6.18 * Sc), Vector3(2.20 * Sc, 0.95 * Sc, 0.30 * Sc), 0.015 * Sc)
-	# Cab clears the front tyres. Roof is 3.025 m, with a 3.290 m crown.
+	for ssk in [-1.0, 1.0]:
+		h.box(Vector3(ssk * 1.50 * Sc, 1.22 * Sc, -1.15 * Sc), Vector3(0.04 * Sc, 0.42 * Sc, 1.7 * Sc))
+	# Bumper carries the extra 225 mm. Rear cap stops at the 1,000 mm overhang.
+	h.camo("#5e6848", 2)
+	h.cbox(Vector3(0, 1.05 * Sc, 6.08 * Sc), Vector3(2.40 * Sc, 0.95 * Sc, 0.52 * Sc), 0.016 * Sc)
+	h.cbox(Vector3(0, 0.95 * Sc, -6.18 * Sc), Vector3(2.15 * Sc, 0.70 * Sc, 0.28 * Sc), 0.014 * Sc)
+	h.color("#1c1e1c", Geo.DARK)
+	h.box(Vector3(0, 0.98 * Sc, 6.30 * Sc), Vector3(0.72 * Sc, 0.32 * Sc, 0.04 * Sc))
+	h.color("#3a3d38", Geo.STEEL)
+	for gi in 5:
+		h.box(Vector3((-0.28 + float(gi) * 0.14) * Sc, 0.98 * Sc, 6.32 * Sc), Vector3(0.03 * Sc, 0.26 * Sc, 0.012 * Sc))
+	for hk in [-0.55, 0.55]:
+		h.tube(Vector3(hk * Sc, 0.62 * Sc, 6.22 * Sc), Vector3(hk * Sc, 0.62 * Sc, 6.34 * Sc), 0.018 * Sc, 5)
+		h.tube(Vector3((hk - 0.06) * Sc, 0.62 * Sc, 6.30 * Sc), Vector3((hk + 0.06) * Sc, 0.62 * Sc, 6.30 * Sc), 0.016 * Sc, 5)
+	h.camo("#96A468", 2)
+	for lp in [-0.95, 0.95]:
+		h.box(Vector3(lp * Sc, 0.88 * Sc, 6.28 * Sc), Vector3(0.22 * Sc, 0.12 * Sc, 0.06 * Sc))
+	V4._lamps(h, 0.95 * Sc, 0.88 * Sc, 6.32 * Sc)
+	# Faceted nose, then a flat cab. The roof lip is the 3,290 mm crown and overhangs the screen.
 	h.camo("#96A468", 2)
 	h.xloft([
-		[6.00 * Sc, K.sect(1.62 * Sc, 1.95 * Sc, 2.25 * Sc, 1.20 * Sc, 1.32 * Sc, 1.05 * Sc, 0.05 * Sc)],
-		[5.40 * Sc, K.sect(1.62 * Sc, 2.05 * Sc, 3.025 * Sc, 1.38 * Sc, 1.48 * Sc, 1.38 * Sc, 0.07 * Sc)],
-		[3.95 * Sc, K.sect(1.62 * Sc, 2.05 * Sc, 3.025 * Sc, 1.40 * Sc, 1.50 * Sc, 1.40 * Sc, 0.07 * Sc)],
+		[5.95 * Sc, K.sect(1.28 * Sc, 1.70 * Sc, 2.05 * Sc, 1.18 * Sc, 1.30 * Sc, 1.10 * Sc, 0.04 * Sc)],
+		[5.48 * Sc, K.sect(1.58 * Sc, 2.20 * Sc, 3.00 * Sc, 1.34 * Sc, 1.42 * Sc, 1.32 * Sc, 0.05 * Sc)],
 	])
-	h.cbox(Vector3(0, 3.15 * Sc, 4.70 * Sc), Vector3(2.20 * Sc, 0.28 * Sc, 1.70 * Sc), 0.03 * Sc)
-	# Engine bay behind the cab, bottom above the tyre tops, grille and a door each side.
+	h.cbox(Vector3(0, 2.30 * Sc, 4.72 * Sc), Vector3(2.72 * Sc, 1.45 * Sc, 1.45 * Sc), 0.03 * Sc)
 	h.camo("#738252", 2)
-	h.cbox(Vector3(0, 2.05 * Sc, 2.70 * Sc), Vector3(2.70 * Sc, 0.90 * Sc, 2.50 * Sc), 0.022 * Sc)
-	h.color("#1c1e1c", Geo.DARK)
-	for s3 in [-1.0, 1.0]:
-		h.box(Vector3(s3 * 1.44 * Sc, 1.85 * Sc, 2.15 * Sc), Vector3(0.02 * Sc, 0.55 * Sc, 0.70 * Sc))
-		for i in 6:
-			h.box(Vector3(s3 * 1.455 * Sc, 1.85 * Sc, (2.42 - float(i) * 0.10) * Sc), Vector3(0.012 * Sc, 0.48 * Sc, 0.025 * Sc))
-	h.color("#3a3d38", Geo.STEEL)
-	h.ladder(Vector3(-1.55 * Sc, 1.05 * Sc, 1.15 * Sc), 1.15 * Sc, Vector3(0, 0, 1), 0.16 * Sc)
-	h.ladder(Vector3(1.55 * Sc, 1.05 * Sc, 1.15 * Sc), 1.15 * Sc, Vector3(0, 0, 1), 0.16 * Sc)
-	# Glass. The windscreen rake is rotated about X; side glass sits on the cab doors.
+	h.cbox(Vector3(0, 3.16 * Sc, 4.85 * Sc), Vector3(2.45 * Sc, 0.26 * Sc, 1.85 * Sc), 0.02 * Sc)
+	h.box(Vector3(0, 3.02 * Sc, 5.72 * Sc), Vector3(2.20 * Sc, 0.06 * Sc, 0.28 * Sc))
+	# Doors, a small window each side, grab handles, and a few panel breaks.
+	for sd in [-1.0, 1.0]:
+		h.camo("#738252", 2)
+		h.box(Vector3(sd * 1.38 * Sc, 2.25 * Sc, 4.70 * Sc), Vector3(0.03 * Sc, 1.05 * Sc, 0.72 * Sc))
+		h.color("#24323a", Geo.GLASS)
+		h.box(Vector3(sd * 1.40 * Sc, 2.45 * Sc, 4.78 * Sc), Vector3(0.02 * Sc, 0.32 * Sc, 0.42 * Sc))
+		h.color("#3a3d38", Geo.STEEL)
+		h.box(Vector3(sd * 1.42 * Sc, 2.15 * Sc, 4.28 * Sc), Vector3(0.02 * Sc, 0.22 * Sc, 0.04 * Sc))
+		h.box(Vector3(sd * 1.42 * Sc, 2.05 * Sc, 4.28 * Sc), Vector3(0.06 * Sc, 0.03 * Sc, 0.04 * Sc))
+		h.color("#3e4634", Geo.DARK)
+		h.box(Vector3(sd * 1.37 * Sc, 2.85 * Sc, 4.70 * Sc), Vector3(0.012 * Sc, 0.02 * Sc, 1.15 * Sc))
+		h.box(Vector3(sd * 1.37 * Sc, 1.75 * Sc, 4.70 * Sc), Vector3(0.012 * Sc, 0.02 * Sc, 1.15 * Sc))
+		h.camo("#96A468", 2)
+		h.box(Vector3(sd * 1.42 * Sc, 1.42 * Sc, 4.55 * Sc), Vector3(0.16 * Sc, 0.06 * Sc, 0.32 * Sc))
 	h.color("#24323a", Geo.GLASS)
-	h.plate(Vector3(-0.38 * Sc, 2.15 * Sc, 5.72 * Sc), Vector3(0.62 * Sc, 0.72 * Sc, 0.02 * Sc), Vector3(58, 0, 0))
-	h.plate(Vector3(0.38 * Sc, 2.15 * Sc, 5.72 * Sc), Vector3(0.62 * Sc, 0.72 * Sc, 0.02 * Sc), Vector3(58, 0, 0))
-	for s4 in [-1.0, 1.0]:
-		h.box(Vector3(s4 * 1.48 * Sc, 2.25 * Sc, 5.05 * Sc), Vector3(0.02 * Sc, 0.46 * Sc, 0.55 * Sc))
-		h.box(Vector3(s4 * 1.48 * Sc, 2.20 * Sc, 4.30 * Sc), Vector3(0.02 * Sc, 0.42 * Sc, 0.48 * Sc))
+	h.plate(Vector3(-0.34 * Sc, 2.28 * Sc, 5.62 * Sc), Vector3(0.52 * Sc, 0.62 * Sc, 0.016 * Sc), Vector3(-52, 0, 0))
+	h.plate(Vector3(0.34 * Sc, 2.28 * Sc, 5.62 * Sc), Vector3(0.52 * Sc, 0.62 * Sc, 0.016 * Sc), Vector3(-52, 0, 0))
 	h.color("#3a3d38", Geo.STEEL)
-	h.box(Vector3(0, 2.15 * Sc, 5.78 * Sc), Vector3(0.06 * Sc, 0.78 * Sc, 0.03 * Sc))
-	# Mirrors out to the 4,076 mm width. Lamps and a short exhaust on the engine bay.
-	for s5 in [-1.0, 1.0]:
-		h.tube(Vector3(s5 * 1.40 * Sc, 2.55 * Sc, 5.15 * Sc), Vector3(s5 * 1.95 * Sc, 2.62 * Sc, 5.25 * Sc), 0.025 * Sc, 5)
-		h.box(Vector3(s5 * 1.998 * Sc, 2.58 * Sc, 5.22 * Sc), Vector3(0.08 * Sc, 0.22 * Sc, 0.16 * Sc))
-	V4._lamps(h, 0.85 * Sc, 0.95 * Sc, 6.22 * Sc)
-	h.color("#2a2c28", Geo.DARK)
-	h.tube(Vector3(0.95 * Sc, 2.05 * Sc, 1.15 * Sc), Vector3(0.95 * Sc, 2.55 * Sc, 0.85 * Sc), 0.045 * Sc, 6)
-	# Fuel tank in the open span between axle 2 and axle 3. One side only.
+	h.box(Vector3(0, 2.28 * Sc, 5.64 * Sc), Vector3(0.045 * Sc, 0.55 * Sc, 0.02 * Sc))
+	# Mirrors reach the 4,076 mm width and no further.
+	for sm in [-1.0, 1.0]:
+		h.tube(Vector3(sm * 1.36 * Sc, 2.55 * Sc, 5.35 * Sc), Vector3(sm * 1.92 * Sc, 2.62 * Sc, 5.48 * Sc), 0.022 * Sc, 5)
+		h.camo("#738252", 2)
+		h.box(Vector3(sm * 1.998 * Sc, 2.58 * Sc, 5.42 * Sc), Vector3(0.07 * Sc, 0.20 * Sc, 0.14 * Sc))
+		h.color("#24323a", Geo.GLASS)
+		h.box(Vector3(sm * 2.03 * Sc, 2.58 * Sc, 5.42 * Sc), Vector3(0.012 * Sc, 0.14 * Sc, 0.09 * Sc))
+	# Engine bay, split from the cab. Louvres on the sides and the roof, an intake, an exhaust.
 	h.camo("#738252", 2)
-	h.cbox(Vector3(-1.15 * Sc, 1.05 * Sc, -1.15 * Sc), Vector3(0.42 * Sc, 0.48 * Sc, 1.6 * Sc), 0.015 * Sc)
+	h.cbox(Vector3(0, 2.02 * Sc, 2.72 * Sc), Vector3(2.55 * Sc, 0.88 * Sc, 2.35 * Sc), 0.02 * Sc)
+	h.color("#1c1e1c", Geo.DARK)
+	h.box(Vector3(0, 2.48 * Sc, 2.55 * Sc), Vector3(1.15 * Sc, 0.025 * Sc, 1.35 * Sc))
+	for lv in 7:
+		h.color("#3a3d38", Geo.STEEL)
+		h.box(Vector3(0, 2.50 * Sc, (3.10 - float(lv) * 0.16) * Sc), Vector3(1.05 * Sc, 0.02 * Sc, 0.04 * Sc))
+	for se in [-1.0, 1.0]:
+		h.color("#1c1e1c", Geo.DARK)
+		h.box(Vector3(se * 1.29 * Sc, 2.05 * Sc, 2.45 * Sc), Vector3(0.02 * Sc, 0.48 * Sc, 0.85 * Sc))
+		for lb in 5:
+			h.color("#3a3d38", Geo.STEEL)
+			h.box(Vector3(se * 1.305 * Sc, (2.24 - float(lb) * 0.09) * Sc, 2.45 * Sc), Vector3(0.012 * Sc, 0.025 * Sc, 0.78 * Sc))
+		_mzkt_ladder(h, se * 1.42 * Sc, 1.05 * Sc, 1.70 * Sc, 1.05 * Sc)
+		h.camo("#5e6848", 2)
+		h.cbox(Vector3(se * 1.22 * Sc, 1.15 * Sc, 2.05 * Sc), Vector3(0.32 * Sc, 0.28 * Sc, 0.42 * Sc), 0.01 * Sc)
+	h.camo("#738252", 2)
+	h.cbox(Vector3(-0.35 * Sc, 2.62 * Sc, 3.35 * Sc), Vector3(0.55 * Sc, 0.22 * Sc, 0.48 * Sc), 0.012 * Sc)
+	h.color("#2a2c28", Geo.DARK)
+	h.tube(Vector3(0.95 * Sc, 2.15 * Sc, 1.70 * Sc), Vector3(1.15 * Sc, 2.55 * Sc, 1.45 * Sc), 0.04 * Sc, 6)
+	h.tube(Vector3(1.15 * Sc, 2.55 * Sc, 1.45 * Sc), Vector3(1.15 * Sc, 2.55 * Sc, 1.15 * Sc), 0.035 * Sc, 6)
+	# Fuel tank one side, battery box the other, in the span between axle 2 and axle 3.
+	h.camo("#5e6848", 2)
+	h.cbox(Vector3(-1.22 * Sc, 1.08 * Sc, -1.15 * Sc), Vector3(0.38 * Sc, 0.42 * Sc, 1.15 * Sc), 0.012 * Sc)
+	h.cbox(Vector3(1.18 * Sc, 1.02 * Sc, -1.55 * Sc), Vector3(0.32 * Sc, 0.32 * Sc, 0.55 * Sc), 0.01 * Sc)
 	h.color("#3a3d38", Geo.STEEL)
-	h.tube(Vector3(-1.35 * Sc, 1.15 * Sc, -0.2 * Sc), Vector3(-1.35 * Sc, 1.15 * Sc, 0.9 * Sc), 0.03 * Sc, 5)
+	h.tube(Vector3(0.55 * Sc, 1.15 * Sc, 1.2 * Sc), Vector3(0.55 * Sc, 1.15 * Sc, -0.4 * Sc), 0.018 * Sc, 4)
+	h.tube(Vector3(0.55 * Sc, 1.15 * Sc, -0.4 * Sc), Vector3(0.85 * Sc, 1.05 * Sc, -0.9 * Sc), 0.016 * Sc, 4)
 	# Four pads mark the bed corners. The jack markers sit on them. The bed itself stays empty.
 	for spec in [[1.0, 0.35], [-1.0, 0.35], [1.0, -5.55], [-1.0, -5.55]]:
 		h.box(Vector3(spec[0] * 1.42 * Sc, 1.62 * Sc, spec[1] * Sc), Vector3(0.18 * Sc, 0.04 * Sc, 0.22 * Sc))
