@@ -9,8 +9,12 @@ static func run(t: Node) -> void:
 	_voices(t)
 	_units(t)
 	_zeus(t)
+	_zeus_impact(t)
 	load("res://tests/zeus_silo_test.gd").run(t)
 	_reaper(t)
+	_reaper_orbit(t)
+	_mk23(t)
+	_missile_audio(t)
 	_seal(t)
 	_retired(t)
 	_others(t)
@@ -182,6 +186,80 @@ static func _zeus(t: Node) -> void:
 			hurt += 1
 	t._check(hurt >= 2, "one ZEUS salvo spreads across more than one target in the pylon (%d hurt)" % hurt)
 	t._check(pad.air_t > w.tick + 400 and pad.phase == 0, "the launcher is recharging after the salvo")
+
+static func _zeus_impact(t: Node) -> void:
+	var r := M33._runner(["us", "eu"])
+	var w := r.sim
+	var hq := M33._hq(w, 0)
+	var pyl := w._place_building(Content.building(&"us_zeus_pylon"), 0, hq.tile + Vector2i(10, 0), 0, true)
+	var pad := w._place_building(Content.building(&"us_zeus_launcher"), 0, hq.tile + Vector2i(10, 8), 0, true)
+	var foe := w.spawn_unit(&"eu_squad", 1, null, pyl.pos)
+	var wd := Content.weapon(&"us_zeus_missile")
+	var ft := CombatSys.flight_ticks(wd, FX.dist(pad.pos, foe.pos))
+	t._check(ft >= 8, "a ZEUS missile is in the air for %d ticks, not instant" % ft)
+	var hp := foe.hp
+	CombatSys.fire(w, pad, foe, wd, 100)
+	t._check(foe.hp == hp and w.flight.size() == 1, "ZEUS damage waits until the missile arrives")
+	w.tick = int(w.flight[0]["at"]) - 1
+	CombatSys.resolve_flight(w)
+	t._check(foe.hp == hp, "still in the air one tick before the ZEUS impact")
+	w.tick += 1
+	CombatSys.resolve_flight(w)
+	t._check(foe.hp < hp and w.flight.is_empty(), "ZEUS damage lands on impact (%d -> %d)" % [hp, foe.hp])
+
+static func _reaper_orbit(t: Node) -> void:
+	var r := M33._runner(["us", "eu"])
+	var w := r.sim
+	w.fog.disabled = true
+	var hq := M33._hq(w, 0)
+	var rp := w.spawn_unit(&"us_reaper", 0, null, hq.pos + Vector2i(FX.ONE * 8, FX.ONE * 2))
+	var home := rp.pos
+	M33._ticks(r, 40)
+	var d_idle := FX.dist(rp.pos, home)
+	var p1 := rp.pos
+	M33._ticks(r, 20)
+	t._check(rp.spd > 0 and rp.pos != p1 and d_idle > FX.ONE and d_idle < FX.ONE * 6, "an idle Reaper circles instead of hovering (%d)" % d_idle)
+	var dest := home + Vector2i(FX.ONE * 12, 0)
+	r.issue({"p": 0, "t": "move", "ids": [rp.id], "pos": dest})
+	M33._ticks(r, 30)
+	var mid := rp.pos
+	M33._ticks(r, 20)
+	t._check(rp.spd > 0 and rp.pos != mid, "a move order keeps the Reaper flying")
+	var tank := w.spawn_unit(&"eu_leopold", 1, null, dest)
+	r.issue({"p": 0, "t": "attack", "ids": [rp.id], "target": tank.id})
+	M33._ticks(r, 220)
+	var ad := FX.dist(rp.pos, tank.pos)
+	var a1 := rp.pos
+	M33._ticks(r, 15)
+	t._check(rp.spd > 0 and rp.pos != a1 and rp.target == tank.id and ad > FX.ONE * 3 and ad < FX.ONE * 7, "the Reaper orbits the target (%d)" % ad)
+
+static func _mk23(t: Node) -> void:
+	var r := M33._runner(["us", "eu"])
+	var w := r.sim
+	w.fog.disabled = true
+	var hq := M33._hq(w, 0)
+	var team := w.spawn_unit(&"us_mk23", 0, null, hq.pos + Vector2i(FX.ONE * 3, 0))
+	var foe := w.spawn_unit(&"eu_squad", 1, null, team.pos + Vector2i(FX.ONE * 4, 0))
+	foe.orders = [{"o": "hold"}]
+	var hp := foe.hp
+	team.still = 20
+	team.target = foe.id
+	CombatSys.run(w)
+	t._check(team.firing_tick < 0 and foe.hp == hp, "the MK 23 does not fire before the tripod is planted")
+	team.still = UsSys.SETUP_TICKS
+	for _i in 16:
+		w.tick += 1
+		CombatSys.run(w)
+	t._check(team.firing_tick >= 0, "the MK 23 fires once the launcher is mounted")
+	team.goal = team.pos + Vector2i(FX.ONE * 4, 0)
+	UsSys.run(w)
+	t._check(team.still == 0, "ordering the team to move packs the tripod")
+
+static func _missile_audio(t: Node) -> void:
+	for key in ["missile_swoosh", "missile_impact"]:
+		var path: String = AudioDirector.SFX[key]
+		var s: AudioStream = load(path)
+		t._check(s is AudioStreamOggVorbis and s.get_length() > 0.4, "%s is an original ogg (%s)" % [key, path])
 
 static func _reaper(t: Node) -> void:
 	var r := M33._runner(["us", "eu"])

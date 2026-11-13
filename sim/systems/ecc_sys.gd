@@ -219,7 +219,8 @@ static func _take(w: SimWorld, pid: int, e: SimEntity) -> void:
 	w.power_dirty = true
 	w.events.append({"t": "hijack", "id": e.id, "owner": pid})
 
-## Ballistic flight for the Iskander and the Grim Reaper. Zeus stays on its own timing.
+## Ballistic flight for the Iskander, the Grim Reaper and the MZKT cruise missile.
+## ZEUS uses the icbm flight speed in CombatSys so the round and the damage land together.
 static func ballistic_ticks(wd: WeaponDef, dist_fx: int) -> int:
 	if wd.id != &"ecc_reaper_mirv" and wd.id != &"ecc_iskander" and wd.id != &"ecc_mzkt_cm":
 		return -1

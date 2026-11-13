@@ -257,7 +257,7 @@ static func explode(w: SimWorld, src: SimEntity, center: Vector2i, wd: WeaponDef
 ## _impact() when the round lands, FLIGHT ticks later (same speeds the view's rounds fly at).
 ## Flight speed per effect class in tiles/s (0 = lobbed: fixed time window in ms, see LOB).
 const FLIGHT := {"rifle": 62, "mg": 56, "minigun": 70, "quad": 64, "autocannon": 48, "cannon": 36,
-	"flak": 42, "missile": 14, "rocket": 17, "salvo": 15}
+	"flak": 42, "missile": 14, "rocket": 17, "salvo": 15, "icbm": 7}
 const LOB := {"artillery": [15, 500, 950], "mortar": [11, 450, 850], "rust": [13, 400, 900], "grenade": [9, 300, 600]}
 
 static func flight_ticks(wd: WeaponDef, dist_fx: int) -> int:

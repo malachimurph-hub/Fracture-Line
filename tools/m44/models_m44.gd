@@ -711,48 +711,68 @@ func _ah64(mat: Material) -> void:
 	VK._mi(bn, root, "BarrelMesh", b.commit(mat))
 	_finish(root, model, h, mat, "res://view/units/us/ah64.tscn", 1.2, [t, b])
 
-# ---------------------------------------------------------------- Reaper (pusher drone)
+# ---------------------------------------------------------------- Reaper (MQ-9 style pusher drone)
+## Long slender fuselage, bulbous nose, straight high-aspect wings, inverted-Y tail
+## (upward V plus a ventral fin), rear pusher, EO ball under the nose, wing stores.
+## No insignia. The pusher node stays PusherRotor so the air view spins it.
 func _reaper(mat: Material) -> void:
-	var root := VK._root({"selection_radius": 1.6, "bar_height": 0.85, "recoil": 0.0, "wreck_s": 6.0})
+	var root := VK._root({"selection_radius": 1.85, "bar_height": 0.72, "recoil": 0.0, "wreck_s": 6.0})
 	var model := VK._n3(root, root, "Model")
 	var h = K.new()
 	h.color(AIR, Geo.PAINT)
-	h.xloft([[0.95, K.sect(0.2, 0.22, 0.26, 0.02, 0.04, 0.02, 0.008)], [0.7, K.sect(0.14, 0.2, 0.28, 0.06, 0.08, 0.05, 0.015)],
-		[0.2, K.sect(0.12, 0.18, 0.26, 0.07, 0.09, 0.06, 0.015)], [-0.45, K.sect(0.12, 0.18, 0.24, 0.06, 0.08, 0.05, 0.012)],
-		[-0.85, K.sect(0.14, 0.18, 0.22, 0.04, 0.05, 0.035, 0.01)]])
-	# high aspect wings, slight anhedral via the tip drop
+	# z runs nose (+z) to tail. Sections stay narrow except the nose bulb.
+	h.xloft([
+		[1.28, K.sect(0.04, 0.08, 0.11, 0.012, 0.02, 0.01, 0.004)],
+		[1.08, K.sect(0.02, 0.09, 0.16, 0.055, 0.07, 0.04, 0.012)],
+		[0.82, K.sect(0.02, 0.1, 0.18, 0.045, 0.055, 0.035, 0.01)],
+		[0.4, K.sect(0.04, 0.11, 0.2, 0.05, 0.055, 0.032, 0.008)],
+		[-0.05, K.sect(0.05, 0.12, 0.2, 0.042, 0.048, 0.028, 0.008)],
+		[-0.55, K.sect(0.06, 0.12, 0.18, 0.032, 0.036, 0.022, 0.006)],
+		[-1.05, K.sect(0.07, 0.12, 0.16, 0.022, 0.026, 0.016, 0.005)],
+		[-1.28, K.sect(0.08, 0.12, 0.15, 0.016, 0.018, 0.012, 0.004)]])
+	# dorsal fairing over the wing carry-through
+	h.color(AIR_D, Geo.PAINT)
+	h.box(Vector3(0, 0.2, 0.12), Vector3(0.1, 0.04, 0.42))
+	# straight high-aspect wings, almost no anhedral
 	for s in [-1.0, 1.0]:
-		h.color(AIR_D, Geo.PAINT)
-		UV8._surf(h, [Vector3(s * 0.08, 0.22, 0.15), Vector3(s * 1.55, 0.16, -0.15), Vector3(s * 1.55, 0.16, -0.32), Vector3(s * 0.08, 0.22, -0.35)], Vector3(0, 1, 0), 0.035, 0.008)
-		h.color("#ffffff", Geo.TEAM)
-		h.box(Vector3(s * 1.35, 0.175, -0.22), Vector3(0.16, 0.01, 0.06))
 		h.color(AIR, Geo.PAINT)
-		# hardpoint and a strike store
-		h.color(STL, Geo.STEEL)
-		h.box(Vector3(s * 0.55, 0.16, -0.05), Vector3(0.02, 0.06, 0.08))
-		_missile(h, Vector3(s * 0.55, 0.1, 0.12), Vector3(s * 0.55, 0.1, -0.22), 0.022)
-	# V tail
-	for s in [-1.0, 1.0]:
-		var fb := Basis(Vector3.FORWARD, s * deg_to_rad(40.0))
+		UV8._surf(h, [Vector3(s * 0.05, 0.2, 0.46), Vector3(s * 1.72, 0.18, 0.3), Vector3(s * 1.72, 0.18, 0.16), Vector3(s * 0.05, 0.2, 0.14)], Vector3(0, 1, 0), 0.028, 0.008)
+		# flap and aileron breaks, paint only, no insignia
 		h.color(AIR_D, Geo.PAINT)
-		UV8._surf(h, [Vector3(0, 0, -0.55), Vector3(0, 0.28, -0.85), Vector3(0, 0.28, -0.98), Vector3(0, 0, -0.9)], Vector3(1, 0, 0), 0.02, 0.008, Transform3D(fb, Vector3(s * 0.02, 0.24, 0)))
+		h.box(Vector3(s * 0.7, 0.2, 0.18), Vector3(0.55, 0.008, 0.012))
+		h.box(Vector3(s * 1.4, 0.185, 0.2), Vector3(0.38, 0.006, 0.01))
+		# two hardpoints and stores under each wing
+		h.color(STL, Geo.STEEL)
+		h.box(Vector3(s * 0.42, 0.15, 0.28), Vector3(0.02, 0.05, 0.06))
+		h.box(Vector3(s * 0.95, 0.15, 0.26), Vector3(0.018, 0.045, 0.05))
+		_missile(h, Vector3(s * 0.42, 0.1, 0.46), Vector3(s * 0.42, 0.1, 0.08), 0.02)
+		_missile(h, Vector3(s * 0.95, 0.11, 0.4), Vector3(s * 0.95, 0.11, 0.12), 0.016)
+	# inverted Y: upward V plus a ventral fin
+	for s in [-1.0, 1.0]:
+		var fb := Basis(Vector3.FORWARD, s * deg_to_rad(42.0))
+		h.color(AIR_D, Geo.PAINT)
+		UV8._surf(h, [Vector3(0, 0, -0.15), Vector3(0, 0.42, -0.55), Vector3(0, 0.4, -0.7), Vector3(0, 0, -0.42)], Vector3(1, 0, 0), 0.018, 0.007, Transform3D(fb, Vector3(0, 0.14, -1.05)))
+	h.color(AIR_D, Geo.PAINT)
+	UV8._surf(h, [Vector3(0, 0.1, -1.02), Vector3(0, -0.16, -1.22), Vector3(0, -0.18, -1.38), Vector3(0, 0.08, -1.22)], Vector3(1, 0, 0), 0.016, 0.008)
 	# pusher nacelle
 	h.color(AIR_D, Geo.PAINT)
-	h.tube(Vector3(0, 0.2, -0.7), Vector3(0, 0.2, -0.95), 0.06, 8, 0.05)
+	h.tube(Vector3(0, 0.12, -1.15), Vector3(0, 0.12, -1.38), 0.045, 8, 0.04)
 	h.color(DRK, Geo.DARK)
-	h.tube(Vector3(0, 0.2, -0.94), Vector3(0, 0.2, -0.96), 0.04, 8)
-	# sensor turret under the nose (fixed; the airframe has no yaw turret)
+	h.tube(Vector3(0, 0.12, -1.36), Vector3(0, 0.12, -1.39), 0.032, 8)
+	# EO ball under the nose
 	h.color(STL, Geo.STEEL)
-	h.tube(Vector3(0, 0.14, 0.55), Vector3(0, 0.08, 0.55), 0.02, 6)
-	h.color("#1e2428", Geo.DARK)
-	h.cyl(0.055, 0.055, 0.07, 10, Transform3D(Basis.IDENTITY, Vector3(0, 0.05, 0.62)))
+	h.tube(Vector3(0, 0.06, 0.95), Vector3(0, 0.0, 0.95), 0.016, 6)
+	h.color("#1a1e22", Geo.DARK)
+	h.cyl(0.07, 0.055, 0.09, 12, Transform3D(Basis.IDENTITY, Vector3(0, -0.02, 0.98)))
 	h.color(GLS, Geo.GLASS)
-	h.box(Vector3(0, 0.05, 0.66), Vector3(0.04, 0.03, 0.008))
-	V4._antenna(h, Vector3(0, 0.28, -0.2), 0.35)
-	UV8._gear(h, [Vector3(0, 0.0, 0.45), Vector3(-0.16, 0.0, -0.25), Vector3(0.16, 0.0, -0.25)], 0.035)
-	_pusher(model, root, mat, Vector3(0, 0.2, -0.98), 0.28)
-	_marker(model, root, "Muzzle0", Vector3(0, 0.05, 0.7))
-	_finish(root, model, h, mat, "res://view/units/us/reaper.tscn", 0.85, [])
+	h.box(Vector3(0, -0.02, 1.04), Vector3(0.045, 0.032, 0.01))
+	h.color(DRK, Geo.DARK)
+	h.box(Vector3(0, 0.22, -0.35), Vector3(0.04, 0.03, 0.08))
+	V4._antenna(h, Vector3(0, 0.22, 0.55), 0.22)
+	UV8._gear(h, [Vector3(0, 0.0, 0.7), Vector3(-0.18, 0.0, -0.35), Vector3(0.18, 0.0, -0.35)], 0.028)
+	_pusher(model, root, mat, Vector3(0, 0.12, -1.42), 0.32)
+	_marker(model, root, "Muzzle0", Vector3(0.42, 0.08, 0.1))
+	_finish(root, model, h, mat, "res://view/units/us/reaper.tscn", 0.72, [])
 
 func _pusher(model: Node3D, root: Node3D, mat: Material, at: Vector3, r: float) -> void:
 	var rn := VK._n3(model, root, "PusherRotor", at)
@@ -763,11 +783,10 @@ func _pusher(model: Node3D, root: Node3D, mat: Material, at: Vector3, r: float) 
 	for i in 3:
 		var a := TAU * float(i) / 3.0
 		g.rbox(Vector3(cos(a) * r * 0.48, sin(a) * r * 0.48, 0.01), Vector3(r * 0.9, 0.055, 0.012), Vector3(0, 0, rad_to_deg(a)))
-	g.plain = true
-	g.color("#c9b23a", Geo.PAINT)
+	g.color("#3a3c3e", Geo.STEEL)
 	for i in 3:
 		var a2 := TAU * float(i) / 3.0
-		g.rbox(Vector3(cos(a2) * r * 0.88, sin(a2) * r * 0.88, 0.012), Vector3(0.06, 0.04, 0.014), Vector3(0, 0, rad_to_deg(a2)))
+		g.rbox(Vector3(cos(a2) * r * 0.88, sin(a2) * r * 0.88, 0.012), Vector3(0.05, 0.03, 0.01), Vector3(0, 0, rad_to_deg(a2)))
 	VK._mi(rn, root, "RotorMesh", g.commit(mat))
 
 # ---------------------------------------------------------------- fighters and the bomber

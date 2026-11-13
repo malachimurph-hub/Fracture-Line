@@ -28,6 +28,7 @@ const SFX := {
 	"flame": "res://audio/sfx/flame.ogg", "howitzer": "res://audio/sfx/howitzer.ogg", "hit_metal": "res://audio/sfx/hit_metal_1.ogg",
 	# M4.3 (synthesised, tools/m43/gen_sfx_m43.py): heavy weapons and movement
 	"rocket_heavy": "res://audio/sfx/rocket_heavy.ogg", "missile_heavy": "res://audio/sfx/missile_heavy.ogg",
+	"missile_swoosh": "res://audio/sfx/missile_swoosh.ogg", "missile_impact": "res://audio/sfx/missile_impact.ogg",
 	"artillery_heavy": "res://audio/sfx/artillery_heavy.ogg", "cannon_heavy": "res://audio/sfx/cannon_heavy.ogg",
 	"jet_takeoff": "res://audio/sfx/jet_takeoff.ogg",
 }

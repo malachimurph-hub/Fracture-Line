@@ -323,8 +323,18 @@ func _impact(cls: String, p: Vector3, hitk: int, s: float) -> void:
 				vfx.decal(ground, es * 1.1, 1)
 			elif hitk < 0 and es >= 0.3 and randf() < 0.7:
 				vfx.decal(ground, es * 0.75, 0)   # M3.2: fresh scorch where a shell lands (pooled ring, cap 160)
-			var key := "expl_large" if cls == "artillery" else "expl_small"
-			AudioDirector.sfx(key, p, -4.0 if cls != "artillery" else -1.0, 0.12)
+			var key := "expl_small"
+			var vol := -4.0
+			var pit := 0.12
+			if cls == "artillery":
+				key = "expl_large"
+				vol = -1.0
+			elif cls in ["missile", "rocket", "salvo", "icbm"]:
+				# Large missile impact: deep boom, low end, debris. Played as the round arrives.
+				key = "missile_impact"
+				vol = -1.0
+				pit = 0.08
+			AudioDirector.sfx(key, p, vol, pit)
 
 # ------------------------------------------------------------------ per frame
 func _process(delta: float) -> void:

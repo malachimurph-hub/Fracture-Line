@@ -811,6 +811,9 @@ func _on_fire(ev: Dictionary) -> void:
 	elif cls == "mg" and snd in ["rifle", "tpla_carbine"]:
 		snd = "mg"          # rifle-calibre machine guns (M240B, MG3, PKM, door guns)
 	AudioDirector.sfx(snd, base, -3.0 if snd in ["rifle", "tpla_carbine"] else (-2.0 if snd == "minigun" else 0.0), 0.1 if snd != "minigun" else 0.04)
+	if cls in ["missile", "rocket", "salvo", "icbm"]:
+		# Launch swoosh on every rocket and missile. Pitch spread keeps a salvo from repeating one take.
+		AudioDirector.sfx("missile_swoosh", base, -2.0, 0.18)
 
 ## Muzzle points for one shot: squads fire from their standing soldiers, articulated vehicles
 ## from the barrel tip, turrets from the turret, garrisons from the building's windows.
@@ -1439,6 +1442,11 @@ func frame(a: float, delta: float) -> void:
 			var ny := lerp_angle(y0, want, minf(1.0, delta * 8.0))
 			yaw[id] = ny
 			v.rotation.y = ny
+			if ud.tags.has("reaper") and e.air_state == AirSys.FLYING:
+				# The orbit is a continuous turn, so the airframe holds one bank instead of flying wings-level.
+				var turn := wrapf(ny - y0, -PI, PI)
+				var bank := 0.42 * signf(turn) if absf(turn) > 0.0003 else 0.0
+				v.rotation.z = lerpf(v.rotation.z, bank, minf(1.0, delta * 3.0))
 			if sim.map.has_elev and ud.move_layer == &"vehicle":
 				_tilt_on_slope(v, p, ny)
 			if v.has_method("set_health"):
@@ -1466,6 +1474,11 @@ func frame(a: float, delta: float) -> void:
 				if bool((v as VehicleView).get_meta("era", false)) != era:
 					(v as VehicleView).set_meta("era", era)
 					(v as VehicleView).set_reactive(era)
+			if v.has_method("set_setup") and ud.tags.has("setup"):
+				var sk := 0.0
+				if not e.moving and e.goal == MoveSys.NONE:
+					sk = clampf(float(e.still) / float(UsSys.SETUP_TICKS), 0.0, 1.0)
+				v.set_setup(sk)
 			if v is VehicleView and ud.tags.has("deploy"):
 				var planted := 0.0 if e.moving or e.goal != MoveSys.NONE else clampf(float(e.still) / float(EccSys.DEPLOY_TICKS), 0.0, 1.0)
 				(v as VehicleView).set_plant(planted)
