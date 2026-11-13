@@ -423,11 +423,11 @@ func _aa(cam: Camera3D, sun: DirectionalLight3D, base: Node3D) -> void:
 	_aa_report(mod, sc, 8.0)
 	await _pose_views(cam, sun, rig, "aa_deployed", aspect)
 	var turret := mod.get_node("TurretYaw") as Node3D
-	var look := turret.global_position + Vector3(0, 0.15, 0.2)
+	var look := turret.global_position + Vector3(0, 0.25, 0.55)
 	cam.projection = Camera3D.PROJECTION_PERSPECTIVE
-	cam.fov = 22.0
+	cam.fov = 28.0
 	sun.rotation_degrees = Vector3(-32, 40, 0)
-	cam.global_position = look + Vector3(2.4, 0.7, 2.6)
+	cam.global_position = look + Vector3(3.6, 1.35, 3.8)
 	cam.look_at(look, Vector3.UP)
 	await frames(3)
 	await shot("aa_zoom_turret")
@@ -454,7 +454,17 @@ func _aa(cam: Camera3D, sun: DirectionalLight3D, base: Node3D) -> void:
 	print("AIM right deg ", rad_to_deg(yaw_node.rotation.y))
 	mod.aim_at(yaw_node.global_position + Vector3(0.0, 0.0, -20.0))
 	print("AIM aft deg ", rad_to_deg(yaw_node.rotation.y))
+	# Elevation sweep at the three bearings. Cab roof is module y 1.67, jacks stay under y 0.5.
+	var wp := mod.get_node("TurretYaw/WeaponPivot") as Node3D
+	for yaw_deg in [0.0, 90.0, 180.0]:
+		mod.target_yaw_deg = yaw_deg
+		for elev in [0.0, -19.0, -38.0]:
+			wp.rotation.x = deg_to_rad(elev)
+			await get_tree().process_frame
+			_aa_report(mod, sc, 8.0)
+			print("CLEAR yaw ", yaw_deg, " elev ", elev)
 	mod.target_yaw_deg = 0.0
+	wp.rotation.x = deg_to_rad(-38.0)
 	ap.play(&"pack")
 	ap.seek(0.0, true)
 	ap.pause()
