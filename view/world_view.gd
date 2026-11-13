@@ -467,6 +467,7 @@ func _ensure_view(e: SimEntity) -> EntityView:
 			v.scale = Vector3.ONE * INF_SCALE   # M3.3 item 16: at vehicle scale (was 1.4x)
 			if v is InfantryView:
 				(v as InfantryView).set_variant(e.id)   # M3.4: per-soldier look
+				(v as InfantryView).set_pattern(e.def_id)
 		if e.tier > 0:
 			v.set_tier(e.tier)
 		var mc := AudioDirector.move_class(d)
@@ -694,6 +695,8 @@ func _add_crew(v: Node3D, e: SimEntity) -> void:
 		m.add_child(cv)
 		if cv.has_method("set_variant"):
 			cv.set_variant(e.id * 7 + k)
+		if cv.has_method("set_pattern"):
+			cv.set_pattern(uid)
 		if cv.has_method("set_team_material") and e.owner >= 0:
 			cv.set_team_material(Palette.team_material(sim.players[e.owner].color))
 		var hb := cv.get_node_or_null("HealthBarAnchor")

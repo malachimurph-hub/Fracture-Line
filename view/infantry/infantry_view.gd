@@ -169,6 +169,24 @@ func _place_all() -> void:
 			xf = Transform3D(Basis(Vector3.UP, yaw).scaled(Vector3.ONE * _scale), formation[i] + Vector3(0, sink, 0))
 		_mm(i).set_instance_transform(_slot[i], xf)
 
+## Cloth pattern. 0 keeps the baked look (Russian conscripts). 1 MultiCam, 2 Flecktarn,
+## 3 EMR, 4 Iranian woodland. One value for the whole squad, so draw count stays the same.
+func set_pattern(unit_id: StringName) -> void:
+	var s := String(unit_id)
+	var p := 0.0
+	if s.begins_with("ecc_con") or s == "ecc_squad":
+		p = 0.0
+	elif s.begins_with("us_"):
+		p = 1.0
+	elif s.begins_with("eu_"):
+		p = 2.0
+	elif s.begins_with("ecc_"):
+		p = 3.0
+	elif s.begins_with("tpla_"):
+		p = 4.0
+	for inst in _instances():
+		(inst as MultiMeshInstance3D).set_instance_shader_parameter(&"pat", p)
+
 func set_team_material(mat: Material) -> void:
 	var c := Color(0.18, 0.5, 0.88)
 	if mat is ShaderMaterial:
