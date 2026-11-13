@@ -1769,6 +1769,9 @@ static func mzkt_base(mat: Material) -> void:
 	h.cbox(Vector3(0, 0.70 * Sc, (zf0 + zf1) * 0.5 * Sc), Vector3(0.52 * Sc, 0.36 * Sc, (zf0 - zf1) * Sc), 0.015 * Sc)
 	for s in [-1.0, 1.0]:
 		h.cbox(Vector3(s * 0.42 * Sc, 1.00 * Sc, (zf0 + zf1) * 0.5 * Sc), Vector3(0.16 * Sc, 0.88 * Sc, (zf0 - zf1) * Sc), 0.012 * Sc)
+		# Lower extension from the rail end into the bumper, under the cab chin.
+		h.cbox(Vector3(s * 0.42 * Sc, 0.84 * Sc, 5.86 * Sc), Vector3(0.16 * Sc, 0.56 * Sc, 0.66 * Sc), 0.01 * Sc)
+	h.cbox(Vector3(0, 0.96 * Sc, 6.12 * Sc), Vector3(1.10 * Sc, 0.28 * Sc, 0.14 * Sc), 0.008 * Sc)
 	# Empty bed, 3.150 m wide. Top at 1.62 m. It starts where the engine bay ends.
 	var d0 := 1.48
 	var d1 := -6.08
@@ -1790,9 +1793,14 @@ static func mzkt_base(mat: Material) -> void:
 	# Rear cap keeps the 1,000 mm overhang. The front beam is only the last 0.22 m of the 12,670 mm length.
 	h.color("#96A468", Geo.CONCRETE)
 	h.cbox(Vector3(0, 0.95 * Sc, -6.18 * Sc), Vector3(2.15 * Sc, 0.70 * Sc, 0.28 * Sc), 0.014 * Sc)
-	# Slim cab-coloured bumper, tucked under the chin. Front face stays at 6.335 m.
+	# Slim cab-coloured bumper, bolted to the front cross-member. Front face stays at 6.335 m.
 	h.cbox(Vector3(0, 0.96 * Sc, 6.225 * Sc), Vector3(2.20 * Sc, 0.32 * Sc, 0.22 * Sc), 0.01 * Sc)
 	h.cbox(Vector3(0, 1.20 * Sc, 6.02 * Sc), Vector3(2.00 * Sc, 0.08 * Sc, 0.26 * Sc), 0.008 * Sc)
+	# Valance closes the side-view gap between the raked nose and the bumper.
+	h.prism_x([
+		Vector2(5.45 * Sc, 1.55 * Sc), Vector2(6.16 * Sc, 1.18 * Sc),
+		Vector2(6.16 * Sc, 0.90 * Sc), Vector2(5.45 * Sc, 1.12 * Sc),
+	], -1.05 * Sc, 1.05 * Sc)
 	h.color("#1c1e1c", Geo.DARK)
 	for gi in 6:
 		h.box(Vector3((-0.40 + float(gi) * 0.16) * Sc, 0.98 * Sc, 6.34 * Sc), Vector3(0.04 * Sc, 0.14 * Sc, 0.016 * Sc))
