@@ -757,7 +757,7 @@ UNIT_US_B1_DESC,"Heavy bomber. One devastating strike, then it lands and rearms.
 UNIT_US_AH64,AH-64
 UNIT_US_AH64_DESC,"Attack helicopter. Missiles against vehicles and a chin gun against infantry. Reloads in the air. Needs Advanced Aero."
 UNIT_US_REAPER,Reaper Drone
-UNIT_US_REAPER_DESC,"Ground-strike drone built at the Airfield. Flies like a helicopter until it reaches the target, then holds a wide slow circle. Same punch as the F-35. Only base defences can detect it. Needs a Robotics Plant."
+UNIT_US_REAPER_DESC,"Ground-strike drone built at the Airfield. It keeps a continuous circle while idle, moving, or attacking, and it never hovers. Same punch as the F-35. Only base defences can detect it. Needs a Robotics Plant."
 UNIT_US_RIPSAW,Ripsaw
 UNIT_US_RIPSAW_DESC,"Unmanned robotic tank, smaller and quicker than the M1A3. Main gun is about 85% as effective against armour, with a coaxial .50 cal. No crew. Built at the Robotics Plant."
 UNIT_US_MK23,MK 23 Grenade Launcher Team
