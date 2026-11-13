@@ -1802,35 +1802,43 @@ static func mzkt_base(mat: Material) -> void:
 	for lp in [-0.95, 0.95]:
 		h.box(Vector3(lp * Sc, 0.88 * Sc, 6.28 * Sc), Vector3(0.22 * Sc, 0.12 * Sc, 0.06 * Sc))
 	V4._lamps(h, 0.95 * Sc, 0.88 * Sc, 6.32 * Sc)
-	# Faceted nose, then a flat cab. The roof lip is the 3,290 mm crown and overhangs the screen.
-	h.camo("#96A468", 2)
+	# The rake ends at full cab height on the door face, then sinks into the box so the join has no notch.
+	# Cab paint uses the plain class. Camo and paint classes pick up the shared stencil sheet (numbers, chevrons).
+	h.color("#96A468", Geo.CONCRETE)
 	h.xloft([
-		[5.95 * Sc, K.sect(1.28 * Sc, 1.70 * Sc, 2.05 * Sc, 1.18 * Sc, 1.30 * Sc, 1.10 * Sc, 0.04 * Sc)],
-		[5.48 * Sc, K.sect(1.58 * Sc, 2.20 * Sc, 3.00 * Sc, 1.34 * Sc, 1.42 * Sc, 1.32 * Sc, 0.05 * Sc)],
+		[5.98 * Sc, K.sect(1.32 * Sc, 1.72 * Sc, 2.10 * Sc, 1.16 * Sc, 1.28 * Sc, 1.08 * Sc, 0.04 * Sc)],
+		[5.40 * Sc, K.sect(1.575 * Sc, 2.25 * Sc, 3.025 * Sc, 1.32 * Sc, 1.36 * Sc, 1.30 * Sc, 0.04 * Sc)],
 	])
 	h.cbox(Vector3(0, 2.30 * Sc, 4.72 * Sc), Vector3(2.72 * Sc, 1.45 * Sc, 1.45 * Sc), 0.03 * Sc)
-	h.camo("#738252", 2)
-	h.cbox(Vector3(0, 3.16 * Sc, 4.85 * Sc), Vector3(2.45 * Sc, 0.26 * Sc, 1.85 * Sc), 0.02 * Sc)
-	h.box(Vector3(0, 3.02 * Sc, 5.72 * Sc), Vector3(2.20 * Sc, 0.06 * Sc, 0.28 * Sc))
-	# Doors, a small window each side, grab handles, and a few panel breaks.
+	h.color("#738252", Geo.CONCRETE)
+	h.cbox(Vector3(0, 3.16 * Sc, 4.70 * Sc), Vector3(2.45 * Sc, 0.26 * Sc, 1.55 * Sc), 0.02 * Sc)
+	h.box(Vector3(0, 3.04 * Sc, 5.50 * Sc), Vector3(2.15 * Sc, 0.05 * Sc, 0.18 * Sc))
+	# Doors, a framed side window, grab handles, and a few panel breaks.
 	for sd in [-1.0, 1.0]:
-		h.camo("#738252", 2)
+		h.color("#738252", Geo.CONCRETE)
 		h.box(Vector3(sd * 1.38 * Sc, 2.25 * Sc, 4.70 * Sc), Vector3(0.03 * Sc, 1.05 * Sc, 0.72 * Sc))
-		h.color("#24323a", Geo.GLASS)
-		h.box(Vector3(sd * 1.40 * Sc, 2.45 * Sc, 4.78 * Sc), Vector3(0.02 * Sc, 0.32 * Sc, 0.42 * Sc))
+		h.color("#b7c6cc", Geo.STEEL)
+		h.box(Vector3(sd * 1.40 * Sc, 2.45 * Sc, 4.78 * Sc), Vector3(0.018 * Sc, 0.40 * Sc, 0.50 * Sc))
+		h.color("#8eb6c6", Geo.GLASS)
+		h.box(Vector3(sd * 1.415 * Sc, 2.45 * Sc, 4.78 * Sc), Vector3(0.012 * Sc, 0.30 * Sc, 0.40 * Sc))
 		h.color("#3a3d38", Geo.STEEL)
 		h.box(Vector3(sd * 1.42 * Sc, 2.15 * Sc, 4.28 * Sc), Vector3(0.02 * Sc, 0.22 * Sc, 0.04 * Sc))
 		h.box(Vector3(sd * 1.42 * Sc, 2.05 * Sc, 4.28 * Sc), Vector3(0.06 * Sc, 0.03 * Sc, 0.04 * Sc))
-		h.color("#3e4634", Geo.DARK)
-		h.box(Vector3(sd * 1.37 * Sc, 2.85 * Sc, 4.70 * Sc), Vector3(0.012 * Sc, 0.02 * Sc, 1.15 * Sc))
-		h.box(Vector3(sd * 1.37 * Sc, 1.75 * Sc, 4.70 * Sc), Vector3(0.012 * Sc, 0.02 * Sc, 1.15 * Sc))
-		h.camo("#96A468", 2)
+		h.color("#4a5240", Geo.CONCRETE)
+		h.box(Vector3(sd * 1.395 * Sc, 2.85 * Sc, 4.70 * Sc), Vector3(0.012 * Sc, 0.016 * Sc, 1.15 * Sc))
+		h.box(Vector3(sd * 1.395 * Sc, 1.75 * Sc, 4.70 * Sc), Vector3(0.012 * Sc, 0.016 * Sc, 1.15 * Sc))
+		h.color("#96A468", Geo.CONCRETE)
 		h.box(Vector3(sd * 1.42 * Sc, 1.42 * Sc, 4.55 * Sc), Vector3(0.16 * Sc, 0.06 * Sc, 0.32 * Sc))
-	h.color("#24323a", Geo.GLASS)
-	h.plate(Vector3(-0.34 * Sc, 2.28 * Sc, 5.62 * Sc), Vector3(0.52 * Sc, 0.62 * Sc, 0.016 * Sc), Vector3(-52, 0, 0))
-	h.plate(Vector3(0.34 * Sc, 2.28 * Sc, 5.62 * Sc), Vector3(0.52 * Sc, 0.62 * Sc, 0.016 * Sc), Vector3(-52, 0, 0))
-	h.color("#3a3d38", Geo.STEEL)
-	h.box(Vector3(0, 2.28 * Sc, 5.64 * Sc), Vector3(0.045 * Sc, 0.55 * Sc, 0.02 * Sc))
+	# Two panes, the same size, mirrored about the cab centre, sitting on the outer face of the rake.
+	var pane_x := 0.32
+	h.color("#9aa6aa", Geo.STEEL)
+	h.plate(Vector3(-pane_x * Sc, 2.28 * Sc, 5.90 * Sc), Vector3(0.56 * Sc, 0.78 * Sc, 0.014 * Sc), Vector3(-32, 0, 0))
+	h.plate(Vector3(pane_x * Sc, 2.28 * Sc, 5.90 * Sc), Vector3(0.56 * Sc, 0.78 * Sc, 0.014 * Sc), Vector3(-32, 0, 0))
+	h.color("#8eb6c6", Geo.GLASS)
+	h.plate(Vector3(-pane_x * Sc, 2.28 * Sc, 5.94 * Sc), Vector3(0.46 * Sc, 0.66 * Sc, 0.012 * Sc), Vector3(-32, 0, 0))
+	h.plate(Vector3(pane_x * Sc, 2.28 * Sc, 5.94 * Sc), Vector3(0.46 * Sc, 0.66 * Sc, 0.012 * Sc), Vector3(-32, 0, 0))
+	h.color("#d5dee2", Geo.STEEL)
+	h.plate(Vector3(0, 2.28 * Sc, 5.95 * Sc), Vector3(0.04 * Sc, 0.66 * Sc, 0.012 * Sc), Vector3(-32, 0, 0))
 	# Mirrors reach the 4,076 mm width and no further.
 	for sm in [-1.0, 1.0]:
 		h.tube(Vector3(sm * 1.36 * Sc, 2.55 * Sc, 5.35 * Sc), Vector3(sm * 1.92 * Sc, 2.62 * Sc, 5.48 * Sc), 0.022 * Sc, 5)
