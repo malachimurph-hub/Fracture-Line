@@ -489,8 +489,12 @@ func _aa_report(mod: Node3D, sc: float, t: float) -> void:
 		wide = maxf(wide, absf((sole as Node3D).global_position.x))
 	var dish := mod.get_node("TurretYaw/SearchHinge/SearchSpin/DishTop") as Node3D
 	var muzzle := mod.get_node("TurretYaw/WeaponPivot/MuzzleR") as Node3D
+	var gun := mod.get_node_or_null("TurretYaw/WeaponPivot/GunMuzzleR") as Node3D
 	var mount_y: float = 1.62 * sc
-	print("AA t %.2f  sole y %.4f..%.4f  sole |x| %.3f m  module |x| %.3f m  dish top %.2f m  muzzle m %s" % [t, low, high, wide / sc, _half_x(mod) / sc, (dish.global_position.y - mount_y) / sc + 1.62, (muzzle.global_position - mod.global_position) / sc])
+	var gun_m := Vector3.ZERO
+	if gun != null:
+		gun_m = (gun.global_position - mod.global_position) / sc
+	print("AA t %.2f  sole y %.4f..%.4f  sole |x| %.3f m  module |x| %.3f m  dish top %.2f m  muzzle m %s  gun m %s" % [t, low, high, wide / sc, _half_x(mod) / sc, (dish.global_position.y - mount_y) / sc + 1.62, (muzzle.global_position - mod.global_position) / sc, gun_m])
 
 func _pose_views(cam: Camera3D, sun: DirectionalLight3D, rig: Node3D, prefix: String, aspect: float) -> float:
 	var whole := _aabb(rig)

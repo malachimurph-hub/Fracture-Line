@@ -2450,10 +2450,6 @@ static func mzkt_aa(mat: Material) -> void:
 	h.cbox(Vector3(-1.24 * Sc, 0.18 * Sc, -0.70 * Sc), Vector3(0.26 * Sc, 0.24 * Sc, 0.34 * Sc), 0.008 * Sc)
 	h.color("#3a3d38", Geo.STEEL)
 	h.box(Vector3(-1.24 * Sc, 0.31 * Sc, -0.70 * Sc), Vector3(0.28 * Sc, 0.03 * Sc, 0.36 * Sc))
-	h.color("#c4382e", Geo.CONCRETE)
-	h.tube(Vector3(1.46 * Sc, 0.72 * Sc, 0.15 * Sc), Vector3(1.46 * Sc, 1.08 * Sc, 0.15 * Sc), 0.045 * Sc, 5)
-	h.color("#3a3d38", Geo.STEEL)
-	h.box(Vector3(1.46 * Sc, 1.12 * Sc, 0.15 * Sc), Vector3(0.07 * Sc, 0.04 * Sc, 0.07 * Sc))
 	# Cables and a grab rail along the upper side.
 	h.color("#141614", Geo.RUBBER)
 	h.tube(Vector3(1.50 * Sc, 0.70 * Sc, 2.50 * Sc), Vector3(1.50 * Sc, 0.70 * Sc, 0.20 * Sc), 0.014 * Sc, 4)
@@ -2465,6 +2461,21 @@ static func mzkt_aa(mat: Material) -> void:
 	h.box(Vector3(0, 0.16 * Sc, -3.98 * Sc), Vector3(1.80 * Sc, 0.28 * Sc, 0.06 * Sc))
 	h.color("#6b4e32", Geo.WOOD)
 	h.box(Vector3(0.55 * Sc, 0.16 * Sc, -3.55 * Sc), Vector3(0.36 * Sc, 0.28 * Sc, 0.32 * Sc))
+	h.color("#5a4630", Geo.WOOD)
+	h.box(Vector3(-0.85 * Sc, 1.52 * Sc, -3.15 * Sc), Vector3(0.42 * Sc, 0.16 * Sc, 0.28 * Sc))
+	h.color("#3a3d38", Geo.STEEL)
+	h.box(Vector3(-0.85 * Sc, 1.61 * Sc, -3.15 * Sc), Vector3(0.44 * Sc, 0.03 * Sc, 0.30 * Sc))
+	h.color("#4a4e46", Geo.STEEL)
+	h.cbox(Vector3(0.95 * Sc, 1.58 * Sc, -2.55 * Sc), Vector3(0.34 * Sc, 0.22 * Sc, 0.34 * Sc), 0.01 * Sc)
+	h.color("#2c302c", Geo.STEEL)
+	h.tube(Vector3(0.95 * Sc, 1.58 * Sc, -2.72 * Sc), Vector3(0.95 * Sc, 1.58 * Sc, -2.38 * Sc), 0.11 * Sc, 8)
+	h.color("#141614", Geo.RUBBER)
+	h.tube(Vector3(0.95 * Sc, 1.70 * Sc, -2.55 * Sc), Vector3(1.35 * Sc, 1.48 * Sc, -1.70 * Sc), 0.012 * Sc, 4)
+	h.color("#2c302c", Geo.STEEL)
+	h.box(Vector3(0, 1.50 * Sc, -3.85 * Sc), Vector3(1.40 * Sc, 0.03 * Sc, 0.03 * Sc))
+	# Neck under the raised yaw ring, seated in the rear deck so the bearing does not float.
+	h.color("#2a2e2c", Geo.STEEL)
+	h.tube(Vector3(0, 1.40 * Sc, -0.70 * Sc), Vector3(0, 1.56 * Sc, -0.70 * Sc), 1.12 * Sc, 12)
 	h.color("#1a1c1a", Geo.STEEL)
 	for td in [[-0.70, 3.20], [0.70, 3.20], [-0.40, -3.70]]:
 		h.tube(Vector3(td[0] * Sc, 0.0, td[1] * Sc), Vector3(td[0] * Sc, 0.05 * Sc, td[1] * Sc), 0.016 * Sc, 5)
@@ -2478,10 +2489,10 @@ static func mzkt_aa(mat: Material) -> void:
 	ResourceSaver.save(ps, "res://view/units/ecc/mzkt_aa_module.tscn")
 	root.free()
 
-## Turret on the rear deck. Origin module (0, 1.38, -0.70): the ring bites the 3.05 m deck.
-## Housing is 1.20 m tall, so its roof is the 4.28 m system line. Each tube column hangs on a side face.
+## Turret on the rear deck. Origin module (0, 1.60, -0.70): 0.22 m above the old ring.
+## Housing is 1.20 m tall, so its roof is 4.50 m. Each tube column hangs on a side face.
 static func _aa_turret(root: Node3D, mat: Material, Sc: float) -> int:
-	var yaw := VK._n3(root, root, "TurretYaw", Vector3(0, 1.38 * Sc, -0.70 * Sc))
+	var yaw := VK._n3(root, root, "TurretYaw", Vector3(0, 1.60 * Sc, -0.70 * Sc))
 	var g = K.new()
 	g.plain = true
 	# Yaw ring and stepped pedestal. The ring is seated in the roof.
@@ -2493,21 +2504,43 @@ static func _aa_turret(root: Node3D, mat: Material, Sc: float) -> int:
 	g.cbox(Vector3(0, 0.68 * Sc, 0.02 * Sc), Vector3(2.64 * Sc, 1.20 * Sc, 1.85 * Sc), 0.03 * Sc)
 	g.color("#738252", Geo.CONCRETE)
 	g.box(Vector3(0, 1.30 * Sc, -0.05 * Sc), Vector3(1.40 * Sc, 0.06 * Sc, 1.20 * Sc))
-	# Tracking dish on the turret front, in the gap between the wide racks.
+	# Roof hatch, side seam, vent, and a small sensor block. No lettering.
+	g.color("#738252", Geo.CONCRETE)
+	g.cbox(Vector3(0.35 * Sc, 1.32 * Sc, 0.15 * Sc), Vector3(0.42 * Sc, 0.05 * Sc, 0.36 * Sc), 0.012 * Sc)
+	g.color("#2c302c", Geo.STEEL)
+	g.box(Vector3(0.48 * Sc, 1.36 * Sc, 0.15 * Sc), Vector3(0.08 * Sc, 0.03 * Sc, 0.04 * Sc))
+	g.color("#1c1e1c", Geo.DARK)
+	g.box(Vector3(-1.30 * Sc, 0.78 * Sc, -0.15 * Sc), Vector3(0.03 * Sc, 0.28 * Sc, 0.36 * Sc))
+	for vi in 3:
+		g.color("#3a3d38", Geo.STEEL)
+		g.box(Vector3(-1.32 * Sc, (0.88 - float(vi) * 0.08) * Sc, -0.15 * Sc), Vector3(0.012 * Sc, 0.02 * Sc, 0.30 * Sc))
+	g.color("#2a2e2c", Geo.STEEL)
+	g.box(Vector3(1.31 * Sc, 0.70 * Sc, 0.15 * Sc), Vector3(0.012 * Sc, 0.90 * Sc, 0.02 * Sc))
+	g.box(Vector3(0, 0.70 * Sc, 0.96 * Sc), Vector3(0.02 * Sc, 0.90 * Sc, 0.012 * Sc))
+	g.cbox(Vector3(0.85 * Sc, 0.95 * Sc, 0.95 * Sc), Vector3(0.22 * Sc, 0.16 * Sc, 0.18 * Sc), 0.01 * Sc)
+	g.color("#1a1c1a", Geo.DARK)
+	g.tube(Vector3(0.85 * Sc, 0.95 * Sc, 1.02 * Sc), Vector3(0.85 * Sc, 0.95 * Sc, 1.08 * Sc), 0.045 * Sc, 6)
+	# Tracking dish on the turret front, between the columns, with a rim.
 	g.color("#3a3d38", Geo.STEEL)
 	g.cbox(Vector3(0, 0.72 * Sc, 0.98 * Sc), Vector3(0.78 * Sc, 0.62 * Sc, 0.20 * Sc), 0.016 * Sc)
 	g.color("#1c1e1c", Geo.DARK)
 	g.tube(Vector3(0, 0.72 * Sc, 1.06 * Sc), Vector3(0, 0.72 * Sc, 1.14 * Sc), 0.26 * Sc, 8)
 	g.color("#2a2e2c", Geo.STEEL)
+	g.tube(Vector3(0, 0.72 * Sc, 1.12 * Sc), Vector3(0, 0.72 * Sc, 1.18 * Sc), 0.32 * Sc, 8)
 	g.tube(Vector3(0, 0.72 * Sc, 1.10 * Sc), Vector3(0, 0.72 * Sc, 1.16 * Sc), 0.10 * Sc, 6)
+	for bi in 6:
+		var ba := TAU * float(bi) / 6.0
+		g.box(Vector3(cos(ba) * 0.95 * Sc, -0.02 * Sc, sin(ba) * 0.95 * Sc), Vector3(0.06 * Sc, 0.04 * Sc, 0.06 * Sc))
 	# Mast up the back of the housing to the search hinge.
 	g.color("#2c302c", Geo.STEEL)
 	g.tube(Vector3(0, 0.70 * Sc, -0.55 * Sc), Vector3(0, 1.15 * Sc, -0.78 * Sc), 0.08 * Sc, 6)
 	g.box(Vector3(0, 1.10 * Sc, -0.62 * Sc), Vector3(0.40 * Sc, 0.28 * Sc, 0.28 * Sc))
+	g.box(Vector3(-0.16 * Sc, 1.22 * Sc, -0.78 * Sc), Vector3(0.04 * Sc, 0.22 * Sc, 0.16 * Sc))
+	g.box(Vector3(0.16 * Sc, 1.22 * Sc, -0.78 * Sc), Vector3(0.04 * Sc, 0.22 * Sc, 0.16 * Sc))
 	VK._mi(yaw, root, "Turret", g.commit(mat))
 	var tris: int = g.tris
 	var hinge := VK._n3(yaw, root, "SearchHinge", Vector3(0, 1.22 * Sc, -0.82 * Sc))
-	hinge.rotation_degrees = Vector3(-132, 0, 0)
+	hinge.rotation_degrees = Vector3(-137.5, 0, 0)
 	var pin = K.new()
 	pin.plain = true
 	pin.color("#1a1c1a", Geo.STEEL)
@@ -2518,7 +2551,7 @@ static func _aa_turret(root: Node3D, mat: Material, Sc: float) -> int:
 	var dish = K.new()
 	dish.plain = true
 	# Array 1.90 m across and 1.80 m tall, 0.28 m deep. Dark face, frame, ribs.
-	# Raised pose leans 10 degrees. Stow at -132 drops the far edge onto the rear deck.
+	# Raised pose leans 10 degrees. Stow at -137.5 drops the far edge onto the rear deck.
 	dish.color("#3a3d38", Geo.STEEL)
 	dish.box(Vector3(0, 0.98 * Sc, -0.04 * Sc), Vector3(1.90 * Sc, 1.80 * Sc, 0.16 * Sc))
 	dish.box(Vector3(0, 1.80 * Sc, 0.08 * Sc), Vector3(1.90 * Sc, 0.12 * Sc, 0.14 * Sc))
@@ -2531,6 +2564,12 @@ static func _aa_turret(root: Node3D, mat: Material, Sc: float) -> int:
 	for rib in [0.50, 0.90, 1.30]:
 		dish.box(Vector3(0, rib * Sc, 0.145 * Sc), Vector3(1.55 * Sc, 0.045 * Sc, 0.03 * Sc))
 	dish.box(Vector3(0, 0.98 * Sc, 0.145 * Sc), Vector3(0.045 * Sc, 1.45 * Sc, 0.03 * Sc))
+	dish.color("#2c302c", Geo.STEEL)
+	dish.box(Vector3(0, 0.98 * Sc, -0.10 * Sc), Vector3(0.08 * Sc, 1.50 * Sc, 0.06 * Sc))
+	dish.box(Vector3(-0.55 * Sc, 0.98 * Sc, -0.08 * Sc), Vector3(0.04 * Sc, 0.04 * Sc, 0.14 * Sc))
+	dish.box(Vector3(0.55 * Sc, 0.98 * Sc, -0.08 * Sc), Vector3(0.04 * Sc, 0.04 * Sc, 0.14 * Sc))
+	dish.box(Vector3(0, 0.40 * Sc, -0.08 * Sc), Vector3(0.90 * Sc, 0.04 * Sc, 0.10 * Sc))
+	dish.box(Vector3(0, 1.55 * Sc, -0.08 * Sc), Vector3(0.90 * Sc, 0.04 * Sc, 0.10 * Sc))
 	var top := Marker3D.new()
 	top.name = "DishTop"
 	top.position = Vector3(0, 1.86 * Sc, 0)
@@ -2543,43 +2582,64 @@ static func _aa_turret(root: Node3D, mat: Material, Sc: float) -> int:
 	w.plain = true
 	w.color("#2a2e2c", Geo.STEEL)
 	w.tube(Vector3(-1.20 * Sc, -0.40 * Sc, -0.15 * Sc), Vector3(1.20 * Sc, -0.40 * Sc, -0.15 * Sc), 0.06 * Sc, 8)
+	w.tube(Vector3(-1.05 * Sc, -0.40 * Sc, -0.15 * Sc), Vector3(-0.92 * Sc, -0.40 * Sc, -0.15 * Sc), 0.09 * Sc, 6)
+	w.tube(Vector3(0.92 * Sc, -0.40 * Sc, -0.15 * Sc), Vector3(1.05 * Sc, -0.40 * Sc, -0.15 * Sc), 0.09 * Sc, 6)
 	for s in [-1.0, 1.0]:
 		# Cheek wraps the rear of the vertical column so the tubes leave the side face, not a gap.
 		w.color("#96A468", Geo.CONCRETE)
 		w.box(Vector3(s * 1.38 * Sc, 0.0, 0.05 * Sc), Vector3(0.36 * Sc, 0.80 * Sc, 1.30 * Sc))
+		w.color("#2c302c", Geo.STEEL)
+		for bolt in [[1.52, 0.28, -0.35], [1.52, -0.28, -0.35], [1.52, 0.28, 0.45], [1.52, -0.28, 0.45]]:
+			w.box(Vector3(s * bolt[0] * Sc, bolt[1] * Sc, bolt[2] * Sc), Vector3(0.04 * Sc, 0.04 * Sc, 0.04 * Sc))
+		# Rail from the cheek out along the inner side of the column.
+		w.box(Vector3(s * 1.24 * Sc, 0.0, 1.15 * Sc), Vector3(0.04 * Sc, 0.06 * Sc, 0.90 * Sc))
 		for i in 3:
 			var ty: float = -0.26 + float(i) * 0.26
 			w.color("#96A468", Geo.CONCRETE)
-			w.tube(Vector3(s * 1.40 * Sc, ty * Sc, -0.48 * Sc), Vector3(s * 1.40 * Sc, ty * Sc, 2.72 * Sc), 0.12 * Sc, 6)
+			w.tube(Vector3(s * 1.40 * Sc, ty * Sc, -0.48 * Sc), Vector3(s * 1.40 * Sc, ty * Sc, 2.68 * Sc), 0.12 * Sc, 6)
+			# Chamfered mouth, cap ring, and a band.
+			w.tube(Vector3(s * 1.40 * Sc, ty * Sc, 2.68 * Sc), Vector3(s * 1.40 * Sc, ty * Sc, 2.82 * Sc), 0.12 * Sc, 6, 0.09 * Sc)
 			w.color("#1c1e1c", Geo.DARK)
-			w.tube(Vector3(s * 1.40 * Sc, ty * Sc, 2.62 * Sc), Vector3(s * 1.40 * Sc, ty * Sc, 2.80 * Sc), 0.075 * Sc, 5)
+			w.tube(Vector3(s * 1.40 * Sc, ty * Sc, 2.74 * Sc), Vector3(s * 1.40 * Sc, ty * Sc, 2.86 * Sc), 0.07 * Sc, 5)
 			w.color("#2c302c", Geo.STEEL)
-			w.tube(Vector3(s * 1.40 * Sc, ty * Sc, 0.62 * Sc), Vector3(s * 1.40 * Sc, ty * Sc, 0.76 * Sc), 0.135 * Sc, 6)
+			w.tube(Vector3(s * 1.40 * Sc, ty * Sc, 2.64 * Sc), Vector3(s * 1.40 * Sc, ty * Sc, 2.72 * Sc), 0.135 * Sc, 6)
+			w.tube(Vector3(s * 1.40 * Sc, ty * Sc, 1.35 * Sc), Vector3(s * 1.40 * Sc, ty * Sc, 1.47 * Sc), 0.132 * Sc, 6)
+			w.box(Vector3(s * 1.40 * Sc, (ty + 0.14) * Sc, 1.15 * Sc), Vector3(0.06 * Sc, 0.04 * Sc, 0.08 * Sc))
 		w.color("#2c302c", Geo.STEEL)
-		w.box(Vector3(s * 1.40 * Sc, 0.42 * Sc, 2.74 * Sc), Vector3(0.32 * Sc, 0.04 * Sc, 0.04 * Sc))
-		w.box(Vector3(s * 1.40 * Sc, -0.42 * Sc, 2.74 * Sc), Vector3(0.32 * Sc, 0.04 * Sc, 0.04 * Sc))
-		w.box(Vector3(s * 1.26 * Sc, 0.0, 2.74 * Sc), Vector3(0.04 * Sc, 0.80 * Sc, 0.04 * Sc))
-		w.box(Vector3(s * 1.54 * Sc, 0.0, 2.74 * Sc), Vector3(0.04 * Sc, 0.80 * Sc, 0.04 * Sc))
-		# Twin barrels side by side under the column. They stop at the front cabinet.
+		w.box(Vector3(s * 1.40 * Sc, 0.44 * Sc, 2.78 * Sc), Vector3(0.30 * Sc, 0.035 * Sc, 0.035 * Sc))
+		w.box(Vector3(s * 1.40 * Sc, -0.44 * Sc, 2.78 * Sc), Vector3(0.30 * Sc, 0.035 * Sc, 0.035 * Sc))
+		w.box(Vector3(s * 1.26 * Sc, 0.0, 2.78 * Sc), Vector3(0.035 * Sc, 0.84 * Sc, 0.035 * Sc))
+		w.box(Vector3(s * 1.54 * Sc, 0.0, 2.78 * Sc), Vector3(0.035 * Sc, 0.84 * Sc, 0.035 * Sc))
+		# Twin barrels, 2.45 m, side by side under the column. Raised turret clears the cabinet.
+		w.color("#4a4e46", Geo.STEEL)
+		w.cbox(Vector3(s * 1.38 * Sc, -0.62 * Sc, 0.15 * Sc), Vector3(0.28 * Sc, 0.16 * Sc, 0.28 * Sc), 0.012 * Sc)
 		w.color("#2a2e2c", Geo.STEEL)
 		for k in 2:
 			var gx: float = float(s) * (1.32 + float(k) * 0.16)
-			var gz: float = 1.28 + float(k) * 0.08
-			w.tube(Vector3(gx * Sc, -0.46 * Sc, -0.25 * Sc), Vector3(gx * Sc, -0.46 * Sc, gz * Sc), 0.05 * Sc, 6)
-			w.tube(Vector3(gx * Sc, -0.46 * Sc, (gz - 0.16) * Sc), Vector3(gx * Sc, -0.46 * Sc, (gz + 0.06) * Sc), 0.064 * Sc, 6)
+			w.tube(Vector3(gx * Sc, -0.46 * Sc, -0.28 * Sc), Vector3(gx * Sc, -0.46 * Sc, 2.12 * Sc), 0.05 * Sc, 6)
+			w.tube(Vector3(gx * Sc, -0.46 * Sc, 0.15 * Sc), Vector3(gx * Sc, -0.46 * Sc, 1.15 * Sc), 0.062 * Sc, 6)
+			w.tube(Vector3(gx * Sc, -0.46 * Sc, 2.08 * Sc), Vector3(gx * Sc, -0.46 * Sc, 2.24 * Sc), 0.072 * Sc, 6)
+			w.color("#1a1c1a", Geo.DARK)
+			w.box(Vector3(gx * Sc, -0.40 * Sc, 2.16 * Sc), Vector3(0.09 * Sc, 0.02 * Sc, 0.06 * Sc))
+			w.box(Vector3(gx * Sc, -0.52 * Sc, 2.16 * Sc), Vector3(0.09 * Sc, 0.02 * Sc, 0.06 * Sc))
 			w.color("#1a1c1a", Geo.STEEL)
-			w.tube(Vector3(gx * Sc, -0.46 * Sc, (gz - 0.02) * Sc), Vector3(gx * Sc, -0.46 * Sc, (gz + 0.10) * Sc), 0.030 * Sc, 5)
+			w.tube(Vector3(gx * Sc, -0.46 * Sc, 2.18 * Sc), Vector3(gx * Sc, -0.46 * Sc, 2.28 * Sc), 0.028 * Sc, 5)
 			w.color("#2a2e2c", Geo.STEEL)
 	VK._mi(wp, root, "Weapons", w.commit(mat))
 	tris += w.tris
 	for s2 in [-1.0, 1.0]:
 		var muzzle := Marker3D.new()
 		muzzle.name = "MuzzleL" if s2 < 0.0 else "MuzzleR"
-		# Bottom-tube mouth. The skin is 0.12 m below this centre.
-		muzzle.position = Vector3(s2 * 1.40 * Sc, -0.26 * Sc, 2.78 * Sc)
+		# Bottom-tube mouth centre. The skin is 0.12 m below this.
+		muzzle.position = Vector3(s2 * 1.40 * Sc, -0.26 * Sc, 2.84 * Sc)
 		wp.add_child(muzzle)
 		muzzle.owner = root
-	print("  aa 3 tubes stacked  housing 2.64 m  tubes 3.20 m dia 0.24  guns under column")
+		var gun := Marker3D.new()
+		gun.name = "GunMuzzleL" if s2 < 0.0 else "GunMuzzleR"
+		gun.position = Vector3(s2 * 1.48 * Sc, -0.46 * Sc, 2.28 * Sc)
+		wp.add_child(gun)
+		gun.owner = root
+	print("  aa columns  housing 2.64 m  tubes 3.20 m  guns 2.56 m  turret y 1.60")
 	return tris
 
 ## 8 s. Jacks first, the same order as module C, then the dish rises and turns and the racks elevate.
@@ -2608,7 +2668,7 @@ static func _aa_anims(root: Node3D) -> void:
 		_missile_pos(deploy, pack, root, rod, 4.0, Vector3(0, stow_y, 0))
 		_missile_pos(deploy, pack, root, rod, 4.8, Vector3(0, deploy_y, 0))
 	var search := root.get_node("TurretYaw/SearchHinge") as Node3D
-	var folded := Quaternion(Basis.from_euler(Vector3(deg_to_rad(-132.0), 0, 0)))
+	var folded := Quaternion(Basis.from_euler(Vector3(deg_to_rad(-137.5), 0, 0)))
 	var raised_panel := Quaternion(Basis.from_euler(Vector3(deg_to_rad(-10.0), 0, 0)))
 	_missile_quat(deploy, pack, root, search, 0.0, folded)
 	_missile_quat(deploy, pack, root, search, 4.8, folded)
