@@ -1278,8 +1278,11 @@ static func mi8(mat: Material) -> void:
 ## 0.311 u/m, same as the BMP-3 v2 and the T-90 hull. +Z is the nose. The tail rotor is
 ## on the starboard side (+X): published Mi-8T, and the side the audit read as right.
 static func mi8_v2(mat: Material) -> void:
-	var Sc := 0.311
-	var root := VK._root({"selection_radius": 2.7, "bar_height": 1.82, "recoil": 0.0, "wreck_s": 8.0})
+	# 0.218 is about 70% of the approved 0.311, so the helicopter fits the camera.
+	# Tw scales the few thicknesses that were tuned in world units at 0.311.
+	var Sc := 0.218
+	var Tw := Sc / 0.311
+	var root := VK._root({"selection_radius": 2.7 * Tw, "bar_height": 1.82 * Tw, "recoil": 0.0, "wreck_s": 8.0})
 	var model := VK._n3(root, root, "Model")
 	var h = K.new()
 	h.plain = true
@@ -1359,7 +1362,7 @@ static func mi8_v2(mat: Material) -> void:
 		var lip := mouth + Vector3(0, 0, 0.18 * Sc)
 		for gi in 4:
 			var gy: float = (3.50 + float(gi) * 0.10) * Sc
-			h.box(Vector3(es * 0.42 * Sc, gy, lip.z), Vector3(0.34 * Sc, 0.012, 0.02))
+			h.box(Vector3(es * 0.42 * Sc, gy, lip.z), Vector3(0.34 * Sc, 0.012 * Tw, 0.02 * Tw))
 	# Mast and hub housing. Hub stays at 4.75 m over the gearbox.
 	h.color("#6e706c", Geo.STEEL)
 	var hub := Vector3(0, 4.75 * Sc, 1.60 * Sc)
@@ -1388,19 +1391,19 @@ static func mi8_v2(mat: Material) -> void:
 	var main_r := 0.432
 	var nose_r := 0.298
 	h.color("#4e524e", Geo.STEEL)
-	h.tube(Vector3(0, 0.62 * Sc, (nose_z + 0.15) * Sc), Vector3(0, nose_r * Sc, nose_z * Sc), 0.042, 8)
-	h.tube(Vector3(0, 0.55 * Sc, (nose_z - 0.85) * Sc), Vector3(0, nose_r * Sc, nose_z * Sc), 0.028, 6)
-	h.tube(Vector3(-0.22 * Sc, nose_r * Sc, nose_z * Sc), Vector3(0.22 * Sc, nose_r * Sc, nose_z * Sc), 0.028, 6)
+	h.tube(Vector3(0, 0.62 * Sc, (nose_z + 0.15) * Sc), Vector3(0, nose_r * Sc, nose_z * Sc), 0.042 * Tw, 8)
+	h.tube(Vector3(0, 0.55 * Sc, (nose_z - 0.85) * Sc), Vector3(0, nose_r * Sc, nose_z * Sc), 0.028 * Tw, 6)
+	h.tube(Vector3(-0.22 * Sc, nose_r * Sc, nose_z * Sc), Vector3(0.22 * Sc, nose_r * Sc, nose_z * Sc), 0.028 * Tw, 6)
 	_mi8_tyre(h, Vector3(-0.20 * Sc, nose_r * Sc, nose_z * Sc), nose_r * Sc, 0.16 * Sc)
 	_mi8_tyre(h, Vector3(0.20 * Sc, nose_r * Sc, nose_z * Sc), nose_r * Sc, 0.16 * Sc)
 	for sg in [-1.0, 1.0]:
 		var gs: float = sg
 		var axle := Vector3(gs * 2.25 * Sc, main_r * Sc, main_z * Sc)
 		h.color("#4a4e4a", Geo.STEEL)
-		h.tube(Vector3(gs * 1.15 * Sc, 1.05 * Sc, (main_z + 0.45) * Sc), axle + Vector3(gs * -0.08 * Sc, 0.06 * Sc, 0.08 * Sc), 0.052, 8)
-		h.tube(axle + Vector3(gs * -0.15 * Sc, 0.04 * Sc, 0), Vector3(gs * 1.05 * Sc, 0.62 * Sc, (main_z + 1.35) * Sc), 0.032, 6)
-		h.tube(axle + Vector3(gs * -0.15 * Sc, 0.04 * Sc, 0), Vector3(gs * 1.05 * Sc, 0.62 * Sc, (main_z - 1.15) * Sc), 0.032, 6)
-		h.tube(axle + Vector3(gs * -0.18 * Sc, 0, 0), axle + Vector3(gs * 0.16 * Sc, 0, 0), 0.034, 6)
+		h.tube(Vector3(gs * 1.15 * Sc, 1.05 * Sc, (main_z + 0.45) * Sc), axle + Vector3(gs * -0.08 * Sc, 0.06 * Sc, 0.08 * Sc), 0.052 * Tw, 8)
+		h.tube(axle + Vector3(gs * -0.15 * Sc, 0.04 * Sc, 0), Vector3(gs * 1.05 * Sc, 0.62 * Sc, (main_z + 1.35) * Sc), 0.032 * Tw, 6)
+		h.tube(axle + Vector3(gs * -0.15 * Sc, 0.04 * Sc, 0), Vector3(gs * 1.05 * Sc, 0.62 * Sc, (main_z - 1.15) * Sc), 0.032 * Tw, 6)
+		h.tube(axle + Vector3(gs * -0.18 * Sc, 0, 0), axle + Vector3(gs * 0.16 * Sc, 0, 0), 0.034 * Tw, 6)
 		_mi8_tyre(h, axle, main_r * Sc, 0.26 * Sc)
 	print("  mi8 gear track 4.50 m, wheelbase %.2f m, main dia %.3f m, nose dia %.3f m" % [nose_z - main_z, main_r * 2.0, nose_r * 2.0])
 	# Stub weapon beam each side, three struts, three rocket pods. The drawing shows the
@@ -1411,16 +1414,16 @@ static func mi8_v2(mat: Material) -> void:
 		h.camo("#7d8a58", 2)
 		h.cbox(Vector3(sd * 1.72 * Sc, 1.38 * Sc, 2.70 * Sc), Vector3(1.05 * Sc, 0.36 * Sc, 4.60 * Sc), 0.05 * Sc)
 		h.color("#3e423c", Geo.STEEL)
-		h.tube(Vector3(sd * 1.22 * Sc, 2.35 * Sc, 4.15 * Sc), Vector3(sd * 2.05 * Sc, 1.52 * Sc, 3.85 * Sc), 0.038, 6)
-		h.tube(Vector3(sd * 1.22 * Sc, 2.35 * Sc, 2.55 * Sc), Vector3(sd * 2.10 * Sc, 1.52 * Sc, 2.55 * Sc), 0.038, 6)
-		h.tube(Vector3(sd * 1.22 * Sc, 2.25 * Sc, 1.05 * Sc), Vector3(sd * 2.05 * Sc, 1.52 * Sc, 1.35 * Sc), 0.038, 6)
+		h.tube(Vector3(sd * 1.22 * Sc, 2.35 * Sc, 4.15 * Sc), Vector3(sd * 2.05 * Sc, 1.52 * Sc, 3.85 * Sc), 0.038 * Tw, 6)
+		h.tube(Vector3(sd * 1.22 * Sc, 2.35 * Sc, 2.55 * Sc), Vector3(sd * 2.10 * Sc, 1.52 * Sc, 2.55 * Sc), 0.038 * Tw, 6)
+		h.tube(Vector3(sd * 1.22 * Sc, 2.25 * Sc, 1.05 * Sc), Vector3(sd * 2.05 * Sc, 1.52 * Sc, 1.35 * Sc), 0.038 * Tw, 6)
 		var tag := "R" if sd > 0.0 else "L"
 		for i in 3:
 			var pz: float = (4.45 - float(i) * 1.70) * Sc
 			var px: float = sd * 1.78 * Sc
 			var py: float = 0.78 * Sc
 			h.color("#3a3c38", Geo.STEEL)
-			h.tube(Vector3(px, 1.20 * Sc, pz), Vector3(px, py + 0.28 * Sc, pz), 0.028, 6)
+			h.tube(Vector3(px, 1.20 * Sc, pz), Vector3(px, py + 0.28 * Sc, pz), 0.028 * Tw, 6)
 			h.color("#5c6258", Geo.DARK)
 			h.tube(Vector3(px, py, pz - 0.88 * Sc), Vector3(px, py, pz + 0.55 * Sc), 0.30 * Sc, 10)
 			h.color("#3a3e3a", Geo.STEEL)
@@ -1435,9 +1438,9 @@ static func mi8_v2(mat: Material) -> void:
 			pods.append(mk.name)
 	# Door rails, cabin breaks, and the two door guns. The MG fires from these, not the pods.
 	h.color("#2c3034", Geo.DARK)
-	h.tube(Vector3(-1.32 * Sc, 2.72 * Sc, 1.85 * Sc), Vector3(-1.32 * Sc, 2.72 * Sc, 3.40 * Sc), 0.022, 5)
-	h.tube(Vector3(-1.32 * Sc, 0.95 * Sc, 1.90 * Sc), Vector3(-1.32 * Sc, 0.95 * Sc, 3.30 * Sc), 0.016, 4)
-	h.box(Vector3(-1.36 * Sc, 1.55 * Sc, 2.15 * Sc), Vector3(0.04, 0.08, 0.16 * Sc))
+	h.tube(Vector3(-1.32 * Sc, 2.72 * Sc, 1.85 * Sc), Vector3(-1.32 * Sc, 2.72 * Sc, 3.40 * Sc), 0.022 * Tw, 5)
+	h.tube(Vector3(-1.32 * Sc, 0.95 * Sc, 1.90 * Sc), Vector3(-1.32 * Sc, 0.95 * Sc, 3.30 * Sc), 0.016 * Tw, 4)
+	h.box(Vector3(-1.36 * Sc, 1.55 * Sc, 2.15 * Sc), Vector3(0.04 * Tw, 0.08 * Tw, 0.16 * Sc))
 	_mi8_detail(h, Sc)
 	for ms in [-1.0, 1.0]:
 		var mside: float = ms
@@ -1459,7 +1462,7 @@ static func mi8_v2(mat: Material) -> void:
 	tail.set_meta("rotor_axis", "x")
 	parts.append(_mi8_rotor(tail, root, mat, 1.955 * Sc, 3, true))
 	print("  mi8_v2 pods ", pods, " hub m ", hub / Sc)
-	_save(root, model, h, mat, "res://view/units/ecc/mi8_v2.tscn", 1.82, parts)
+	_save(root, model, h, mat, "res://view/units/ecc/mi8_v2.tscn", 1.82 * Tw, parts)
 
 ## Rounded-rectangle cross-section. Sixteen points: four corners, four steps each.
 static func _mi8_ring(hw: float, y0: float, y1: float, rad: float) -> Array:
@@ -1546,41 +1549,44 @@ static func _mi8_tyre(h, c: Vector3, r: float, w: float) -> void:
 
 ## Breaks on the flat cabin and boom: seams, a roof rivet line, two access panels.
 static func _mi8_detail(h, sc: float) -> void:
+	var u := sc / 0.311
 	h.color("#2c3028", Geo.DARK)
 	for s in [-1.0, 1.0]:
 		var sd: float = s
-		h.box(Vector3(sd * 1.28 * sc, 2.55 * sc, 2.6 * sc), Vector3(0.012, 0.015, 6.4 * sc))
-		h.box(Vector3(sd * 1.28 * sc, 1.15 * sc, 2.6 * sc), Vector3(0.012, 0.015, 6.4 * sc))
+		h.box(Vector3(sd * 1.28 * sc, 2.55 * sc, 2.6 * sc), Vector3(0.012 * u, 0.015 * u, 6.4 * sc))
+		h.box(Vector3(sd * 1.28 * sc, 1.15 * sc, 2.6 * sc), Vector3(0.012 * u, 0.015 * u, 6.4 * sc))
 		for k in 8:
-			h.box(Vector3(sd * 1.27 * sc, 3.05 * sc, (5.4 - float(k) * 0.8) * sc), Vector3(0.02, 0.012, 0.02))
+			h.box(Vector3(sd * 1.27 * sc, 3.05 * sc, (5.4 - float(k) * 0.8) * sc), Vector3(0.02 * u, 0.012 * u, 0.02 * u))
 	h.camo("#7d8a58", 2)
-	h.box(Vector3(1.22 * sc, 2.15 * sc, 0.4 * sc), Vector3(0.02, 0.55 * sc, 0.7 * sc))
-	h.box(Vector3(-1.22 * sc, 2.35 * sc, 4.3 * sc), Vector3(0.02, 0.42 * sc, 0.55 * sc))
+	h.box(Vector3(1.22 * sc, 2.15 * sc, 0.4 * sc), Vector3(0.02 * u, 0.55 * sc, 0.7 * sc))
+	h.box(Vector3(-1.22 * sc, 2.35 * sc, 4.3 * sc), Vector3(0.02 * u, 0.42 * sc, 0.55 * sc))
 	h.color("#2c3028", Geo.DARK)
-	h.box(Vector3(0, 2.05 * sc, -5.2 * sc), Vector3(0.015, 0.012, 2.4 * sc))
+	h.box(Vector3(0, 2.05 * sc, -5.2 * sc), Vector3(0.015 * u, 0.012 * u, 2.4 * sc))
 
 static func _mi8_port(h, c: Vector3, s: float) -> void:
+	var u := 0.218 / 0.311
 	h.color("#161a1e", Geo.DARK)
-	h.tube(c, c + Vector3(s * 0.016, 0, 0), 0.078, 10)
+	h.tube(c, c + Vector3(s * 0.016 * u, 0, 0), 0.078 * u, 10)
 	h.color("#24323a", Geo.GLASS)
-	var r := 0.050
+	var r := 0.050 * u
 	h.pane([
-		c + Vector3(s * 0.018, -r, -r), c + Vector3(s * 0.018, -r, r),
-		c + Vector3(s * 0.018, r, r), c + Vector3(s * 0.018, r, -r)], Vector3(s, 0, 0), 0.006, 0.004)
+		c + Vector3(s * 0.018 * u, -r, -r), c + Vector3(s * 0.018 * u, -r, r),
+		c + Vector3(s * 0.018 * u, r, r), c + Vector3(s * 0.018 * u, r, -r)], Vector3(s, 0, 0), 0.006 * u, 0.004 * u)
 
 static func _mi8_door(model: Node, root: Node, mat: Material, c: Vector3, s: Vector3):
 	var g = K.new()
 	g.plain = true
 	g.camo("#a3b07a", 2)
 	g.box(c, s)
-	_mi8_port(g, c + Vector3(-0.03, 0.12, 0), -1.0)
+	var u := 0.218 / 0.311
+	_mi8_port(g, c + Vector3(-0.03 * u, 0.12 * u, 0), -1.0)
 	g.color("#2c3034", Geo.DARK)
 	var hy := s.y * 0.5
 	var hz := s.z * 0.5
-	g.tube(c + Vector3(-0.03, hy, -hz), c + Vector3(-0.03, hy, hz), 0.016, 4)
-	g.tube(c + Vector3(-0.03, -hy, -hz), c + Vector3(-0.03, -hy, hz), 0.016, 4)
-	g.tube(c + Vector3(-0.03, -hy, -hz), c + Vector3(-0.03, hy, -hz), 0.016, 4)
-	g.tube(c + Vector3(-0.03, -hy, hz), c + Vector3(-0.03, hy, hz), 0.016, 4)
+	g.tube(c + Vector3(-0.03 * u, hy, -hz), c + Vector3(-0.03 * u, hy, hz), 0.016 * u, 4)
+	g.tube(c + Vector3(-0.03 * u, -hy, -hz), c + Vector3(-0.03 * u, -hy, hz), 0.016 * u, 4)
+	g.tube(c + Vector3(-0.03 * u, -hy, -hz), c + Vector3(-0.03 * u, hy, -hz), 0.016 * u, 4)
+	g.tube(c + Vector3(-0.03 * u, -hy, hz), c + Vector3(-0.03 * u, hy, hz), 0.016 * u, 4)
 	VK._mi(model, root, "DoorPort", g.commit(mat))
 	return g
 
@@ -1590,9 +1596,10 @@ static func _mi8_clamshell(model: Node, root: Node, mat: Material, name: String,
 	g.camo("#a3b07a", 2)
 	g.box(c, s)
 	g.color("#2c3034", Geo.DARK)
-	g.box(Vector3(c.x - side * s.x * 0.48, c.y, c.z), Vector3(0.02, s.y * 0.94, s.z * 1.3))
+	var u := 0.218 / 0.311
+	g.box(Vector3(c.x - side * s.x * 0.48, c.y, c.z), Vector3(0.02 * u, s.y * 0.94, s.z * 1.3))
 	var edge_x: float = c.x + side * s.x * 0.5
-	g.tube(Vector3(edge_x, c.y - s.y * 0.42, c.z), Vector3(edge_x, c.y + s.y * 0.42, c.z), 0.016, 5)
+	g.tube(Vector3(edge_x, c.y - s.y * 0.42, c.z), Vector3(edge_x, c.y + s.y * 0.42, c.z), 0.016 * u, 5)
 	VK._mi(model, root, name, g.commit(mat))
 	return g
 

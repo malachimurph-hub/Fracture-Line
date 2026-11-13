@@ -99,6 +99,26 @@ func _views() -> void:
 	await frames(4)
 	await shot("hover_with_tanks")
 
+func _span(label: String, n: Node) -> void:
+	if n == null:
+		print("SPAN ", label, " missing")
+		return
+	var mn := Vector3(1e9, 1e9, 1e9)
+	var mx := Vector3(-1e9, -1e9, -1e9)
+	var meshes: Array = []
+	if n is MeshInstance3D:
+		meshes.append(n)
+	for mi in n.find_children("*", "MeshInstance3D", true, false):
+		meshes.append(mi)
+	for mi in meshes:
+		if (mi as MeshInstance3D).mesh == null:
+			continue
+		var ab: AABB = (mi as MeshInstance3D).global_transform * (mi as MeshInstance3D).mesh.get_aabb()
+		mn = mn.min(ab.position)
+		mx = mx.max(ab.position + ab.size)
+	var sz := mx - mn
+	print("SPAN ", label, " size u ", sz, " len z ", sz.z, " wide x ", sz.x)
+
 func _paint(n: Node) -> void:
 	var olive := Color("#96A468")
 	for g in n.find_children("*", "GeometryInstance3D", true, false):
@@ -126,6 +146,15 @@ func _measure(model: Node3D) -> void:
 	print("ROTOR ", rotor.position, " m ", rotor.position / sc, " axis ", rotor.get_meta("rotor_axis"))
 	print("TAIL ", tail.position, " m ", tail.position / sc, " axis ", tail.get_meta("rotor_axis"))
 	print("BAR y ", bar.position.y, " sel ", model.get("selection_radius"))
+	_span("mi8 hull", model.find_child("Hull", true, false))
+	_span("mi8 rotor", model.find_child("Rotor", true, false))
+	var hawk := (load("res://view/units/us/blackhawk.tscn") as PackedScene).instantiate() as Node3D
+	_span("blackhawk", hawk)
+	_span("blackhawk rotor", hawk.find_child("Rotor", true, false))
+	hawk.free()
+	var bmp := (load("res://view/units/ecc/bmp3_v2.tscn") as PackedScene).instantiate() as Node3D
+	_span("bmp3", bmp)
+	bmp.free()
 	var names: Array = []
 	for c in model.find_children("PodMuzzle*", "Marker3D", true, false):
 		names.append(c.name)

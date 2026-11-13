@@ -11,12 +11,17 @@ func _ready() -> void:
 	await _start("varno_crossing", ["ecc", "us"], false)
 	var spot := Vector2i(48, 48)
 	var heli := _unit(&"ecc_mi8", spot, 0)
+	var hawk := _unit(&"us_blackhawk", spot + Vector2i(7, 1), 0, 1)
 	var squad := _unit(&"ecc_squad", spot + Vector2i(-4, 1), 0)
 	var grunt := _unit(&"us_grunt", spot + Vector2i(0, 6), FX.ANG / 2, 1)
 	heli.air_state = AirSys.FLYING
+	hawk.air_state = AirSys.FLYING
 	heli.orders.clear()
+	hawk.orders.clear()
 	heli.goal = MoveSys.NONE
+	hawk.goal = MoveSys.NONE
 	heli.spd = 0
+	hawk.spd = 0
 	m.ctl.set_selection([heli.id])
 	_frame(heli, 18.0)
 	await frames(16)
@@ -29,6 +34,10 @@ func _ready() -> void:
 	await frames(8)
 	print("HOVER y ", view.global_position.y, " bar ", view.bar_height, " anchor ", anchor.position.y if anchor != null else -1, " sel ", view.selection_radius)
 	print("SPIN main ", y0, " -> ", rotor.rotation.y, " tail ", x0, " -> ", tail.rotation.x, " axes ", rotor.get_meta("rotor_axis"), tail.get_meta("rotor_axis"))
+	print("BESIDE hawk y ", (m.world.views[hawk.id] as Node3D).global_position.y, " mi8 y ", view.global_position.y)
+	_frame(heli, 22.0)
+	await frames(4)
+	await shot("match_beside_hawk")
 	await shot("match_hover")
 	var origin := heli.pos
 	for step in 5:
