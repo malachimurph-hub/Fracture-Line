@@ -22,19 +22,32 @@ static func _run_belt(h, x0: float, x1: float, path: Array) -> void:
 	ctr /= float(path.size())
 	var s := 0.0
 	var n := path.size()
+	var th := 0.08
 	for i in n:
 		var a: Vector2 = path[i]
 		var b: Vector2 = path[(i + 1) % n]
 		var ln := a.distance_to(b)
 		if ln < 0.001:
 			continue
+		var dir := Vector3(0, b.y - a.y, b.x - a.x) / ln
+		var inward := Vector3(1, 0, 0).cross(dir)
+		var mid := Vector3((x0 + x1) * 0.5, (a.y + b.y) * 0.5, (a.x + b.x) * 0.5)
+		if inward.dot(mid - ctr) < 0.0:
+			inward = -inward
+		var out := -inward
 		var pa0 := Vector3(x0, a.y, a.x)
 		var pa1 := Vector3(x1, a.y, a.x)
 		var pb0 := Vector3(x0, b.y, b.x)
 		var pb1 := Vector3(x1, b.y, b.x)
+		var qa0 := pa0 + out * th
+		var qa1 := pa1 + out * th
+		var qb0 := pb0 + out * th
+		var qb1 := pb1 + out * th
+		var side := 1.0 if x1 > x0 else -1.0
 		h.uv = Vector2(s, 0.0)
-		var nrm: Vector3 = (Vector3(0, (a.y + b.y) * 0.5, (a.x + b.x) * 0.5) - ctr).normalized()
-		VK._quad_uv(h, [pa0, pa1, pb1, pb0], [Vector2(s, 0), Vector2(s, 1), Vector2(s + ln, 1), Vector2(s + ln, 0)], nrm)
+		VK._quad_uv(h, [qa0, qa1, qb1, qb0], [Vector2(s, 0), Vector2(s, 1), Vector2(s + ln, 1), Vector2(s + ln, 0)], out)
+		VK._quad_uv(h, [pa1, qa1, qb1, pb1], [Vector2(s, 0), Vector2(s, 0.4), Vector2(s + ln, 0.4), Vector2(s + ln, 0)], Vector3(side, 0, 0))
+		VK._quad_uv(h, [qa0, pa0, pb0, qb0], [Vector2(s, 0), Vector2(s, 0.4), Vector2(s + ln, 0.4), Vector2(s + ln, 0)], Vector3(-side, 0, 0))
 		s += ln
 
 static func bmp3(mat: Material) -> void:
