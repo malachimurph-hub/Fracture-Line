@@ -1829,16 +1829,16 @@ static func mzkt_base(mat: Material) -> void:
 		h.box(Vector3(sd * 1.395 * Sc, 1.75 * Sc, 4.70 * Sc), Vector3(0.012 * Sc, 0.016 * Sc, 1.15 * Sc))
 		h.color("#96A468", Geo.CONCRETE)
 		h.box(Vector3(sd * 1.42 * Sc, 1.42 * Sc, 4.55 * Sc), Vector3(0.16 * Sc, 0.06 * Sc, 0.32 * Sc))
-	# Two panes, the same size, mirrored about the cab centre, sitting on the outer face of the rake.
-	var pane_x := 0.32
+	# Two wide panes, mirrored about the cab centre. Together they cover most of the rake.
+	var pane_x := 0.50
 	h.color("#9aa6aa", Geo.STEEL)
-	h.plate(Vector3(-pane_x * Sc, 2.28 * Sc, 5.90 * Sc), Vector3(0.56 * Sc, 0.78 * Sc, 0.014 * Sc), Vector3(-32, 0, 0))
-	h.plate(Vector3(pane_x * Sc, 2.28 * Sc, 5.90 * Sc), Vector3(0.56 * Sc, 0.78 * Sc, 0.014 * Sc), Vector3(-32, 0, 0))
+	h.plate(Vector3(-pane_x * Sc, 2.28 * Sc, 5.90 * Sc), Vector3(1.02 * Sc, 0.94 * Sc, 0.014 * Sc), Vector3(-32, 0, 0))
+	h.plate(Vector3(pane_x * Sc, 2.28 * Sc, 5.90 * Sc), Vector3(1.02 * Sc, 0.94 * Sc, 0.014 * Sc), Vector3(-32, 0, 0))
 	h.color("#8eb6c6", Geo.GLASS)
-	h.plate(Vector3(-pane_x * Sc, 2.28 * Sc, 5.94 * Sc), Vector3(0.46 * Sc, 0.66 * Sc, 0.012 * Sc), Vector3(-32, 0, 0))
-	h.plate(Vector3(pane_x * Sc, 2.28 * Sc, 5.94 * Sc), Vector3(0.46 * Sc, 0.66 * Sc, 0.012 * Sc), Vector3(-32, 0, 0))
+	h.plate(Vector3(-pane_x * Sc, 2.28 * Sc, 5.94 * Sc), Vector3(0.92 * Sc, 0.82 * Sc, 0.012 * Sc), Vector3(-32, 0, 0))
+	h.plate(Vector3(pane_x * Sc, 2.28 * Sc, 5.94 * Sc), Vector3(0.92 * Sc, 0.82 * Sc, 0.012 * Sc), Vector3(-32, 0, 0))
 	h.color("#d5dee2", Geo.STEEL)
-	h.plate(Vector3(0, 2.28 * Sc, 5.95 * Sc), Vector3(0.04 * Sc, 0.66 * Sc, 0.012 * Sc), Vector3(-32, 0, 0))
+	h.plate(Vector3(0, 2.28 * Sc, 5.95 * Sc), Vector3(0.05 * Sc, 0.82 * Sc, 0.012 * Sc), Vector3(-32, 0, 0))
 	# Mirrors reach the 4,076 mm width and no further.
 	for sm in [-1.0, 1.0]:
 		h.tube(Vector3(sm * 1.36 * Sc, 2.55 * Sc, 5.35 * Sc), Vector3(sm * 1.92 * Sc, 2.62 * Sc, 5.48 * Sc), 0.022 * Sc, 5)
