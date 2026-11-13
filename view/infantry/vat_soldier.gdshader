@@ -22,6 +22,8 @@ instance uniform vec4 team_color : source_color = vec4(0.18, 0.5, 0.88, 1.0);
 instance uniform float rust_amt = 0.15;
 instance uniform float wear_amt = 0.5;
 instance uniform float dirt_amt = 0.6;
+// 0 keep the baked look, 1 US MultiCam, 2 German Flecktarn, 3 Russian EMR, 4 Iranian woodland
+instance uniform float pat = 0.0;
 varying float vy;
 varying vec4 pcol;
 varying float fade;
@@ -100,6 +102,75 @@ void vertex() {
 	fade = INSTANCE_CUSTOM.w;
 }
 
+float wave(vec3 p, vec3 k, float phase) {
+	return 0.5 + 0.5 * sin(dot(p, k) + phase);
+}
+
+// Large soft blotches. Frequencies are low so a phone at match zoom still sees regions, not grain.
+vec3 multicam(vec3 p) {
+	vec3 tan = srgb_to_linear(vec3(0.73, 0.62, 0.45));
+	vec3 pale = srgb_to_linear(vec3(0.84, 0.74, 0.56));
+	vec3 brown = srgb_to_linear(vec3(0.45, 0.30, 0.18));
+	vec3 green = srgb_to_linear(vec3(0.34, 0.40, 0.24));
+	vec3 dark = srgb_to_linear(vec3(0.26, 0.22, 0.16));
+	float a = wave(p, vec3(34.0, 46.0, 28.0), 0.4);
+	float b = wave(p, vec3(-28.0, 40.0, 36.0), 1.7);
+	float c = wave(p, vec3(38.0, -24.0, 32.0), 2.8);
+	vec3 col = tan;
+	col = mix(col, pale, smoothstep(0.18, 0.42, a) * (1.0 - smoothstep(0.35, 0.6, b)));
+	col = mix(col, green, smoothstep(0.48, 0.72, a));
+	col = mix(col, brown, smoothstep(0.52, 0.78, b));
+	col = mix(col, dark, smoothstep(0.7, 0.9, c) * 0.85);
+	return col;
+}
+
+vec3 flecktarn(vec3 p) {
+	vec3 base_c = srgb_to_linear(vec3(0.46, 0.48, 0.30));
+	vec3 sc = vec3(22.0, 26.0, 22.0);
+	vec3 cell = floor(p * sc);
+	vec3 f = fract(p * sc) - 0.5;
+	float dotm = 1.0 - smoothstep(0.16, 0.34, length(f));
+	float id = mod(cell.x + cell.y * 2.0 + cell.z * 3.0, 5.0);
+	vec3 spot = srgb_to_linear(vec3(0.10, 0.12, 0.08));
+	spot = mix(spot, srgb_to_linear(vec3(0.16, 0.28, 0.14)), step(0.5, id));
+	spot = mix(spot, srgb_to_linear(vec3(0.32, 0.36, 0.18)), step(1.5, id));
+	spot = mix(spot, srgb_to_linear(vec3(0.40, 0.26, 0.14)), step(2.5, id));
+	spot = mix(spot, srgb_to_linear(vec3(0.55, 0.62, 0.32)), step(3.5, id));
+	return mix(base_c, spot, dotm);
+}
+
+vec3 emr(vec3 p) {
+	vec3 sc = vec3(26.0, 32.0, 26.0);
+	vec3 cell = floor(p * sc);
+	vec3 f = abs(fract(p * sc) - 0.5);
+	float edge = smoothstep(0.42, 0.5, max(f.x, max(f.y, f.z)));
+	float id = mod(cell.x + cell.y * 2.0 + cell.z * 5.0, 4.0);
+	vec3 a = srgb_to_linear(vec3(0.55, 0.58, 0.40));
+	vec3 b = srgb_to_linear(vec3(0.32, 0.40, 0.22));
+	vec3 c = srgb_to_linear(vec3(0.42, 0.32, 0.20));
+	vec3 d = srgb_to_linear(vec3(0.22, 0.26, 0.16));
+	vec3 col = a;
+	col = mix(col, b, step(0.5, id));
+	col = mix(col, c, step(1.5, id));
+	col = mix(col, d, step(2.5, id));
+	return mix(col, a, edge * 0.35);
+}
+
+vec3 woodland(vec3 p) {
+	vec3 olive = srgb_to_linear(vec3(0.36, 0.40, 0.22));
+	vec3 dk = srgb_to_linear(vec3(0.14, 0.22, 0.12));
+	vec3 brown = srgb_to_linear(vec3(0.34, 0.24, 0.12));
+	vec3 black = srgb_to_linear(vec3(0.10, 0.11, 0.08));
+	float a = wave(p, vec3(30.0, 40.0, 26.0), 0.2);
+	float b = wave(p, vec3(-26.0, 34.0, 32.0), 1.4);
+	float c = wave(p, vec3(36.0, -20.0, 28.0), 2.2);
+	vec3 col = olive;
+	col = mix(col, dk, smoothstep(0.55, 0.78, a));
+	col = mix(col, brown, smoothstep(0.58, 0.82, b));
+	col = mix(col, black, smoothstep(0.78, 0.94, c) * 0.45);
+	return col;
+}
+
 float hash3(vec3 p) {
 	p = fract(p * 0.3183099 + 0.1);
 	p *= 17.0;
@@ -121,18 +192,35 @@ void fragment() {
 		// M3.4: smooth, soft-edged camouflage in rest-pose space (no grain, no tiling), per-soldier
 		// skin tone and a slight per-soldier tint of the uniform
 		if (fl_camo > 0.5) {
-			float fq = fl_camo > 1.5 ? 70.0 : 38.0;
-			float n1 = vnoise(rest * fq + vec3(3.1, 0.0, 1.7));
-			float n2 = vnoise(rest * fq * 1.3 + vec3(-7.0, 2.0, 5.0));
-			float dark = smoothstep(0.5, 0.58, n1);
-			float lite = smoothstep(0.6, 0.68, n2) * (1.0 - dark);
-			vec3 dk = fl_camo > 1.5 ? base * vec3(0.5, 0.58, 0.46) : base * vec3(0.6, 0.6, 0.5);
-			vec3 lt = base * vec3(1.16, 1.12, 1.02);
-			if (fl_camo > 1.5) {
-				float n3 = vnoise(rest * 95.0 + vec3(11.0, 4.0, -2.0));
-				dk = mix(dk, base * vec3(0.78, 0.62, 0.48), smoothstep(0.45, 0.55, n3));
+			if (pat > 3.5) {
+				base = woodland(rest);
+			} else if (pat > 2.5) {
+				base = emr(rest);
+			} else if (pat > 1.5) {
+				base = flecktarn(rest);
+			} else if (pat > 0.5) {
+				base = multicam(rest);
+			} else {
+				// Conscripts and any unit left on the baked look: the old smooth blotch.
+				float fq = fl_camo > 1.5 ? 70.0 : 38.0;
+				float n1 = vnoise(rest * fq + vec3(3.1, 0.0, 1.7));
+				float n2 = vnoise(rest * fq * 1.3 + vec3(-7.0, 2.0, 5.0));
+				float dark = smoothstep(0.5, 0.58, n1);
+				float lite = smoothstep(0.6, 0.68, n2) * (1.0 - dark);
+				vec3 dk = fl_camo > 1.5 ? base * vec3(0.5, 0.58, 0.46) : base * vec3(0.6, 0.6, 0.5);
+				vec3 lt = base * vec3(1.16, 1.12, 1.02);
+				if (fl_camo > 1.5) {
+					float n3 = vnoise(rest * 95.0 + vec3(11.0, 4.0, -2.0));
+					dk = mix(dk, base * vec3(0.78, 0.62, 0.48), smoothstep(0.45, 0.55, n3));
+				}
+				base = mix(mix(base, dk, dark), lt, lite);
 			}
-			base = mix(mix(base, dk, dark), lt, lite);
+		} else if (pat > 0.5 && pat < 1.5 && fl_skin < 0.5 && pcol.a < 0.5) {
+			// Coyote plate carrier, pouches and helmet. Boots and weapons stay dark.
+			float y = dot(base, vec3(0.3, 0.59, 0.11));
+			if (y > 0.07 && y < 0.42) {
+				base = mix(base, srgb_to_linear(vec3(0.52, 0.40, 0.26)), 0.55);
+			}
 		}
 		if (fl_skin > 0.5) {
 			base *= skin_tone;

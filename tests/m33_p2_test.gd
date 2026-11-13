@@ -128,7 +128,8 @@ static func _new_models(t: Node) -> void:
 	t._check(Content.building(&"ecc_bunker").weapons.has("ecc_silo_missile") and sm.damage == 384 and sm.range_mt == 9500,
 		"the missile silo fires a 384-damage missile at 9.5 tiles (M3.7 defence buff, was 240)")
 	t._check(_scene_has("res://view/buildings/ecc/bunker.tscn", ["DoorL", "DoorR"]), "the silo has two hatch doors")
-	t._check(_scene_has("res://view/buildings/ecc/black_market.tscn", ["BucketWheel"]), "the excavator has a bucket wheel")
+	t._check(_scene_has("res://view/buildings/ecc/black_market.tscn", ["TowerMount"]) and not _scene_has("res://view/buildings/ecc/black_market.tscn", ["BucketWheel"]),
+		"the Black Market is a fixed hub with a tower mount, not the bucket-wheel excavator")
 	t._check(_scene_has("res://view/buildings/tpla/bazaar.tscn", ["Beam"]), "the oil derrick has a walking beam")
 	t._check(_scene_has("res://view/buildings/us/reactor.tscn", ["Stack0", "Stack1"]) and _scene_has("res://view/buildings/tpla/gas_plant.tscn", ["Stack0", "Stack1"]),
 		"reactor towers and gas-plant stacks carry steam/smoke emitters")

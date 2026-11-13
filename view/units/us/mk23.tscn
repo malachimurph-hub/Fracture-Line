@@ -1,6 +1,6 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://view/infantry/infantry_view.gd" id="1_iv"]
+[ext_resource type="Script" path="res://view/units/us/mk23_view.gd" id="1_iv"]
 [ext_resource type="Resource" path="res://assets/models/infantry/us_mk23_gunner.res" id="2_vat"]
 
 [node name="View" type="Node3D"]

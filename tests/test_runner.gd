@@ -114,6 +114,8 @@ func _ready() -> void:
 			await load("res://tests/m43_test.gd").run(self)   # M4.3 (0.4.3) Malachi's list
 		"m44":
 			await load("res://tests/m44_test.gd").run(self)   # M4.4 (0.4.4) US tech tree
+		"m47":
+			load("res://tests/m47_test.gd").run(self)   # Russia tech tree
 		"zeus_silo":
 			load("res://tests/zeus_silo_test.gd").run(self)   # 0.4.6 ZEUS silo and pylon ring
 		"gfx_review":

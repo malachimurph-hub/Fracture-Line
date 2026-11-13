@@ -169,6 +169,24 @@ func _place_all() -> void:
 			xf = Transform3D(Basis(Vector3.UP, yaw).scaled(Vector3.ONE * _scale), formation[i] + Vector3(0, sink, 0))
 		_mm(i).set_instance_transform(_slot[i], xf)
 
+## Cloth pattern. 0 keeps the baked look (Russian conscripts). 1 MultiCam, 2 Flecktarn,
+## 3 EMR, 4 Iranian woodland. One value for the whole squad, so draw count stays the same.
+func set_pattern(unit_id: StringName) -> void:
+	var s := String(unit_id)
+	var p := 0.0
+	if s.begins_with("ecc_con") or s == "ecc_squad":
+		p = 0.0
+	elif s.begins_with("us_"):
+		p = 1.0
+	elif s.begins_with("eu_"):
+		p = 2.0
+	elif s.begins_with("ecc_"):
+		p = 3.0
+	elif s.begins_with("tpla_"):
+		p = 4.0
+	for inst in _instances():
+		(inst as MultiMeshInstance3D).set_instance_shader_parameter(&"pat", p)
+
 func set_team_material(mat: Material) -> void:
 	var c := Color(0.18, 0.5, 0.88)
 	if mat is ShaderMaterial:
@@ -198,7 +216,19 @@ func set_variant(seed: int) -> void:
 		var vv := variant if k == 0 else hk % maxi(1, vat.variants if vat != null else 1)
 		(inst as MultiMeshInstance3D).set_instance_shader_parameter(&"variant", float(vv))
 		(inst as MultiMeshInstance3D).set_instance_shader_parameter(&"skin_tone", SKIN_TONES[((h if k == 0 else hk) / 5) % SKIN_TONES.size()])
-		(inst as MultiMeshInstance3D).set_instance_shader_parameter(&"tint", 0.94 + float(((h if k == 0 else hk) / 11) % 7) * 0.02)
+		var tint0 := 0.94 + float(((h if k == 0 else hk) / 11) % 7) * 0.02
+		var dirt0 := 0.55
+		if squad_id == &"ecc_squad":
+			# The mismatch is the baked cloth (Flora, EMR, woodland, olive), so the tint stays near 1.
+			tint0 = 0.96 + float(((h if k == 0 else hk) / 11) % 4) * 0.02
+			dirt0 = 0.22 + float(((h if k == 0 else hk) / 3) % 4) * 0.06
+		elif String(squad_id).begins_with("ecc_"):
+			tint0 = 0.76 + float(((h if k == 0 else hk) / 11) % 9) * 0.055
+			dirt0 = 0.32 + float(((h if k == 0 else hk) / 3) % 6) * 0.09
+		if squad_id in [&"ecc_alfa", &"ecc_spetsnaz", &"ecc_vdv"]:
+			tint0 *= 0.78
+		(inst as MultiMeshInstance3D).set_instance_shader_parameter(&"tint", tint0)
+		(inst as MultiMeshInstance3D).set_instance_shader_parameter(&"dirt_amt", dirt0)
 		k += 1
 	for i in _phase.size():
 		_phase[i] = fposmod(_phase[i] + float(h % 97) / 97.0, 1.0)

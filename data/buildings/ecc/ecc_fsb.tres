@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="BuildingDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/building_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"ecc_fsb"
+faction = &"ecc"
+name_key = "BLD_ECC_FSB"
+desc_key = "BLD_ECC_FSB_DESC"
+category = &"production"
+cost = 4200
+build_time_ms = 24000
+footprint = Vector2i(3, 3)
+max_hp = 1800
+power = -6
+grid_radius = 0
+sight = 7
+prereqs = PackedStringArray("ecc_ministry")
+produces = PackedStringArray("ecc_alfa", "ecc_spetsnaz", "ecc_vdv")
+is_hq = false
+is_refinery = false
+passive_income = 0
+income_amount = 0
+income_period_s = 0
+free_unit = &""
+shield_pct = 0
+view_scene = "res://view/buildings/ecc/fsb.tscn"
+stubs = PackedStringArray()
+weapons = PackedStringArray()
+needs_power_to_fire = false
+garrison_capacity = 0
+capturable = false
+capture_income = 0
+buildable = true
+tags = PackedStringArray()
+aux_radius = 0
+air_slots = 0

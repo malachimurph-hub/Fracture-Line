@@ -7,7 +7,7 @@ const BANNED := ["Lockheed", "Boeing", "Sikorsky", "Raytheon", "Northrop", "Gene
 
 
 static func run(t: Node) -> void:
-	t._check(str(ProjectSettings.get_setting("application/config/version")) == "0.4.6", "version stays 0.4.6")
+	t._check(str(ProjectSettings.get_setting("application/config/version")) == "0.4.7", "version is 0.4.7")
 	var u: UnitDef = Content.unit(&"us_halberd")
 	t._check(u.view_scene == "res://view/units/us/halberd.tscn" and u.cost == 1200 and u.max_hp == 980, "live M1A3 card is untouched")
 	var pad: BuildingDef = Content.building(&"us_zeus_launcher")

@@ -215,6 +215,17 @@ static func apply(w: SimWorld, c: Dictionary) -> void:
 			PowersSys.buy(w, pid, StringName(c.get("def", "")))
 		"power":
 			PowersSys.fire(w, pid, StringName(c.get("def", "")), c.get("pos", Vector2i.ZERO))
+		"tower":
+			EccSys.install_tower(w, pid, w.get_ent(int(c.get("target", 0))), String(c.get("def", "")))
+		"mzkt":
+			for id in c.get("ids", []):
+				EccSys.begin_mzkt(w, pid, w.get_ent(int(id)), String(c.get("def", "")))
+		"red_dawn":
+			for id in c.get("ids", []):
+				EccSys.red_dawn(w, pid, w.get_ent(int(id)), c.get("pos", Vector2i.ZERO))
+		"hack":
+			for id in c.get("ids", []):
+				EccSys.hack(w, pid, w.get_ent(int(id)), String(c.get("def", "")), int(c.get("target", 0)))
 		"detonate":
 			for id in c.get("ids", []):
 				var tr := w.get_ent(int(id))

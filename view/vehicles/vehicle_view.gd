@@ -46,6 +46,13 @@ var _dumped := false
 var pack_rig: PackRig
 var pack_target := 1.0
 var pack_k := -1.0
+var plant := 0.0                 ## 0 travelling, 1 outriggers down (Grim Reaper)
+var _plant_k := 0.0
+var _outriggers: Node3D
+var _rotor: Node3D
+var _radar: Node3D
+var _radar_rx := 0.0
+var _legs: Array = []
 
 func _ready() -> void:
 	super._ready()
@@ -64,6 +71,16 @@ func _ready() -> void:
 	pack_rig = PackRig.from(m)
 	if pack_rig != null:
 		pack_rig.pose(1.0)
+	_outriggers = find_child("Outriggers", true, false) as Node3D
+	_rotor = find_child("Rotor", true, false) as Node3D
+	_radar = find_child("Radar", true, false) as Node3D
+	if _outriggers != null:
+		_outriggers.position.y = 0.42
+		for c in _outriggers.get_children():
+			if String(c.name).begins_with("Leg"):
+				_legs.append(c)
+	if _radar != null:
+		_radar_rx = _radar.rotation.x
 	barrel = find_child("Barrel", true, false)
 	if barrel != null:
 		_barrel_z = barrel.position.z
@@ -201,7 +218,26 @@ func work_pose(t: float) -> void:
 static func _ease(k: float) -> float:
 	return k * k * (3.0 - 2.0 * k)
 
+func set_reactive(on: bool) -> void:
+	for n in find_children("ActiveArmor", "MeshInstance3D", true, false):
+		(n as Node3D).visible = on
+
+func set_plant(k: float) -> void:
+	plant = clampf(k, 0.0, 1.0)
+
 func _process(delta: float) -> void:
+	if _rotor != null and not _dead:
+		_rotor.rotate_y(delta * 18.0)
+	if (_outriggers != null or _radar != null) and not _dead:
+		_plant_k = move_toward(_plant_k, plant, delta * 0.5)
+		if _outriggers != null:
+			_outriggers.position.y = lerpf(0.42, 0.0, _plant_k)
+			for leg in _legs:
+				var swing := 1.50 if String(leg.name).ends_with("R") else -1.50
+				(leg as Node3D).rotation.z = lerpf(swing, 0.0, _plant_k)
+		if _radar != null:
+			# Pantsir search radar: the node is the hinge, so this lays the panel back for travel.
+			_radar.rotation.x = _radar_rx + lerpf(-1.70, 0.0, _plant_k)
 	if not work_parts.is_empty() and not _dead:
 		_work(delta)
 	if _dead:

@@ -42,6 +42,14 @@ const CLASSES := {
 	&"eu_gatling_gnd": "quad", &"tpla_wasp_gnd": "missile", &"us_patriot_gnd": "mg", &"ecc_zak30_gnd": "quad", &"sidearm": "rifle",
 	# ZEUS silo: a heavy ballistic round, not the small missile streak
 	&"us_zeus_missile": "icbm",
+	# Russia tree. The two ballistic trucks use the rising missile; flight time is special-cased in CombatSys.
+	&"ecc_ak47": "rifle", &"ecc_asval": "rifle", &"ecc_vss": "rifle", &"ecc_ak74u": "rifle", &"ecc_ak74m": "rifle",
+	&"ecc_bmp_100": "cannon", &"ecc_bmp_30": "autocannon", &"ecc_bmp_atgm": "missile",
+	&"ecc_bmpt_30": "autocannon", &"ecc_bmpt_gl": "grenade", &"ecc_bmpt_atgm": "missile",
+	&"ecc_t14_gun": "cannon", &"ecc_t14_pod": "missile", &"ecc_tos": "salvo", &"ecc_iskander": "icbm", &"ecc_reaper_mirv": "icbm",
+	&"ecc_mi8_mg": "mg", &"ecc_pantsir_gun": "autocannon", &"ecc_pantsir_sam": "missile",
+	&"ecc_mzkt_gun": "autocannon", &"ecc_mzkt_sam": "missile", &"ecc_mzkt_cm": "missile",
+	&"ecc_tower_bal": "autocannon", &"ecc_tower_at": "missile", &"ecc_tower_aa": "missile",
 }
 const BY_KIND := {"tracer": "rifle", "tracer_heavy": "mg", "shell": "cannon", "missile": "missile",
 	"rocket": "rocket", "rocket_salvo": "salvo", "tracer_quad": "quad", "tracer_minigun": "minigun", "flak": "flak", "grenade": "grenade",
@@ -315,8 +323,18 @@ func _impact(cls: String, p: Vector3, hitk: int, s: float) -> void:
 				vfx.decal(ground, es * 1.1, 1)
 			elif hitk < 0 and es >= 0.3 and randf() < 0.7:
 				vfx.decal(ground, es * 0.75, 0)   # M3.2: fresh scorch where a shell lands (pooled ring, cap 160)
-			var key := "expl_large" if cls == "artillery" else "expl_small"
-			AudioDirector.sfx(key, p, -4.0 if cls != "artillery" else -1.0, 0.12)
+			var key := "expl_small"
+			var vol := -4.0
+			var pit := 0.12
+			if cls == "artillery":
+				key = "expl_large"
+				vol = -1.0
+			elif cls in ["missile", "rocket", "salvo", "icbm"]:
+				# Large missile impact: deep boom, low end, debris. Played as the round arrives.
+				key = "missile_impact"
+				vol = -1.0
+				pit = 0.08
+			AudioDirector.sfx(key, p, vol, pit)
 
 # ------------------------------------------------------------------ per frame
 func _process(delta: float) -> void:

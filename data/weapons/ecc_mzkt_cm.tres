@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="WeaponDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/weapon_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"ecc_mzkt_cm"
+damage = 280
+range_mt = 18000
+min_range_mt = 6000
+cooldown_ms = 20000
+damage_type = &"demolition"
+splash_mt = 1600
+targets_air = false
+targets_ground = true
+vfx = &"missile"
+min_tier = 0
+pre_attack_ms = 1800
+pre_attack_type = &"attack"
+clip_size = 0
+reload_ms = 0
+aim_deg = 20
+scatter_mt = 400
+scatter_inf_mt = 0

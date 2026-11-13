@@ -1,8 +1,8 @@
 class_name AIRussia
 extends AIPlayer
-## M3.0 F Russia skirmish AI. Same rules as every AI. Uses the power-economy build planner of
-## AIPlayer with Russian structures (roles): Ministry of Defense (tech), Minerals Mining (income, was the Black Market),
-## Airfield jets fly sorties through the shared AIPlayer air layer (M3.2). Infiltrators are capped like US snipers.
+## Russia skirmish AI. Ministry of Defense is the tech building. The Black Market is the hacker
+## hub (still the income-role slot, it no longer pays a wage). FSB GRU is added once the
+## Ministry is up. Airfield jets fly sorties through the shared air layer.
 
 func roles() -> Dictionary:
 	return {"builder": &"ecc_engineer", "harvester": &"ecc_cargo_truck", "refinery": &"ecc_depot", "power": &"ecc_power",
@@ -26,14 +26,79 @@ func _unit_allowed(ud: UnitDef) -> bool:
 				inf += 1
 		if inf >= maxi(8, all.size() * 2 / 5):
 			return false
-	if ud.id == &"ecc_infiltrator":
-		return _count_type(ud.id) < 1 + combat_units().size() / 12
-	if ud.id == &"ecc_msta":
+	if ud.id == &"ecc_msta" or ud.id == &"ecc_tos" or ud.id == &"ecc_iskander":
 		return _count_type(ud.id) < 2 + combat_units().size() / 10
+	if ud.id == &"ecc_reaper" or ud.id == &"ecc_pantsir" or ud.id == &"ecc_mzkt":
+		return _count_type(ud.id) < 2
+	if ud.id == &"ecc_alfa" or ud.id == &"ecc_spetsnaz" or ud.id == &"ecc_vdv":
+		return _count_type(ud.id) < 1 + combat_units().size() / 12
 	return true
 
 func _is_scout_type(u: SimEntity) -> bool:
 	return u.def_id == &"ecc_tigr"
+
+## Researched towers, Red Dawn and the Black Market hacks. One action per think.
+func _ecc_ops() -> void:
+	var p := me()
+	if p.supply > 800:
+		for truck: SimEntity in my_ents(SimEntity.Kind.UNIT):
+			if not truck.alive or truck.def_id != &"ecc_mzkt" or truck.aux_def != &"":
+				continue
+			var pick := ""
+			if EccSys.mzkt_reason(w, pid, truck, "radar") == "":
+				pick = "radar"
+			elif EccSys.mzkt_reason(w, pid, truck, "aa") == "":
+				pick = "aa"
+			elif EccSys.mzkt_reason(w, pid, truck, "missile") == "":
+				pick = "missile"
+			if pick != "":
+				cmd({"t": "mzkt", "ids": [truck.id], "def": pick})
+				return
+	if p.supply > 1600:
+		for b: SimEntity in my_ents(SimEntity.Kind.BUILDING):
+			if not b.built or EccSys.tower_of(b) != "":
+				continue
+			var kind := ""
+			if p.upgrades.has("ecc_up_tower_aa") and b.def_id == &"ecc_power":
+				kind = "aa"
+			elif p.upgrades.has("ecc_up_tower_at") and b.def_id in [&"ecc_factory", &"ecc_bunker"]:
+				kind = "at"
+			elif p.upgrades.has("ecc_up_tower_bal"):
+				kind = "bal"
+			if kind != "" and EccSys.can_install(w, pid, b, kind) == "":
+				cmd({"t": "tower", "target": b.id, "def": kind})
+				return
+	for b2: SimEntity in my_ents(SimEntity.Kind.BUILDING):
+		if b2.built and b2.def_id == &"ecc_ministry" and b2.powered and EccSys.ready_in(w, pid, "ecc_red_dawn") == 0:
+			var drop := _pick_target()
+			if drop.x >= 0:
+				cmd({"t": "red_dawn", "ids": [b2.id], "pos": drop})
+				return
+	var hub: SimEntity = null
+	for b3: SimEntity in my_ents(SimEntity.Kind.BUILDING):
+		if b3.built and b3.powered and b3.def_id == &"ecc_black_market":
+			hub = b3
+			break
+	if hub == null:
+		return
+	var veh: SimEntity = null
+	var mark: SimEntity = null
+	for id in w.ids:
+		var e: SimEntity = w.ents[id]
+		if not e.alive or not w.enemies(me().team, e.team):
+			continue
+		if e.kind == SimEntity.Kind.UNIT and e.res_id >= 0 and w.fog.is_visible_ent(w, me().team, e) and EccSys.hijack_ok(w, e):
+			veh = e
+		elif e.kind == SimEntity.Kind.BUILDING and e.built and (w.fog.is_visible_ent(w, me().team, e) or w.fog.memory.get(me().team, {}).has(e.id)):
+			mark = e
+	if veh != null and EccSys.ready_in(w, pid, "ecc_hack_hijack") == 0:
+		cmd({"t": "hack", "ids": [hub.id], "target": veh.id, "def": "hijack"})
+	elif mark != null and EccSys.ready_in(w, pid, "ecc_hack_power") == 0:
+		cmd({"t": "hack", "ids": [hub.id], "target": mark.id, "def": "power"})
+	elif mark != null and not bb["wave"].is_empty() and EccSys.ready_in(w, pid, "ecc_hack_radar") == 0:
+		cmd({"t": "hack", "ids": [hub.id], "target": mark.id, "def": "radar"})
+	elif mark != null and EccSys.ready_in(w, pid, "ecc_hack_funds") == 0:
+		cmd({"t": "hack", "ids": [hub.id], "target": mark.id, "def": "funds"})
 
 # ------------------------------------------------------------------ general powers
 func _powers() -> void:

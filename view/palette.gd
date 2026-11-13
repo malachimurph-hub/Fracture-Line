@@ -74,8 +74,16 @@ const US_AIR_GREY := Color("#7f868c")
 const M1A3_TAN := Color("#E0C080")
 ## T-90M: muted grey-olive. Darker than the first lime, still light enough to read green.
 const T90_GREEN := Color("#96A468")
+## Before the Blender pass these hulls used #96A468, which renders lime under the match sun.
+## #5a6448 went near-black. #8d9876 is the muted grey-green that still reads olive in that light.
+## The BMPT stays on this chip, and so do the Godot-built Russian hulls.
+const MUTED_OLIVE := Color("#8d9876")
 const UNIT_PAINT := {&"us_blackhawk": Color("#1d1f21"), &"us_dozer": Color("#80868a"), &"us_ripsaw": Color("#5e655f"),
-	&"us_halberd": M1A3_TAN, &"ecc_t90": T90_GREEN}
+	&"us_halberd": M1A3_TAN, &"ecc_t90": T90_GREEN,
+	&"ecc_bmp3": T90_GREEN, &"ecc_bmpt": MUTED_OLIVE, &"ecc_t14": MUTED_OLIVE, &"ecc_tos": MUTED_OLIVE,
+	&"ecc_iskander": MUTED_OLIVE, &"ecc_mi8": T90_GREEN, &"ecc_pantsir": MUTED_OLIVE,
+	&"ecc_mzkt": T90_GREEN, &"ecc_mzkt_aa": T90_GREEN, &"ecc_mzkt_radar": T90_GREEN, &"ecc_mzkt_missile": T90_GREEN,
+	&"ecc_zeus": MUTED_OLIVE, &"ecc_reaper": T90_GREEN}
 
 static func paint_for(def_id: StringName) -> Color:
 	if UNIT_PAINT.has(def_id):

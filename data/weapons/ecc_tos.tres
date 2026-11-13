@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="WeaponDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/weapon_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"ecc_tos"
+damage = 32
+range_mt = 4800
+min_range_mt = 1000
+cooldown_ms = 280
+damage_type = &"demolition"
+splash_mt = 1500
+targets_air = false
+targets_ground = true
+vfx = &"rocket_salvo"
+min_tier = 0
+pre_attack_ms = 0
+pre_attack_type = &"attack"
+clip_size = 12
+reload_ms = 12000
+aim_deg = 20
+scatter_mt = 350
+scatter_inf_mt = 200

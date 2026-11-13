@@ -41,7 +41,9 @@ for r in rows("units.csv"):
         ("loco", sn(r.get("loco", ""))), ("turn_dps", r.get("turn_dps", "0") or "0"), ("accel_ms", r.get("accel_ms", "0") or "0"),
         ("turret_dps", r.get("turret_dps", "0") or "0"), ("abilities", psa(r.get("abilities", ""))),
         ("transport_capacity", r.get("transport_capacity", "0") or "0"), ("detector", b(r.get("detector", "0"))),
-        ("air_slots", r.get("air_slots", "0") or "0")])
+        ("air_slots", r.get("air_slots", "0") or "0"),
+        ("range_aura_radius", r.get("range_aura_radius") or "0"),
+        ("range_aura_pct", r.get("range_aura_pct") or "0")])
 
 for r in rows("buildings.csv"):
     short = r["id"].split("_", 1)[1]

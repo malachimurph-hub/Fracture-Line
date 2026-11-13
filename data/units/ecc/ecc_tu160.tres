@@ -34,3 +34,5 @@ abilities = PackedStringArray()
 transport_capacity = 0
 detector = false
 air_slots = 4
+range_aura_radius = 0
+range_aura_pct = 0

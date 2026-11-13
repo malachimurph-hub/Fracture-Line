@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="WeaponDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/weapon_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"ecc_pantsir_sam"
+damage = 42
+range_mt = 12000
+min_range_mt = 800
+cooldown_ms = 1600
+damage_type = &"aa_missile"
+splash_mt = 0
+targets_air = true
+targets_ground = false
+vfx = &"missile"
+min_tier = 0
+pre_attack_ms = 300
+pre_attack_type = &"attack"
+clip_size = 6
+reload_ms = 8000
+aim_deg = 14
+scatter_mt = 0
+scatter_inf_mt = 0

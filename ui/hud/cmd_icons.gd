@@ -21,6 +21,45 @@ static func _paint(img: Image, key: String, col: Color) -> void:
 	match key:
 		"move":
 			_arrow(img, 12, 34, 34, 12, col)
+		"tower_bal":
+			_tower(img, col, Color(0.85, 0.78, 0.45))
+		"tower_at":
+			_tower(img, col, Color(0.86, 0.42, 0.28))
+		"tower_aa":
+			_tower(img, col, Color(0.45, 0.72, 0.95))
+		"mzkt_aa":
+			img.fill_rect(Rect2i(16, 18, 16, 14), col)
+			img.fill_rect(Rect2i(8, 20, 6, 3), col)
+			img.fill_rect(Rect2i(8, 26, 6, 3), col)
+			img.fill_rect(Rect2i(34, 20, 6, 3), col)
+			img.fill_rect(Rect2i(34, 26, 6, 3), col)
+			_ring(img, 24, 12, 5.0, col)
+		"mzkt_radar":
+			img.fill_rect(Rect2i(14, 10, 20, 22), col)
+			img.fill_rect(Rect2i(22, 32, 4, 8), col)
+			_line(img, 16, 16, 32, 16, col, 1.6)
+			_line(img, 16, 22, 32, 22, col, 1.6)
+			_line(img, 16, 28, 32, 28, col, 1.6)
+		"mzkt_missile":
+			img.fill_rect(Rect2i(10, 14, 28, 18), col)
+			_line(img, 24, 14, 24, 32, Color(0.15, 0.16, 0.14, 1), 1.4)
+			_line(img, 10, 23, 38, 23, Color(0.15, 0.16, 0.14, 1), 1.4)
+		"reddawn":
+			for i in 3:
+				_arrow(img, 10.0 + float(i) * 12.0, 10.0, 14.0 + float(i) * 12.0, 36.0, col)
+		"hack_power":
+			_line(img, 28, 8, 18, 24, col, 2.6)
+			_line(img, 18, 24, 30, 24, col, 2.6)
+			_line(img, 30, 24, 18, 40, col, 2.6)
+		"hack_radar":
+			_ring(img, 24, 24, 12.0, col)
+			_line(img, 14, 34, 34, 14, col, 2.4)
+		"hack_funds":
+			_ring(img, 18, 24, 8.0, col)
+			_arrow(img, 22, 24, 40, 24, col)
+		"hack_hijack":
+			_arrow(img, 10, 16, 36, 16, col)
+			_arrow(img, 38, 32, 12, 32, col)
 		"amove":
 			_arrow(img, 11, 33, 30, 14, col)
 			_ring(img, 33, 15, 7.5, col)
@@ -97,6 +136,11 @@ static func _disc(img: Image, cx: float, cy: float, r: float, col: Color) -> voi
 			var dy := float(y) + 0.5 - cy
 			if dx * dx + dy * dy <= r2:
 				img.set_pixel(x, y, col)
+
+static func _tower(img: Image, col: Color, lamp: Color) -> void:
+	img.fill_rect(Rect2i(18, 14, 12, 22), col)
+	img.fill_rect(Rect2i(14, 34, 20, 4), col)
+	img.fill_rect(Rect2i(22, 8, 4, 8), lamp)
 
 static func _ring(img: Image, cx: float, cy: float, r: float, col: Color) -> void:
 	var outer := r * r

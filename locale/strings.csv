@@ -558,11 +558,11 @@ UNIT_ECC_BTR_DESC,"BTR-82A 8x8 armoured personnel carrier with a 30 mm cannon. C
 UNIT_ECC_TYPHOON,Typhoon
 UNIT_ECC_TYPHOON_DESC,Heavy mine-protected transport with a remote 12.7 mm gun. Carries 10 infantry and takes a lot of damage.
 UNIT_ECC_T90,T-90M
-UNIT_ECC_T90_DESC,Main battle tank with a 125 mm gun and reactive armour.
+UNIT_ECC_T90_DESC,Main battle tank with a 125 mm gun. Reactive Armour research fits the explosive blocks and cuts damage from rounds and rockets by 40%.
 UNIT_ECC_MSTA,2S Msta
 UNIT_ECC_MSTA_DESC,"2S19 Msta-S tracked 152 mm self-propelled howitzer. Long range, cannot fire up close. Needs a Supply Depot."
-UNIT_ECC_ZEUS,Zeus
-UNIT_ECC_ZEUS_DESC,ZSU-23-4 tracked anti-aircraft gun with four 23 mm cannons. Also hits ground targets.
+UNIT_ECC_ZEUS,Shilka
+UNIT_ECC_ZEUS_DESC,ZSU-23-4 Shilka tracked anti-aircraft gun with four 23 mm cannons. Also hits ground targets.
 UNIT_ECC_SU57,Su-57
 UNIT_ECC_SU57_DESC,"Stealth fighter: R-77 missiles against aircraft, guided bombs against ground targets. Uses 2 airfield slots."
 UNIT_ECC_KA52,Ka-52
@@ -576,19 +576,19 @@ BLD_ECC_POWER_DESC,"Natural gas power station: gas turbines with heat-recovery b
 BLD_ECC_DEPOT,Supply Depot
 BLD_ECC_DEPOT_DESC,Concrete supply drop-off point. Comes with a Cargo Truck and builds more.
 BLD_ECC_BARRACKS,Barracks
-BLD_ECC_BARRACKS_DESC,"Trains Riflemen, Machine Gunners, RPG Men and Infiltrators."
+BLD_ECC_BARRACKS_DESC,Trains Conscript squads. The Drone Operator needs a Ministry of Defense.
 BLD_ECC_FACTORY,Vehicle Factory
-BLD_ECC_FACTORY_DESC,"Builds Tiger-M, BTR, Typhoon, T-90M, Zeus, 2S Msta and Engineer Vehicles."
+BLD_ECC_FACTORY_DESC,"Builds the vehicle fleet, from Tiger-M and BMP-3 through T-90M, Shilka, TOS-1A and the Grim Reaper. Also researches the balanced tower and Reactive Armour."
 BLD_ECC_BUNKER,Missile Silo
 BLD_ECC_BUNKER_DESC,"Fixed in-ground missile launcher. The hatch opens to fire one heavy missile at a time: slow, but hits hard. Defends against ground targets. Needs power."
 BLD_ECC_AA_SITE,ZAK-30 Citadel
 BLD_ECC_AA_SITE_DESC,"Twin 30 mm rotary anti-aircraft turret. Shreds aircraft, cannot hit ground targets. Needs power."
 BLD_ECC_AIRFIELD,Airfield
-BLD_ECC_AIRFIELD_DESC,"Builds Su-57, Ka-52 and Tu-160. 6 parking slots: bomber 4, fighter 2, helicopter 0. Jets land here to rearm."
+BLD_ECC_AIRFIELD_DESC,"Builds Su-57, Ka-52, Mi-24 Hind, Mi-8 and Tu-160. 6 parking slots: bomber 4, fighter 2, helicopter 0. Jets land here to rearm."
 BLD_ECC_MINISTRY,Ministry of Defense
-BLD_ECC_MINISTRY_DESC,"Tech centre: unlocks the Tu-160 bomber and Minerals Mining."
-BLD_ECC_BLACK_MARKET,Minerals Mining
-BLD_ECC_BLACK_MARKET_DESC,Giant bucket-wheel excavator that digs up $400 every 30 seconds. Needs no power.
+BLD_ECC_MINISTRY_DESC,"Tech centre. Researches the heavy towers, Red Dawn and the Grim Reaper. Unlocks FSB GRU, the Black Market, the T-26 and the Tu-160."
+BLD_ECC_BLACK_MARKET,Black Market
+BLD_ECC_BLACK_MARKET_DESC,"Signals bunker and hacker hub. Needs the Ministry of Defense and draws power. Researches four hacks: grid shutdown, radar blackout, funds siphon and unit hijack."
 POWER_ECC_RECON,Recon Drone
 POWER_ECC_RECON_DESC,A drone reveals a 14-tile area for 20 s.
 POWER_ECC_LOGISTICS,Supply Convoy
@@ -698,8 +698,8 @@ UNIT_EU_SQUAD,Combat Squad
 UNIT_EU_SQUAD_DESC,"Six soldiers as one unit: 3 riflemen, an MG3 machine gunner, a Panzerfaust gunner and a grenadier. Soldiers fall one by one as the squad loses health, and their weapons with them. Tougher than single soldiers; can garrison buildings and man a barricade."
 UNIT_TPLA_SQUAD,Combat Squad
 UNIT_TPLA_SQUAD_DESC,"Six soldiers as one unit: 3 riflemen, a PKM machine gunner, a rocket man and a grenadier. Soldiers fall one by one as the squad loses health, and their weapons with them. Tougher than single soldiers; can garrison buildings and man a barricade."
-UNIT_ECC_SQUAD,Combat Squad
-UNIT_ECC_SQUAD_DESC,"Six soldiers as one unit: 3 riflemen, a PKM machine gunner, an RPG-7V3 gunner and a grenadier. Soldiers fall one by one as the squad loses health, and their weapons with them. Tougher than single soldiers; can garrison buildings and man a barricade."
+UNIT_ECC_SQUAD,Conscripts
+UNIT_ECC_SQUAD_DESC,"Six conscripts as one unit: three AK-47 riflemen, two RPG-7 gunners and a PKM machine gunner. Kit and camouflage do not match. Soldiers fall one by one as the squad loses health. Can garrison buildings and man a barricade."
 UNIT_ECC_DRONE_OPERATOR,Drone Operator
 UNIT_ECC_DRONE_OPERATOR_DESC,Launches an explosive drone (one-way attack). The drone comes back 60 s after it is used or lost. Needs a Ministry of Defense.
 UNIT_ECC_BOMB_DRONE,Explosive Drone
@@ -757,7 +757,7 @@ UNIT_US_B1_DESC,"Heavy bomber. One devastating strike, then it lands and rearms.
 UNIT_US_AH64,AH-64
 UNIT_US_AH64_DESC,"Attack helicopter. Missiles against vehicles and a chin gun against infantry. Reloads in the air. Needs Advanced Aero."
 UNIT_US_REAPER,Reaper Drone
-UNIT_US_REAPER_DESC,"Ground-strike drone built at the Airfield. Flies like a helicopter until it reaches the target, then holds a wide slow circle. Same punch as the F-35. Only base defences can detect it. Needs a Robotics Plant."
+UNIT_US_REAPER_DESC,"Ground-strike drone built at the Airfield. It keeps a continuous circle while idle, moving, or attacking, and it never hovers. Same punch as the F-35. Only base defences can detect it. Needs a Robotics Plant."
 UNIT_US_RIPSAW,Ripsaw
 UNIT_US_RIPSAW_DESC,"Unmanned robotic tank, smaller and quicker than the M1A3. Main gun is about 85% as effective against armour, with a coaxial .50 cal. No crew. Built at the Robotics Plant."
 UNIT_US_MK23,MK 23 Grenade Launcher Team
@@ -774,3 +774,79 @@ UNIT_US_UP_NUCLEAR,Nuclear Research
 UNIT_US_UP_NUCLEAR_DESC,DARPA research. Unlocks the Nuclear Power Station. Power Substations keep producing power.
 UNIT_US_UP_ZEUS,ZEUS Defense Systems
 UNIT_US_UP_ZEUS_DESC,DARPA research. Unlocks the Zeus Launch Station and the Zeus Pylon.
+UNIT_ECC_ALFA,FSB Alfa
+UNIT_ECC_ALFA_DESC,One operator with a suppressed AS Val. Hidden until he shoots or is shot. Can capture an enemy structure.
+UNIT_ECC_SPETSNAZ,Spetsnaz
+UNIT_ECC_SPETSNAZ_DESC,Three soldiers: one scoped suppressed VSS and two suppressed AK-74U carbines. Faster and tougher than conscripts. Hidden until they fight.
+UNIT_ECC_VDV,VDV Spetsnaz
+UNIT_ECC_VDV_DESC,Two soldiers with suppressed AK-74M rifles and underbarrel grenade launchers. Hidden until they fight. Marked for a later parachute drop; they do not parachute yet.
+UNIT_ECC_BMP3,BMP-3
+UNIT_ECC_BMP3_DESC,"Infantry fighting vehicle with a 100 mm gun, a 30 mm cannon and an anti-tank missile. Carries one conscript squad. Troops fire only after they step out."
+UNIT_ECC_BMPT,BMPT
+UNIT_ECC_BMPT_DESC,"Tank-support vehicle. Twin 30 mm autocannons, grenade launchers and anti-tank missiles. Strong against infantry that get close to the armour."
+UNIT_ECC_T14,T-26
+UNIT_ECC_T14_DESC,Late tank with an unmanned turret and a 125 mm gun stronger than the T-90M. Needs a Ministry of Defense.
+UNIT_ECC_TOS,TOS-1A
+UNIT_ECC_TOS_DESC,Short-range thermobaric rocket launcher. A salvo of area blasts. Strong against infantry and bunkers. Must get close.
+UNIT_ECC_ISKANDER,Iskander
+UNIT_ECC_ISKANDER_DESC,"Ballistic missile truck. Stops and raises the canister, then fires one heavy missile. Weaker and cheaper than the Grim Reaper."
+UNIT_ECC_REAPER,Grim Reaper Artillery
+UNIT_ECC_REAPER_DESC,Heavy missile truck. Outriggers plant before it can fire. One missile rises and splits into six warheads. No build limit. Needs Grim Reaper research. Expensive.
+UNIT_ECC_MI8,Mi-8
+UNIT_ECC_MI8_DESC,Transport helicopter with a door machine gun. Carries 8 infantry. Troops board and unload only after it lands. Slower than the US transports.
+UNIT_ECC_PANTSIR,Pantsir
+UNIT_ECC_PANTSIR_DESC,Long-range anti-air truck. Outriggers plant and the radar rises before it can fire. Once deployed it can hit aircraft that only base defences could reach. Needs a Ministry of Defense.
+UNIT_ECC_UP_TOWER_BAL,Balanced Tower
+UNIT_ECC_UP_TOWER_BAL_DESC,Research at the Vehicle Factory. Afterwards any Russian structure can be fitted with a balanced gun tower.
+UNIT_ECC_UP_TOWER_AT,Anti-Armor Tower
+UNIT_ECC_UP_TOWER_AT_DESC,Ministry research. Afterwards any Russian structure can be fitted with a heavy anti-armor tower.
+UNIT_ECC_UP_TOWER_AA,Anti-Air Tower
+UNIT_ECC_UP_TOWER_AA_DESC,Ministry research. Afterwards any Russian structure can be fitted with an anti-air tower.
+UNIT_ECC_UP_ERA,Reactive Armour
+UNIT_ECC_UP_ERA_DESC,"Research at the Vehicle Factory. Every T-90M takes 40% less damage from rounds and rockets, and the armour blocks show on the tank."
+UNIT_ECC_UP_RED_DAWN,Red Dawn
+UNIT_ECC_UP_RED_DAWN_DESC,Ministry research. The Ministry can then call transport planes that drop three conscript squads. About 7.5 minutes between calls.
+UNIT_ECC_UP_REAPER,Grim Reaper
+UNIT_ECC_UP_REAPER_DESC,Ministry research. Unlocks the Grim Reaper Artillery at the Vehicle Factory.
+UNIT_ECC_UP_HACK_POWER,Grid Shutdown
+UNIT_ECC_UP_HACK_POWER_DESC,Black Market research. The hub can then knock an enemy's power offline for a short time.
+UNIT_ECC_UP_HACK_RADAR,Radar Blackout
+UNIT_ECC_UP_HACK_RADAR_DESC,Black Market research. The hub can then blank an enemy minimap for a short time.
+UNIT_ECC_UP_HACK_FUNDS,Funds Siphon
+UNIT_ECC_UP_HACK_FUNDS_DESC,Black Market research. The hub can then steal enemy cash for a short time.
+UNIT_ECC_UP_HACK_HIJACK,Unit Hijack
+UNIT_ECC_UP_HACK_HIJACK_DESC,Black Market research. The hub can then take control of one enemy drone or ground vehicle.
+BLD_ECC_FSB,FSB GRU
+BLD_ECC_FSB_DESC,"Tier-3 special forces house. Needs the Ministry of Defense. Trains FSB Alfa, Spetsnaz and VDV Spetsnaz. They stay hidden until they fight."
+CMD_TOWER_BAL,Balanced Tower
+CMD_TOWER_BAL_TIP,Fit a balanced gun tower on this structure.
+CMD_TOWER_AT,Anti-Armor Tower
+CMD_TOWER_AT_TIP,Fit a heavy anti-armor tower on this structure.
+CMD_TOWER_AA,Anti-Air Tower
+CMD_TOWER_AA_TIP,Fit an anti-air tower on this structure.
+CMD_RED_DAWN,Red Dawn
+CMD_RED_DAWN_TIP,Call transport planes. They drop three conscript squads on the point you choose.
+CMD_HACK_POWER,Grid Shutdown
+CMD_HACK_POWER_TIP,Pick an enemy unit or structure. Their power goes offline for a short time.
+CMD_HACK_RADAR,Radar Blackout
+CMD_HACK_RADAR_TIP,Pick an enemy unit or structure. Their minimap goes blank for a short time.
+CMD_HACK_FUNDS,Funds Siphon
+CMD_HACK_FUNDS_TIP,Pick an enemy unit or structure. Steal their cash for a short time.
+CMD_HACK_HIJACK,Unit Hijack
+CMD_HACK_HIJACK_TIP,Pick one enemy drone or ground vehicle and take control of it.
+HUD_FITTED,Fitted
+UNIT_ECC_MZKT,MZKT-7930
+UNIT_ECC_MZKT_DESC,Bare modular truck from the factory. Choose one module. The choice is permanent.
+UNIT_ECC_MZKT_AA,MZKT Anti-Air
+UNIT_ECC_MZKT_AA_DESC,Long-range high-altitude anti-air. The outriggers plant before it can fire, and it only engages aircraft.
+UNIT_ECC_MZKT_RADAR,MZKT Radar
+UNIT_ECC_MZKT_RADAR_DESC,Wide sight. Reveals hidden units. Friendly artillery within 12 tiles gains 25 percent range while this truck is halted.
+UNIT_ECC_MZKT_MISSILE,MZKT Cruise Missile
+UNIT_ECC_MZKT_MISSILE_DESC,Long-range ground missile. The outriggers plant and the canisters rise before it can fire.
+CMD_MZKT_AA,Anti-air
+CMD_MZKT_AA_TIP,Fit the anti-air turret. Needs a Ministry of Defense. Permanent.
+CMD_MZKT_RADAR,Radar
+CMD_MZKT_RADAR_TIP,Fit the radar module. Permanent. It does not need the Ministry.
+CMD_MZKT_MISSILE,Cruise missile
+CMD_MZKT_MISSILE_TIP,Fit the cruise-missile launcher. Permanent. It does not need the Ministry.
+HUD_MZKT_FITTING,Fitting

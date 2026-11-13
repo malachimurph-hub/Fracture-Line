@@ -98,6 +98,35 @@ func ak_gl() -> void:
 	ak()
 	_ugl(0.2, 0.42, 0.0)
 
+## AK-47 is the wood-furniture rifle already in the kit. RPG-7 with a loaded round and four fins.
+func rpg7() -> void:
+	rpg()
+	color("#5a6a38")
+	for s in [-1.0, 1.0]:
+		box(Vector3(s * 0.055, 0.1, 0.66), Vector3(0.045, 0.006, 0.1))
+		box(Vector3(0, 0.1 + s * 0.055, 0.66), Vector3(0.006, 0.045, 0.1))
+	color("#6a5a32")
+	cyl(Vector3(0, 0.1, 0.28), Vector3(0, 0.1, 0.4), 0.034, 0.034, 8)
+
+## PKM with a wood butt and pistol grip, the way the issued gun is finished.
+func pkm_ru() -> void:
+	color(STEEL)
+	box(Vector3(0, 0.05, 0.08), Vector3(0.055, 0.08, 0.38))
+	cyl(Vector3(0, 0.06, 0.27), Vector3(0, 0.06, 0.84), 0.012)
+	cyl(Vector3(0, 0.06, 0.84), Vector3(0, 0.06, 0.92), 0.018, 0.012)
+	cyl(Vector3(0, 0.1, 0.26), Vector3(0, 0.1, 0.6), 0.01)
+	box(Vector3(0, 0.12, 0.1), Vector3(0.05, 0.02, 0.2))
+	color(WOOD)
+	box(Vector3(0, 0.02, -0.22), Vector3(0.04, 0.09, 0.28))
+	box(Vector3(0, -0.03, -0.02), Vector3(0.032, 0.09, 0.042))
+	color(BLK)
+	for s in [-1.0, 1.0]:
+		cyl(Vector3(0, 0.05, 0.7), Vector3(s * 0.06, -0.12, 0.76), 0.006)
+	color("#4a5a32")
+	box(Vector3(0.075, -0.01, 0.1), Vector3(0.08, 0.11, 0.14))
+	color(STEEL)
+	box(Vector3(0, 0.14, 0.02), Vector3(0.012, 0.04, 0.1))
+
 func ak74_gl() -> void:
 	ak74()
 	_ugl(0.2, 0.42, 0.0)

@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"ecc_bmpt"
+faction = &"ecc"
+name_key = "UNIT_ECC_BMPT"
+desc_key = "UNIT_ECC_BMPT_DESC"
+cost = 1600
+build_time_ms = 16000
+pop = 3
+prereqs = PackedStringArray()
+tags = PackedStringArray("vehicle", "tank")
+max_hp = 1180
+armor_type = &"heavy"
+weapons = PackedStringArray("ecc_bmpt_30", "ecc_bmpt_gl", "ecc_bmpt_atgm")
+speed_mtps = 1350
+move_layer = &"vehicle"
+sight = 8
+radius_mt = 600
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 0
+role = &"tank"
+view_scene = "res://view/units/ecc/bmpt.tscn"
+stubs = PackedStringArray()
+loco = &""
+turn_dps = 90
+accel_ms = 1000
+turret_dps = 110
+abilities = PackedStringArray()
+transport_capacity = 0
+detector = false
+air_slots = 0
+range_aura_radius = 0
+range_aura_pct = 0

@@ -7,7 +7,7 @@ config/quit_on_go_back=false
 
 config/name="Fracture Line: Modern Conflict"
 config/description="FRACTURE LINE: MODERN CONFLICT - original mobile RTS"
-config/version="0.4.6"
+config/version="0.4.7"
 run/main_scene="res://ui/main_menu.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 boot_splash/bg_color=Color(0.07, 0.08, 0.1, 1)

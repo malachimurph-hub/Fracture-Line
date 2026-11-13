@@ -486,24 +486,9 @@ static func fly(w: SimWorld, u: SimEntity, d: UnitDef) -> void:
 	var accel_pt := maxi(1, maxs * 50 / maxi(1, int(lp["accel_ms"])))
 	var dest := u.goal
 	var loiter := false
-	var orbit := false
 	if d.tags.has("reaper"):
-		var tg := w.get_ent(u.target)
-		if tg != null and tg.alive:
-			var td := FX.dist(u.pos, tg.pos)
-			var rad := FX.ONE * 6
-			# Transit is a helicopter run. Once it is on the target it holds a wide, slow circle.
-			if not (td > rad + FX.ONE * 3 and u.goal != NONE):
-				orbit = true
-				if u.still == 0:
-					u.still = FX.iatan2(u.pos.x - tg.pos.x, u.pos.y - tg.pos.y)
-				u.still = (u.still + 4) % FX.ANG
-				var dv := FX.dir_of(u.still)
-				dest = tg.pos + Vector2i(dv.x * rad / FX.ONE, dv.y * rad / FX.ONE)
-				dest.x = clampi(dest.x, FX.HALF, w.map.w * FX.ONE - FX.HALF)
-				dest.y = clampi(dest.y, FX.HALF, w.map.h * FX.ONE - FX.HALF)
-		else:
-			u.still = 0
+		_reaper_orbit(w, u, maxs, accel_pt, brake_pt, lp)
+		return
 	if dest == NONE and jet:
 		var t := w.get_ent(u.target)
 		if t != null and t.alive:
@@ -533,13 +518,6 @@ static func fly(w: SimWorld, u: SimEntity, d: UnitDef) -> void:
 			u.goal = NONE
 			u.path = []
 	else:
-		if orbit:
-			gs = maxs * 48 / 100
-			u.spd = mini(gs, u.spd + accel_pt) if u.spd < gs else maxi(gs, u.spd - brake_pt)
-			u.spd = maxi(u.spd, gs * 70 / 100)
-			u.dir = FX.dir_of(u.face)
-			_step(w, u, u.spd)
-			return
 		if rel > FX.ANG / 10:
 			gs = maxs / 3
 		gs = mini(gs, maxi(16, FX.isqrt(2 * brake_pt * dist)))
@@ -553,6 +531,45 @@ static func fly(w: SimWorld, u: SimEntity, d: UnitDef) -> void:
 			MoveSys._arrive(u)   # M3.2.2: close enough (separation nudged it off the exact slot)
 			u.dir = FX.dir_of(u.face)
 			return
+	u.dir = FX.dir_of(u.face)
+	_step(w, u, u.spd)
+
+## The Reaper never hovers. Idle, a move order and an attack are all the same circle:
+## the centre is the target, else the ordered point, else the spot it was left at.
+## still holds the orbit bearing. Radius eases in, so a long move is a descending spiral
+## that becomes the circle instead of a straight run that stops.
+static func _reaper_orbit(w: SimWorld, u: SimEntity, maxs: int, accel_pt: int, brake_pt: int, lp: Dictionary) -> void:
+	var center := u.pos
+	var rad := FX.ONE * 3
+	var tg := w.get_ent(u.target)
+	if tg != null and tg.alive:
+		center = tg.pos
+		rad = FX.ONE * 5
+	elif u.goal != MoveSys.NONE:
+		center = u.goal
+	else:
+		if u.done_goal == MoveSys.NONE:
+			u.done_goal = u.pos
+		center = u.done_goal
+	var bearing := FX.iatan2(u.pos.x - center.x, u.pos.y - center.y)
+	var cur_r := FX.dist(u.pos, center)
+	var far := cur_r > rad + FX.ONE
+	# Far away, aim at the near side of the ring so the path curves in. On the ring, walk ahead.
+	bearing = (bearing + (2 if far else 8)) % FX.ANG
+	if bearing == 0:
+		bearing = 8
+	u.still = bearing
+	var use_r := rad if far else maxi(FX.ONE / 2, cur_r + clampi(rad - cur_r, -FX.ONE / 3, FX.ONE / 5))
+	var dv := FX.dir_of(bearing)
+	var dest := center + Vector2i(dv.x * use_r / FX.ONE, dv.y * use_r / FX.ONE)
+	dest.x = clampi(dest.x, FX.HALF, w.map.w * FX.ONE - FX.HALF)
+	dest.y = clampi(dest.y, FX.HALF, w.map.h * FX.ONE - FX.HALF)
+	var dist := FX.dist(u.pos, dest)
+	if dist > 4:
+		u.face = Loco.turn(u.face, FX.iatan2(dest.x - u.pos.x, dest.y - u.pos.y), lp["turn"])
+	var gs := maxs * 90 / 100 if cur_r > rad + FX.ONE * 2 else maxs * 62 / 100
+	u.spd = mini(gs, u.spd + accel_pt) if u.spd < gs else maxi(gs, u.spd - brake_pt)
+	u.spd = maxi(u.spd, gs * 75 / 100)
 	u.dir = FX.dir_of(u.face)
 	_step(w, u, u.spd)
 

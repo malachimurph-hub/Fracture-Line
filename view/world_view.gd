@@ -97,12 +97,15 @@ func team_shape_index(team: int) -> int:
 ## parked = on the pad), spinning Rotor/TailRotor nodes, bank in turns and a ground shadow.
 const JET_ALT := 6.0
 const HELI_ALT := 4.0
+## The Mi-8 is larger than the other helicopters, so it cruises lower. Everyone else stays at 4.0.
+const HELI_ALT_OF := {&"ecc_mi8": 3.0}
 var air_alt := {}
 var air_shadows := {}
 
 func _air_view(id: int, e: SimEntity, ud: UnitDef, v: Node3D, p: Vector3, delta: float) -> Vector3:
 	var jet := ud.tags.has("jet")
-	var want := 0.0 if e.air_state == AirSys.PARKED or e.air_state == AirSys.TAXI_OUT else (JET_ALT if jet else HELI_ALT)
+	var cruise := JET_ALT if jet else float(HELI_ALT_OF.get(e.def_id, HELI_ALT))
+	var want := 0.0 if e.air_state == AirSys.PARKED or e.air_state == AirSys.TAXI_OUT else cruise
 	if e.air_state == AirSys.LANDING and not jet:
 		want = 0.0   # touch down before anyone boards or steps out
 	if e.air_state == AirSys.LANDING and jet:
@@ -464,6 +467,7 @@ func _ensure_view(e: SimEntity) -> EntityView:
 			v.scale = Vector3.ONE * INF_SCALE   # M3.3 item 16: at vehicle scale (was 1.4x)
 			if v is InfantryView:
 				(v as InfantryView).set_variant(e.id)   # M3.4: per-soldier look
+				(v as InfantryView).set_pattern(e.def_id)
 		if e.tier > 0:
 			v.set_tier(e.tier)
 		var mc := AudioDirector.move_class(d)
@@ -554,6 +558,16 @@ func on_tick(events: Array) -> void:
 					vfx.rust_cloud(FX.to_world(ev["pos"]), float(ev["r"]) / FX.ONE, float(ev["ticks"]) / FX.TICK_HZ)
 			"fire":
 				_on_fire(ev)
+			"hijack":
+				var hj := sim.get_ent(int(ev["id"]))
+				if hj != null and views.has(hj.id) and hj.owner >= 0:
+					views[hj.id].set_team_material(Palette.team_material(sim.players[hj.owner].color))
+			"red_dawn":
+				if local_team < 0 or sim.player_team(int(ev["owner"])) == local_team or _visible_pos(ev["pos"]):
+					_red_dawn_planes(ev["pos"])
+			"mirv":
+				if _visible_pos(ev["pos"]):
+					_mirv_burst(ev)
 			"captured":
 				var c := sim.get_ent(int(ev["id"]))
 				if c != null and views.has(c.id):
@@ -681,6 +695,8 @@ func _add_crew(v: Node3D, e: SimEntity) -> void:
 		m.add_child(cv)
 		if cv.has_method("set_variant"):
 			cv.set_variant(e.id * 7 + k)
+		if cv.has_method("set_pattern"):
+			cv.set_pattern(uid)
 		if cv.has_method("set_team_material") and e.owner >= 0:
 			cv.set_team_material(Palette.team_material(sim.players[e.owner].color))
 		var hb := cv.get_node_or_null("HealthBarAnchor")
@@ -693,6 +709,41 @@ func _crew_fire(v: Node3D) -> void:
 	for c in v.get_meta("crew", []):
 		if int(c[0]) < 2 and is_instance_valid(c[1]) and c[1].has_method("on_fire"):
 			c[1].on_fire(&"")
+
+## Red Dawn: three transports cross the drop, high enough to read as a flight and not as units.
+func _red_dawn_planes(pos: Vector2i) -> void:
+	var origin := FX.to_world(pos)
+	for i in 3:
+		var body := MeshInstance3D.new()
+		var box := BoxMesh.new()
+		box.size = Vector3(2.4, 0.22, 0.42)
+		body.mesh = box
+		var mat := StandardMaterial3D.new()
+		mat.albedo_color = Color(0.36, 0.4, 0.3)
+		mat.roughness = 0.72
+		body.material_override = mat
+		var wing := MeshInstance3D.new()
+		var wbox := BoxMesh.new()
+		wbox.size = Vector3(0.35, 0.05, 2.1)
+		wing.mesh = wbox
+		wing.material_override = mat
+		wing.position = Vector3(-0.15, 0.02, 0)
+		body.add_child(wing)
+		add_child(body)
+		var from := origin + Vector3(-22.0, 9.0, -8.0 + float(i) * 5.0)
+		var to := origin + Vector3(24.0, 8.2, -5.0 + float(i) * 5.0)
+		body.position = from
+		body.look_at(to, Vector3.UP)
+		var tw := create_tween()
+		tw.tween_property(body, "position", to, 4.2)
+		tw.tween_callback(body.queue_free)
+	AudioDirector.sfx("expl_small", origin + Vector3(0, 6, 0), -10.0)
+
+## Warheads falling out of the Grim Reaper's missile. The sim applies the damage on its own timer.
+func _mirv_burst(ev: Dictionary) -> void:
+	var apex := FX.to_world(ev["pos"]) + Vector3(0, 7.5, 0)
+	for p in ev.get("pts", []):
+		wfx.fire("rocket", [apex], Vector3.DOWN, FX.to_world(p), 0, -1, Vector3.ZERO)
 
 func _on_fire(ev: Dictionary) -> void:
 	var src := sim.get_ent(int(ev["id"]))
@@ -763,6 +814,9 @@ func _on_fire(ev: Dictionary) -> void:
 	elif cls == "mg" and snd in ["rifle", "tpla_carbine"]:
 		snd = "mg"          # rifle-calibre machine guns (M240B, MG3, PKM, door guns)
 	AudioDirector.sfx(snd, base, -3.0 if snd in ["rifle", "tpla_carbine"] else (-2.0 if snd == "minigun" else 0.0), 0.1 if snd != "minigun" else 0.04)
+	if cls in ["missile", "rocket", "salvo", "icbm"]:
+		# Launch swoosh on every rocket and missile. Pitch spread keeps a salvo from repeating one take.
+		AudioDirector.sfx("missile_swoosh", base, -2.0, 0.18)
 
 ## Muzzle points for one shot: squads fire from their standing soldiers, articulated vehicles
 ## from the barrel tip, turrets from the turret, garrisons from the building's windows.
@@ -782,6 +836,26 @@ func _muzzles(src: SimEntity, v: EntityView, garrison: SimEntity, base: Vector3,
 		if out.is_empty():
 			out.append(v.position + Vector3(0, 0.35, 0))
 		return out
+	# BMP-3: the 100 mm and the missile leave the main muzzle, the 30 mm the coaxial one.
+	if src.def_id == &"ecc_bmp3" and v.model != null and wid != &"":
+		var which := "GunMuzzle30" if wid == &"ecc_bmp_30" else "GunMuzzle100"
+		var mk := v.model.find_child(which, true, false) as Node3D
+		if mk != null and is_instance_valid(mk):
+			return [mk.global_position]
+	# Dual-purpose pod missiles alternate the cheek launchers. The main gun keeps the barrel.
+	if v.model != null and wid != &"":
+		var pod_wd: WeaponDef = Content.weapon(wid)
+		if pod_wd != null and pod_wd.vfx == &"missile" and pod_wd.targets_air and pod_wd.targets_ground:
+			var pods: Array = []
+			for n in v.model.find_children("PodMuzzle*", "Marker3D", true, false):
+				pods.append(n)
+			if not pods.is_empty():
+				pods.sort_custom(func(a, b): return String(a.name) < String(b.name))
+				var idx := int(v.get_meta("_pod_i", 0))
+				v.set_meta("_pod_i", idx + 1)
+				var pod: Node3D = pods[idx % pods.size()]
+				if is_instance_valid(pod):
+					return [pod.global_position]
 	# M4.1: door guns / launch tubes marked Muzzle* in the model fire from those (alternating)
 	var mz: Array = _marker_muzzles(v)
 	if not mz.is_empty():
@@ -1371,6 +1445,11 @@ func frame(a: float, delta: float) -> void:
 			var ny := lerp_angle(y0, want, minf(1.0, delta * 8.0))
 			yaw[id] = ny
 			v.rotation.y = ny
+			if ud.tags.has("reaper") and e.air_state == AirSys.FLYING:
+				# The orbit is a continuous turn, so the airframe holds one bank instead of flying wings-level.
+				var turn := wrapf(ny - y0, -PI, PI)
+				var bank := 0.42 * signf(turn) if absf(turn) > 0.0003 else 0.0
+				v.rotation.z = lerpf(v.rotation.z, bank, minf(1.0, delta * 3.0))
 			if sim.map.has_elev and ud.move_layer == &"vehicle":
 				_tilt_on_slope(v, p, ny)
 			if v.has_method("set_health"):
@@ -1393,6 +1472,33 @@ func frame(a: float, delta: float) -> void:
 				OilLoad.update(v, e.carry, ud.harvest_capacity)   # M3.5: oil drums for export in the bed
 			if v is VehicleView and ud.tags.has("artillery"):   # M3.5: raise before the shot, lower after
 				(v as VehicleView).aiming = e.target != 0 and not e.moving and sim.get_ent(e.target) != null
+			if v is VehicleView and e.def_id == &"ecc_t90":
+				var era: bool = e.owner >= 0 and bool(sim.players[e.owner].upgrades.has("ecc_up_era"))
+				if bool((v as VehicleView).get_meta("era", false)) != era:
+					(v as VehicleView).set_meta("era", era)
+					(v as VehicleView).set_reactive(era)
+			if v.has_method("set_setup") and ud.tags.has("setup"):
+				var sk := 0.0
+				if not e.moving and e.goal == MoveSys.NONE:
+					sk = clampf(float(e.still) / float(UsSys.SETUP_TICKS), 0.0, 1.0)
+				v.set_setup(sk)
+			if v is VehicleView and ud.tags.has("deploy"):
+				var planted := 0.0 if e.moving or e.goal != MoveSys.NONE else clampf(float(e.still) / float(EccSys.DEPLOY_TICKS), 0.0, 1.0)
+				(v as VehicleView).set_plant(planted)
+			if v.has_method("sync_mzkt"):
+				var planted_k := 0.0
+				if ud.tags.has("deploy"):
+					# still counts up while halted and back down while a move order packs the truck.
+					# Only a unit that is already rolling is fully stowed.
+					planted_k = 0.0 if e.moving else clampf(float(e.still) / float(EccSys.DEPLOY_TICKS), 0.0, 1.0)
+				var tgt_m := sim.get_ent(e.target)
+				var aim_p := Vector3.ZERO
+				var has_aim := tgt_m != null and tgt_m.alive
+				if has_aim:
+					aim_p = FX.to_world(tgt_m.pos)
+				var yaw_deg := float(e.tface) * 360.0 / float(FX.ANG) - rad_to_deg(v.rotation.y)
+				var halted := e.goal == MoveSys.NONE and not e.moving and e.still >= EccSys.AURA_HALT
+				v.sync_mzkt(e.def_id, planted_k, yaw_deg, has_aim, aim_p, halted)
 			# M3.3: builders animate (blade / backhoe arm / crane boom) while they work at a site
 			if v is VehicleView and not (v as VehicleView).work_parts.is_empty():
 				(v as VehicleView).working = _builder_working(e)
@@ -1447,6 +1553,8 @@ func frame(a: float, delta: float) -> void:
 					v.set_damage(hpk, not e.built)
 				if v is BuildingView and (v as BuildingView).pack_rig != null:   # M3.4: pack-up pose
 					(v as BuildingView).set_pack(MineSys.progress(sim, e) if MineSys.packing(sim, e) else 0.0)
+				if v is BuildingView and String(e.def_id).begins_with("ecc_"):
+					(v as BuildingView).set_tower(EccSys.tower_of(e))
 				if rig != null:
 					rig.update(bk, delta, vfx, vis and not icon_mode)
 				if vis and not icon_mode:

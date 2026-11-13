@@ -41,8 +41,10 @@ static func run(w: SimWorld) -> void:
 			# heroic self-heal 1% / s
 			if e.vet >= 3 and w.tick % 20 == 0 and e.hp < e.max_hp:
 				e.hp = mini(e.max_hp, e.hp + maxi(1, e.max_hp / 100))
-		elif e.kind == SimEntity.Kind.BUILDING and e.built and not e.cds.is_empty():
+		elif e.kind == SimEntity.Kind.BUILDING and e.built and (not e.cds.is_empty() or EccSys.has_tower(e)):
 			_structure_fire(w, e)
+			if (w.tick + e.id) % 2 == 0 and w.bdef(e).garrison_capacity > 0 and w.bdef(e).tags.has("barricade"):
+				_garrison_fire(w, e)
 		elif e.kind == SimEntity.Kind.BUILDING and e.built and (w.tick + e.id) % 2 == 0 and w.bdef(e).garrison_capacity > 0 and w.bdef(e).tags.has("barricade"):
 			_garrison_fire(w, e)   # M3.2: troops manning a barricade fire from behind it
 		elif e.kind == SimEntity.Kind.NEUTRAL and e.owner >= 0 and (w.tick + e.id) % 2 == 0:
@@ -187,7 +189,9 @@ static func _fire_unit(w: SimWorld, u: SimEntity, t: SimEntity) -> void:
 	var air := d.move_layer == &"air"
 	if air and u.air_state != AirSys.FLYING:
 		return
-	# M2.9: heavy artillery (tag "setup", TPLA Koksan) needs SETUP_TICKS standing still before firing
+	# Heavy artillery (tag "setup") and the Grim Reaper (tag "deploy") must stand still before firing.
+	if d.tags.has("deploy") and u.still < EccSys.DEPLOY_TICKS:
+		return
 	if d.tags.has("setup") and u.still < UsSys.SETUP_TICKS:
 		return
 	var jet := air and d.tags.has("jet")
@@ -205,7 +209,7 @@ static func _fire_unit(w: SimWorld, u: SimEntity, t: SimEntity) -> void:
 			continue
 		if jet and wd.clip_size > 0 and int(u.ammo[i]) <= 0:
 			continue
-		if dist > FX.mt_to_fx(wd.range_mt) or dist < FX.mt_to_fx(wd.min_range_mt):
+		if dist > FX.mt_to_fx(EccSys.range_mt(w, u, wd.range_mt)) or dist < FX.mt_to_fx(wd.min_range_mt):
 			continue
 		if d.tags.has("suicide"):
 			# bomb truck: drives into the target and detonates (GDD 5.4 Mule)
@@ -239,24 +243,27 @@ static func explode(w: SimWorld, src: SimEntity, center: Vector2i, wd: WeaponDef
 			continue
 		var frac := 100 - 50 * FX.dist(o.pos, center) / maxi(1, r)
 		var sd := wd.damage * splash_mult(wd, _armor_of(w, o)) / 100 * frac / 100 * pct / 100
-		w.damage(o, maxi(1, sd), src)
+		w.damage(o, EccSys.mitigate(w, o, maxi(1, sd), wd.damage_type), src)
 	var blds: Array = []
 	for id in w.ids:
 		var b: SimEntity = w.ents[id]
 		if b.alive and (b.kind == SimEntity.Kind.BUILDING or b.kind == SimEntity.Kind.NEUTRAL) and (w.enemies(src.team, b.team) or b.team < 0 and w.is_civilian(b)) and w.dist_to_building(center, b) <= r:
 			blds.append(b)
 	for b: SimEntity in blds:
-		w.damage(b, maxi(1, wd.damage * Content.combat.mult(wd.damage_type, &"structure") / 100 * pct / 100), src)
+		w.damage(b, EccSys.mitigate(w, b, maxi(1, wd.damage * Content.combat.mult(wd.damage_type, &"structure") / 100 * pct / 100), wd.damage_type), src)
 
 ## M4.2 (Malachi: "damage is dealt before the round actually hits"): fire() only launches the
 ## round (view event + an in-flight record); damage, splash, rust zones and collateral resolve in
 ## _impact() when the round lands, FLIGHT ticks later (same speeds the view's rounds fly at).
 ## Flight speed per effect class in tiles/s (0 = lobbed: fixed time window in ms, see LOB).
 const FLIGHT := {"rifle": 62, "mg": 56, "minigun": 70, "quad": 64, "autocannon": 48, "cannon": 36,
-	"flak": 42, "missile": 14, "rocket": 17, "salvo": 15}
+	"flak": 42, "missile": 14, "rocket": 17, "salvo": 15, "icbm": 7}
 const LOB := {"artillery": [15, 500, 950], "mortar": [11, 450, 850], "rust": [13, 400, 900], "grenade": [9, 300, 600]}
 
 static func flight_ticks(wd: WeaponDef, dist_fx: int) -> int:
+	var ballistic := EccSys.ballistic_ticks(wd, dist_fx)
+	if ballistic >= 0:
+		return ballistic
 	var cls := WeaponFx.class_of(wd.id, wd.vfx)
 	if cls == "flame" or cls == "spray" or cls == "none":
 		return 0
@@ -290,6 +297,8 @@ static func fire(w: SimWorld, src: SimEntity, t: SimEntity, wd: WeaponDef, dmg_p
 	var rec := {"at": w.tick + flight_ticks(wd, FX.dist(src.pos, impact)), "src": src.id, "team": src.team, "owner": src.owner,
 		"tid": t.id, "w": String(wd.id), "pct": dmg_pct, "hit": hit, "ix": impact.x, "iy": impact.y,
 		"air": w.flying(t), "arty": arty}
+	if wd.id == &"ecc_reaper_mirv":
+		rec["mirv"] = 1
 	if int(rec["at"]) <= w.tick:
 		_impact(w, rec)
 	else:
@@ -327,11 +336,14 @@ static func _impact(w: SimWorld, r: Dictionary) -> void:
 	var hit: bool = r["hit"]
 	var impact := Vector2i(int(r["ix"]), int(r["iy"]))
 	var t: SimEntity = w.get_ent(int(r["tid"]))
+	if int(r.get("mirv", 0)) > 0:
+		EccSys.split_mirv(w, r)
+		return
 	if hit and t != null and t.alive:
 		# a hit round homes on the target like the view's round does (it lands on the body)
 		var armor := _armor_of(w, t)
 		var dmg := wd.damage * Content.combat.mult(wd.damage_type, armor) / 100 * dmg_pct / 100
-		w.damage(t, maxi(1, dmg), src)
+		w.damage(t, EccSys.mitigate(w, t, maxi(1, dmg), wd.damage_type), src)
 	if wd.damage_type == &"corrosive":
 		TplaSys.add_zone(w, impact, maxi(FX.ONE, FX.mt_to_fx(wd.splash_mt)), 120, wd.damage * dmg_pct / 100, int(r["owner"]), team)
 	if wd.splash_mt > 0:
@@ -354,9 +366,11 @@ static func _impact(w: SimWorld, r: Dictionary) -> void:
 			var fall := ARTY_INF_FALLOFF if arty and armor == &"infantry" else 50
 			var frac := 100 - fall * d / maxi(1, rad)
 			var sd := wd.damage * splash_mult(wd, armor) / 100 * frac / 100 * dmg_pct / 100
-			w.damage(o, maxi(1, sd), src)
+			w.damage(o, EccSys.mitigate(w, o, maxi(1, sd), wd.damage_type), src)
 		if not tair:
 			_collateral(w, src, team, impact, rad, wd, dmg_pct, tid if hit else 0)
+			if int(r.get("sub", 0)) == 1:
+				_mirv_structures(w, src, team, impact, rad, wd, dmg_pct)
 
 ## M3.3 Phase 3 (19): blasts also damage civilian structures they land on or next to (empty or
 ## held by anyone other than the shooter's team), at COLLATERAL_PCT of the structure damage.
@@ -381,6 +395,21 @@ static func _collateral(w: SimWorld, src: SimEntity, team: int, impact: Vector2i
 			if w.dist_to_building(impact, b) > r:
 				continue
 			w.damage(b, maxi(1, wd.damage * Content.combat.mult(wd.damage_type, &"structure") / 100 * COLLATERAL_PCT / 100 * dmg_pct / 100), src)
+
+## Grim Reaper warheads also crack structures under the burst, not only the soldiers in it.
+static func _mirv_structures(w: SimWorld, src: SimEntity, team: int, impact: Vector2i, r: int, wd: WeaponDef, dmg_pct: int) -> void:
+	for id in w.ids:
+		var b: SimEntity = w.ents[id]
+		if not b.alive or (b.kind != SimEntity.Kind.BUILDING and b.kind != SimEntity.Kind.NEUTRAL):
+			continue
+		if b.team >= 0 and not w.enemies(team, b.team):
+			continue
+		if b.team < 0 and not w.is_civilian(b):
+			continue
+		if w.dist_to_building(impact, b) > r:
+			continue
+		var sd := wd.damage * Content.combat.mult(wd.damage_type, &"structure") / 100 * dmg_pct / 100
+		w.damage(b, maxi(1, sd), src)
 
 ## M3.3 (Malachi: "things that explode should do splash damage and heavy damage to infantry"):
 ## blast damage on soldiers never uses less than SPLASH_INF_PCT of the weapon's damage, so an
@@ -429,6 +458,7 @@ static func _structure_fire(w: SimWorld, b: SimEntity) -> void:
 			b.target = t.id
 			fire(w, b, t, wd, 100)
 			b.cds[i] = FX.ms_to_ticks(wd.cooldown_ms)
+	EccSys.fire_tower(w, b)
 
 static func _nearest_enemy_unit(w: SimWorld, src: SimEntity, p: Vector2i, r: int) -> SimEntity:
 	var best: SimEntity = null

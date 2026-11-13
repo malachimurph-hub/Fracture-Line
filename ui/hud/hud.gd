@@ -1322,6 +1322,25 @@ func _make_card() -> Array:
 				"sub": tr("HUD_UNPACKING") % ceili(MineSys.ticks_left(sim, me0) / 20.0) if up else "",
 				"act": func(): ctl.issue({"t": "unpack", "ids": mm}), "tip": tr("CMD_UNPACK_TIP"), "accent": Color("#7dff8a")})
 		var ud := Content.unit(e.def_id)
+		if ud.id == &"ecc_mzkt" and units.size() == 1:
+			var fitting := e.aux_def != &""
+			for kind in ["missile", "radar", "aa"]:
+				var spec: Dictionary = EccSys.MZKT[kind]
+				var why := EccSys.mzkt_reason(sim, pid, e, kind)
+				var key := "CMD_MZKT_" + kind.to_upper()
+				var sub := ""
+				if fitting:
+					sub = tr("HUD_MZKT_FITTING")
+				else:
+					sub = "$%d" % int(spec["cost"])
+				var tip := tr(key + "_TIP")
+				if why == "ecc_ministry":
+					tip += " — " + tr("HUD_NEEDS") % tr("BLD_ECC_MINISTRY")
+				elif why == "REASON_FUNDS":
+					tip += " — " + tr("REASON_FUNDS")
+				out.push_front({"text": tr(key), "glyph": "mzkt_" + kind, "sub": sub,
+					"disabled": why != "" or fitting, "accent": Color("#d7c07a"),
+					"tip": tip, "act": ctl.issue.bind({"t": "mzkt", "ids": [e.id], "def": kind})})
 		if units.size() > 1:
 			# M4.2 mass unload: with several transports selected, one Unload empties them all
 			var tr_ids: Array = []
@@ -1403,6 +1422,7 @@ func _make_card() -> Array:
 			"alt": func(): ctl.issue({"t": "rally", "ids": [e.id], "clear": true})})
 		out.append({"text": tr("CMD_LOOP_ON") if e.repeat else tr("CMD_LOOP"), "glyph": "loop_on" if e.repeat else "loop", "pin": true, "act": func(): ctl.issue({"t": "repeat", "target": e.id, "flag": not e.repeat}), "tip": tr("CMD_REPEAT_TIP")})
 		out.append({"text": tr("CMD_CANCEL_LAST"), "glyph": "cancel", "pin": true, "act": func(): ctl.dequeue(e, -1), "disabled": e.queue.is_empty()})
+	_ecc_commands(out, e, bd2)
 	if CommandSys.can_sell(sim, pid, e) and ctl.selection.size() == 1:
 		out.append(_sell_entry(e))
 	return out
@@ -1411,6 +1431,42 @@ func _make_card() -> Array:
 var _sell_arm_id := -1
 var _sell_arm_ms := 0
 const SELL_CONFIRM_MS := 3000
+
+## Russia: tower fittings, Red Dawn, and the Black Market hacks. Icons only; the name is the tooltip.
+func _fit_tower(b: SimEntity, kind: String) -> void:
+	ctl.issue({"t": "tower", "target": b.id, "def": kind})
+
+func _ecc_commands(out: Array, e: SimEntity, bd: BuildingDef) -> void:
+	if bd.faction != &"ecc" or not e.built:
+		return
+	var p: SimPlayer = sim.players[pid]
+	for kind in ["bal", "at", "aa"]:
+		var up: String = EccSys.TOWER_UP[kind]
+		if not p.upgrades.has(up):
+			continue
+		var cost: int = int(EccSys.TOWER_COST[kind])
+		var fitted: bool = EccSys.tower_of(e) == kind
+		var key: String = "CMD_TOWER_" + kind.to_upper()
+		out.append({"text": tr(key), "glyph": "tower_" + kind, "sub": tr("HUD_FITTED") if fitted else "$%d" % cost,
+			"disabled": fitted or p.supply < cost, "accent": Color("#d7c07a"),
+			"tip": tr(key + "_TIP"),
+			"act": _fit_tower.bind(e, kind)})
+	if e.def_id == &"ecc_ministry" and p.upgrades.has("ecc_up_red_dawn"):
+		var wait := EccSys.ready_in(sim, pid, "ecc_red_dawn")
+		out.append({"text": tr("CMD_RED_DAWN"), "glyph": "reddawn",
+			"sub": tr("CMD_DRONE_READY") if wait == 0 else "%ds" % ceili(float(wait) / 20.0),
+			"disabled": wait != 0 or not e.powered, "accent": Color("#d4654a"),
+			"tip": tr("CMD_RED_DAWN_TIP"), "act": ctl.begin_target.bind("reddawn")})
+	if e.def_id == &"ecc_black_market":
+		for kind in ["power", "radar", "funds", "hijack"]:
+			if not p.upgrades.has(EccSys.HACKS[kind]["up"]):
+				continue
+			var wait2 := EccSys.ready_in(sim, pid, "ecc_hack_" + kind)
+			var hk: String = "CMD_HACK_" + kind.to_upper()
+			out.append({"text": tr(hk), "glyph": "hack_" + kind,
+				"sub": tr("CMD_DRONE_READY") if wait2 == 0 else "%ds" % ceili(float(wait2) / 20.0),
+				"disabled": wait2 != 0 or not e.powered, "accent": Color("#7dff8a"),
+				"tip": tr(hk + "_TIP"), "act": ctl.begin_target.bind("hack:" + kind)})
 
 func _sell_entry(e: SimEntity) -> Dictionary:
 	var armed := _sell_arm_id == e.id and Time.get_ticks_msec() - _sell_arm_ms < SELL_CONFIRM_MS

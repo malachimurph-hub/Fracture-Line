@@ -930,6 +930,141 @@
       "garrison"
      ],
      "alias_of": "ecc_rifleman"
+    },
+    "ecc_alfa": {
+     "folder": "infiltrator",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran",
+      "garrison"
+     ],
+     "alias_of": "ecc_infiltrator"
+    },
+    "ecc_spetsnaz": {
+     "folder": "infiltrator",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran",
+      "garrison"
+     ],
+     "alias_of": "ecc_infiltrator"
+    },
+    "ecc_vdv": {
+     "folder": "rifleman",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran",
+      "garrison"
+     ],
+     "alias_of": "ecc_rifleman"
+    },
+    "ecc_bmp3": {
+     "folder": "btr",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ],
+     "alias_of": "ecc_btr"
+    },
+    "ecc_bmpt": {
+     "folder": "t90",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ],
+     "alias_of": "ecc_t90"
+    },
+    "ecc_t14": {
+     "folder": "t90",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ],
+     "alias_of": "ecc_t90"
+    },
+    "ecc_tos": {
+     "folder": "msta",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ],
+     "alias_of": "ecc_msta"
+    },
+    "ecc_iskander": {
+     "folder": "msta",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ],
+     "alias_of": "ecc_msta"
+    },
+    "ecc_reaper": {
+     "folder": "msta",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ],
+     "alias_of": "ecc_msta"
+    },
+    "ecc_pantsir": {
+     "folder": "zeus",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ],
+     "alias_of": "ecc_zeus"
+    },
+    "ecc_mi8": {
+     "folder": "ka52",
+     "events": [
+      "select",
+      "move",
+      "attack",
+      "under_fire",
+      "created",
+      "veteran"
+     ],
+     "alias_of": "ecc_ka52"
     }
    }
   }

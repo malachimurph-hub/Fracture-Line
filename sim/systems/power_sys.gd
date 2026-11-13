@@ -53,6 +53,9 @@ static func recompute_grid(w: SimWorld) -> void:
 					p.power_prod += d.power
 				else:
 					p.power_used -= d.power
+				p.power_used += EccSys.tower_draw(b)
+		if p.power_down_until > w.tick:
+			p.power_prod = 0
 		var low := p.power_used > p.power_prod
 		if low != p.low_power:
 			p.low_power = low

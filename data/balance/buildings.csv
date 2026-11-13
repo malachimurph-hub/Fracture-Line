@@ -42,13 +42,13 @@ us_drop_zone,BLD_US_DROP_ZONE,tech,3800,20000,4,4,1000,-5,0,6,us_strategy,,0,0,0
 ecc_hq,BLD_ECC_HQ,base,2500,45000,4,4,5000,5,0,10,,ecc_engineer,1,0,0,,0,,0,0,0,0,1,,,0,0,0,0
 ecc_power,BLD_ECC_POWER,base,1600,20000,4,4,1500,19,0,7,,,0,0,0,,0,,0,0,0,0,1,,,0,0,0,0
 ecc_depot,BLD_ECC_DEPOT,base,1500,15000,3,3,1500,-2,0,6,ecc_power,ecc_cargo_truck,0,1,0,ecc_cargo_truck,0,,0,0,0,0,1,,,0,0,0,0
-ecc_barracks,BLD_ECC_BARRACKS,production,600,10000,3,3,1200,-3,0,6,ecc_power,ecc_squad|ecc_infiltrator|ecc_saboteur|ecc_drone_operator,0,0,0,,0,,0,0,0,0,1,,,0,0,0,0
-ecc_factory,BLD_ECC_FACTORY,production,1600,16000,4,4,1900,-4,0,6,ecc_barracks,ecc_tigr|ecc_btr|ecc_typhoon|ecc_t90|ecc_zeus|ecc_msta|ecc_engineer,0,0,0,,0,,0,0,0,0,1,,,0,0,0,0
+ecc_barracks,BLD_ECC_BARRACKS,production,600,10000,3,3,1200,-3,0,6,ecc_power,ecc_squad|ecc_drone_operator,0,0,0,,0,,0,0,0,0,1,,,0,0,0,0
+ecc_factory,BLD_ECC_FACTORY,production,1600,16000,4,4,1900,-4,0,6,ecc_barracks,ecc_tigr|ecc_btr|ecc_typhoon|ecc_bmp3|ecc_t90|ecc_zeus|ecc_msta|ecc_tos|ecc_bmpt|ecc_iskander|ecc_pantsir|ecc_t14|ecc_reaper|ecc_mzkt|ecc_engineer|ecc_up_tower_bal|ecc_up_era,0,0,0,,0,,0,0,0,0,1,,,0,0,0,0
 ecc_bunker,BLD_ECC_BUNKER,defense,1000,12000,2,2,1400,-3,0,9,ecc_barracks,,0,0,0,,0,ecc_silo_missile,1,0,0,0,1,,,0,0,0,0
 ecc_aa_site,BLD_ECC_AA_SITE,defense,1000,12000,2,2,1200,-3,0,10,ecc_barracks,,0,0,0,,0,ecc_zak30|ecc_zak30_gnd,1,0,0,0,1,,,0,0,0,0
-ecc_airfield,BLD_ECC_AIRFIELD,production,1800,16000,8,8,1800,-4,0,7,ecc_factory,ecc_su57|ecc_ka52|ecc_tu160|ecc_hind,0,0,0,,0,,0,0,0,0,1,,airfield,0,6,0,0
-ecc_ministry,BLD_ECC_MINISTRY,tech,2000,16000,4,4,1500,-3,0,8,ecc_factory,,0,0,0,,0,,0,0,0,0,1,,,0,0,0,0
-ecc_black_market,BLD_ECC_BLACK_MARKET,tech,6500,20000,3,3,1000,0,0,6,ecc_ministry,,0,0,0,,0,,0,0,0,0,1,,income_burst|no_power|mobile,0,0,400,30
+ecc_airfield,BLD_ECC_AIRFIELD,production,1800,16000,8,8,1800,-4,0,7,ecc_factory,ecc_su57|ecc_ka52|ecc_tu160|ecc_hind|ecc_mi8,0,0,0,,0,,0,0,0,0,1,,airfield,0,6,0,0
+ecc_ministry,BLD_ECC_MINISTRY,tech,2000,22000,4,4,1500,-3,0,8,ecc_factory,ecc_up_tower_at|ecc_up_tower_aa|ecc_up_red_dawn|ecc_up_reaper,0,0,0,,0,,0,0,0,0,1,,,0,0,0,0
+ecc_black_market,BLD_ECC_BLACK_MARKET,tech,6500,20000,3,3,1200,-5,0,7,ecc_ministry,ecc_up_hack_power|ecc_up_hack_radar|ecc_up_hack_funds|ecc_up_hack_hijack,0,0,0,,0,,0,0,0,0,1,,,0,0,0,0
 eu_sandbags,BLD_SANDBAGS,defense,100,4000,2,1,700,0,0,5,,,0,0,0,,0,,0,1,0,0,1,,barricade|no_hole,0,0,0,0
 eu_barricade,BLD_BARRICADE,defense,250,7000,2,1,1600,0,0,5,,,0,0,0,,0,,0,1,0,0,1,,barricade|no_hole,0,0,0,0
 tpla_sandbags,BLD_SANDBAGS,defense,100,4000,2,1,700,0,0,5,,,0,0,0,,0,,0,1,0,0,1,,barricade|no_hole,0,0,0,0
@@ -66,3 +66,4 @@ us_socom,BLD_US_SOCOM,production,4500,22000,3,3,1600,-6,0,7,us_drop_zone,us_snip
 us_robotics,BLD_US_ROBOTICS,production,3800,20000,4,3,1700,-5,0,6,us_up_robotics,us_ripsaw,0,0,0,,0,,0,0,0,0,1,,,0,0,0,0
 us_zeus_launcher,BLD_US_ZEUS_LAUNCHER,defense,8500,35000,4,3,2200,-11,0,8,us_up_zeus,,0,0,0,,0,,1,0,0,0,1,,zeus_launcher,0,0,0,0
 us_zeus_pylon,BLD_US_ZEUS_PYLON,defense,2000,14000,2,2,900,-3,0,8,us_up_zeus,,0,0,0,,0,,1,0,0,0,1,,zeus_pylon,14,0,0,0
+ecc_fsb,BLD_ECC_FSB,production,4200,24000,3,3,1800,-6,0,7,ecc_ministry,ecc_alfa|ecc_spetsnaz|ecc_vdv,0,0,0,,0,,0,0,0,0,1,,,0,0,0,0

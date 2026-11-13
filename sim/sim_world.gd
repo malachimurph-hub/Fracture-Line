@@ -520,6 +520,8 @@ func step() -> void:
 	# M2.5 US mechanics (stealth while stationary). M4.4: ZEUS fires after stealth is resolved.
 	UsSys.run(self)
 	ZeusSys.run(self)
+	EccSys.run(self)
+	EccSys.installs(self)
 	# M3.3 Phase 3: the Russian mine packs up, drives and sets up again
 	MineSys.run(self)
 	if prof != null: t = _pt("tpla", t)

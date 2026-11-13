@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"ecc_mzkt_missile"
+faction = &"ecc"
+name_key = "UNIT_ECC_MZKT_MISSILE"
+desc_key = "UNIT_ECC_MZKT_MISSILE_DESC"
+cost = 2600
+build_time_ms = 18000
+pop = 3
+prereqs = PackedStringArray()
+tags = PackedStringArray("vehicle", "artillery", "deploy", "pack_move")
+max_hp = 620
+armor_type = &"light"
+weapons = PackedStringArray("ecc_mzkt_cm")
+speed_mtps = 1200
+move_layer = &"vehicle"
+sight = 10
+radius_mt = 1000
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 0
+role = &"artillery"
+view_scene = "res://view/units/ecc/mzkt_base.tscn"
+stubs = PackedStringArray()
+loco = &""
+turn_dps = 55
+accel_ms = 1500
+turret_dps = 45
+abilities = PackedStringArray()
+transport_capacity = 0
+detector = false
+air_slots = 0
+range_aura_radius = 0
+range_aura_pct = 0

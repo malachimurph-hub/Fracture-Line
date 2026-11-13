@@ -142,6 +142,8 @@ func think() -> void:
 		_powers()
 	if (faction() == &"eu" or faction() == &"ecc") and _every("t_air", 40):   # M3.0 E / M3.2: German, Russian jets
 		_air()
+	if faction() == &"ecc" and _every("t_ecc", 30):
+		_ecc_ops()
 
 # ------------------------------------------------------------------ threat detection
 func _update_threats() -> void:
@@ -283,7 +285,10 @@ func _next_building() -> StringName:
 	if faction() == &"eu" and seconds() > (840 if difficulty == "hard" else 1020) and difficulty != "easy" \
 			and counts.get(R["tech"], 0) >= 1 and counts.get(&"eu_airstrip", 0) < 1 and p.supply > 2400:
 		return &"eu_airstrip"
-	# M3.2: Russia's Airfield (Su-57, Ka-52, Tu-160) once the Ministry of Defense is up
+	# M3.2: Russia's Airfield once the Ministry is up. FSB GRU comes first: special forces before jets.
+	if faction() == &"ecc" and counts.get(&"ecc_ministry", 0) >= 1 and counts.get(&"ecc_fsb", 0) < 1 \
+			and seconds() > 640 and p.supply > 5000:
+		return &"ecc_fsb"
 	if faction() == &"ecc" and seconds() > (780 if difficulty == "hard" else 960) and difficulty != "easy" \
 			and counts.get(R["tech"], 0) >= 1 and counts.get(&"ecc_airfield", 0) < 1 and p.supply > 2400:
 		return &"ecc_airfield"
@@ -1140,6 +1145,9 @@ func _capture() -> void:
 	cmd({"t": "capture", "ids": [cu.id], "target": best.id})
 
 # ------------------------------------------------------------------ general powers
+func _ecc_ops() -> void:
+	pass
+
 func _powers() -> void:
 	var p := me()
 	for id in Content.power_order:

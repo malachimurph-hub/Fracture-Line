@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"ecc_mzkt_radar"
+faction = &"ecc"
+name_key = "UNIT_ECC_MZKT_RADAR"
+desc_key = "UNIT_ECC_MZKT_RADAR_DESC"
+cost = 3100
+build_time_ms = 16000
+pop = 3
+prereqs = PackedStringArray()
+tags = PackedStringArray("vehicle")
+max_hp = 680
+armor_type = &"light"
+weapons = PackedStringArray()
+speed_mtps = 1350
+move_layer = &"vehicle"
+sight = 20
+radius_mt = 1000
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 0
+role = &"support"
+view_scene = "res://view/units/ecc/mzkt_base.tscn"
+stubs = PackedStringArray()
+loco = &""
+turn_dps = 60
+accel_ms = 1400
+turret_dps = 0
+abilities = PackedStringArray()
+transport_capacity = 0
+detector = true
+air_slots = 0
+range_aura_radius = 12
+range_aura_pct = 25

@@ -30,7 +30,9 @@ const RETIRED_UNITS := {&"eu_aegis": &"eu_heavy_factory", &"eu_brennus": &"eu_he
 	&"ecc_machine_gunner": &"ecc_barracks", &"ecc_rpg": &"ecc_barracks", &"eu_spectre": &"eu_motor_pool", &"eu_sentinel": &"eu_motor_pool",
 	# M4.4: old US airframes and the Breacher stay loadable for saves and replays.
 	&"us_harrier": &"us_airfield", &"us_wraith": &"us_airfield", &"us_thunderlance": &"us_airfield",
-	&"us_breacher": &"us_barracks", &"us_up_drones": &"us_strategy"}
+	&"us_breacher": &"us_barracks", &"us_up_drones": &"us_strategy",
+	# Russia tree: Infiltrator and Saboteur stay loadable for old saves and replays.
+	&"ecc_infiltrator": &"ecc_barracks", &"ecc_saboteur": &"ecc_barracks"}
 ## M3.5: Germany's Heavy Factory merged into the Motor Pool (def kept, not buildable: old saves).
 ## M3.7: Iran has one power plant (the Gas Processing Plant); the Gas Turbine Plant is retired the same way.
 const RETIRED_BUILDINGS := [&"eu_heavy_factory", &"tpla_gas_plant"]
@@ -57,8 +59,13 @@ const SQUAD_MEMBERS := {
 		["eu_rifleman", [&"eu_rifle"]], &"eu", ["eu_rifleman", [&"eu_rifle"]]],
 	&"tpla_squad": [["tpla_rifleman", [&"tpla_carbine"]], ["tpla_machine_gunner", [&"tpla_pkm"]], ["tpla_rocket", [&"tpla_rpg"]],
 		["tpla_rifleman", [&"tpla_carbine"]], &"tpla", ["tpla_rifleman", [&"tpla_carbine"]]],
-	&"ecc_squad": [["ecc_rifleman", [&"ecc_ak74"]], ["ecc_machine_gunner", [&"ecc_pkm"]], ["ecc_rpg", [&"ecc_rpg7"]],
-		["ecc_rifleman", [&"ecc_ak74"]], &"ecc", ["ecc_rifleman", [&"ecc_ak74"]]],
+	# Conscripts: three different rifles, two RPG-7s, one PKM. Each man is his own bake
+	# (Flora, EMR, plain olive, woodland) so the squad does not match. Last listed falls first.
+	&"ecc_squad": [["ecc_con_flora", [&"ecc_ak47"]], ["ecc_con_pkm", [&"ecc_pkm"]], ["ecc_con_wood_rpg", [&"ecc_rpg7"]],
+		["ecc_con_flora_rpg", [&"ecc_rpg7"]], ["ecc_con_emr", [&"ecc_ak47"]], ["ecc_con_olive", [&"ecc_ak47"]]],
+	# FSB GRU. Spetsnaz: one VSS, two suppressed AK-74U. VDV: two riflemen with underbarrel grenades.
+	&"ecc_spetsnaz": [["ecc_infiltrator", [&"ecc_vss"]], ["ecc_rifleman", [&"ecc_ak74u"]], ["ecc_rifleman", [&"ecc_ak74u"]]],
+	&"ecc_vdv": [["ecc_grenadier", [&"ecc_ak74m", &"ecc_gp25"]], ["ecc_grenadier", [&"ecc_ak74m", &"ecc_gp25"]]],
 }
 ## M3.5 Drone Operators: which drone each operator launches (US: scout only; Russia: explosive only).
 const OPERATOR_DRONES := {&"us_drone_operator": {"scout": &"us_scout_drone"}, &"ecc_drone_operator": {"bomb": &"ecc_bomb_drone"}}
@@ -69,10 +76,15 @@ const US_UNIT_ORDER := [&"us_dozer", &"us_supply_truck", &"us_squad", &"us_mk23"
 const US_BUILDING_ORDER := [&"us_command", &"us_substation", &"us_barracks", &"us_supply_center", &"us_garage", &"us_firebase",
 	&"us_strategy", &"us_airfield", &"us_patriot", &"us_drop_zone", &"us_darpa", &"us_socom", &"us_robotics", &"us_reactor",
 	&"us_zeus_launcher", &"us_zeus_pylon", &"us_sandbags", &"us_barricade"]
-## M3.0 F: Russia (Malachi's list 2026-10-23: T-90M, Tiger-M, BTR, Typhoon, 2S Msta, Zeus and four
-## single soldiers). Engineer, Cargo Truck and every building are stand-ins until his list covers them.
-const ECC_UNIT_ORDER := [&"ecc_engineer", &"ecc_cargo_truck", &"ecc_squad", &"ecc_infiltrator", &"ecc_saboteur", &"ecc_drone_operator", &"ecc_tigr", &"ecc_btr", &"ecc_typhoon", &"ecc_t90", &"ecc_zeus", &"ecc_msta", &"ecc_ka52", &"ecc_hind", &"ecc_su57", &"ecc_tu160"]
-const ECC_BUILDING_ORDER := [&"ecc_hq", &"ecc_power", &"ecc_depot", &"ecc_barracks", &"ecc_factory", &"ecc_airfield", &"ecc_ministry", &"ecc_black_market", &"ecc_bunker", &"ecc_aa_site", &"ecc_sandbags", &"ecc_barricade"]
+## Russia. Heavy armour, artillery and a tough base. Air stays behind the US. Research lives on
+## the factory, the Ministry and the Black Market; those upgrades are not in this roster.
+const ECC_UNIT_ORDER := [&"ecc_engineer", &"ecc_cargo_truck", &"ecc_squad", &"ecc_drone_operator",
+	&"ecc_tigr", &"ecc_btr", &"ecc_typhoon", &"ecc_bmp3", &"ecc_t90", &"ecc_zeus", &"ecc_msta", &"ecc_tos",
+	&"ecc_bmpt", &"ecc_iskander", &"ecc_pantsir", &"ecc_mzkt", &"ecc_t14", &"ecc_reaper", &"ecc_ka52", &"ecc_hind", &"ecc_mi8",
+	&"ecc_su57", &"ecc_tu160", &"ecc_alfa", &"ecc_spetsnaz", &"ecc_vdv"]
+const ECC_BUILDING_ORDER := [&"ecc_hq", &"ecc_power", &"ecc_depot", &"ecc_barracks", &"ecc_factory",
+	&"ecc_airfield", &"ecc_ministry", &"ecc_fsb", &"ecc_black_market", &"ecc_bunker", &"ecc_aa_site",
+	&"ecc_sandbags", &"ecc_barricade"]
 const TPLA_BUILDING_ORDER := [&"tpla_den", &"tpla_cc_plant", &"tpla_stash", &"tpla_camp", &"tpla_chop_shop", &"tpla_tunnel", &"tpla_workshop", &"tpla_bazaar", &"tpla_demo_trap", &"tpla_camo_net", &"tpla_wasp_nest", &"tpla_sayad3", &"tpla_airfield", &"tpla_sandbags", &"tpla_barricade"]
 
 ## Playable factions (skirmish). "power": whether the faction uses the power economy.

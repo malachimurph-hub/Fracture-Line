@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"ecc_bmp3"
+faction = &"ecc"
+name_key = "UNIT_ECC_BMP3"
+desc_key = "UNIT_ECC_BMP3_DESC"
+cost = 1150
+build_time_ms = 13000
+pop = 2
+prereqs = PackedStringArray()
+tags = PackedStringArray("vehicle", "transport", "ifv")
+max_hp = 960
+armor_type = &"light"
+weapons = PackedStringArray("ecc_bmp_100", "ecc_bmp_30", "ecc_bmp_atgm")
+speed_mtps = 1650
+move_layer = &"vehicle"
+sight = 9
+radius_mt = 580
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 0
+role = &"ifv"
+view_scene = "res://view/units/ecc/bmp3_v2.tscn"
+stubs = PackedStringArray()
+loco = &""
+turn_dps = 140
+accel_ms = 900
+turret_dps = 150
+abilities = PackedStringArray()
+transport_capacity = 6
+detector = false
+air_slots = 0
+range_aura_radius = 0
+range_aura_pct = 0

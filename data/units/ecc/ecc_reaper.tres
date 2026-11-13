@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="UnitDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/defs/unit_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"ecc_reaper"
+faction = &"ecc"
+name_key = "UNIT_ECC_REAPER"
+desc_key = "UNIT_ECC_REAPER_DESC"
+cost = 5200
+build_time_ms = 42000
+pop = 4
+prereqs = PackedStringArray("ecc_up_reaper")
+tags = PackedStringArray("vehicle", "artillery", "deploy")
+max_hp = 680
+armor_type = &"light"
+weapons = PackedStringArray("ecc_reaper_mirv")
+speed_mtps = 880
+move_layer = &"vehicle"
+sight = 10
+radius_mt = 780
+shield_aura_radius = 0
+shield_aura_pct = 0
+harvest_capacity = 0
+role = &"artillery"
+view_scene = "res://view/units/ecc/reaper.tscn"
+stubs = PackedStringArray()
+loco = &""
+turn_dps = 50
+accel_ms = 1600
+turret_dps = 20
+abilities = PackedStringArray()
+transport_capacity = 0
+detector = false
+air_slots = 0
+range_aura_radius = 0
+range_aura_pct = 0
