@@ -2181,6 +2181,101 @@ static func mzkt_radar(mat: Material) -> void:
 	ResourceSaver.save(ps, "res://view/units/ecc/mzkt_radar_module.tscn")
 	root.free()
 
+## Module C, cruise-missile launcher. Unwired. ModuleRoot sits on ModuleMount.
+## +Z points at the cab. The bed runs z = -4.03 to 3.53 m and x = ±1.575 m.
+## LauncherPivot is the raised pose, 38 degrees, hinge toward the cab.
+static func mzkt_missile(mat: Material) -> void:
+	var Sc := 0.311
+	var root := Node3D.new()
+	root.name = "ModuleRoot"
+	var h = K.new()
+	h.plain = true
+	# Pedestal under the hinge, biting the deck.
+	h.color("#96A468", Geo.CONCRETE)
+	h.cbox(Vector3(0, 0.32 * Sc, 0.85 * Sc), Vector3(1.35 * Sc, 0.68 * Sc, 1.15 * Sc), 0.014 * Sc)
+	h.color("#3a3d38", Geo.STEEL)
+	h.tube(Vector3(0, 0.02 * Sc, 0.85 * Sc), Vector3(0, 0.08 * Sc, 0.85 * Sc), 0.55 * Sc, 8)
+	# Hinge beam and clevis plates. The barrel lives on the cradle.
+	h.color("#2c302c", Geo.STEEL)
+	h.cbox(Vector3(0, 0.50 * Sc, 1.05 * Sc), Vector3(2.15 * Sc, 0.16 * Sc, 0.32 * Sc), 0.01 * Sc)
+	for hx in [-0.90, -0.32, 0.32, 0.90]:
+		h.cbox(Vector3(hx * Sc, 0.60 * Sc, 1.05 * Sc), Vector3(0.07 * Sc, 0.24 * Sc, 0.28 * Sc), 0.008 * Sc)
+		h.color("#1a1c1a", Geo.STEEL)
+		h.box(Vector3(hx * Sc, 0.70 * Sc, 1.18 * Sc), Vector3(0.03 * Sc, 0.03 * Sc, 0.016 * Sc))
+		h.color("#2c302c", Geo.STEEL)
+	# Ram cylinders on the pedestal. Rods are on the cradle.
+	h.color("#2a2e2c", Geo.STEEL)
+	for s in [-1.0, 1.0]:
+		h.box(Vector3(s * 0.55 * Sc, 0.42 * Sc, 0.35 * Sc), Vector3(0.12 * Sc, 0.12 * Sc, 0.10 * Sc))
+		h.tube(Vector3(s * 0.48 * Sc, 0.42 * Sc, 0.35 * Sc), Vector3(s * 0.62 * Sc, 0.42 * Sc, 0.35 * Sc), 0.03 * Sc, 6)
+		h.tube(Vector3(s * 0.55 * Sc, 0.42 * Sc, 0.35 * Sc), Vector3(s * 0.55 * Sc, 1.32 * Sc, 0.15 * Sc), 0.045 * Sc, 6)
+	# Equipment box toward the cab, on the deck.
+	h.color("#96A468", Geo.CONCRETE)
+	h.cbox(Vector3(0, 0.58 * Sc, 2.35 * Sc), Vector3(1.55 * Sc, 1.20 * Sc, 1.35 * Sc), 0.016 * Sc)
+	h.color("#1c1e1c", Geo.DARK)
+	h.box(Vector3(0.79 * Sc, 0.62 * Sc, 2.35 * Sc), Vector3(0.03 * Sc, 0.72 * Sc, 0.48 * Sc))
+	h.color("#738252", Geo.CONCRETE)
+	h.box(Vector3(0.805 * Sc, 0.62 * Sc, 2.35 * Sc), Vector3(0.016 * Sc, 0.60 * Sc, 0.38 * Sc))
+	h.color("#3a3d38", Geo.STEEL)
+	h.box(Vector3(0.82 * Sc, 0.88 * Sc, 2.55 * Sc), Vector3(0.016 * Sc, 0.08 * Sc, 0.04 * Sc))
+	h.box(Vector3(0.82 * Sc, 0.62 * Sc, 2.12 * Sc), Vector3(0.02 * Sc, 0.06 * Sc, 0.08 * Sc))
+	h.color("#1c1e1c", Geo.DARK)
+	h.box(Vector3(0.79 * Sc, 0.95 * Sc, 2.85 * Sc), Vector3(0.02 * Sc, 0.22 * Sc, 0.28 * Sc))
+	for i in 3:
+		h.box(Vector3(0.805 * Sc, (1.02 - float(i) * 0.06) * Sc, 2.85 * Sc), Vector3(0.012 * Sc, 0.016 * Sc, 0.22 * Sc))
+	h.color("#141614", Geo.RUBBER)
+	h.tube(Vector3(0.7 * Sc, 0.35 * Sc, 1.55 * Sc), Vector3(0.55 * Sc, 0.48 * Sc, 0.7 * Sc), 0.014 * Sc, 4)
+	h.tube(Vector3(-0.55 * Sc, 0.30 * Sc, 1.70 * Sc), Vector3(-0.4 * Sc, 0.42 * Sc, 0.85 * Sc), 0.012 * Sc, 4)
+	# Deck stowage, seated, inside the bed width.
+	h.color("#6b4e32", Geo.WOOD)
+	h.box(Vector3(-1.15 * Sc, 0.18 * Sc, 2.55 * Sc), Vector3(0.42 * Sc, 0.36 * Sc, 0.38 * Sc))
+	h.color("#5c6844", Geo.CANVAS)
+	h.box(Vector3(1.15 * Sc, 0.12 * Sc, 1.35 * Sc), Vector3(0.36 * Sc, 0.24 * Sc, 0.28 * Sc))
+	h.color("#6a6e66", Geo.STEEL)
+	h.tube(Vector3(-1.15 * Sc, 0.16 * Sc, 1.55 * Sc), Vector3(-1.15 * Sc, 0.16 * Sc, 1.95 * Sc), 0.16 * Sc, 8)
+	h.color("#4a4e46", Geo.STEEL)
+	h.box(Vector3(1.20 * Sc, 0.10 * Sc, 3.15 * Sc), Vector3(0.32 * Sc, 0.20 * Sc, 0.24 * Sc))
+	VK._mi(root, root, "Hull", h.commit(mat))
+	var piv := VK._n3(root, root, "LauncherPivot", Vector3(0, 0.58 * Sc, 1.05 * Sc))
+	piv.rotation_degrees = Vector3(38, 0, 0)
+	var c = K.new()
+	c.plain = true
+	# Four long canisters, two wide and two high, running back from the hinge.
+	c.color("#738252", Geo.CONCRETE)
+	for sx in [-0.46, 0.46]:
+		for sy in [0.46, 1.18]:
+			c.box(Vector3(sx * Sc, sy * Sc, -2.55 * Sc), Vector3(0.78 * Sc, 0.58 * Sc, 4.50 * Sc))
+			c.color("#4e5840", Geo.CONCRETE)
+			c.box(Vector3(sx * Sc, sy * Sc, -2.55 * Sc), Vector3(0.80 * Sc, 0.03 * Sc, 4.30 * Sc))
+			c.color("#738252", Geo.CONCRETE)
+	# Cradle rails and end lattice.
+	c.color("#2c302c", Geo.STEEL)
+	c.box(Vector3(-1.00 * Sc, 0.10 * Sc, -2.45 * Sc), Vector3(0.08 * Sc, 0.14 * Sc, 4.70 * Sc))
+	c.box(Vector3(1.00 * Sc, 0.10 * Sc, -2.45 * Sc), Vector3(0.08 * Sc, 0.14 * Sc, 4.70 * Sc))
+	c.box(Vector3(0, 1.52 * Sc, -2.45 * Sc), Vector3(2.08 * Sc, 0.06 * Sc, 0.06 * Sc))
+	for ez in [-0.40, -2.50, -4.70]:
+		c.box(Vector3(0, 0.10 * Sc, ez * Sc), Vector3(2.00 * Sc, 0.08 * Sc, 0.06 * Sc))
+	for side in [-1.0, 1.0]:
+		c.box(Vector3(side * 0.96 * Sc, 0.80 * Sc, -4.72 * Sc), Vector3(0.05 * Sc, 1.40 * Sc, 0.05 * Sc))
+		c.box(Vector3(side * 0.96 * Sc, 0.80 * Sc, -0.38 * Sc), Vector3(0.05 * Sc, 1.40 * Sc, 0.05 * Sc))
+	c.box(Vector3(0, 1.48 * Sc, -4.72 * Sc), Vector3(1.90 * Sc, 0.05 * Sc, 0.05 * Sc))
+	c.box(Vector3(0, 0.78 * Sc, -4.72 * Sc), Vector3(1.90 * Sc, 0.05 * Sc, 0.05 * Sc))
+	# Hinge barrel and the ram rods, in cradle space.
+	c.tube(Vector3(-1.05 * Sc, 0, 0), Vector3(1.05 * Sc, 0, 0), 0.05 * Sc, 8)
+	for s in [-1.0, 1.0]:
+		c.color("#2a2e2c", Geo.STEEL)
+		c.box(Vector3(s * 0.55 * Sc, 0.22 * Sc, -1.40 * Sc), Vector3(0.12 * Sc, 0.10 * Sc, 0.12 * Sc))
+		c.tube(Vector3(s * 0.48 * Sc, 0.22 * Sc, -1.40 * Sc), Vector3(s * 0.62 * Sc, 0.22 * Sc, -1.40 * Sc), 0.028 * Sc, 6)
+		c.color("#f2f4f6", Geo.STEEL)
+		c.tube(Vector3(s * 0.55 * Sc, 0.22 * Sc, -1.40 * Sc), Vector3(s * 0.55 * Sc, -0.23 * Sc, -0.85 * Sc), 0.024 * Sc, 5)
+	VK._mi(piv, root, "Cradle", c.commit(mat))
+	var tris: int = h.tris + c.tris
+	print("  mzkt_missile_module.tscn: %d tris" % tris)
+	var ps := PackedScene.new()
+	ps.pack(root)
+	ResourceSaver.save(ps, "res://view/units/ecc/mzkt_missile_module.tscn")
+	root.free()
+
 static func _skirts(h, x: float, z0: float, z1: float, y0: float, y1: float, _notch: bool) -> void:
 	var n := 4
 	var seg := (z1 - z0) / float(n)

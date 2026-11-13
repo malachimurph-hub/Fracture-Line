@@ -103,6 +103,7 @@ func _views() -> void:
 	await frames(3)
 	await shot("top")
 	await _radar(cam, sun, truck)
+	await _missile(cam, sun, truck)
 	# Lineup on one ground line, noses toward +Z, gaps measured from each mesh.
 	var lineup: Array[Node3D] = [truck]
 	var paths := ["res://view/units/ecc/t90.tscn", "res://view/units/ecc/bmp3_v2.tscn", "res://view/units/ecc/mi8_v2.tscn"]
@@ -221,6 +222,70 @@ func _radar(cam: Camera3D, sun: DirectionalLight3D, base: Node3D) -> void:
 	await frames(3)
 	await shot("radar_array_back")
 	print("CAM radar array back size ", cam.size, " at ", back)
+	rig.queue_free()
+	base.visible = true
+
+## Base truck with the unwired missile module on ModuleMount.
+func _missile(cam: Camera3D, sun: DirectionalLight3D, base: Node3D) -> void:
+	base.visible = false
+	var rig := (load("res://view/units/ecc/mzkt_base.tscn") as PackedScene).instantiate() as Node3D
+	var mod := (load("res://view/units/ecc/mzkt_missile_module.tscn") as PackedScene).instantiate() as Node3D
+	var mount := rig.find_child("ModuleMount", true, false) as Node3D
+	mount.add_child(mod)
+	add_child(rig)
+	_paint(rig)
+	var whole := _aabb(rig)
+	var alone := _aabb(mod)
+	var sc := 0.311
+	print("MISSILE whole u ", whole.size, " m ", whole.size / sc)
+	print("MISSILE module u ", alone.size, " min ", alone.position, " m ", alone.size / sc, " min m ", alone.position / sc)
+	print("MISSILE tris ", _tris(mod))
+	var aspect := get_viewport().get_visible_rect().size.x / get_viewport().get_visible_rect().size.y
+	var center := whole.get_center()
+	cam.projection = Camera3D.PROJECTION_ORTHOGONAL
+	var side_size := maxf(whole.size.y * 1.12, whole.size.z * 1.08 / aspect)
+	cam.size = side_size
+	sun.rotation_degrees = Vector3(-28, 70, 0)
+	cam.global_position = Vector3(14, center.y, center.z)
+	cam.look_at(center, Vector3.UP)
+	await frames(4)
+	await shot("missile_side")
+	cam.projection = Camera3D.PROJECTION_PERSPECTIVE
+	cam.fov = 28.0
+	var focus := center + Vector3(0, 0.1, 0.1)
+	cam.global_position = focus + Vector3(5.2, 2.4, 4.4)
+	cam.look_at(focus, Vector3.UP)
+	sun.rotation_degrees = Vector3(-36, 32, 0)
+	await frames(3)
+	await shot("missile_three_quarter")
+	cam.projection = Camera3D.PROJECTION_ORTHOGONAL
+	cam.size = maxf(whole.size.y * 1.15, whole.size.x * 1.4 / aspect)
+	var front_at := Vector3(center.x, center.y, whole.position.z + whole.size.z * 0.55)
+	cam.global_position = Vector3(front_at.x, front_at.y, whole.position.z + whole.size.z + 6.0)
+	cam.look_at(front_at, Vector3.UP)
+	sun.rotation_degrees = Vector3(-22, 180, 0)
+	await frames(3)
+	await shot("missile_front")
+	cam.size = maxf(whole.size.z * 1.15 / aspect, whole.size.x * 1.4)
+	cam.global_position = Vector3(center.x, center.y + 12.0, center.z + 0.01)
+	cam.look_at(Vector3(center.x, 0, center.z), Vector3(0, 0, -1))
+	sun.rotation_degrees = Vector3(-70, 20, 0)
+	await frames(3)
+	await shot("missile_top")
+	cam.size = side_size * 0.5
+	var hinge := mount.global_position + Vector3(0.1, 0.9, 0.7) * sc
+	sun.rotation_degrees = Vector3(-30, 75, 0)
+	cam.global_position = Vector3(12, hinge.y, hinge.z)
+	cam.look_at(hinge, Vector3.UP)
+	await frames(3)
+	await shot("missile_hinge")
+	print("CAM missile hinge size ", cam.size, " at ", hinge)
+	var join := mount.global_position + Vector3(0.2, 0.15, 0.4) * sc
+	cam.global_position = Vector3(12, join.y, join.z)
+	cam.look_at(join, Vector3.UP)
+	await frames(3)
+	await shot("missile_join")
+	print("CAM missile join size ", cam.size, " at ", join)
 	rig.queue_free()
 	base.visible = true
 
