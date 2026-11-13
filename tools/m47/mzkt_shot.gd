@@ -60,6 +60,19 @@ func _views() -> void:
 	await frames(4)
 	await shot("side")
 	print("CAM side size ", cam.size, " eye ", eye, " pos ", cam.global_position, " basis_x ", cam.global_basis.x)
+	# 2x side crops. Same camera, half the vertical span.
+	cam.size = 0.925
+	var cab_eye := Vector3(0, 0.72, 1.15)
+	cam.global_position = Vector3(12, cab_eye.y, cab_eye.z)
+	cam.look_at(cab_eye, Vector3.UP)
+	await frames(3)
+	await shot("side_cab")
+	var bed_eye := Vector3(0, 0.48, -0.55)
+	cam.global_position = Vector3(12, bed_eye.y, bed_eye.z)
+	cam.look_at(bed_eye, Vector3.UP)
+	await frames(3)
+	await shot("side_bed")
+	cam.size = 1.85
 	cam.projection = Camera3D.PROJECTION_PERSPECTIVE
 	cam.fov = 28.0
 	var focus := Vector3(0, 0.7, 0.2)

@@ -1777,6 +1777,10 @@ static func mzkt_base(mat: Material) -> void:
 	var d1 := -6.08
 	h.color("#96A468", Geo.CONCRETE)
 	h.cbox(Vector3(0, 1.54 * Sc, (d0 + d1) * 0.5 * Sc), Vector3(3.15 * Sc, 0.16 * Sc, (d0 - d1) * Sc), 0.018 * Sc)
+	# Side rail overlaps the deck bottom and the frame top, so the bed seam stays closed.
+	h.color("#738252", Geo.CONCRETE)
+	for sr in [-1.0, 1.0]:
+		h.box(Vector3(sr * 1.585 * Sc, 1.42 * Sc, (d0 + d1) * 0.5 * Sc), Vector3(0.07 * Sc, 0.28 * Sc, (d0 - d1 + 0.20) * Sc))
 	for pair in [[z1, z2], [z3, z4]]:
 		var zc: float = (pair[0] + pair[1]) * 0.5
 		var span: float = absf(pair[0] - pair[1]) + 1.25
@@ -1796,11 +1800,11 @@ static func mzkt_base(mat: Material) -> void:
 	# Slim cab-coloured bumper, bolted to the front cross-member. Front face stays at 6.335 m.
 	h.cbox(Vector3(0, 0.96 * Sc, 6.225 * Sc), Vector3(2.20 * Sc, 0.32 * Sc, 0.22 * Sc), 0.01 * Sc)
 	h.cbox(Vector3(0, 1.20 * Sc, 6.02 * Sc), Vector3(2.00 * Sc, 0.08 * Sc, 0.26 * Sc), 0.008 * Sc)
-	# Valance closes the side-view gap between the raked nose and the bumper.
+	# Valance overlaps the rake underside and the frame, so the nose seam stays closed.
 	h.prism_x([
-		Vector2(5.45 * Sc, 1.55 * Sc), Vector2(6.16 * Sc, 1.18 * Sc),
-		Vector2(6.16 * Sc, 0.90 * Sc), Vector2(5.45 * Sc, 1.12 * Sc),
-	], -1.05 * Sc, 1.05 * Sc)
+		Vector2(5.28 * Sc, 1.70 * Sc), Vector2(6.28 * Sc, 1.42 * Sc),
+		Vector2(6.28 * Sc, 0.84 * Sc), Vector2(5.28 * Sc, 1.18 * Sc),
+	], -1.38 * Sc, 1.38 * Sc)
 	h.color("#1c1e1c", Geo.DARK)
 	for gi in 6:
 		h.box(Vector3((-0.40 + float(gi) * 0.16) * Sc, 0.98 * Sc, 6.34 * Sc), Vector3(0.04 * Sc, 0.14 * Sc, 0.016 * Sc))
@@ -1869,6 +1873,11 @@ static func mzkt_base(mat: Material) -> void:
 	# Engine bay, split from the cab. Louvres on the sides and the roof, an intake, an exhaust.
 	h.color("#738252", Geo.CONCRETE)
 	h.cbox(Vector3(0, 2.02 * Sc, 2.72 * Sc), Vector3(2.55 * Sc, 0.88 * Sc, 2.35 * Sc), 0.02 * Sc)
+	# Rear cab bulkhead overlaps the cab wall, the roof and the engine front.
+	h.color("#96A468", Geo.CONCRETE)
+	h.box(Vector3(0, 2.28 * Sc, 3.945 * Sc), Vector3(2.80 * Sc, 1.90 * Sc, 0.42 * Sc))
+	# Sill under the cab and engine bay, overlapping the floor, the valance and the frame.
+	h.box(Vector3(0, 1.48 * Sc, 3.45 * Sc), Vector3(2.80 * Sc, 0.32 * Sc, 4.20 * Sc))
 	h.color("#1c1e1c", Geo.DARK)
 	h.box(Vector3(0, 2.48 * Sc, 2.55 * Sc), Vector3(1.15 * Sc, 0.025 * Sc, 1.35 * Sc))
 	for lv in 7:
@@ -1884,7 +1893,7 @@ static func mzkt_base(mat: Material) -> void:
 		h.color("#5e6848", Geo.CONCRETE)
 		h.cbox(Vector3(se * 1.22 * Sc, 1.15 * Sc, 2.05 * Sc), Vector3(0.32 * Sc, 0.28 * Sc, 0.42 * Sc), 0.01 * Sc)
 	h.color("#738252", Geo.CONCRETE)
-	h.cbox(Vector3(-0.35 * Sc, 2.62 * Sc, 3.35 * Sc), Vector3(0.55 * Sc, 0.22 * Sc, 0.48 * Sc), 0.012 * Sc)
+	h.cbox(Vector3(-0.35 * Sc, 2.54 * Sc, 3.35 * Sc), Vector3(0.55 * Sc, 0.22 * Sc, 0.48 * Sc), 0.012 * Sc)
 	h.color("#2a2c28", Geo.DARK)
 	h.tube(Vector3(0.95 * Sc, 2.15 * Sc, 1.70 * Sc), Vector3(1.15 * Sc, 2.55 * Sc, 1.45 * Sc), 0.04 * Sc, 6)
 	h.tube(Vector3(1.15 * Sc, 2.55 * Sc, 1.45 * Sc), Vector3(1.15 * Sc, 2.55 * Sc, 1.15 * Sc), 0.035 * Sc, 6)
