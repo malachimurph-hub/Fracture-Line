@@ -331,14 +331,23 @@ func _missile_setup(cam: Camera3D, sun: DirectionalLight3D, rig: Node3D, mod: No
 	var tip := mod.get_node("LauncherYaw/RamR/Rod/Tip") as Node3D
 	var eye := mod.get_node("LauncherYaw/LauncherPivot/EyeR") as Node3D
 	var ram_at := (tip.global_position + eye.global_position) * 0.5
-	cam.projection = Camera3D.PROJECTION_ORTHOGONAL
-	cam.size = 0.36
-	sun.rotation_degrees = Vector3(-24, 70, 0)
-	cam.global_position = Vector3(ram_at.x + 3.2, ram_at.y, ram_at.z)
-	cam.look_at(ram_at, Vector3.UP)
+	cam.projection = Camera3D.PROJECTION_PERSPECTIVE
+	cam.fov = 26.0
+	sun.rotation_degrees = Vector3(-20, 55, 0)
+	cam.global_position = ram_at + Vector3(-0.15, -0.42, 0.72)
+	cam.look_at(ram_at + Vector3(0, -0.05, -0.05), Vector3.UP)
 	await frames(3)
 	await shot("missile_zoom_rams")
 	print("CAM ram zoom size ", cam.size, " at ", ram_at, " gap m ", tip.global_position.distance_to(eye.global_position) / sc)
+	var ring := (mod.get_node("LauncherYaw") as Node3D).global_position
+	cam.projection = Camera3D.PROJECTION_ORTHOGONAL
+	cam.size = 0.55
+	sun.rotation_degrees = Vector3(-55, 40, 0)
+	cam.global_position = ring + Vector3(1.6, 1.35, 1.4)
+	cam.look_at(ring + Vector3(0, 0.05, 0), Vector3.UP)
+	await frames(3)
+	await shot("missile_zoom_turntable")
+	print("CAM turntable at ", ring)
 	# One three-quarter camera for the whole strip, framed on the planted truck.
 	var whole := _aabb(rig)
 	var center := whole.get_center()
