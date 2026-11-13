@@ -2245,18 +2245,18 @@ static func mzkt_missile(mat: Material) -> void:
 		h.box(Vector3(0, 0.08 * Sc, sz * Sc), Vector3(0.70 * Sc, 0.05 * Sc, 0.06 * Sc))
 	# Generator, left of the stack, skid on the deck.
 	h.color("#5e6848", Geo.CONCRETE)
-	h.cbox(Vector3(-0.95 * Sc, 0.22 * Sc, -1.85 * Sc), Vector3(0.48 * Sc, 0.44 * Sc, 0.62 * Sc), 0.012 * Sc)
+	h.cbox(Vector3(-1.32 * Sc, 0.22 * Sc, -1.45 * Sc), Vector3(0.42 * Sc, 0.44 * Sc, 0.58 * Sc), 0.012 * Sc)
 	h.color("#1c1e1c", Geo.DARK)
-	h.box(Vector3(-1.185 * Sc, 0.28 * Sc, -1.85 * Sc), Vector3(0.03 * Sc, 0.22 * Sc, 0.40 * Sc))
+	h.box(Vector3(-1.52 * Sc, 0.28 * Sc, -1.45 * Sc), Vector3(0.03 * Sc, 0.22 * Sc, 0.36 * Sc))
 	for gi in 4:
-		h.box(Vector3(-1.198 * Sc, (0.36 - float(gi) * 0.05) * Sc, -1.85 * Sc), Vector3(0.012 * Sc, 0.016 * Sc, 0.32 * Sc))
+		h.box(Vector3(-1.532 * Sc, (0.36 - float(gi) * 0.05) * Sc, -1.45 * Sc), Vector3(0.012 * Sc, 0.016 * Sc, 0.28 * Sc))
 	h.color("#3a3d38", Geo.STEEL)
-	h.tube(Vector3(-0.95 * Sc, 0.40 * Sc, -1.58 * Sc), Vector3(-0.95 * Sc, 0.54 * Sc, -1.58 * Sc), 0.04 * Sc, 6)
-	# Cable drum and a toolbox on the right, between the stowed outrigger arms.
+	h.tube(Vector3(-1.32 * Sc, 0.40 * Sc, -1.20 * Sc), Vector3(-1.32 * Sc, 0.54 * Sc, -1.20 * Sc), 0.04 * Sc, 6)
+	# Cable drum and a toolbox on the right, outboard of the travel sills.
 	h.color("#6a6e66", Geo.STEEL)
-	h.tube(Vector3(0.95 * Sc, 0.22 * Sc, -1.55 * Sc), Vector3(1.25 * Sc, 0.22 * Sc, -1.55 * Sc), 0.20 * Sc, 8)
+	h.tube(Vector3(1.16 * Sc, 0.20 * Sc, -1.55 * Sc), Vector3(1.42 * Sc, 0.20 * Sc, -1.55 * Sc), 0.18 * Sc, 8)
 	h.color("#2c302c", Geo.STEEL)
-	h.tube(Vector3(0.92 * Sc, 0.22 * Sc, -1.55 * Sc), Vector3(1.28 * Sc, 0.22 * Sc, -1.55 * Sc), 0.05 * Sc, 6)
+	h.tube(Vector3(1.13 * Sc, 0.20 * Sc, -1.55 * Sc), Vector3(1.45 * Sc, 0.20 * Sc, -1.55 * Sc), 0.045 * Sc, 6)
 	h.color("#4a4e46", Geo.STEEL)
 	h.cbox(Vector3(1.15 * Sc, 0.11 * Sc, -1.05 * Sc), Vector3(0.28 * Sc, 0.22 * Sc, 0.34 * Sc), 0.008 * Sc)
 	h.box(Vector3(1.15 * Sc, 0.23 * Sc, -1.05 * Sc), Vector3(0.30 * Sc, 0.03 * Sc, 0.36 * Sc))
@@ -2272,9 +2272,9 @@ static func mzkt_missile(mat: Material) -> void:
 	h.tube(Vector3(-0.70 * Sc, 0.22 * Sc, -3.88 * Sc), Vector3(0.70 * Sc, 0.22 * Sc, -3.88 * Sc), 0.016 * Sc, 5)
 	for rx in [-0.70, 0.0, 0.70]:
 		h.tube(Vector3(rx * Sc, 0.0, -3.88 * Sc), Vector3(rx * Sc, 0.22 * Sc, -3.88 * Sc), 0.014 * Sc, 5)
-	h.tube(Vector3(-1.28 * Sc, 0.20 * Sc, -1.70 * Sc), Vector3(-1.28 * Sc, 0.20 * Sc, -1.15 * Sc), 0.014 * Sc, 5)
-	h.tube(Vector3(-1.28 * Sc, 0.0, -1.70 * Sc), Vector3(-1.28 * Sc, 0.20 * Sc, -1.70 * Sc), 0.012 * Sc, 5)
-	h.tube(Vector3(-1.28 * Sc, 0.0, -1.15 * Sc), Vector3(-1.28 * Sc, 0.20 * Sc, -1.15 * Sc), 0.012 * Sc, 5)
+	h.tube(Vector3(1.48 * Sc, 0.18 * Sc, -0.55 * Sc), Vector3(1.48 * Sc, 0.18 * Sc, 0.05 * Sc), 0.014 * Sc, 5)
+	h.tube(Vector3(1.48 * Sc, 0.0, -0.55 * Sc), Vector3(1.48 * Sc, 0.18 * Sc, -0.55 * Sc), 0.012 * Sc, 5)
+	h.tube(Vector3(1.48 * Sc, 0.0, 0.05 * Sc), Vector3(1.48 * Sc, 0.18 * Sc, 0.05 * Sc), 0.012 * Sc, 5)
 	VK._mi(root, root, "Hull", h.commit(mat))
 	var yaw := VK._n3(root, root, "LauncherYaw", Vector3(0, 0.06 * Sc, 0.90 * Sc))
 	var slew_tris := _missile_slew(yaw, root, mat, Sc)
@@ -2302,6 +2302,20 @@ static func mzkt_missile(mat: Material) -> void:
 	c.color("#2c302c", Geo.STEEL)
 	c.box(Vector3(-1.00 * Sc, 0.10 * Sc, -2.45 * Sc), Vector3(0.08 * Sc, 0.14 * Sc, 4.70 * Sc))
 	c.box(Vector3(1.00 * Sc, 0.10 * Sc, -2.45 * Sc), Vector3(0.08 * Sc, 0.14 * Sc, 4.70 * Sc))
+	# Travel sills. Cradle-local deck is y = -0.58, so a stowed sill stands on the deck
+	# and bites the rail. They are part of the cradle, so deploy lifts them and yaw carries them.
+	c.color("#738252", Geo.CONCRETE)
+	for ss in [-1.0, 1.0]:
+		# Bottom is 6 cm into the deck so the stowed side view has no hairline.
+		c.box(Vector3(ss * 0.92 * Sc, -0.24 * Sc, -2.50 * Sc), Vector3(0.16 * Sc, 0.80 * Sc, 4.30 * Sc))
+	c.color("#2c302c", Geo.STEEL)
+	for ss2 in [-1.0, 1.0]:
+		c.box(Vector3(ss2 * 0.92 * Sc, -0.58 * Sc, -2.50 * Sc), Vector3(0.24 * Sc, 0.12 * Sc, 4.30 * Sc))
+	# Thicker forward and aft feet, still inside the sill so they miss the deck crates.
+	c.color("#5e6848", Geo.CONCRETE)
+	for ss3 in [-1.0, 1.0]:
+		c.box(Vector3(ss3 * 0.92 * Sc, -0.30 * Sc, -0.55 * Sc), Vector3(0.18 * Sc, 0.68 * Sc, 0.28 * Sc))
+		c.box(Vector3(ss3 * 0.92 * Sc, -0.30 * Sc, -4.40 * Sc), Vector3(0.18 * Sc, 0.68 * Sc, 0.32 * Sc))
 	for ez in [-0.40, -2.50, -4.70]:
 		c.box(Vector3(0, 0.10 * Sc, ez * Sc), Vector3(2.00 * Sc, 0.08 * Sc, 0.06 * Sc))
 	for side in [-1.0, 1.0]:

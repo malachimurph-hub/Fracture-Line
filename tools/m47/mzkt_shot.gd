@@ -309,7 +309,9 @@ func _missile_setup(cam: Camera3D, sun: DirectionalLight3D, rig: Node3D, mod: No
 	var piv := mod.get_node("LauncherYaw/LauncherPivot") as Node3D
 	var stack := piv.to_global(Vector3(0, 0.82 * sc, -2.55 * sc))
 	await _zoom_side(cam, sun, stack, side_size * 0.5, "missile_zoom_stack")
-	print("ZOOM stack size ", side_size * 0.5, " at ", stack, " stowed |x| m ", _half_x(mod) / sc)
+	var gap := piv.to_global(Vector3(0, -0.22 * sc, -2.50 * sc))
+	await _zoom_side(cam, sun, gap, side_size * 0.5, "missile_zoom_stow_gap")
+	print("ZOOM stack size ", side_size * 0.5, " at ", stack, " gap at ", gap, " stowed |x| m ", _half_x(mod) / sc)
 	await _pose(ap, 8.0)
 	_report_motion(mod, sc, 8.0)
 	var deployed_size := await _pose_views(cam, sun, rig, "missile_deployed", aspect)
