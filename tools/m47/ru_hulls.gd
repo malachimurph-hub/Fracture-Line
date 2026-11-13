@@ -2374,6 +2374,268 @@ static func mzkt_missile(mat: Material) -> void:
 	ResourceSaver.save(ps, "res://view/units/ecc/mzkt_missile_module.tscn")
 	root.free()
 
+## Module A, anti-air. Unwired. ModuleRoot sits on ModuleMount.
+## +Z points at the cab. The bed runs z = -4.03 to 3.53 m and x = ±1.575 m.
+## Body top is the sheet's 4,290 mm. The raised search dish reaches the 5,890 mm line.
+## TurretYaw points the guns forward at yaw 0. WeaponPivot elevates the racks and the guns.
+## The search hinge is not named Radar, and the guns are not named Barrel: VehicleView claims both.
+static func mzkt_aa(mat: Material) -> void:
+	var Sc := 0.311
+	var root := Node3D.new()
+	root.name = "ModuleRoot"
+	var h = K.new()
+	h.plain = true
+	# Floor bites the deck. The belly sits in that plate, inboard of the jack lane.
+	h.color("#96A468", Geo.CONCRETE)
+	h.box(Vector3(0, 0.01 * Sc, -0.14 * Sc), Vector3(3.04 * Sc, 0.14 * Sc, 7.56 * Sc))
+	h.box(Vector3(0, 0.29 * Sc, -0.14 * Sc), Vector3(2.72 * Sc, 0.66 * Sc, 7.52 * Sc))
+	# Upper body. Front face overlaps the engine bay so the step has no slot.
+	# Bottom sits just above the stowed jack arms.
+	h.cbox(Vector3(0, 1.585 * Sc, -0.12 * Sc), Vector3(2.96 * Sc, 2.17 * Sc, 7.46 * Sc), 0.035 * Sc)
+	# Flange on the engine roof, overlapping the bay top and the body front.
+	h.box(Vector3(0, 0.84 * Sc, 3.62 * Sc), Vector3(2.30 * Sc, 0.14 * Sc, 0.22 * Sc))
+	# Side walls drop to the deck outside the two jack bays.
+	h.color("#738252", Geo.CONCRETE)
+	for band in [[2.64, 3.62], [-2.02, 0.92], [-3.92, -3.72]]:
+		var z0: float = band[0]
+		var z1: float = band[1]
+		var zc := (z0 + z1) * 0.5
+		var zl := absf(z1 - z0)
+		for s in [-1.0, 1.0]:
+			h.box(Vector3(s * 1.42 * Sc, 0.30 * Sc, zc * Sc), Vector3(0.22 * Sc, 0.64 * Sc, zl * Sc))
+	# Lip over each jack bay, seated on the stowed arm.
+	for bay in [[1.08, 2.58], [-3.66, -2.18]]:
+		var bz0: float = bay[0]
+		var bz1: float = bay[1]
+		var bzc := (bz0 + bz1) * 0.5
+		var bzl := absf(bz1 - bz0)
+		for s2 in [-1.0, 1.0]:
+			h.box(Vector3(s2 * 1.46 * Sc, 0.48 * Sc, bzc * Sc), Vector3(0.14 * Sc, 0.10 * Sc, bzl * Sc))
+			h.color("#2c302c", Geo.STEEL)
+			h.box(Vector3(s2 * 1.50 * Sc, 0.22 * Sc, bz0 * Sc), Vector3(0.06 * Sc, 0.40 * Sc, 0.04 * Sc))
+			h.box(Vector3(s2 * 1.50 * Sc, 0.22 * Sc, bz1 * Sc), Vector3(0.06 * Sc, 0.40 * Sc, 0.04 * Sc))
+			h.color("#738252", Geo.CONCRETE)
+	# Roof breaks, a forward vent box, and a short mast clear of the weapon arc.
+	h.color("#738252", Geo.CONCRETE)
+	for rz in [2.4, 1.1, -2.6]:
+		h.box(Vector3(0, 2.68 * Sc, rz * Sc), Vector3(2.70 * Sc, 0.03 * Sc, 0.04 * Sc))
+	h.color("#5e6848", Geo.CONCRETE)
+	h.cbox(Vector3(0.85 * Sc, 2.82 * Sc, 2.85 * Sc), Vector3(0.55 * Sc, 0.28 * Sc, 0.42 * Sc), 0.012 * Sc)
+	h.color("#1c1e1c", Geo.DARK)
+	h.box(Vector3(0.85 * Sc, 2.97 * Sc, 2.85 * Sc), Vector3(0.38 * Sc, 0.02 * Sc, 0.28 * Sc))
+	h.color("#3a3d38", Geo.STEEL)
+	h.tube(Vector3(-0.95 * Sc, 2.67 * Sc, 3.15 * Sc), Vector3(-0.95 * Sc, 3.15 * Sc, 3.15 * Sc), 0.018 * Sc, 5)
+	h.box(Vector3(-0.95 * Sc, 3.15 * Sc, 3.15 * Sc), Vector3(0.08 * Sc, 0.02 * Sc, 0.16 * Sc))
+	# Doors, one each side, with a recess, hinge straps and a latch. No glass lettering.
+	for sd in [-1.0, 1.0]:
+		var door_z := 1.85 if sd > 0.0 else 0.55
+		h.color("#1c1e1c", Geo.DARK)
+		h.box(Vector3(sd * 1.49 * Sc, 1.45 * Sc, door_z * Sc), Vector3(0.03 * Sc, 1.15 * Sc, 0.62 * Sc))
+		h.color("#96A468", Geo.CONCRETE)
+		h.box(Vector3(sd * 1.505 * Sc, 1.45 * Sc, door_z * Sc), Vector3(0.02 * Sc, 1.02 * Sc, 0.50 * Sc))
+		h.color("#2c302c", Geo.STEEL)
+		h.box(Vector3(sd * 1.52 * Sc, 1.82 * Sc, (door_z - 0.24) * Sc), Vector3(0.02 * Sc, 0.22 * Sc, 0.04 * Sc))
+		h.box(Vector3(sd * 1.52 * Sc, 1.08 * Sc, (door_z - 0.24) * Sc), Vector3(0.02 * Sc, 0.22 * Sc, 0.04 * Sc))
+		h.box(Vector3(sd * 1.525 * Sc, 1.40 * Sc, (door_z + 0.16) * Sc), Vector3(0.025 * Sc, 0.08 * Sc, 0.06 * Sc))
+		h.color("#24323a", Geo.GLASS)
+		h.box(Vector3(sd * 1.52 * Sc, 1.78 * Sc, door_z * Sc), Vector3(0.012 * Sc, 0.22 * Sc, 0.28 * Sc))
+	# Grilles. A dark recess first, then slats proud of it.
+	for gv in [[-1.0, -1.15], [1.0, -0.35]]:
+		var gs: float = gv[0]
+		var gz: float = gv[1]
+		h.color("#1c1e1c", Geo.DARK)
+		h.box(Vector3(gs * 1.49 * Sc, 1.55 * Sc, gz * Sc), Vector3(0.03 * Sc, 0.42 * Sc, 0.55 * Sc))
+		for i in 4:
+			h.color("#3a3d38", Geo.STEEL)
+			h.box(Vector3(gs * 1.51 * Sc, (1.70 - float(i) * 0.09) * Sc, gz * Sc), Vector3(0.016 * Sc, 0.028 * Sc, 0.46 * Sc))
+	_mzkt_ladder(h, -1.52 * Sc, 0.55 * Sc, -2.55 * Sc, 1.85 * Sc)
+	# Stowage on the side step, clear of both jack bays. Mixed materials, one red bottle.
+	h.color("#6b4e32", Geo.WOOD)
+	h.box(Vector3(1.28 * Sc, 0.20 * Sc, -0.55 * Sc), Vector3(0.32 * Sc, 0.28 * Sc, 0.40 * Sc))
+	h.color("#5a4630", Geo.WOOD)
+	h.box(Vector3(1.28 * Sc, 0.35 * Sc, -0.55 * Sc), Vector3(0.34 * Sc, 0.03 * Sc, 0.42 * Sc))
+	h.color("#5c6844", Geo.CANVAS)
+	h.box(Vector3(-1.22 * Sc, 0.16 * Sc, 1.55 * Sc), Vector3(0.28 * Sc, 0.22 * Sc, 0.36 * Sc))
+	h.color("#4a4e46", Geo.STEEL)
+	h.cbox(Vector3(-1.24 * Sc, 0.18 * Sc, -0.70 * Sc), Vector3(0.26 * Sc, 0.24 * Sc, 0.34 * Sc), 0.008 * Sc)
+	h.color("#3a3d38", Geo.STEEL)
+	h.box(Vector3(-1.24 * Sc, 0.31 * Sc, -0.70 * Sc), Vector3(0.28 * Sc, 0.03 * Sc, 0.36 * Sc))
+	h.color("#c4382e", Geo.CONCRETE)
+	h.tube(Vector3(1.46 * Sc, 0.72 * Sc, 0.15 * Sc), Vector3(1.46 * Sc, 1.08 * Sc, 0.15 * Sc), 0.045 * Sc, 5)
+	h.color("#3a3d38", Geo.STEEL)
+	h.box(Vector3(1.46 * Sc, 1.12 * Sc, 0.15 * Sc), Vector3(0.07 * Sc, 0.04 * Sc, 0.07 * Sc))
+	# Cables and a grab rail along the upper side.
+	h.color("#141614", Geo.RUBBER)
+	h.tube(Vector3(1.50 * Sc, 0.70 * Sc, 2.50 * Sc), Vector3(1.50 * Sc, 0.70 * Sc, 0.20 * Sc), 0.014 * Sc, 4)
+	h.tube(Vector3(-1.50 * Sc, 0.68 * Sc, -0.10 * Sc), Vector3(-1.50 * Sc, 0.68 * Sc, -1.90 * Sc), 0.012 * Sc, 4)
+	h.color("#2c302c", Geo.STEEL)
+	h.box(Vector3(1.52 * Sc, 2.35 * Sc, 0.40 * Sc), Vector3(0.03 * Sc, 0.03 * Sc, 1.40 * Sc))
+	h.box(Vector3(-1.52 * Sc, 2.35 * Sc, -1.10 * Sc), Vector3(0.03 * Sc, 0.03 * Sc, 1.20 * Sc))
+	for hz in [2.6, 1.4, -0.4]:
+		h.tube(Vector3(1.48 * Sc, 2.20 * Sc, hz * Sc), Vector3(1.54 * Sc, 2.35 * Sc, hz * Sc), 0.012 * Sc, 4)
+	# Rear lip and two tie-downs on the deck behind the body.
+	h.color("#2c302c", Geo.STEEL)
+	h.box(Vector3(0, 0.16 * Sc, -3.98 * Sc), Vector3(1.80 * Sc, 0.28 * Sc, 0.06 * Sc))
+	h.color("#6b4e32", Geo.WOOD)
+	h.box(Vector3(0.55 * Sc, 0.16 * Sc, -3.55 * Sc), Vector3(0.36 * Sc, 0.28 * Sc, 0.32 * Sc))
+	h.color("#1a1c1a", Geo.STEEL)
+	for td in [[-0.70, 3.20], [0.70, 3.20], [-0.40, -3.70]]:
+		h.tube(Vector3(td[0] * Sc, 0.0, td[1] * Sc), Vector3(td[0] * Sc, 0.05 * Sc, td[1] * Sc), 0.016 * Sc, 5)
+	VK._mi(root, root, "Body", h.commit(mat))
+	var tris: int = h.tris + _missile_outriggers(root, mat, Sc) + _aa_turret(root, mat, Sc)
+	_aa_anims(root)
+	root.set_script(load("res://view/units/ecc/mzkt_aa_module.gd"))
+	print("  mzkt_aa_module.tscn: %d tris" % tris)
+	var ps := PackedScene.new()
+	ps.pack(root)
+	ResourceSaver.save(ps, "res://view/units/ecc/mzkt_aa_module.tscn")
+	root.free()
+
+## Turret, racks, guns and the folding search dish. TurretYaw local metres.
+## Origin is module (0, 2.66, -0.40): the ring bites the roof, yaw 0 looks forward.
+static func _aa_turret(root: Node3D, mat: Material, Sc: float) -> int:
+	var yaw := VK._n3(root, root, "TurretYaw", Vector3(0, 2.66 * Sc, -0.40 * Sc))
+	var g = K.new()
+	g.plain = true
+	g.color("#2a2e2c", Geo.STEEL)
+	g.tube(Vector3(0, -0.05 * Sc, 0), Vector3(0, 0.02 * Sc, 0), 0.72 * Sc, 10)
+	g.color("#1a1c1a", Geo.STEEL)
+	g.tube(Vector3(0, 0.0, 0), Vector3(0, 0.045 * Sc, 0), 0.58 * Sc, 10)
+	g.color("#96A468", Geo.CONCRETE)
+	g.cbox(Vector3(0, 0.28 * Sc, 0.02 * Sc), Vector3(1.15 * Sc, 0.48 * Sc, 1.25 * Sc), 0.02 * Sc)
+	g.color("#738252", Geo.CONCRETE)
+	g.box(Vector3(0, 0.52 * Sc, 0.05 * Sc), Vector3(0.90 * Sc, 0.04 * Sc, 0.90 * Sc))
+	# Tracking array on the turret front, between the racks.
+	g.color("#3a3d38", Geo.STEEL)
+	g.cbox(Vector3(0, 0.30 * Sc, 0.66 * Sc), Vector3(0.52 * Sc, 0.40 * Sc, 0.12 * Sc), 0.012 * Sc)
+	g.color("#1c1e1c", Geo.DARK)
+	g.tube(Vector3(0, 0.30 * Sc, 0.70 * Sc), Vector3(0, 0.30 * Sc, 0.76 * Sc), 0.16 * Sc, 8)
+	g.color("#2a2e2c", Geo.STEEL)
+	g.tube(Vector3(0, 0.30 * Sc, 0.74 * Sc), Vector3(0, 0.30 * Sc, 0.78 * Sc), 0.07 * Sc, 6)
+	# Mast back to the search hinge. The hinge node sits on the end of this mast.
+	g.color("#2c302c", Geo.STEEL)
+	g.tube(Vector3(0, 0.22 * Sc, -0.50 * Sc), Vector3(0, 0.04 * Sc, -1.02 * Sc), 0.06 * Sc, 6)
+	g.box(Vector3(0, 0.16 * Sc, -0.55 * Sc), Vector3(0.22 * Sc, 0.16 * Sc, 0.16 * Sc))
+	VK._mi(yaw, root, "Turret", g.commit(mat))
+	var tris: int = g.tris
+	var hinge := VK._n3(yaw, root, "SearchHinge", Vector3(0, 0.02 * Sc, -1.05 * Sc))
+	hinge.rotation_degrees = Vector3(-90, 0, 0)
+	var pin = K.new()
+	pin.plain = true
+	pin.color("#1a1c1a", Geo.STEEL)
+	pin.tube(Vector3(-0.16 * Sc, 0, 0), Vector3(0.16 * Sc, 0, 0), 0.035 * Sc, 6)
+	VK._mi(hinge, root, "HingePin", pin.commit(mat))
+	tris += pin.tris
+	var spin := VK._n3(hinge, root, "SearchSpin")
+	var dish = K.new()
+	dish.plain = true
+	# Neck overlaps the pin and the disk. Positive local Z becomes up when the hinge
+	# is folded, so the disk sits on the roof instead of cutting a hole in it.
+	dish.color("#3a3d38", Geo.STEEL)
+	dish.box(Vector3(0, 0.36 * Sc, 0.03 * Sc), Vector3(0.18 * Sc, 0.72 * Sc, 0.10 * Sc))
+	dish.color("#2a2e2c", Geo.STEEL)
+	dish.tube(Vector3(0, 0.90 * Sc, -0.04 * Sc), Vector3(0, 0.90 * Sc, 0.02 * Sc), 0.68 * Sc, 8)
+	dish.color("#1c1e1c", Geo.DARK)
+	dish.tube(Vector3(0, 0.90 * Sc, 0.01 * Sc), Vector3(0, 0.90 * Sc, 0.05 * Sc), 0.50 * Sc, 8)
+	dish.color("#3a3d38", Geo.STEEL)
+	dish.tube(Vector3(0, 0.90 * Sc, 0.03 * Sc), Vector3(0, 0.90 * Sc, 0.07 * Sc), 0.12 * Sc, 6)
+	var top := Marker3D.new()
+	top.name = "DishTop"
+	top.position = Vector3(0, 1.58 * Sc, 0)
+	spin.add_child(top)
+	top.owner = root
+	VK._mi(spin, root, "Dish", dish.commit(mat))
+	tris += dish.tris
+	var wp := VK._n3(yaw, root, "WeaponPivot", Vector3(0, 0.40 * Sc, 0.12 * Sc))
+	var w = K.new()
+	w.plain = true
+	w.color("#2a2e2c", Geo.STEEL)
+	w.tube(Vector3(-0.55 * Sc, 0, 0), Vector3(0.55 * Sc, 0, 0), 0.045 * Sc, 8)
+	for s in [-1.0, 1.0]:
+		w.box(Vector3(s * 0.78 * Sc, 0.16 * Sc, 1.00 * Sc), Vector3(0.40 * Sc, 0.08 * Sc, 1.55 * Sc))
+		w.box(Vector3(s * 0.78 * Sc, 0.10 * Sc, 0.22 * Sc), Vector3(0.22 * Sc, 0.18 * Sc, 0.22 * Sc))
+		w.color("#96A468", Geo.CONCRETE)
+		for col in 3:
+			for row in 2:
+				var x: float = float(s) * (0.62 + float(col) * 0.16)
+				var y: float = 0.22 + float(row) * 0.16
+				w.tube(Vector3(x * Sc, y * Sc, 0.28 * Sc), Vector3(x * Sc, y * Sc, 1.95 * Sc), 0.055 * Sc, 5)
+				w.color("#1c1e1c", Geo.DARK)
+				w.tube(Vector3(x * Sc, y * Sc, 1.88 * Sc), Vector3(x * Sc, y * Sc, 2.02 * Sc), 0.040 * Sc, 4)
+				w.color("#2c302c", Geo.STEEL)
+				w.tube(Vector3(x * Sc, y * Sc, 0.40 * Sc), Vector3(x * Sc, y * Sc, 0.48 * Sc), 0.064 * Sc, 5)
+				w.color("#96A468", Geo.CONCRETE)
+		# One twin gun each side, below the rack, longer than the tubes.
+		w.color("#2a2e2c", Geo.STEEL)
+		for k in 2:
+			var gy: float = -0.06 + float(k) * 0.10
+			w.tube(Vector3(s * 0.48 * Sc, gy * Sc, 0.15 * Sc), Vector3(s * 0.48 * Sc, gy * Sc, 2.15 * Sc), 0.032 * Sc, 6)
+			w.tube(Vector3(s * 0.48 * Sc, gy * Sc, 2.05 * Sc), Vector3(s * 0.48 * Sc, gy * Sc, 2.22 * Sc), 0.042 * Sc, 6)
+			w.color("#1a1c1a", Geo.STEEL)
+			w.tube(Vector3(s * 0.48 * Sc, gy * Sc, 2.16 * Sc), Vector3(s * 0.48 * Sc, gy * Sc, 2.26 * Sc), 0.022 * Sc, 5)
+			w.color("#2a2e2c", Geo.STEEL)
+	VK._mi(wp, root, "Weapons", w.commit(mat))
+	tris += w.tris
+	for s2 in [-1.0, 1.0]:
+		var muzzle := Marker3D.new()
+		muzzle.name = "MuzzleL" if s2 < 0.0 else "MuzzleR"
+		muzzle.position = Vector3(s2 * 0.48 * Sc, 0.04 * Sc, 2.26 * Sc)
+		wp.add_child(muzzle)
+		muzzle.owner = root
+	return tris
+
+## 8 s. Jacks first, the same order as module C, then the dish rises and turns and the racks elevate.
+static func _aa_anims(root: Node3D) -> void:
+	var deploy := Animation.new()
+	deploy.length = 8.0
+	deploy.loop_mode = Animation.LOOP_NONE
+	var pack := Animation.new()
+	pack.length = 8.0
+	pack.loop_mode = Animation.LOOP_NONE
+	for name in ["OutriggerFR", "OutriggerFL", "OutriggerRR", "OutriggerRL"]:
+		var mount := root.find_child(String(name), true, false) as Node3D
+		var swing := mount.get_node("Swing") as Node3D
+		var hinge := swing.get_node("LegHinge") as Node3D
+		var rod := hinge.get_node("Rod") as Node3D
+		var yaw: float = swing.get_meta("stow_yaw")
+		var roll: float = hinge.get_meta("stow_roll")
+		_missile_rot(deploy, pack, root, swing, 0.0, yaw)
+		_missile_rot(deploy, pack, root, swing, 2.4, 0.0)
+		_missile_rot(deploy, pack, root, hinge, 0.0, roll, false)
+		_missile_rot(deploy, pack, root, hinge, 2.4, roll, false)
+		_missile_rot(deploy, pack, root, hinge, 4.0, 0.0, false)
+		var stow_y: float = rod.get_meta("stow_y")
+		var deploy_y: float = rod.get_meta("deploy_y")
+		_missile_pos(deploy, pack, root, rod, 0.0, Vector3(0, stow_y, 0))
+		_missile_pos(deploy, pack, root, rod, 4.0, Vector3(0, stow_y, 0))
+		_missile_pos(deploy, pack, root, rod, 4.8, Vector3(0, deploy_y, 0))
+	var search := root.get_node("TurretYaw/SearchHinge") as Node3D
+	var folded := Quaternion(Basis.from_euler(Vector3(deg_to_rad(-90.0), 0, 0)))
+	_missile_quat(deploy, pack, root, search, 0.0, folded)
+	_missile_quat(deploy, pack, root, search, 4.8, folded)
+	_missile_quat(deploy, pack, root, search, 6.4, Quaternion.IDENTITY)
+	_missile_quat(deploy, pack, root, search, 8.0, Quaternion.IDENTITY)
+	var spin := search.get_node("SearchSpin") as Node3D
+	_missile_quat(deploy, pack, root, spin, 0.0, Quaternion.IDENTITY)
+	_missile_quat(deploy, pack, root, spin, 4.8, Quaternion.IDENTITY)
+	for step in [[6.0, 50.0], [7.0, 100.0], [8.0, 150.0]]:
+		var q := Quaternion(Basis(Vector3.UP, deg_to_rad(float(step[1]))))
+		_missile_quat(deploy, pack, root, spin, float(step[0]), q)
+	var wp := root.get_node("TurretYaw/WeaponPivot") as Node3D
+	var raised := Quaternion(Basis(Vector3.RIGHT, deg_to_rad(-38.0)))
+	_missile_quat(deploy, pack, root, wp, 0.0, Quaternion.IDENTITY)
+	_missile_quat(deploy, pack, root, wp, 4.8, Quaternion.IDENTITY)
+	_missile_quat(deploy, pack, root, wp, 8.0, raised)
+	var player := AnimationPlayer.new()
+	player.name = "AnimationPlayer"
+	root.add_child(player)
+	player.owner = root
+	player.root_node = NodePath("..")
+	var lib := AnimationLibrary.new()
+	lib.add_animation(&"deploy", deploy)
+	lib.add_animation(&"pack", pack)
+	player.add_animation_library(&"", lib)
+
 ## Upper eye, module metres. Positive X rotation lifts the rear of the cradle.
 static func _missile_eye_m(alpha: float, side: float) -> Vector3:
 	return Vector3(0, 0.58, 1.05) + Basis(Vector3.RIGHT, alpha) * Vector3(side * 0.55, 0.22, -1.40)

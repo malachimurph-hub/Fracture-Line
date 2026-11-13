@@ -55,6 +55,8 @@ func _initialize() -> void:
 				HULLS.mzkt_radar(mat)
 			"mzkt_missile":
 				HULLS.mzkt_missile(mat)
+			"mzkt_aa":
+				HULLS.mzkt_aa(mat)
 			_:
 				push_error("unknown vehicle %s" % name)
 	# The BMPT stays the Blender mesh. The Grim Reaper stays the photo rebuild. Neither is written here.

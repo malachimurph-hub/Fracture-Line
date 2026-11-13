@@ -57,6 +57,9 @@ func _views() -> void:
 	if only == "missile":
 		await _missile(cam, sun, truck)
 		return
+	if only == "aa":
+		await _aa(cam, sun, truck)
+		return
 	# Side. Camera on +X. size is the vertical world span. Nose is +Z.
 	var eye := Vector3(0, 0.7, 0)
 	cam.size = 1.85
@@ -388,6 +391,96 @@ func _missile_setup(cam: Camera3D, sun: DirectionalLight3D, rig: Node3D, mod: No
 	mod.aim_at(yaw_node.global_position + Vector3(0.0, 0.0, -20.0))
 	print("AIM aft deg ", rad_to_deg(yaw_node.rotation.y))
 	await _missile_yaw(cam, sun, rig, mod, sc, aspect)
+
+## Unwired anti-air module on ModuleMount. Rest pose is stowed.
+func _aa(cam: Camera3D, sun: DirectionalLight3D, base: Node3D) -> void:
+	base.visible = false
+	var rig := (load("res://view/units/ecc/mzkt_base.tscn") as PackedScene).instantiate() as Node3D
+	var mod := (load("res://view/units/ecc/mzkt_aa_module.tscn") as PackedScene).instantiate() as Node3D
+	var mount := rig.find_child("ModuleMount", true, false) as Node3D
+	mount.add_child(mod)
+	add_child(rig)
+	_paint(rig)
+	var sc := 0.311
+	var alone := _aabb(mod)
+	print("AA module u ", alone.size, " min ", alone.position, " m ", alone.size / sc, " min m ", alone.position / sc)
+	print("AA tris ", _tris(mod))
+	print("AA stowed |x| m ", _half_x(mod) / sc)
+	var ap := mod.find_child("AnimationPlayer", true, false) as AnimationPlayer
+	print("ANIMS ", ap.get_animation_list())
+	await _pose(ap, 0.0)
+	_aa_report(mod, sc, 0.0)
+	var aspect := get_viewport().get_visible_rect().size.x / get_viewport().get_visible_rect().size.y
+	var side_size := await _pose_views(cam, sun, rig, "aa_stowed", aspect)
+	var join := mod.to_global(Vector3(0.4 * sc, 0.15 * sc, 3.2 * sc))
+	await _zoom_side(cam, sun, join, side_size * 0.42, "aa_zoom_join")
+	var rear := mod.to_global(Vector3(0.2 * sc, 0.20 * sc, -3.4 * sc))
+	await _zoom_side(cam, sun, rear, side_size * 0.42, "aa_zoom_join_rear")
+	var pocket := mod.to_global(Vector3(1.42 * sc, 0.35 * sc, 1.7 * sc))
+	await _zoom_side(cam, sun, pocket, side_size * 0.32, "aa_zoom_pocket")
+	print("ZOOM join ", join, " rear ", rear, " pocket ", pocket)
+	await _pose(ap, 8.0)
+	_aa_report(mod, sc, 8.0)
+	await _pose_views(cam, sun, rig, "aa_deployed", aspect)
+	var turret := mod.get_node("TurretYaw") as Node3D
+	var look := turret.global_position + Vector3(0, 0.15, 0.2)
+	cam.projection = Camera3D.PROJECTION_PERSPECTIVE
+	cam.fov = 22.0
+	sun.rotation_degrees = Vector3(-32, 40, 0)
+	cam.global_position = look + Vector3(2.4, 0.7, 2.6)
+	cam.look_at(look, Vector3.UP)
+	await frames(3)
+	await shot("aa_zoom_turret")
+	print("CAM turret at ", look)
+	for deg in [0, 90, 180]:
+		mod.target_yaw_deg = float(deg)
+		await get_tree().process_frame
+		_aa_report(mod, sc, 8.0)
+		var held: float = rad_to_deg((mod.get_node("TurretYaw") as Node3D).rotation.y)
+		print("YAW set ", deg, " held ", held)
+		var whole := _aabb(rig)
+		var center := whole.get_center()
+		cam.projection = Camera3D.PROJECTION_ORTHOGONAL
+		cam.size = maxf(whole.size.x * 1.25, whole.size.z * 1.15 / aspect)
+		cam.global_position = Vector3(center.x, center.y + 16.0, center.z)
+		cam.look_at(Vector3(center.x, 0.0, center.z), Vector3(0, 0, 1))
+		sun.rotation_degrees = Vector3(-70, 25, 0)
+		await frames(3)
+		await shot("aa_yaw_%d_top" % deg)
+	var yaw_node := mod.get_node("TurretYaw") as Node3D
+	mod.aim_at(yaw_node.global_position + Vector3(0.0, 0.0, 20.0))
+	print("AIM forward deg ", rad_to_deg(yaw_node.rotation.y))
+	mod.aim_at(yaw_node.global_position + Vector3(-20.0, 0.0, 0.0))
+	print("AIM right deg ", rad_to_deg(yaw_node.rotation.y))
+	mod.aim_at(yaw_node.global_position + Vector3(0.0, 0.0, -20.0))
+	print("AIM aft deg ", rad_to_deg(yaw_node.rotation.y))
+	mod.target_yaw_deg = 0.0
+	ap.play(&"pack")
+	ap.seek(0.0, true)
+	ap.pause()
+	await get_tree().process_frame
+	_aa_report(mod, sc, 0.0)
+	print("PACK t0 is the deployed pose")
+	ap.seek(8.0, true)
+	await get_tree().process_frame
+	_aa_report(mod, sc, 8.0)
+	print("PACK t8 is the stowed pose")
+	rig.queue_free()
+	base.visible = true
+
+func _aa_report(mod: Node3D, sc: float, t: float) -> void:
+	var low := 100.0
+	var high := -100.0
+	var wide := 0.0
+	for sole in mod.find_children("Sole", "Marker3D", true, false):
+		var y: float = (sole as Node3D).global_position.y
+		low = minf(low, y)
+		high = maxf(high, y)
+		wide = maxf(wide, absf((sole as Node3D).global_position.x))
+	var dish := mod.get_node("TurretYaw/SearchHinge/SearchSpin/DishTop") as Node3D
+	var muzzle := mod.get_node("TurretYaw/WeaponPivot/MuzzleR") as Node3D
+	var mount_y: float = 1.62 * sc
+	print("AA t %.2f  sole y %.4f..%.4f  sole |x| %.3f m  module |x| %.3f m  dish top %.2f m  muzzle m %s" % [t, low, high, wide / sc, _half_x(mod) / sc, (dish.global_position.y - mount_y) / sc + 1.62, (muzzle.global_position - mod.global_position) / sc])
 
 func _pose_views(cam: Camera3D, sun: DirectionalLight3D, rig: Node3D, prefix: String, aspect: float) -> float:
 	var whole := _aabb(rig)
