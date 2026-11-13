@@ -1469,6 +1469,20 @@ func frame(a: float, delta: float) -> void:
 			if v is VehicleView and ud.tags.has("deploy"):
 				var planted := 0.0 if e.moving or e.goal != MoveSys.NONE else clampf(float(e.still) / float(EccSys.DEPLOY_TICKS), 0.0, 1.0)
 				(v as VehicleView).set_plant(planted)
+			if v.has_method("sync_mzkt"):
+				var planted_k := 0.0
+				if ud.tags.has("deploy"):
+					# still counts up while halted and back down while a move order packs the truck.
+					# Only a unit that is already rolling is fully stowed.
+					planted_k = 0.0 if e.moving else clampf(float(e.still) / float(EccSys.DEPLOY_TICKS), 0.0, 1.0)
+				var tgt_m := sim.get_ent(e.target)
+				var aim_p := Vector3.ZERO
+				var has_aim := tgt_m != null and tgt_m.alive
+				if has_aim:
+					aim_p = FX.to_world(tgt_m.pos)
+				var yaw_deg := float(e.tface) * 360.0 / float(FX.ANG) - rad_to_deg(v.rotation.y)
+				var halted := e.goal == MoveSys.NONE and not e.moving and e.still >= EccSys.AURA_HALT
+				v.sync_mzkt(e.def_id, planted_k, yaw_deg, has_aim, aim_p, halted)
 			# M3.3: builders animate (blade / backhoe arm / crane boom) while they work at a site
 			if v is VehicleView and not (v as VehicleView).work_parts.is_empty():
 				(v as VehicleView).working = _builder_working(e)

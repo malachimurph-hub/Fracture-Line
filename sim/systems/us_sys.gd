@@ -19,7 +19,10 @@ static func run(w: SimWorld) -> void:
 		var tags: PackedStringArray = w.udef(u).tags
 		var still_t := tags.has("stealth_still")
 		if still_t or tags.has("setup") or tags.has("deploy"):
-			if u.moving or u.goal != MoveSys.NONE:
+			var packing := tags.has("pack_move") and u.still > 0 and (u.moving or u.goal != MoveSys.NONE)
+			if packing:
+				pass
+			elif u.moving or u.goal != MoveSys.NONE:
 				u.still = 0
 			elif u.still < 10000:
 				u.still += 1

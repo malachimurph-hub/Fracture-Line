@@ -26,7 +26,7 @@ static func max_range(w: SimWorld, u: SimEntity, t: SimEntity = null) -> int:
 	for wid in w.udef(u).weapons:
 		var wd: WeaponDef = Content.weapon(wid)
 		if wd.min_tier <= u.tier and (t == null or (wd.targets_air if air else wd.targets_ground)):
-			r = maxi(r, FX.mt_to_fx(wd.range_mt))
+			r = maxi(r, FX.mt_to_fx(EccSys.range_mt(w, u, wd.range_mt)))
 	return r
 
 static func can_attack(w: SimWorld, u: SimEntity) -> bool:

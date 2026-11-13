@@ -28,7 +28,7 @@ func _unit_allowed(ud: UnitDef) -> bool:
 			return false
 	if ud.id == &"ecc_msta" or ud.id == &"ecc_tos" or ud.id == &"ecc_iskander":
 		return _count_type(ud.id) < 2 + combat_units().size() / 10
-	if ud.id == &"ecc_reaper" or ud.id == &"ecc_pantsir":
+	if ud.id == &"ecc_reaper" or ud.id == &"ecc_pantsir" or ud.id == &"ecc_mzkt":
 		return _count_type(ud.id) < 2
 	if ud.id == &"ecc_alfa" or ud.id == &"ecc_spetsnaz" or ud.id == &"ecc_vdv":
 		return _count_type(ud.id) < 1 + combat_units().size() / 12
@@ -40,6 +40,20 @@ func _is_scout_type(u: SimEntity) -> bool:
 ## Researched towers, Red Dawn and the Black Market hacks. One action per think.
 func _ecc_ops() -> void:
 	var p := me()
+	if p.supply > 800:
+		for truck: SimEntity in my_ents(SimEntity.Kind.UNIT):
+			if not truck.alive or truck.def_id != &"ecc_mzkt" or truck.aux_def != &"":
+				continue
+			var pick := ""
+			if EccSys.mzkt_reason(w, pid, truck, "radar") == "":
+				pick = "radar"
+			elif EccSys.mzkt_reason(w, pid, truck, "aa") == "":
+				pick = "aa"
+			elif EccSys.mzkt_reason(w, pid, truck, "missile") == "":
+				pick = "missile"
+			if pick != "":
+				cmd({"t": "mzkt", "ids": [truck.id], "def": pick})
+				return
 	if p.supply > 1600:
 		for b: SimEntity in my_ents(SimEntity.Kind.BUILDING):
 			if not b.built or EccSys.tower_of(b) != "":

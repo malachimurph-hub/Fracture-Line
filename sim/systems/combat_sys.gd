@@ -209,7 +209,7 @@ static func _fire_unit(w: SimWorld, u: SimEntity, t: SimEntity) -> void:
 			continue
 		if jet and wd.clip_size > 0 and int(u.ammo[i]) <= 0:
 			continue
-		if dist > FX.mt_to_fx(wd.range_mt) or dist < FX.mt_to_fx(wd.min_range_mt):
+		if dist > FX.mt_to_fx(EccSys.range_mt(w, u, wd.range_mt)) or dist < FX.mt_to_fx(wd.min_range_mt):
 			continue
 		if d.tags.has("suicide"):
 			# bomb truck: drives into the target and detonates (GDD 5.4 Mule)

@@ -221,7 +221,7 @@ static func _take(w: SimWorld, pid: int, e: SimEntity) -> void:
 
 ## Ballistic flight for the Iskander and the Grim Reaper. Zeus stays on its own timing.
 static func ballistic_ticks(wd: WeaponDef, dist_fx: int) -> int:
-	if wd.id != &"ecc_reaper_mirv" and wd.id != &"ecc_iskander":
+	if wd.id != &"ecc_reaper_mirv" and wd.id != &"ecc_iskander" and wd.id != &"ecc_mzkt_cm":
 		return -1
 	var ms: int = dist_fx * 1000 / (FX.ONE * 8)
 	return maxi(8, ms * FX.TICK_HZ / 1000)
@@ -243,3 +243,92 @@ static func split_mirv(w: SimWorld, r: Dictionary) -> void:
 			"air": false, "arty": true, "sub": 1,
 		})
 	w.events.append({"t": "mirv", "pos": impact, "pts": pts, "owner": int(r["owner"]), "r": FX.mt_to_fx(wd.splash_mt)})
+
+## Bare MZKT-7930. One permanent module, fitted in place. Costs are on top of the hull price.
+const MZKT_HULL := &"ecc_mzkt"
+const INSTALL_TICKS := 80          ## 4 s, the truck stays put
+const AURA_HALT := 20              ## 1 s halted before the radar buffs artillery
+const MZKT := {
+	"aa": {"id": &"ecc_mzkt_aa", "cost": 800, "need": "ecc_ministry"},
+	"radar": {"id": &"ecc_mzkt_radar", "cost": 1600, "need": ""},
+	"missile": {"id": &"ecc_mzkt_missile", "cost": 1100, "need": ""},
+}
+
+static func mzkt_reason(w: SimWorld, pid: int, u: SimEntity, kind: String) -> String:
+	if not MZKT.has(kind):
+		return "REASON_INVALID"
+	if u == null or not u.alive or u.owner != pid or u.kind != SimEntity.Kind.UNIT or u.def_id != MZKT_HULL:
+		return "REASON_OWNED"
+	if u.aux_def != &"":
+		return "HUD_MZKT_FITTING"
+	var spec: Dictionary = MZKT[kind]
+	if String(spec["need"]) != "" and not w.has_completed(pid, spec["need"]):
+		return String(spec["need"])
+	if w.players[pid].supply < int(spec["cost"]):
+		return "REASON_FUNDS"
+	return ""
+
+static func begin_mzkt(w: SimWorld, pid: int, u: SimEntity, kind: String) -> void:
+	if mzkt_reason(w, pid, u, kind) != "":
+		return
+	var spec: Dictionary = MZKT[kind]
+	w.players[pid].supply -= int(spec["cost"])
+	u.aux_def = spec["id"]
+	u.phase = INSTALL_TICKS
+	u.orders.clear()
+	u.goal = MoveSys.NONE
+	u.target = 0
+	w.events.append({"t": "mzkt_fit", "id": u.id, "def": String(spec["id"]), "owner": pid})
+
+## Called every tick. phase counts down, then the definition swaps. Hit points keep their fraction.
+static func installs(w: SimWorld) -> void:
+	for id in w.ids:
+		var u: SimEntity = w.ents[id]
+		if not u.alive or u.kind != SimEntity.Kind.UNIT or u.phase <= 0 or u.aux_def == &"":
+			continue
+		if not String(u.aux_def).begins_with("ecc_mzkt_"):
+			continue
+		u.goal = MoveSys.NONE
+		u.orders.clear()
+		u.phase -= 1
+		if u.phase > 0:
+			continue
+		var nd: UnitDef = Content.unit(u.aux_def)
+		if nd == null:
+			u.aux_def = &""
+			continue
+		var frac := float(u.hp) / float(maxi(1, u.max_hp))
+		u.def_id = nd.id
+		u.max_hp = nd.max_hp
+		u.hp = clampi(int(round(frac * float(nd.max_hp))), 1, nd.max_hp)
+		u.sight = nd.sight
+		u.radius = FX.mt_to_fx(nd.radius_mt)
+		u.cds.clear()
+		u.pre.clear()
+		u.pre_ok.clear()
+		u.ammo.clear()
+		u.aux_def = &""
+		u.still = 0
+		w.events.append({"t": "mzkt", "id": u.id, "def": String(nd.id), "owner": u.owner})
+
+## Friendly artillery inside a halted radar's aura. One bonus, never stacked. Minimum range is unchanged.
+static func range_mt(w: SimWorld, u: SimEntity, base_mt: int) -> int:
+	if u == null or not w.udef(u).tags.has("artillery"):
+		return base_mt
+	var reach := 0
+	for id in w.ids:
+		var r: SimEntity = w.ents[id]
+		if not r.alive or r.kind != SimEntity.Kind.UNIT or r.res_id < 0 or r.owner != u.owner or r.id == u.id:
+			continue
+		var rd: UnitDef = w.udef(r)
+		if rd == null or rd.range_aura_radius <= 0 or rd.range_aura_pct <= 0:
+			continue
+		if r.moving or r.goal != MoveSys.NONE or r.still < AURA_HALT:
+			continue
+		var lim: int = rd.range_aura_radius * FX.ONE
+		if FX.dist(r.pos, u.pos) > lim:
+			continue
+		reach = maxi(reach, rd.range_aura_pct)
+	if reach <= 0:
+		return base_mt
+	return base_mt * (100 + reach) / 100

@@ -138,3 +138,6 @@ ecc_pantsir_sam,42,12000,800,1600,aa_missile,0,1,0,missile,0,300,attack,6,8000,1
 ecc_tower_bal,14,6200,0,350,autocannon,0,1,1,tracer_heavy,0,0,attack,0,0,12,0,150
 ecc_tower_at,72,7200,0,2400,anti_tank,400,0,1,missile,0,350,attack,0,0,10,0,0
 ecc_tower_aa,36,9000,0,1200,aa_missile,0,1,0,missile,0,250,attack,0,0,16,0,0
+ecc_mzkt_gun,18,8000,0,160,autocannon,0,1,0,tracer_heavy,0,0,attack,16,1600,12,0,0
+ecc_mzkt_sam,48,16000,1500,1800,aa_missile,0,1,0,missile,0,400,attack,4,9000,14,0,0
+ecc_mzkt_cm,280,18000,6000,20000,demolition,1600,0,1,missile,0,1800,attack,0,0,20,400,0

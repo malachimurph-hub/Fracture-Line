@@ -1322,6 +1322,25 @@ func _make_card() -> Array:
 				"sub": tr("HUD_UNPACKING") % ceili(MineSys.ticks_left(sim, me0) / 20.0) if up else "",
 				"act": func(): ctl.issue({"t": "unpack", "ids": mm}), "tip": tr("CMD_UNPACK_TIP"), "accent": Color("#7dff8a")})
 		var ud := Content.unit(e.def_id)
+		if ud.id == &"ecc_mzkt" and units.size() == 1:
+			var fitting := e.aux_def != &""
+			for kind in ["missile", "radar", "aa"]:
+				var spec: Dictionary = EccSys.MZKT[kind]
+				var why := EccSys.mzkt_reason(sim, pid, e, kind)
+				var key := "CMD_MZKT_" + kind.to_upper()
+				var sub := ""
+				if fitting:
+					sub = tr("HUD_MZKT_FITTING")
+				else:
+					sub = "$%d" % int(spec["cost"])
+				var tip := tr(key + "_TIP")
+				if why == "ecc_ministry":
+					tip += " — " + tr("HUD_NEEDS") % tr("BLD_ECC_MINISTRY")
+				elif why == "REASON_FUNDS":
+					tip += " — " + tr("REASON_FUNDS")
+				out.push_front({"text": tr(key), "glyph": "mzkt_" + kind, "sub": sub,
+					"disabled": why != "" or fitting, "accent": Color("#d7c07a"),
+					"tip": tip, "act": ctl.issue.bind({"t": "mzkt", "ids": [e.id], "def": kind})})
 		if units.size() > 1:
 			# M4.2 mass unload: with several transports selected, one Unload empties them all
 			var tr_ids: Array = []

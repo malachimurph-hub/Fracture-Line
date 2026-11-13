@@ -40,6 +40,11 @@ static func run(w: SimWorld) -> void:
 			continue
 		if u.goal == NONE:
 			u.spd = 0
+		elif u.aux_def != &"" and String(u.aux_def).begins_with("ecc_mzkt_"):
+			u.spd = 0
+		elif ud.tags.has("pack_move") and u.still > 0:
+			u.still -= 1
+			u.spd = 0
 		elif not u.path_pending:
 			_follow(w, u)
 	_separate(w)

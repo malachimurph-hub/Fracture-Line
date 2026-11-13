@@ -835,3 +835,18 @@ CMD_HACK_FUNDS_TIP,Pick an enemy unit or structure. Steal their cash for a short
 CMD_HACK_HIJACK,Unit Hijack
 CMD_HACK_HIJACK_TIP,Pick one enemy drone or ground vehicle and take control of it.
 HUD_FITTED,Fitted
+UNIT_ECC_MZKT,MZKT-7930
+UNIT_ECC_MZKT_DESC,Bare modular truck from the factory. Choose one module. The choice is permanent.
+UNIT_ECC_MZKT_AA,MZKT Anti-Air
+UNIT_ECC_MZKT_AA_DESC,Long-range high-altitude anti-air. The outriggers plant before it can fire, and it only engages aircraft.
+UNIT_ECC_MZKT_RADAR,MZKT Radar
+UNIT_ECC_MZKT_RADAR_DESC,Wide sight. Reveals hidden units. Friendly artillery within 12 tiles gains 25 percent range while this truck is halted.
+UNIT_ECC_MZKT_MISSILE,MZKT Cruise Missile
+UNIT_ECC_MZKT_MISSILE_DESC,Long-range ground missile. The outriggers plant and the canisters rise before it can fire.
+CMD_MZKT_AA,Anti-air
+CMD_MZKT_AA_TIP,Fit the anti-air turret. Needs a Ministry of Defense. Permanent.
+CMD_MZKT_RADAR,Radar
+CMD_MZKT_RADAR_TIP,Fit the radar module. Permanent. It does not need the Ministry.
+CMD_MZKT_MISSILE,Cruise missile
+CMD_MZKT_MISSILE_TIP,Fit the cruise-missile launcher. Permanent. It does not need the Ministry.
+HUD_MZKT_FITTING,Fitting

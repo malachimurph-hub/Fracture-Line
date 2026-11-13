@@ -12,6 +12,7 @@ static func run(t: Node) -> void:
 	_meshes(t)
 	_voices(t)
 	_text(t)
+	preload("res://tests/mzkt_test.gd").run(t)
 
 static func _tree(t: Node) -> void:
 	t._check(Content.errors.is_empty(), "content loaded (%s)" % str(Content.errors))

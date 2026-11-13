@@ -80,7 +80,7 @@ const US_BUILDING_ORDER := [&"us_command", &"us_substation", &"us_barracks", &"u
 ## the factory, the Ministry and the Black Market; those upgrades are not in this roster.
 const ECC_UNIT_ORDER := [&"ecc_engineer", &"ecc_cargo_truck", &"ecc_squad", &"ecc_drone_operator",
 	&"ecc_tigr", &"ecc_btr", &"ecc_typhoon", &"ecc_bmp3", &"ecc_t90", &"ecc_zeus", &"ecc_msta", &"ecc_tos",
-	&"ecc_bmpt", &"ecc_iskander", &"ecc_pantsir", &"ecc_t14", &"ecc_reaper", &"ecc_ka52", &"ecc_hind", &"ecc_mi8",
+	&"ecc_bmpt", &"ecc_iskander", &"ecc_pantsir", &"ecc_mzkt", &"ecc_t14", &"ecc_reaper", &"ecc_ka52", &"ecc_hind", &"ecc_mi8",
 	&"ecc_su57", &"ecc_tu160", &"ecc_alfa", &"ecc_spetsnaz", &"ecc_vdv"]
 const ECC_BUILDING_ORDER := [&"ecc_hq", &"ecc_power", &"ecc_depot", &"ecc_barracks", &"ecc_factory",
 	&"ecc_airfield", &"ecc_ministry", &"ecc_fsb", &"ecc_black_market", &"ecc_bunker", &"ecc_aa_site",

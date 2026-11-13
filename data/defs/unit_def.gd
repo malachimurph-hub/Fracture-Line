@@ -30,5 +30,7 @@ extends Resource
 @export var abilities: PackedStringArray = []
 @export var transport_capacity: int = 0      ## M2.4: infantry slots (transport vehicles)
 @export var detector: bool = false           ## M2.4: reveals stealthed units/structures in sight
+@export var range_aura_radius: int = 0      ## tiles; halted friendly artillery in this radius
+@export var range_aura_pct: int = 0         ## percent added to their attack range, not stacked
 @export var air_slots: int = 0             ## M2.5: Airfield parking slots used (bomber 4, fighter 2, gunship 0)
 @export var stubs: PackedStringArray = []    ## features listed but not implemented (shown as [STUB])

@@ -27,6 +27,23 @@ static func _paint(img: Image, key: String, col: Color) -> void:
 			_tower(img, col, Color(0.86, 0.42, 0.28))
 		"tower_aa":
 			_tower(img, col, Color(0.45, 0.72, 0.95))
+		"mzkt_aa":
+			img.fill_rect(Rect2i(16, 18, 16, 14), col)
+			img.fill_rect(Rect2i(8, 20, 6, 3), col)
+			img.fill_rect(Rect2i(8, 26, 6, 3), col)
+			img.fill_rect(Rect2i(34, 20, 6, 3), col)
+			img.fill_rect(Rect2i(34, 26, 6, 3), col)
+			_ring(img, 24, 12, 5.0, col)
+		"mzkt_radar":
+			img.fill_rect(Rect2i(14, 10, 20, 22), col)
+			img.fill_rect(Rect2i(22, 32, 4, 8), col)
+			_line(img, 16, 16, 32, 16, col, 1.6)
+			_line(img, 16, 22, 32, 22, col, 1.6)
+			_line(img, 16, 28, 32, 28, col, 1.6)
+		"mzkt_missile":
+			img.fill_rect(Rect2i(10, 14, 28, 18), col)
+			_line(img, 24, 14, 24, 32, Color(0.15, 0.16, 0.14, 1), 1.4)
+			_line(img, 10, 23, 38, 23, Color(0.15, 0.16, 0.14, 1), 1.4)
 		"reddawn":
 			for i in 3:
 				_arrow(img, 10.0 + float(i) * 12.0, 10.0, 14.0 + float(i) * 12.0, 36.0, col)

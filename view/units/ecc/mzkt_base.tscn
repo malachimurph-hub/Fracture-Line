@@ -1,6 +1,6 @@
 [gd_scene format=4]
 
-[ext_resource type="Script" path="res://view/vehicles/vehicle_view.gd" id="1_jatne"]
+[ext_resource type="Script" path="res://view/units/ecc/mzkt_rig.gd" id="1_jatne"]
 [ext_resource type="Material" path="res://view/materials/m3.tres" id="2_jy13w"]
 
 [sub_resource type="ArrayMesh" id="ArrayMesh_3ewf7"]

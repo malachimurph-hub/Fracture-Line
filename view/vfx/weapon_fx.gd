@@ -47,7 +47,9 @@ const CLASSES := {
 	&"ecc_bmp_100": "cannon", &"ecc_bmp_30": "autocannon", &"ecc_bmp_atgm": "missile",
 	&"ecc_bmpt_30": "autocannon", &"ecc_bmpt_gl": "grenade", &"ecc_bmpt_atgm": "missile",
 	&"ecc_t14_gun": "cannon", &"ecc_t14_pod": "missile", &"ecc_tos": "salvo", &"ecc_iskander": "icbm", &"ecc_reaper_mirv": "icbm",
-	&"ecc_mi8_mg": "mg", &"ecc_pantsir_gun": "autocannon", &"ecc_pantsir_sam": "missile", &"ecc_tower_bal": "autocannon", &"ecc_tower_at": "missile", &"ecc_tower_aa": "missile",
+	&"ecc_mi8_mg": "mg", &"ecc_pantsir_gun": "autocannon", &"ecc_pantsir_sam": "missile",
+	&"ecc_mzkt_gun": "autocannon", &"ecc_mzkt_sam": "missile", &"ecc_mzkt_cm": "missile",
+	&"ecc_tower_bal": "autocannon", &"ecc_tower_at": "missile", &"ecc_tower_aa": "missile",
 }
 const BY_KIND := {"tracer": "rifle", "tracer_heavy": "mg", "shell": "cannon", "missile": "missile",
 	"rocket": "rocket", "rocket_salvo": "salvo", "tracer_quad": "quad", "tracer_minigun": "minigun", "flak": "flak", "grenade": "grenade",
