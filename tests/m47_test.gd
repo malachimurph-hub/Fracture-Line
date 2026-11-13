@@ -95,7 +95,7 @@ static func _vehicles(t: Node) -> void:
 	t._check(pan.prereqs.has("ecc_ministry") and pan.tags.has("deploy") and pan.tags.has("deploy_aa") and sam.targets_air and not sam.targets_ground and sam.range_mt > Content.weapon(&"ecc_tower_aa").range_mt and sam.range_mt < Content.weapon(&"tpla_sayad3_sam").range_mt, "Pantsir is a late factory air-defence truck")
 	var mi := Content.unit(&"ecc_mi8")
 	var hawk := Content.unit(&"us_blackhawk")
-	t._check(mi.tags.has("helicopter") and mi.tags.has("transport") and mi.transport_capacity >= 6 and mi.speed_mtps < hawk.speed_mtps and mi.air_slots == 0, "Mi-8 is a slower transport helicopter")
+	t._check(mi.tags.has("helicopter") and mi.tags.has("transport") and mi.transport_capacity == 8 and mi.speed_mtps < hawk.speed_mtps and mi.air_slots == 0 and mi.view_scene.ends_with("mi8_v2.tscn"), "Mi-8 is a slower transport helicopter on the finished mesh")
 
 static func _research(t: Node) -> void:
 	t._check(Content.unit(&"ecc_up_tower_bal").tags.has("upgrade") and Content.unit(&"ecc_up_tower_at").cost > Content.unit(&"ecc_up_tower_bal").cost, "balanced tower is the cheaper, earlier research")
@@ -264,7 +264,10 @@ static func _meshes(t: Node) -> void:
 		t._check(n >= int(floors[path]), "%s is a fitted model (%d tris)" % [path.get_file(), n])
 	var reaper: Node = load("res://view/units/ecc/reaper.tscn").instantiate()
 	var mi8: Node = load("res://view/units/ecc/mi8.tscn").instantiate()
-	t._check(reaper.find_child("Outriggers", true, false) != null and mi8.find_child("Rotor", true, false) != null and mi8.find_child("TailRotor", true, false) != null, "Grim Reaper has outriggers and the Mi-8 has a rotor")
+	var live: Node = load(Content.unit(&"ecc_mi8").view_scene).instantiate()
+	t._check(reaper.find_child("Outriggers", true, false) != null and mi8.find_child("Rotor", true, false) != null and mi8.find_child("TailRotor", true, false) != null, "Grim Reaper has outriggers and the old Mi-8 keeps its rotor")
+	t._check(live.find_child("Rotor", true, false) != null and live.find_child("TailRotor", true, false) != null and live.find_child("MuzzleL", true, false) != null and live.find_child("MuzzleR", true, false) != null and live.find_child("DoorPort", true, false) != null, "the live Mi-8 has both rotors, door guns and a cabin door")
+	live.free()
 	var pantsir: Node = load("res://view/units/ecc/pantsir.tscn").instantiate()
 	t._check(pantsir.find_child("Outriggers", true, false) != null and pantsir.find_child("Radar", true, false) != null, "Pantsir has outriggers and a radar")
 	pantsir.free()

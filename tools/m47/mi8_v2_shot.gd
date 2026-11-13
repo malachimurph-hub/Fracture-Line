@@ -45,6 +45,7 @@ func _views() -> void:
 	add_child(fill)
 	var model := (load("res://view/units/ecc/mi8_v2.tscn") as PackedScene).instantiate() as Node3D
 	add_child(model)
+	_paint(model)
 	_measure(model)
 	var cam := Camera3D.new()
 	cam.projection = Camera3D.PROJECTION_ORTHOGONAL
@@ -77,18 +78,35 @@ func _views() -> void:
 	cam.look_at(focus, Vector3.UP)
 	await frames(3)
 	await shot("gameplay")
+	# Close 3/4, the same kind of photo angle used for the T-90.
+	cam.fov = 32.0
+	cam.global_position = Vector3(6.4, 2.6, 5.2)
+	cam.look_at(Vector3(0.2, 1.15, 0.6), Vector3.UP)
+	await frames(3)
+	await shot("photo34")
 	model.position = Vector3(0, 4.0, 0)
 	var t90 := (load("res://view/units/ecc/t90.tscn") as PackedScene).instantiate() as Node3D
 	t90.position = Vector3(6.5, 0, 1.5)
 	add_child(t90)
+	_paint(t90)
 	var bmp := (load("res://view/units/ecc/bmp3_v2.tscn") as PackedScene).instantiate() as Node3D
 	bmp.position = Vector3(6.5, 0, -2.2)
 	add_child(bmp)
+	_paint(bmp)
 	focus = Vector3(2.2, 1.6, 0)
 	cam.global_position = focus + Vector3(0, sin(pitch), cos(pitch)) * dist
 	cam.look_at(focus, Vector3.UP)
 	await frames(4)
 	await shot("hover_with_tanks")
+
+func _paint(n: Node) -> void:
+	var olive := Color("#96A468")
+	for g in n.find_children("*", "GeometryInstance3D", true, false):
+		var gi := g as GeometryInstance3D
+		gi.set_instance_shader_parameter(&"paint_color", olive)
+		gi.set_instance_shader_parameter(&"rust_amt", 0.2)
+		gi.set_instance_shader_parameter(&"wear_amt", 0.55)
+		gi.set_instance_shader_parameter(&"dirt_amt", 0.7)
 
 func _measure(model: Node3D) -> void:
 	var sc := 0.311
