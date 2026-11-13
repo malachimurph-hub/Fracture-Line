@@ -206,6 +206,21 @@ func _radar(cam: Camera3D, sun: DirectionalLight3D, base: Node3D) -> void:
 	await frames(3)
 	await shot("radar_cabin")
 	print("CAM radar cabin size ", cam.size, " at ", cabin_side)
+	# Array face, from in front of the tilted panel, and the ribbed back.
+	var face := mount.global_position + Vector3(0, 2.6, 0.7) * sc
+	cam.global_position = face + Vector3(0.15, 0.35, 2.4)
+	cam.look_at(face, Vector3.UP)
+	sun.rotation_degrees = Vector3(-30, 160, 0)
+	await frames(3)
+	await shot("radar_array")
+	print("CAM radar array size ", cam.size, " at ", face)
+	var back := mount.global_position + Vector3(0.2, 2.4, 0.15) * sc
+	cam.global_position = back + Vector3(1.6, 0.15, -2.2)
+	cam.look_at(back, Vector3.UP)
+	sun.rotation_degrees = Vector3(-28, 40, 0)
+	await frames(3)
+	await shot("radar_array_back")
+	print("CAM radar array back size ", cam.size, " at ", back)
 	rig.queue_free()
 	base.visible = true
 
