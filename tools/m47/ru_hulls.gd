@@ -1704,6 +1704,131 @@ static func shilka(mat: Material) -> void:
 	VK._mi(bn, root, "BarrelMesh", b.commit(mat))
 	_save(root, model, h, mat, "res://view/units/ecc/zeus.tscn", 1.45, [t, b])
 
+## Round truck tyre. The kit tread lugs read as spikes at a 1.50 m diameter.
+static func _mzkt_tyre(h, c: Vector3, r: float, w: float, steers: bool) -> void:
+	var keep_uv: Vector2 = h.uv
+	var keep_uv2: Vector2 = h.uv2
+	# Same wheel pivot the chassis shader uses, so a moved truck spins tyres in place.
+	h.uv = Vector2(c.y, c.z)
+	h.uv2 = Vector2(c.x, r + (10.0 if steers else 0.0))
+	h.color("#1a1a18", Geo.WHEEL_RUBBER)
+	h.tube(c - Vector3(w * 0.46, 0, 0), c - Vector3(w * 0.28, 0, 0), r * 0.94, 16)
+	h.tube(c - Vector3(w * 0.30, 0, 0), c + Vector3(w * 0.30, 0, 0), r, 16, -1.0, false)
+	h.tube(c + Vector3(w * 0.28, 0, 0), c + Vector3(w * 0.46, 0, 0), r * 0.94, 16)
+	h.color("#121210", Geo.WHEEL_RUBBER)
+	for k in 3:
+		var x := lerpf(-w * 0.18, w * 0.18, float(k) / 2.0)
+		h.tube(c + Vector3(x - w * 0.035, 0, 0), c + Vector3(x + w * 0.035, 0, 0), r * 1.015, 16, -1.0, false)
+	h.color("#3a3d38", Geo.WHEEL_STEEL)
+	var side := 1.0 if c.x >= 0.0 else -1.0
+	var o := c + Vector3(side * w * 0.42, 0, 0)
+	h.tube(o - Vector3(side * 0.008, 0, 0), o + Vector3(side * 0.01, 0, 0), r * 0.52, 12)
+	h.tube(o, o + Vector3(side * 0.018, 0, 0), r * 0.20, 8)
+	h.uv = keep_uv
+	h.uv2 = keep_uv2
+
+## Bare MZKT-7930 chassis. 0.311 u/m, the tank scale. No module. +Z is the nose.
+## Spec MZKT-RU.7930-415.S.28.01. The axle chain sums to 12,445 mm against a
+## 12,670 mm length; the extra 225 mm is the front bumper, and the rear overhang stays 1,000 mm.
+## The 4,290 mm body top is the module, so the mounting deck stays at the chassis bed.
+static func mzkt_base(mat: Material) -> void:
+	var Sc := 0.311
+	var root := VK._root({"selection_radius": 2.1, "bar_height": 1.22, "recoil": 0.0, "wreck_s": 8.0, "steer_max": 0.32})
+	var model := VK._n3(root, root, "Model")
+	var h = K.new()
+	h.plain = true
+	h.camo("#96A468", 2)
+	# Stations in metres from the truck centre. Nose is +Z.
+	var nose := 6.335
+	var z1 := nose - 3.220
+	var z2 := nose - 5.570
+	var z3 := nose - 9.470
+	var z4 := nose - 11.670
+	var sx := 1.1875 * Sc
+	var wr := 0.75 * Sc
+	var tw := 0.695 * Sc
+	for i in 4:
+		var zz: float = [z1, z2, z3, z4][i] * Sc
+		for side in [-sx, sx]:
+			_mzkt_tyre(h, Vector3(side, wr, zz), wr, tw, i < 2)
+	# Frame stays inside the tyres. Belly at 0.48 m, top meeting the deck.
+	var zf0 := 5.70
+	var zf1 := -6.12
+	h.camo("#738252", 2)
+	h.cbox(Vector3(0, 0.98 * Sc, (zf0 + zf1) * 0.5 * Sc), Vector3(0.72 * Sc, 0.96 * Sc, (zf0 - zf1) * Sc), 0.02 * Sc)
+	for s in [-1.0, 1.0]:
+		h.cbox(Vector3(s * 0.46 * Sc, 0.97 * Sc, (zf0 + zf1) * 0.5 * Sc), Vector3(0.18 * Sc, 0.98 * Sc, (zf0 - zf1) * Sc), 0.012 * Sc)
+	# Empty bed, 3.150 m wide. Top at 1.62 m. It starts behind the engine bay.
+	var d0 := 1.45
+	var d1 := -6.08
+	h.camo("#96A468", 2)
+	h.cbox(Vector3(0, 1.54 * Sc, (d0 + d1) * 0.5 * Sc), Vector3(3.15 * Sc, 0.16 * Sc, (d0 - d1) * Sc), 0.018 * Sc)
+	for pair in [[z1, z2], [z3, z4]]:
+		var zc: float = (pair[0] + pair[1]) * 0.5
+		var span: float = absf(pair[0] - pair[1]) + 1.35
+		for s2 in [-1.0, 1.0]:
+			h.camo("#738252", 2)
+			h.cbox(Vector3(s2 * sx, 1.58 * Sc, zc * Sc), Vector3(tw * 0.92, 0.07 * Sc, span * Sc), 0.01 * Sc)
+			h.color("#2a2c28", Geo.DARK)
+			h.box(Vector3(s2 * sx, 0.72 * Sc, (zc - span * 0.48) * Sc), Vector3(tw * 0.55, 0.22 * Sc, 0.035 * Sc))
+	# Bumper carries the extra 225 mm. Rear cap stops at the 1,000 mm overhang.
+	h.camo("#738252", 2)
+	h.cbox(Vector3(0, 1.10 * Sc, 6.14 * Sc), Vector3(2.35 * Sc, 1.05 * Sc, 0.40 * Sc), 0.018 * Sc)
+	h.cbox(Vector3(0, 1.05 * Sc, -6.18 * Sc), Vector3(2.20 * Sc, 0.95 * Sc, 0.30 * Sc), 0.015 * Sc)
+	# Cab clears the front tyres. Roof is 3.025 m, with a 3.290 m crown.
+	h.camo("#96A468", 2)
+	h.xloft([
+		[6.00 * Sc, K.sect(1.62 * Sc, 1.95 * Sc, 2.25 * Sc, 1.20 * Sc, 1.32 * Sc, 1.05 * Sc, 0.05 * Sc)],
+		[5.40 * Sc, K.sect(1.62 * Sc, 2.05 * Sc, 3.025 * Sc, 1.38 * Sc, 1.48 * Sc, 1.38 * Sc, 0.07 * Sc)],
+		[3.95 * Sc, K.sect(1.62 * Sc, 2.05 * Sc, 3.025 * Sc, 1.40 * Sc, 1.50 * Sc, 1.40 * Sc, 0.07 * Sc)],
+	])
+	h.cbox(Vector3(0, 3.15 * Sc, 4.70 * Sc), Vector3(2.20 * Sc, 0.28 * Sc, 1.70 * Sc), 0.03 * Sc)
+	# Engine bay behind the cab, bottom above the tyre tops, grille and a door each side.
+	h.camo("#738252", 2)
+	h.cbox(Vector3(0, 2.05 * Sc, 2.70 * Sc), Vector3(2.70 * Sc, 0.90 * Sc, 2.50 * Sc), 0.022 * Sc)
+	h.color("#1c1e1c", Geo.DARK)
+	for s3 in [-1.0, 1.0]:
+		h.box(Vector3(s3 * 1.44 * Sc, 1.85 * Sc, 2.15 * Sc), Vector3(0.02 * Sc, 0.55 * Sc, 0.70 * Sc))
+		for i in 6:
+			h.box(Vector3(s3 * 1.455 * Sc, 1.85 * Sc, (2.42 - float(i) * 0.10) * Sc), Vector3(0.012 * Sc, 0.48 * Sc, 0.025 * Sc))
+	h.color("#3a3d38", Geo.STEEL)
+	h.ladder(Vector3(-1.55 * Sc, 1.05 * Sc, 1.15 * Sc), 1.15 * Sc, Vector3(0, 0, 1), 0.16 * Sc)
+	h.ladder(Vector3(1.55 * Sc, 1.05 * Sc, 1.15 * Sc), 1.15 * Sc, Vector3(0, 0, 1), 0.16 * Sc)
+	# Glass. The windscreen rake is rotated about X; side glass sits on the cab doors.
+	h.color("#24323a", Geo.GLASS)
+	h.plate(Vector3(-0.38 * Sc, 2.15 * Sc, 5.72 * Sc), Vector3(0.62 * Sc, 0.72 * Sc, 0.02 * Sc), Vector3(58, 0, 0))
+	h.plate(Vector3(0.38 * Sc, 2.15 * Sc, 5.72 * Sc), Vector3(0.62 * Sc, 0.72 * Sc, 0.02 * Sc), Vector3(58, 0, 0))
+	for s4 in [-1.0, 1.0]:
+		h.box(Vector3(s4 * 1.48 * Sc, 2.25 * Sc, 5.05 * Sc), Vector3(0.02 * Sc, 0.46 * Sc, 0.55 * Sc))
+		h.box(Vector3(s4 * 1.48 * Sc, 2.20 * Sc, 4.30 * Sc), Vector3(0.02 * Sc, 0.42 * Sc, 0.48 * Sc))
+	h.color("#3a3d38", Geo.STEEL)
+	h.box(Vector3(0, 2.15 * Sc, 5.78 * Sc), Vector3(0.06 * Sc, 0.78 * Sc, 0.03 * Sc))
+	# Mirrors out to the 4,076 mm width. Lamps and a short exhaust on the engine bay.
+	for s5 in [-1.0, 1.0]:
+		h.tube(Vector3(s5 * 1.40 * Sc, 2.55 * Sc, 5.15 * Sc), Vector3(s5 * 1.95 * Sc, 2.62 * Sc, 5.25 * Sc), 0.025 * Sc, 5)
+		h.box(Vector3(s5 * 1.998 * Sc, 2.58 * Sc, 5.22 * Sc), Vector3(0.08 * Sc, 0.22 * Sc, 0.16 * Sc))
+	V4._lamps(h, 0.85 * Sc, 0.95 * Sc, 6.22 * Sc)
+	h.color("#2a2c28", Geo.DARK)
+	h.tube(Vector3(0.95 * Sc, 2.05 * Sc, 1.15 * Sc), Vector3(0.95 * Sc, 2.55 * Sc, 0.85 * Sc), 0.045 * Sc, 6)
+	# Fuel tank in the open span between axle 2 and axle 3. One side only.
+	h.camo("#738252", 2)
+	h.cbox(Vector3(-1.15 * Sc, 1.05 * Sc, -1.15 * Sc), Vector3(0.42 * Sc, 0.48 * Sc, 1.6 * Sc), 0.015 * Sc)
+	h.color("#3a3d38", Geo.STEEL)
+	h.tube(Vector3(-1.35 * Sc, 1.15 * Sc, -0.2 * Sc), Vector3(-1.35 * Sc, 1.15 * Sc, 0.9 * Sc), 0.03 * Sc, 5)
+	# Four pads mark the bed corners. The jack markers sit on them. The bed itself stays empty.
+	for spec in [[1.0, 0.35], [-1.0, 0.35], [1.0, -5.55], [-1.0, -5.55]]:
+		h.box(Vector3(spec[0] * 1.42 * Sc, 1.62 * Sc, spec[1] * Sc), Vector3(0.18 * Sc, 0.04 * Sc, 0.22 * Sc))
+	var mount := VK._n3(model, root, "ModuleMount", Vector3(0, 1.62 * Sc, -2.05 * Sc))
+	mount.set_meta("deck_top_m", 1.62)
+	var jacks := VK._n3(model, root, "JackPoints")
+	for spec2 in [["JackFR", 1.0, 0.35], ["JackFL", -1.0, 0.35], ["JackRR", 1.0, -5.55], ["JackRL", -1.0, -5.55]]:
+		var mk := Marker3D.new()
+		mk.name = String(spec2[0])
+		mk.position = Vector3(float(spec2[1]) * 1.42 * Sc, 1.62 * Sc, float(spec2[2]) * Sc)
+		jacks.add_child(mk)
+		mk.owner = root
+	_save(root, model, h, mat, "res://view/units/ecc/mzkt_base.tscn", 1.22, [])
+
 static func _skirts(h, x: float, z0: float, z1: float, y0: float, y1: float, _notch: bool) -> void:
 	var n := 4
 	var seg := (z1 - z0) / float(n)

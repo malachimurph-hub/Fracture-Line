@@ -1,6 +1,6 @@
 # MZKT-7930 Stage 1 audit
 
-Audit and design only. No mesh, no unit data, and no simulation code. Stage 2 does not start until Malachi picks the open items at the end.
+Stage 1 is the audit. Malachi has locked three decisions, recorded in the sections below and collected at the end: the chassis is 0.311 units per metre, the Grim Reaper is included in the artillery aura, and the radar uses the existing Sentinel detector flag. The bare chassis blockout is `view/units/ecc/mzkt_base.tscn`. No module mesh, no unit data, and no factory change.
 
 The player builds one bare 8x8 chassis at the Vehicle Factory, then picks one module. The pick is permanent. There is no repair module.
 
@@ -18,7 +18,8 @@ References saved with this note:
 
 - `docs/m4_7/refs/mzkt_radar_side.jpg`, `mzkt_radar_front.jpg` — module B.
 - `docs/m4_7/refs/mzkt_missile_1.jpg`, `mzkt_missile_2.jpg`, `mzkt_missile_3.jpg` — module C, style only. The cab in those photos is not our cab.
-- Spec sheet MZKT-RU.7930-415.S.28.01 — authoritative chassis numbers, quoted below. It is the Pantsir-on-MZKT sheet, so its radar-top height belongs to module A, not to the flat panel on B.
+- `docs/m4_7/refs/mzkt_specsheet.png` — sheet MZKT-RU.7930-415.S.28.01. Authoritative chassis numbers. It shows the Pantsir body, so the 4,290 mm and 5,890 mm heights belong to module A.
+- `docs/m4_7/refs/mzkt_aa_model.jpg` — cab-forward shape used for the bare chassis. The turret is module A and is not on the blockout.
 
 ## 1. What is already in the repo
 
@@ -78,7 +79,7 @@ From MZKT-RU.7930-415.S.28.01. These are the base truck, and the radar-top line 
 
 The five station numbers sum to 12,445 mm. The published length is 12,670 mm. The extra 225 mm is not assigned. Stage 2 should put it on the front bumper and keep the 1,000 mm rear overhang as written. Axle stations from the bumper, if that is accepted: 3,220, 5,570, 9,470 and 11,670 mm.
 
-The implied tyre section is (3,070 − 2,375) / 2 = 347.5 mm. Use the span and the track. Do not invent a wider tyre.
+Track 2,375 mm is centre to centre. The 3,070 mm figure is the outer face of the tyres. The overhang from each centreline to the outer face is (3,070 − 2,375) / 2 = 347.5 mm, so the full tyre width is 695 mm. That is the width the blockout uses. A narrower tyre would miss the 3,070 mm span.
 
 Module sizes that are not on the sheet, estimated from the photos and flagged:
 
@@ -103,13 +104,13 @@ Compared with meshes already on screen. The T-90 hull figure is the one measured
 | Length vs BMP-3 2.22 u | 1.77× | 1.37× | 1.24× |
 | Length vs live Pantsir mesh 3.05 u | 1.29× | 1.00× | 0.91× |
 
-The real truck is 12.67 / 7.14 = 1.77 times a BMP-3 hull. Only 0.311 keeps that ratio. It also makes the truck as long on screen as the Mi-8 after Malachi had that helicopter shrunk, and about 30% longer than the Pantsir mesh players already see.
+The real truck is 12.67 / 7.14 = 1.77 times a BMP-3 hull. Only 0.311 keeps that ratio. It also makes the truck as long on screen as the reduced Mi-8, and about 30% longer than the Pantsir mesh already in the game.
 
-**Proposed scale: 0.24 units per metre.** That is the scale the Iskander and Pantsir meshes already use, chosen so a 13 m truck fits the camera. The new chassis matches those two instead of outgrowing them. At 0.24 the truck is 3.04 u long, 0.76 u wide, cab roof 0.79 u, Pantsir radar top 1.41 u. A yes on 0.311 is the alternative if the truck should match the tanks and read clearly longer than the live Pantsir.
+**Scale, decided: 0.311 units per metre.** Malachi chose true tank scale. The bare chassis is built at that scale, about 3.94 units long. The live Iskander and Pantsir meshes stay at 0.24.
 
 ## 4. Part breakdown
 
-One chassis builder, three module builders, joined at a bed frame behind the cab. Swapping modules is swapping that child, not rebuilding the cab and the axles. Stage 2 builds the chassis and module B only.
+One chassis builder, three module builders, joined at a bed frame behind the cab. Swapping modules is swapping that child, not rebuilding the cab and the axles. The first mesh is the bare chassis only. Module B comes after that blockout is accepted.
 
 ### Chassis, shared
 
@@ -202,7 +203,7 @@ A 20-tile sight is a disc 40 tiles across. On Varno that is 16% of the map width
 
 ### Stealth
 
-`detector = true`. Anything already hidden from a Sentinel is hidden from this truck out to 20 tiles, and visible inside that.
+`detector = true`. Malachi accepted the existing Sentinel flag. Anything already hidden from a Sentinel is hidden from this truck out to 20 tiles, and visible inside that.
 
 That flag, as written in `UsSys` and `TplaSys`, reveals all of these inside sight, not only infantry:
 
@@ -211,7 +212,7 @@ That flag, as written in `UsSys` and `TplaSys`, reveals all of these inside sigh
 - `stealth_defense` and `low_sig`.
 - Hidden structures: mines, traps, camo. A detector is not limited to units.
 
-Recommend using the existing flag. A stealth-units-only detector would be a new rule. The structure reveal is the consequence to accept or to reject.
+Decided. The radar uses that flag as it stands, including mines, traps, camo structures and stealth aircraft. A units-only detector is not being added.
 
 ### Artillery range aura
 
@@ -226,7 +227,7 @@ Who has the `artillery` tag in the Russia roster, and what +25% does. Integer ma
 | TOS-1A `ecc_tos` | none | 4.8 | 6.0 | Yes. |
 | 2S Msta `ecc_msta` | `spg` | 15.0, minimum 4.0 | 18.75 | Yes. |
 | Iskander `ecc_iskander` | `setup` | 15.0, minimum 5.0 | 18.75 | Yes. It still needs its own 5 s setup to fire. |
-| Grim Reaper `ecc_reaper` | `deploy` | 21.0, minimum 6.5 | 26.25 | Yes, by the tag rule. This is the balance risk: the longest shot in the faction grows by 5.25 tiles, and on a 128-tile map 26 tiles is a fifth of the width. Exclude it if that shot should stay capped. |
+| Grim Reaper `ecc_reaper` | `deploy` | 21.0, minimum 6.5 | 26.25 | Yes. Malachi included it. The shot grows by 5.25 tiles. On a 128-tile map, 26 tiles is about a fifth of the width. |
 | Module C, when it exists | `artillery`, plus deploy | unset | +25% of whatever its weapon is | Yes. It is a cruise-missile launcher, the same family as Iskander. It does not generate an aura. Two module-C trucks do not buff each other. |
 | Module A / Pantsir | `aa`, not `artillery` | SAM 12.0 | unchanged | No. The aura does not extend anti-air range. |
 | Silos, towers, the Tu-160 | not the unit tag | | unchanged | No. |
@@ -245,8 +246,8 @@ What has to be added later, when this leaves the audit:
 
 Balance risks to decide with the numbers:
 
-- No stacking. Already the recommendation. Two radars are redundancy, not +50%.
-- Grim Reaper to 26.25 tiles. The sharp one.
+- No stacking. Two radars are redundancy, not +50%.
+- Grim Reaper to 26.25 tiles. Included on purpose. It is still the longest shot in the faction.
 - Module C's base range is unset. Until it has a weapon, do not assume it outranges Iskander. A 15-tile start matches Iskander and becomes 18.75 in the aura.
 - The truck is a detector with a 20-tile sight that also reveals mines and stealth aircraft. That is a lot for one chassis even before the aura. Cost and the Ministry gate are still open; see the decisions.
 - The aura does not care whether the artillery is set up. Iskander and the Reaper still wait out their own timers before they can use the extra range.
@@ -284,7 +285,7 @@ Until a button is pressed the hull is a moving target with no gun. That is accep
 
 ## 9. Risks
 
-- Scale. 0.311 matches the tanks and makes a 3.94 u truck, as long as the reduced Mi-8. 0.24 matches the trucks already on screen and shortens the real 1.77× BMP-3 ratio to 1.37×.
+- Scale is decided at 0.311. The truck is about 3.94 u long, as long on screen as the reduced Mi-8, and longer than the live Pantsir mesh.
 - The 225 mm gap between the axle stations and the published length.
 - Module B's panel height is an estimate. The 5.89 m figure is module A's dish.
 - Naming the panel `Radar` would fold it if a deploy timer is ever added. Use `RadarPivot`.
@@ -295,17 +296,43 @@ Until a button is pressed the hull is a moving target with no gun. That is accep
 - Photos contain plates, badges, stencil text and woodland camo. None of that is modelled.
 - Triangle budget is a Stage 2 problem. The live Pantsir is the comparison point, not a cap set here.
 
-## Decisions before Stage 2
+## Decisions
 
-1. Scale: 0.24, as proposed, or 0.311 to match the tanks.
-2. Module B sight: 20, or 18 if the 128-tile maps matter more.
-3. Aura: 12 tiles, +25%, no stacking, owner only, halted for 1 s, tag `artillery` including module C and the Grim Reaper. Say if the Reaper is excluded, if allies are included, or if B should deploy for 8 s instead of simply stopping.
-4. Detector uses the existing flag, including mines, traps and stealth aircraft. Say if that should be units only.
-5. Module A keeps its outriggers and the 8 s deploy.
-6. The factory builds a bare chassis. The three icon buttons are the permanent pick. Iskander and Pantsir stay until a later pass. Prices and the Ministry gate on button A are still open.
+Locked by Malachi:
+
+1. Scale is 0.311 units per metre. The bare chassis blockout uses it.
+2. The Grim Reaper is included in the +25% artillery aura.
+3. The radar uses the existing Sentinel detector flag, which also reveals mines, traps and camo.
+
+Still open:
+
+1. Module B sight: 20, or 18 if the 128-tile maps matter more.
+2. Aura radius 12, owner only, halted for 1 second, no stacking. Say if allies should receive it, or if module B should deploy for 8 seconds instead of simply stopping.
+3. Module A keeps its outriggers and the 8 second deploy.
+4. The factory builds a bare chassis, then three icon buttons make the permanent pick. Iskander and Pantsir stay until a later pass. Prices and the Ministry gate on button A are still open.
+
+## Stage 2 blockout
+
+The bare chassis is `view/units/ecc/mzkt_base.tscn`, written by `mzkt_base` in `tools/m47/ru_hulls.gd`. It is not pointed at by a unit, and the factory list is unchanged. Godot 4.7.2 wrote the scene and rendered the side, the three-quarter, the lineup, and the side against the spec sheet.
+
+Measured from the mesh:
+
+| Measure | Units | Metres | Sheet |
+|---|---:|---:|---|
+| Length | 3.940 | 12.67 | 12,670 mm |
+| Width across the mirrors | 1.268 | 4.076 | 4,076 mm |
+| Bed width, authored | 0.980 | 3.150 | 3,150 mm |
+| Roof | 1.023 | 3.290 | 3,290 mm |
+| Triangles | 3,768 | | |
+
+The health bar anchor is at y = 1.22 and the selection radius is 2.1. `ModuleMount` sits on the bed centre. `JackFL`, `JackFR`, `JackRL` and `JackRR` are the four corner points for modules A and C. There is no `Outriggers` node, so the plant animation does not move those points.
+
+The 4,290 mm line on the sheet is the top of the Pantsir body. The bare deck is the chassis bed at 1.62 m, just above the tyres. Tyre diameter is not on the sheet. The blockout uses 1.50 m. Tyre width is 695 mm, so the centres stay on the 2,375 mm track and the outer faces land on the 3,070 mm span. The 225 mm gap in the axle chain is the front bumper. The rear overhang stays 1,000 mm.
+
+The comparison frame scales the sheet so that side view spans the same pixels as the blockout's 12.67 m, noses to the left. The sheet still shows the turret and the equipment body. Those are module A. The blockout leaves that bed empty.
 
 ## What was checked, and what was not
 
 Checked in the repo: `ecc_factory.produces`, the five Russian artillery and anti-air definitions, their weapon `range_mt`, `UnitDef.detector` and `shield_aura_*`, `UsSys` stealth masks, `TplaSys.DETECT`, `RosterSys` jammer and heal aura, `PowerSys` shields, `CombatSys._fire_unit`, `OrderSys.max_range`, `EccSys.DEPLOY_TICKS`, `UsSys.SETUP_TICKS`, `VehicleView` plant and elevate, the Pantsir and Iskander builders in `ru_hulls.gd`, and `MapDef.size` on every map. The five reference photos were read.
 
-Not checked: no Godot run, no measurement of the photos, no published metre figure for the flat panel or the cruise-missile box beyond the estimate flagged above. The axle-sum gap is reported, not resolved.
+Godot 4.7.2 ran for the blockout: it wrote `mzkt_base.tscn` and rendered the four review views. Not checked: no match, no factory path, no module. The 1.50 m tyre diameter and the 1.62 m deck are not printed on the sheet. The flat-panel and cruise-missile sizes are still estimates. The 400 mm mark on the front view was not used.
