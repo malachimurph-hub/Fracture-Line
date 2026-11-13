@@ -2490,7 +2490,7 @@ static func _aa_turret(root: Node3D, mat: Material, Sc: float) -> int:
 	g.color("#1a1c1a", Geo.STEEL)
 	g.tube(Vector3(0, 0.02 * Sc, 0), Vector3(0, 0.12 * Sc, 0), 0.82 * Sc, 10)
 	g.color("#96A468", Geo.CONCRETE)
-	g.cbox(Vector3(0, 0.68 * Sc, 0.02 * Sc), Vector3(1.80 * Sc, 1.20 * Sc, 1.85 * Sc), 0.03 * Sc)
+	g.cbox(Vector3(0, 0.68 * Sc, 0.02 * Sc), Vector3(2.90 * Sc, 1.20 * Sc, 1.85 * Sc), 0.03 * Sc)
 	g.color("#738252", Geo.CONCRETE)
 	g.box(Vector3(0, 1.30 * Sc, -0.05 * Sc), Vector3(1.40 * Sc, 0.06 * Sc, 1.20 * Sc))
 	# Tracking dish on the turret front, in the gap between the wide racks.
@@ -2542,46 +2542,41 @@ static func _aa_turret(root: Node3D, mat: Material, Sc: float) -> int:
 	var w = K.new()
 	w.plain = true
 	w.color("#2a2e2c", Geo.STEEL)
-	w.tube(Vector3(-1.15 * Sc, 0.05 * Sc, 0.10 * Sc), Vector3(1.15 * Sc, 0.05 * Sc, 0.10 * Sc), 0.07 * Sc, 8)
+	w.tube(Vector3(-1.35 * Sc, 0.06 * Sc, -0.20 * Sc), Vector3(1.35 * Sc, 0.06 * Sc, -0.20 * Sc), 0.07 * Sc, 8)
 	for s in [-1.0, 1.0]:
-		# Spine under the outer cluster, tied back into the housing.
-		w.box(Vector3(s * 1.18 * Sc, -0.02 * Sc, 1.70 * Sc), Vector3(0.78 * Sc, 0.12 * Sc, 3.05 * Sc))
-		w.box(Vector3(s * 1.05 * Sc, 0.10 * Sc, 0.22 * Sc), Vector3(0.55 * Sc, 0.36 * Sc, 0.40 * Sc))
+		# Cheek fills the rear third of the cluster so the tubes leave the housing, not a gap.
 		w.color("#96A468", Geo.CONCRETE)
+		w.box(Vector3(s * 1.06 * Sc, 0.10 * Sc, 0.06 * Sc), Vector3(0.88 * Sc, 0.42 * Sc, 1.35 * Sc))
 		for col in 3:
-			for row in 2:
-				var x: float = float(s) * (0.94 + float(col) * 0.24)
-				var y: float = 0.08 + float(row) * 0.28
-				w.tube(Vector3(x * Sc, y * Sc, 0.18 * Sc), Vector3(x * Sc, y * Sc, 3.38 * Sc), 0.12 * Sc, 6)
-				w.color("#1c1e1c", Geo.DARK)
-				w.tube(Vector3(x * Sc, y * Sc, 3.32 * Sc), Vector3(x * Sc, y * Sc, 3.50 * Sc), 0.075 * Sc, 5)
-				w.color("#2c302c", Geo.STEEL)
-				w.tube(Vector3(x * Sc, y * Sc, 0.40 * Sc), Vector3(x * Sc, y * Sc, 0.52 * Sc), 0.125 * Sc, 6)
-				w.color("#96A468", Geo.CONCRETE)
-		# End frame around the six mouths so the cluster reads from the front.
+			var x: float = float(s) * (0.82 + float(col) * 0.24)
+			w.color("#96A468", Geo.CONCRETE)
+			w.tube(Vector3(x * Sc, 0.10 * Sc, -0.48 * Sc), Vector3(x * Sc, 0.10 * Sc, 2.72 * Sc), 0.12 * Sc, 6)
+			w.color("#1c1e1c", Geo.DARK)
+			w.tube(Vector3(x * Sc, 0.10 * Sc, 2.62 * Sc), Vector3(x * Sc, 0.10 * Sc, 2.80 * Sc), 0.075 * Sc, 5)
+			w.color("#2c302c", Geo.STEEL)
+			w.tube(Vector3(x * Sc, 0.10 * Sc, 0.62 * Sc), Vector3(x * Sc, 0.10 * Sc, 0.76 * Sc), 0.135 * Sc, 6)
 		w.color("#2c302c", Geo.STEEL)
-		w.box(Vector3(s * 1.18 * Sc, 0.50 * Sc, 3.42 * Sc), Vector3(0.70 * Sc, 0.06 * Sc, 0.06 * Sc))
-		w.box(Vector3(s * 1.18 * Sc, -0.04 * Sc, 3.42 * Sc), Vector3(0.70 * Sc, 0.06 * Sc, 0.06 * Sc))
-		w.box(Vector3(s * 0.78 * Sc, 0.23 * Sc, 3.42 * Sc), Vector3(0.06 * Sc, 0.54 * Sc, 0.06 * Sc))
-		w.box(Vector3(s * 1.50 * Sc, 0.23 * Sc, 3.42 * Sc), Vector3(0.06 * Sc, 0.54 * Sc, 0.06 * Sc))
-		# Twin barrels under the rack, 3.05 m, so the side view shows them.
+		w.box(Vector3(s * 1.06 * Sc, 0.26 * Sc, 2.74 * Sc), Vector3(0.78 * Sc, 0.05 * Sc, 0.05 * Sc))
+		w.box(Vector3(s * 1.06 * Sc, -0.06 * Sc, 2.74 * Sc), Vector3(0.78 * Sc, 0.05 * Sc, 0.05 * Sc))
+		w.box(Vector3(s * 0.66 * Sc, 0.10 * Sc, 2.74 * Sc), Vector3(0.05 * Sc, 0.36 * Sc, 0.05 * Sc))
+		w.box(Vector3(s * 1.46 * Sc, 0.10 * Sc, 2.74 * Sc), Vector3(0.05 * Sc, 0.36 * Sc, 0.05 * Sc))
 		w.color("#2a2e2c", Geo.STEEL)
 		for k in 2:
-			var gy: float = -0.28 + float(k) * 0.14
-			w.tube(Vector3(s * 1.18 * Sc, gy * Sc, 0.12 * Sc), Vector3(s * 1.18 * Sc, gy * Sc, 3.18 * Sc), 0.05 * Sc, 6)
-			w.tube(Vector3(s * 1.18 * Sc, gy * Sc, 3.02 * Sc), Vector3(s * 1.18 * Sc, gy * Sc, 3.26 * Sc), 0.064 * Sc, 6)
+			var gy: float = -0.22 + float(k) * 0.14
+			w.tube(Vector3(s * 1.06 * Sc, gy * Sc, -0.20 * Sc), Vector3(s * 1.06 * Sc, gy * Sc, 2.85 * Sc), 0.05 * Sc, 6)
+			w.tube(Vector3(s * 1.06 * Sc, gy * Sc, 2.70 * Sc), Vector3(s * 1.06 * Sc, gy * Sc, 2.94 * Sc), 0.064 * Sc, 6)
 			w.color("#1a1c1a", Geo.STEEL)
-			w.tube(Vector3(s * 1.18 * Sc, gy * Sc, 3.18 * Sc), Vector3(s * 1.18 * Sc, gy * Sc, 3.30 * Sc), 0.030 * Sc, 5)
+			w.tube(Vector3(s * 1.06 * Sc, gy * Sc, 2.86 * Sc), Vector3(s * 1.06 * Sc, gy * Sc, 2.98 * Sc), 0.030 * Sc, 5)
 			w.color("#2a2e2c", Geo.STEEL)
 	VK._mi(wp, root, "Weapons", w.commit(mat))
 	tris += w.tris
 	for s2 in [-1.0, 1.0]:
 		var muzzle := Marker3D.new()
 		muzzle.name = "MuzzleL" if s2 < 0.0 else "MuzzleR"
-		muzzle.position = Vector3(s2 * 1.18 * Sc, -0.21 * Sc, 3.30 * Sc)
+		muzzle.position = Vector3(s2 * 1.06 * Sc, -0.15 * Sc, 2.98 * Sc)
 		wp.add_child(muzzle)
 		muzzle.owner = root
-	print("  aa head 3.04 m  tubes 3.20 m dia 0.24  guns 3.06 m  panel 1.90 x 1.80 m")
+	print("  aa 3 tubes a side  housing 2.90 m  tubes 3.20 m dia 0.24  guns 3.05 m")
 	return tris
 
 ## 8 s. Jacks first, the same order as module C, then the dish rises and turns and the racks elevate.
