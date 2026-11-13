@@ -1970,25 +1970,81 @@ static func mzkt_radar(mat: Material) -> void:
 	h.color("#5e6848", Geo.CONCRETE)
 	h.cbox(Vector3(-1.38 * Sc, 0.28 * Sc, -2.15 * Sc), Vector3(0.22 * Sc, 0.32 * Sc, 0.55 * Sc), 0.008 * Sc)
 	h.cbox(Vector3(-1.36 * Sc, 0.24 * Sc, -0.35 * Sc), Vector3(0.18 * Sc, 0.26 * Sc, 0.38 * Sc), 0.008 * Sc)
-	# Roof rail and posts, inside the 3.15 m body.
+	# Roof rail. Posts sit inside the rail so nothing hangs past either end.
 	h.color("#3a3d38", Geo.STEEL)
 	h.box(Vector3(1.40 * Sc, 2.30 * Sc, -1.65 * Sc), Vector3(0.022 * Sc, 0.022 * Sc, 3.30 * Sc))
 	for i in 5:
-		h.box(Vector3(1.40 * Sc, 2.20 * Sc, (0.0 - float(i) * 0.80) * Sc), Vector3(0.018 * Sc, 0.18 * Sc, 0.018 * Sc))
-	h.box(Vector3(0.2 * Sc, 2.30 * Sc, -3.55 * Sc), Vector3(2.2 * Sc, 0.022 * Sc, 0.022 * Sc))
+		h.box(Vector3(1.40 * Sc, 2.20 * Sc, (-0.25 - float(i) * 0.70) * Sc), Vector3(0.018 * Sc, 0.18 * Sc, 0.018 * Sc))
 	_mzkt_ladder(h, 1.18 * Sc, 0.02 * Sc, -3.48 * Sc, 2.02 * Sc)
 	# Cable run along the skirt, then up toward the pedestal.
 	h.color("#2a2c28", Geo.DARK)
 	h.tube(Vector3(1.38 * Sc, 0.48 * Sc, 0.05 * Sc), Vector3(1.38 * Sc, 0.48 * Sc, -3.45 * Sc), 0.016 * Sc, 5)
 	h.tube(Vector3(1.38 * Sc, 0.48 * Sc, -0.15 * Sc), Vector3(0.70 * Sc, 0.82 * Sc, 0.55 * Sc), 0.014 * Sc, 5)
-	# Pedestal and turntable between the cabin and the array. Cheeks reach the hinge.
+	# Pedestal and turntable. The hinge beam is as wide as the panel and meets the barrel.
 	h.color("#5e6848", Geo.CONCRETE)
 	h.tube(Vector3(0, 0.02 * Sc, 0.90 * Sc), Vector3(0, 0.09 * Sc, 0.90 * Sc), 0.70 * Sc, 10)
 	h.color("#738252", Geo.CONCRETE)
-	h.cbox(Vector3(0, 0.46 * Sc, 0.88 * Sc), Vector3(1.10 * Sc, 0.98 * Sc, 1.45 * Sc), 0.014 * Sc)
+	h.cbox(Vector3(0, 0.50 * Sc, 0.88 * Sc), Vector3(1.10 * Sc, 1.06 * Sc, 1.50 * Sc), 0.014 * Sc)
 	h.color("#4e5840", Geo.CONCRETE)
+	h.box(Vector3(0, 0.90 * Sc, 1.22 * Sc), Vector3(2.55 * Sc, 0.18 * Sc, 0.34 * Sc))
+	for hx in [-1.10, -0.55, 0.0, 0.55, 1.10]:
+		h.box(Vector3(hx * Sc, 0.98 * Sc, 1.22 * Sc), Vector3(0.07 * Sc, 0.24 * Sc, 0.30 * Sc))
+	# Ram bodies stay on the pedestal. The rods are on the panel, so each end
+	# stays with its pin when ArrayPivot turns.
+	h.color("#3a3d38", Geo.STEEL)
 	for s in [-1.0, 1.0]:
-		h.box(Vector3(s * 0.46 * Sc, 0.78 * Sc, 1.28 * Sc), Vector3(0.07 * Sc, 0.42 * Sc, 0.22 * Sc))
+		h.box(Vector3(s * 0.55 * Sc, 0.82 * Sc, 0.38 * Sc), Vector3(0.12 * Sc, 0.12 * Sc, 0.12 * Sc))
+		h.tube(Vector3(s * 0.55 * Sc, 0.82 * Sc, 0.38 * Sc), Vector3(s * 0.66 * Sc, 2.04 * Sc, 0.50 * Sc), 0.048 * Sc, 6)
+	# Both cabin sides: grilles, a wall unit, boxes, conduits, handles.
+	for s in [-1.0, 1.0]:
+		h.color("#1c1e1c", Geo.DARK)
+		h.box(Vector3(s * 1.492 * Sc, 1.58 * Sc, -0.15 * Sc), Vector3(0.02 * Sc, 0.36 * Sc, 0.48 * Sc))
+		for i in 4:
+			h.color("#3a3d38", Geo.STEEL)
+			h.box(Vector3(s * 1.508 * Sc, (1.72 - float(i) * 0.08) * Sc, -0.15 * Sc), Vector3(0.012 * Sc, 0.016 * Sc, 0.40 * Sc))
+		h.color("#5e6848", Geo.CONCRETE)
+		h.box(Vector3(s * 1.505 * Sc, 0.55 * Sc, -2.85 * Sc), Vector3(0.08 * Sc, 0.22 * Sc, 0.32 * Sc))
+		h.color("#738252", Geo.CONCRETE)
+		h.box(Vector3(s * 1.505 * Sc, 1.35 * Sc, -3.15 * Sc), Vector3(0.07 * Sc, 0.16 * Sc, 0.22 * Sc))
+		h.color("#2a2c28", Geo.DARK)
+		h.tube(Vector3(s * 1.50 * Sc, 0.72 * Sc, 0.10 * Sc), Vector3(s * 1.50 * Sc, 0.72 * Sc, -3.35 * Sc), 0.012 * Sc, 4)
+		h.tube(Vector3(s * 1.50 * Sc, 0.72 * Sc, -1.70 * Sc), Vector3(s * 1.46 * Sc, 1.55 * Sc, -1.70 * Sc), 0.010 * Sc, 4)
+		h.color("#3a3d38", Geo.STEEL)
+		h.box(Vector3(s * 1.512 * Sc, 1.15 * Sc, -0.55 * Sc), Vector3(0.018 * Sc, 0.025 * Sc, 0.16 * Sc))
+		h.box(Vector3(s * 1.512 * Sc, 0.85 * Sc, -1.85 * Sc), Vector3(0.018 * Sc, 0.025 * Sc, 0.16 * Sc))
+	# Wall conditioner on the far side, extinguisher and reel on the near side.
+	h.color("#738252", Geo.CONCRETE)
+	h.box(Vector3(-1.515 * Sc, 1.52 * Sc, -0.85 * Sc), Vector3(0.08 * Sc, 0.34 * Sc, 0.42 * Sc))
+	h.color("#1c1e1c", Geo.DARK)
+	h.box(Vector3(-1.555 * Sc, 1.52 * Sc, -0.85 * Sc), Vector3(0.012 * Sc, 0.22 * Sc, 0.30 * Sc))
+	for k in 3:
+		h.color("#3a3d38", Geo.STEEL)
+		h.box(Vector3(-1.562 * Sc, 1.52 * Sc, (-0.96 + float(k) * 0.08) * Sc), Vector3(0.008 * Sc, 0.18 * Sc, 0.016 * Sc))
+	h.color("#6e2e28", Geo.CONCRETE)
+	h.tube(Vector3(1.52 * Sc, 0.42 * Sc, -1.85 * Sc), Vector3(1.52 * Sc, 0.78 * Sc, -1.85 * Sc), 0.045 * Sc, 5)
+	h.color("#3a3d38", Geo.STEEL)
+	h.box(Vector3(1.52 * Sc, 0.84 * Sc, -1.85 * Sc), Vector3(0.07 * Sc, 0.04 * Sc, 0.07 * Sc))
+	h.tube(Vector3(-1.46 * Sc, 0.48 * Sc, -2.55 * Sc), Vector3(-1.54 * Sc, 0.48 * Sc, -2.55 * Sc), 0.13 * Sc, 8)
+	h.box(Vector3(-1.54 * Sc, 0.48 * Sc, -2.55 * Sc), Vector3(0.02 * Sc, 0.22 * Sc, 0.03 * Sc))
+	# Deck fittings around the mast and the pedestal. All sit on the deck.
+	h.color("#738252", Geo.CONCRETE)
+	h.box(Vector3(1.05 * Sc, 0.32 * Sc, 0.72 * Sc), Vector3(0.58 * Sc, 0.68 * Sc, 0.72 * Sc))
+	h.color("#1c1e1c", Geo.DARK)
+	h.box(Vector3(1.345 * Sc, 0.40 * Sc, 0.72 * Sc), Vector3(0.012 * Sc, 0.32 * Sc, 0.48 * Sc))
+	for k in 4:
+		h.color("#3a3d38", Geo.STEEL)
+		h.box(Vector3(1.354 * Sc, (0.52 - float(k) * 0.07) * Sc, 0.72 * Sc), Vector3(0.008 * Sc, 0.016 * Sc, 0.40 * Sc))
+	h.color("#5e6848", Geo.CONCRETE)
+	h.box(Vector3(-0.15 * Sc, 0.20 * Sc, 2.30 * Sc), Vector3(0.46 * Sc, 0.44 * Sc, 0.40 * Sc))
+	h.box(Vector3(-1.32 * Sc, 0.16 * Sc, 1.55 * Sc), Vector3(0.36 * Sc, 0.34 * Sc, 0.32 * Sc))
+	h.color("#738252", Geo.CONCRETE)
+	h.box(Vector3(0.95 * Sc, 0.11 * Sc, 2.28 * Sc), Vector3(0.34 * Sc, 0.22 * Sc, 0.20 * Sc))
+	h.color("#3a3d38", Geo.STEEL)
+	h.tube(Vector3(1.20 * Sc, 0.15 * Sc, 1.55 * Sc), Vector3(1.20 * Sc, 0.15 * Sc, 1.92 * Sc), 0.15 * Sc, 8)
+	h.box(Vector3(1.20 * Sc, 0.15 * Sc, 1.55 * Sc), Vector3(0.04 * Sc, 0.22 * Sc, 0.04 * Sc))
+	h.color("#4e5840", Geo.CONCRETE)
+	for td in [[1.42, 2.55], [-1.42, 2.55], [1.42, 0.18], [-0.85, 2.70]]:
+		h.box(Vector3(td[0] * Sc, 0.015 * Sc, td[1] * Sc), Vector3(0.14 * Sc, 0.03 * Sc, 0.08 * Sc))
 	# Mast plinth on the open deck ahead of the array, near side of the bed.
 	h.color("#738252", Geo.CONCRETE)
 	h.cbox(Vector3(-1.12 * Sc, 0.20 * Sc, 2.05 * Sc), Vector3(0.42 * Sc, 0.46 * Sc, 0.42 * Sc), 0.01 * Sc)
@@ -1999,10 +2055,10 @@ static func mzkt_radar(mat: Material) -> void:
 	var p = K.new()
 	p.plain = true
 	p.color("#738252", Geo.CONCRETE)
-	p.box(Vector3(0, 2.22 * Sc, 0.08 * Sc), Vector3(2.52 * Sc, 4.28 * Sc, 0.14 * Sc))
+	p.box(Vector3(0, 2.16 * Sc, 0.08 * Sc), Vector3(2.52 * Sc, 4.36 * Sc, 0.14 * Sc))
 	p.color("#4e5840", Geo.CONCRETE)
 	p.box(Vector3(0, 4.30 * Sc, 0.17 * Sc), Vector3(2.70 * Sc, 0.10 * Sc, 0.045 * Sc))
-	p.box(Vector3(0, 0.10 * Sc, 0.17 * Sc), Vector3(2.70 * Sc, 0.12 * Sc, 0.045 * Sc))
+	p.box(Vector3(0, 0.03 * Sc, 0.08 * Sc), Vector3(2.70 * Sc, 0.12 * Sc, 0.10 * Sc))
 	p.box(Vector3(-1.30 * Sc, 2.20 * Sc, 0.17 * Sc), Vector3(0.10 * Sc, 4.20 * Sc, 0.045 * Sc))
 	p.box(Vector3(1.30 * Sc, 2.20 * Sc, 0.17 * Sc), Vector3(0.10 * Sc, 4.20 * Sc, 0.045 * Sc))
 	# Shallow tiles. 8 by 10, inset from the frame.
@@ -2025,10 +2081,10 @@ static func mzkt_radar(mat: Material) -> void:
 	for bx in [-0.75, 0.0, 0.75]:
 		p.box(Vector3(bx * Sc, 2.30 * Sc, -0.005 * Sc), Vector3(0.05 * Sc, 3.50 * Sc, 0.03 * Sc))
 	p.color("#3a3d38", Geo.STEEL)
-	p.tube(Vector3(-0.52 * Sc, 0, 0), Vector3(0.52 * Sc, 0, 0), 0.05 * Sc, 6)
-	p.box(Vector3(-0.40 * Sc, 0.48 * Sc, -0.02 * Sc), Vector3(0.05 * Sc, 0.90 * Sc, 0.07 * Sc))
-	p.box(Vector3(0.40 * Sc, 0.48 * Sc, -0.02 * Sc), Vector3(0.05 * Sc, 0.90 * Sc, 0.07 * Sc))
-	p.tube(Vector3(0, 1.55 * Sc, -0.02 * Sc), Vector3(0, 0.12 * Sc, -0.08 * Sc), 0.035 * Sc, 5)
+	p.tube(Vector3(-1.22 * Sc, 0, 0), Vector3(1.22 * Sc, 0, 0), 0.055 * Sc, 8)
+	for s in [-1.0, 1.0]:
+		p.box(Vector3(s * 0.70 * Sc, 1.70 * Sc, -0.04 * Sc), Vector3(0.12 * Sc, 0.12 * Sc, 0.08 * Sc))
+		p.tube(Vector3(s * 0.70 * Sc, 1.70 * Sc, -0.02 * Sc), Vector3(s * 0.61 * Sc, 0.85 * Sc, -0.52 * Sc), 0.026 * Sc, 5)
 	p.color("#5e6848", Geo.CONCRETE)
 	p.box(Vector3(0.72 * Sc, 1.25 * Sc, -0.02 * Sc), Vector3(0.26 * Sc, 0.20 * Sc, 0.10 * Sc))
 	p.color("#2a2c28", Geo.DARK)

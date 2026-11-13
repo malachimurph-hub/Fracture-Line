@@ -194,6 +194,18 @@ func _radar(cam: Camera3D, sun: DirectionalLight3D, base: Node3D) -> void:
 	await frames(3)
 	await shot("radar_join")
 	print("CAM radar join size ", cam.size, " at ", join)
+	var hinge := mount.global_position + Vector3(0.1, 1.15, 0.85) * sc
+	cam.global_position = Vector3(12, hinge.y, hinge.z)
+	cam.look_at(hinge, Vector3.UP)
+	await frames(3)
+	await shot("radar_hinge")
+	print("CAM radar hinge size ", cam.size, " at ", hinge)
+	var cabin_side := mount.global_position + Vector3(0.15, 1.00, -1.35) * sc
+	cam.global_position = Vector3(12, cabin_side.y, cabin_side.z)
+	cam.look_at(cabin_side, Vector3.UP)
+	await frames(3)
+	await shot("radar_cabin")
+	print("CAM radar cabin size ", cam.size, " at ", cabin_side)
 	rig.queue_free()
 	base.visible = true
 
