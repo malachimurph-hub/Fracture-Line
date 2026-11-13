@@ -330,12 +330,15 @@ func _missile_setup(cam: Camera3D, sun: DirectionalLight3D, rig: Node3D, mod: No
 	print("CAM pad zoom fov ", cam.fov, " at ", at)
 	var tip := mod.get_node("LauncherYaw/RamR/Rod/Tip") as Node3D
 	var eye := mod.get_node("LauncherYaw/LauncherPivot/EyeR") as Node3D
-	var ram_at := (tip.global_position + eye.global_position) * 0.5
+	var ram := mod.get_node("LauncherYaw/RamR") as Node3D
+	# Side ortho looks through the canister wall. This sits outboard and forward
+	# of the barrel, under the raised box.
+	var ram_at := ram.to_global(Vector3(0, 0, 0.42 * sc))
 	cam.projection = Camera3D.PROJECTION_PERSPECTIVE
-	cam.fov = 26.0
-	sun.rotation_degrees = Vector3(-20, 55, 0)
-	cam.global_position = ram_at + Vector3(-0.15, -0.42, 0.72)
-	cam.look_at(ram_at + Vector3(0, -0.05, -0.05), Vector3.UP)
+	cam.fov = 22.0
+	sun.rotation_degrees = Vector3(-25, 50, 0)
+	cam.global_position = ram_at + Vector3(1.05, 0.05, 0.62)
+	cam.look_at(ram_at, Vector3.UP)
 	await frames(3)
 	await shot("missile_zoom_rams")
 	print("CAM ram zoom size ", cam.size, " at ", ram_at, " gap m ", tip.global_position.distance_to(eye.global_position) / sc)

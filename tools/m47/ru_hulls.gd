@@ -2202,12 +2202,12 @@ static func mzkt_missile(mat: Material) -> void:
 	# Equipment cabinet forward of the turntable, clear of the cradle's sweep.
 	h.color("#96A468", Geo.CONCRETE)
 	h.cbox(Vector3(0, 0.52 * Sc, 2.90 * Sc), Vector3(1.40 * Sc, 1.04 * Sc, 1.20 * Sc), 0.016 * Sc)
-	h.color("#5e6848", Geo.CONCRETE)
+	h.color("#96A468", Geo.CONCRETE)
 	h.box(Vector3(0.22 * Sc, 1.07 * Sc, 2.90 * Sc), Vector3(0.32 * Sc, 0.08 * Sc, 0.24 * Sc))
 	h.color("#96A468", Geo.CONCRETE)
 	h.color("#1c1e1c", Geo.DARK)
 	h.box(Vector3(0.72 * Sc, 0.55 * Sc, 2.90 * Sc), Vector3(0.03 * Sc, 0.64 * Sc, 0.42 * Sc))
-	h.color("#738252", Geo.CONCRETE)
+	h.color("#96A468", Geo.CONCRETE)
 	h.box(Vector3(0.735 * Sc, 0.55 * Sc, 2.90 * Sc), Vector3(0.016 * Sc, 0.52 * Sc, 0.32 * Sc))
 	h.color("#3a3d38", Geo.STEEL)
 	h.box(Vector3(0.75 * Sc, 0.78 * Sc, 3.08 * Sc), Vector3(0.016 * Sc, 0.07 * Sc, 0.04 * Sc))
@@ -2250,7 +2250,7 @@ static func mzkt_missile(mat: Material) -> void:
 	for sz in [-3.45, -3.15, -2.85]:
 		h.box(Vector3(0, 0.08 * Sc, sz * Sc), Vector3(0.70 * Sc, 0.05 * Sc, 0.06 * Sc))
 	# Generator, left of the stack, skid on the deck.
-	h.color("#5e6848", Geo.CONCRETE)
+	h.color("#5a5e56", Geo.STEEL)
 	h.cbox(Vector3(-1.32 * Sc, 0.22 * Sc, -1.45 * Sc), Vector3(0.42 * Sc, 0.44 * Sc, 0.58 * Sc), 0.012 * Sc)
 	h.color("#1c1e1c", Geo.DARK)
 	h.box(Vector3(-1.52 * Sc, 0.28 * Sc, -1.45 * Sc), Vector3(0.03 * Sc, 0.22 * Sc, 0.36 * Sc))
@@ -2264,8 +2264,9 @@ static func mzkt_missile(mat: Material) -> void:
 	h.tube(Vector3(1.16 * Sc, 0.20 * Sc, -1.55 * Sc), Vector3(1.42 * Sc, 0.20 * Sc, -1.55 * Sc), 0.18 * Sc, 8)
 	h.color("#2c302c", Geo.STEEL)
 	h.tube(Vector3(1.13 * Sc, 0.20 * Sc, -1.55 * Sc), Vector3(1.45 * Sc, 0.20 * Sc, -1.55 * Sc), 0.045 * Sc, 6)
-	h.color("#4a4e46", Geo.STEEL)
+	h.color("#6b4e32", Geo.WOOD)
 	h.cbox(Vector3(1.15 * Sc, 0.11 * Sc, -1.05 * Sc), Vector3(0.28 * Sc, 0.22 * Sc, 0.34 * Sc), 0.008 * Sc)
+	h.color("#3a3d38", Geo.STEEL)
 	h.box(Vector3(1.15 * Sc, 0.23 * Sc, -1.05 * Sc), Vector3(0.30 * Sc, 0.03 * Sc, 0.36 * Sc))
 	# Hatch plate and four tie-downs.
 	h.color("#3a3d38", Geo.STEEL)
@@ -2289,22 +2290,22 @@ static func mzkt_missile(mat: Material) -> void:
 	var c = K.new()
 	c.plain = true
 	# Four long canisters, two wide and two high, running back from the hinge.
-	c.color("#738252", Geo.CONCRETE)
+	c.color("#96A468", Geo.CONCRETE)
 	for sx in [-0.46, 0.46]:
 		for sy in [0.46, 1.18]:
 			c.cbox(Vector3(sx * Sc, sy * Sc, -2.55 * Sc), Vector3(0.78 * Sc, 0.58 * Sc, 4.50 * Sc), 0.02 * Sc)
-			c.color("#4e5840", Geo.CONCRETE)
+			c.color("#96A468", Geo.CONCRETE)
 			c.box(Vector3(sx * Sc, sy * Sc, -2.55 * Sc), Vector3(0.80 * Sc, 0.03 * Sc, 4.30 * Sc))
-			c.color("#738252", Geo.CONCRETE)
+			c.color("#96A468", Geo.CONCRETE)
 	# End covers and clamp bands, overlapping the canister faces so they do not float.
-	c.color("#5e6848", Geo.CONCRETE)
+	c.color("#96A468", Geo.CONCRETE)
 	for sx3 in [-0.46, 0.46]:
 		for sy3 in [0.46, 1.18]:
 			c.box(Vector3(sx3 * Sc, sy3 * Sc, -4.78 * Sc), Vector3(0.70 * Sc, 0.50 * Sc, 0.05 * Sc))
 			c.color("#2c302c", Geo.STEEL)
 			c.box(Vector3(sx3 * Sc, sy3 * Sc, -4.55 * Sc), Vector3(0.84 * Sc, 0.64 * Sc, 0.04 * Sc))
 			c.box(Vector3(sx3 * Sc, sy3 * Sc, -0.55 * Sc), Vector3(0.84 * Sc, 0.64 * Sc, 0.04 * Sc))
-			c.color("#738252", Geo.CONCRETE)
+			c.color("#96A468", Geo.CONCRETE)
 	# Lifting lugs on the upper pair, and ribs on the outer sides.
 	c.color("#2c302c", Geo.STEEL)
 	for sx4 in [-0.46, 0.46]:
@@ -2314,7 +2315,7 @@ static func mzkt_missile(mat: Material) -> void:
 		c.box(Vector3(-0.86 * Sc, 0.82 * Sc, ribz * Sc), Vector3(0.04 * Sc, 1.05 * Sc, 0.05 * Sc))
 		c.box(Vector3(0.86 * Sc, 0.82 * Sc, ribz * Sc), Vector3(0.04 * Sc, 1.05 * Sc, 0.05 * Sc))
 	# The two rows meet through a spacer. Straps bite both skins so the side view has no daylight.
-	c.color("#5e6848", Geo.CONCRETE)
+	c.color("#96A468", Geo.CONCRETE)
 	for sx2 in [-0.46, 0.46]:
 		c.box(Vector3(sx2 * Sc, 0.82 * Sc, -2.55 * Sc), Vector3(0.70 * Sc, 0.18 * Sc, 4.42 * Sc))
 	c.color("#2c302c", Geo.STEEL)
@@ -2328,7 +2329,7 @@ static func mzkt_missile(mat: Material) -> void:
 	c.box(Vector3(1.00 * Sc, 0.10 * Sc, -2.45 * Sc), Vector3(0.08 * Sc, 0.14 * Sc, 4.70 * Sc))
 	# Travel sills. Cradle-local deck is y = -0.58, so a stowed sill stands on the deck
 	# and bites the rail. They are part of the cradle, so deploy lifts them and yaw carries them.
-	c.color("#738252", Geo.CONCRETE)
+	c.color("#96A468", Geo.CONCRETE)
 	for ss in [-1.0, 1.0]:
 		# Bottom is 6 cm into the deck so the stowed side view has no hairline.
 		c.box(Vector3(ss * 0.92 * Sc, -0.24 * Sc, -2.50 * Sc), Vector3(0.16 * Sc, 0.80 * Sc, 4.30 * Sc))
@@ -2336,7 +2337,7 @@ static func mzkt_missile(mat: Material) -> void:
 	for ss2 in [-1.0, 1.0]:
 		c.box(Vector3(ss2 * 0.92 * Sc, -0.58 * Sc, -2.50 * Sc), Vector3(0.24 * Sc, 0.12 * Sc, 4.30 * Sc))
 	# Thicker forward and aft feet, still inside the sill so they miss the deck crates.
-	c.color("#5e6848", Geo.CONCRETE)
+	c.color("#96A468", Geo.CONCRETE)
 	for ss3 in [-1.0, 1.0]:
 		c.box(Vector3(ss3 * 0.92 * Sc, -0.30 * Sc, -0.55 * Sc), Vector3(0.18 * Sc, 0.68 * Sc, 0.28 * Sc))
 		c.box(Vector3(ss3 * 0.92 * Sc, -0.30 * Sc, -4.40 * Sc), Vector3(0.18 * Sc, 0.68 * Sc, 0.32 * Sc))
@@ -2465,7 +2466,7 @@ static func _missile_rams(parent: Node3D, root: Node3D, mat: Material, Sc: float
 		rod.set_meta("deploy_z", deploy_pos * Sc)
 		var r = K.new()
 		r.plain = true
-		r.color("#d8dcd8", Geo.STEEL)
+		r.color("#f2f4f6", Geo.STEEL)
 		r.tube(Vector3(0, 0, 0), Vector3(0, 0, (rod_len - 0.07) * Sc), 0.028 * Sc, 8)
 		r.color("#f2f4f6", Geo.STEEL)
 		r.tube(Vector3(0, 0, (rod_len - 0.16) * Sc), Vector3(0, 0, (rod_len - 0.07) * Sc), 0.034 * Sc, 8)
@@ -2507,7 +2508,7 @@ static func _missile_outriggers(root: Node3D, mat: Material, Sc: float) -> int:
 		var mount := VK._n3(group, root, String(spec[0]), Vector3(s * 1.42 * Sc, 0, z * Sc))
 		var housing = K.new()
 		housing.plain = true
-		housing.color("#5e6848", Geo.CONCRETE)
+		housing.color("#96A468", Geo.CONCRETE)
 		housing.cbox(Vector3(0, 0.18 * Sc, 0), Vector3(0.22 * Sc, 0.36 * Sc, 0.26 * Sc), 0.012 * Sc)
 		housing.color("#2c302c", Geo.STEEL)
 		housing.tube(Vector3(0, 0.36 * Sc, 0), Vector3(0, arm_y * Sc, 0), 0.07 * Sc, 8)
@@ -2547,7 +2548,7 @@ static func _missile_outriggers(root: Node3D, mat: Material, Sc: float) -> int:
 		rod.set_meta("deploy_y", -deploy_pos * Sc)
 		var rm = K.new()
 		rm.plain = true
-		rm.color("#d8dcd8", Geo.STEEL)
+		rm.color("#f2f4f6", Geo.STEEL)
 		rm.tube(Vector3(0, 0, 0), Vector3(0, -(rod_len - 0.04) * Sc, 0), 0.026 * Sc, 8)
 		rm.color("#f2f4f6", Geo.STEEL)
 		rm.tube(Vector3(0, -(rod_len - 0.12) * Sc, 0), Vector3(0, -rod_len * Sc, 0), 0.032 * Sc, 8)
