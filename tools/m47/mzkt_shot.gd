@@ -83,6 +83,12 @@ func _views() -> void:
 	await frames(3)
 	await shot("front")
 	print("CAM front basis_x ", cam.global_basis.x)
+	cam.size = 4.4
+	cam.global_position = Vector3(0, 14, 0.01)
+	cam.look_at(Vector3(0, 0, 0), Vector3(0, 0, -1))
+	sun.rotation_degrees = Vector3(-70, 20, 0)
+	await frames(3)
+	await shot("top")
 	# Lineup on one ground line, noses toward +Z, gaps measured from each mesh.
 	var lineup: Array[Node3D] = [truck]
 	var paths := ["res://view/units/ecc/t90.tscn", "res://view/units/ecc/bmp3_v2.tscn", "res://view/units/ecc/mi8_v2.tscn"]

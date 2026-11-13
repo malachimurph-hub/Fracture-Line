@@ -1747,7 +1747,8 @@ static func mzkt_base(mat: Material) -> void:
 	var model := VK._n3(root, root, "Model")
 	var h = K.new()
 	h.plain = true
-	h.camo("#96A468", 2)
+	# Plain class, same as the cab. Camo and paint pick up the shared stencil sheet.
+	h.color("#96A468", Geo.CONCRETE)
 	# Stations in metres from the truck centre. Nose is +Z.
 	var nose := 6.335
 	var z1 := nose - 3.220
@@ -1764,30 +1765,30 @@ static func mzkt_base(mat: Material) -> void:
 	# Rails sit inside the tyres. The belly stays low so the wheels are not buried in a slab.
 	var zf0 := 5.55
 	var zf1 := -6.05
-	h.camo("#738252", 2)
+	h.color("#738252", Geo.CONCRETE)
 	h.cbox(Vector3(0, 0.70 * Sc, (zf0 + zf1) * 0.5 * Sc), Vector3(0.52 * Sc, 0.36 * Sc, (zf0 - zf1) * Sc), 0.015 * Sc)
 	for s in [-1.0, 1.0]:
 		h.cbox(Vector3(s * 0.42 * Sc, 1.00 * Sc, (zf0 + zf1) * 0.5 * Sc), Vector3(0.16 * Sc, 0.88 * Sc, (zf0 - zf1) * Sc), 0.012 * Sc)
 	# Empty bed, 3.150 m wide. Top at 1.62 m. It starts where the engine bay ends.
 	var d0 := 1.48
 	var d1 := -6.08
-	h.camo("#96A468", 2)
+	h.color("#96A468", Geo.CONCRETE)
 	h.cbox(Vector3(0, 1.54 * Sc, (d0 + d1) * 0.5 * Sc), Vector3(3.15 * Sc, 0.16 * Sc, (d0 - d1) * Sc), 0.018 * Sc)
 	for pair in [[z1, z2], [z3, z4]]:
 		var zc: float = (pair[0] + pair[1]) * 0.5
 		var span: float = absf(pair[0] - pair[1]) + 1.25
 		for s2 in [-1.0, 1.0]:
-			h.camo("#738252", 2)
+			h.color("#738252", Geo.CONCRETE)
 			h.cbox(Vector3(s2 * sx, 1.56 * Sc, zc * Sc), Vector3(tw * 1.02, 0.08 * Sc, span * Sc), 0.01 * Sc)
 			h.box(Vector3(s2 * sx, 1.50 * Sc, zc * Sc), Vector3(tw * 0.55, 0.06 * Sc, span * 0.92 * Sc))
 			h.color("#2a2c28", Geo.DARK)
 			h.box(Vector3(s2 * sx, 0.70 * Sc, (zc - span * 0.48) * Sc), Vector3(tw * 0.5, 0.28 * Sc, 0.03 * Sc))
 	# Skirts only in the open span, so they do not cut the tyres.
-	h.camo("#738252", 2)
+	h.color("#738252", Geo.CONCRETE)
 	for ssk in [-1.0, 1.0]:
 		h.box(Vector3(ssk * 1.50 * Sc, 1.22 * Sc, -1.15 * Sc), Vector3(0.04 * Sc, 0.42 * Sc, 1.7 * Sc))
 	# Bumper carries the extra 225 mm. Rear cap stops at the 1,000 mm overhang.
-	h.camo("#5e6848", 2)
+	h.color("#5e6848", Geo.CONCRETE)
 	h.cbox(Vector3(0, 1.05 * Sc, 6.08 * Sc), Vector3(2.40 * Sc, 0.95 * Sc, 0.52 * Sc), 0.016 * Sc)
 	h.cbox(Vector3(0, 0.95 * Sc, -6.18 * Sc), Vector3(2.15 * Sc, 0.70 * Sc, 0.28 * Sc), 0.014 * Sc)
 	h.color("#1c1e1c", Geo.DARK)
@@ -1798,7 +1799,7 @@ static func mzkt_base(mat: Material) -> void:
 	for hk in [-0.55, 0.55]:
 		h.tube(Vector3(hk * Sc, 0.62 * Sc, 6.22 * Sc), Vector3(hk * Sc, 0.62 * Sc, 6.34 * Sc), 0.018 * Sc, 5)
 		h.tube(Vector3((hk - 0.06) * Sc, 0.62 * Sc, 6.30 * Sc), Vector3((hk + 0.06) * Sc, 0.62 * Sc, 6.30 * Sc), 0.016 * Sc, 5)
-	h.camo("#96A468", 2)
+	h.color("#96A468", Geo.CONCRETE)
 	for lp in [-0.95, 0.95]:
 		h.box(Vector3(lp * Sc, 0.88 * Sc, 6.28 * Sc), Vector3(0.22 * Sc, 0.12 * Sc, 0.06 * Sc))
 	V4._lamps(h, 0.95 * Sc, 0.88 * Sc, 6.32 * Sc)
@@ -1842,12 +1843,12 @@ static func mzkt_base(mat: Material) -> void:
 	# Mirrors reach the 4,076 mm width and no further.
 	for sm in [-1.0, 1.0]:
 		h.tube(Vector3(sm * 1.36 * Sc, 2.55 * Sc, 5.35 * Sc), Vector3(sm * 1.92 * Sc, 2.62 * Sc, 5.48 * Sc), 0.022 * Sc, 5)
-		h.camo("#738252", 2)
+		h.color("#738252", Geo.CONCRETE)
 		h.box(Vector3(sm * 1.998 * Sc, 2.58 * Sc, 5.42 * Sc), Vector3(0.07 * Sc, 0.20 * Sc, 0.14 * Sc))
 		h.color("#24323a", Geo.GLASS)
 		h.box(Vector3(sm * 2.03 * Sc, 2.58 * Sc, 5.42 * Sc), Vector3(0.012 * Sc, 0.14 * Sc, 0.09 * Sc))
 	# Engine bay, split from the cab. Louvres on the sides and the roof, an intake, an exhaust.
-	h.camo("#738252", 2)
+	h.color("#738252", Geo.CONCRETE)
 	h.cbox(Vector3(0, 2.02 * Sc, 2.72 * Sc), Vector3(2.55 * Sc, 0.88 * Sc, 2.35 * Sc), 0.02 * Sc)
 	h.color("#1c1e1c", Geo.DARK)
 	h.box(Vector3(0, 2.48 * Sc, 2.55 * Sc), Vector3(1.15 * Sc, 0.025 * Sc, 1.35 * Sc))
@@ -1861,15 +1862,15 @@ static func mzkt_base(mat: Material) -> void:
 			h.color("#3a3d38", Geo.STEEL)
 			h.box(Vector3(se * 1.305 * Sc, (2.24 - float(lb) * 0.09) * Sc, 2.45 * Sc), Vector3(0.012 * Sc, 0.025 * Sc, 0.78 * Sc))
 		_mzkt_ladder(h, se * 1.42 * Sc, 1.05 * Sc, 1.70 * Sc, 1.05 * Sc)
-		h.camo("#5e6848", 2)
+		h.color("#5e6848", Geo.CONCRETE)
 		h.cbox(Vector3(se * 1.22 * Sc, 1.15 * Sc, 2.05 * Sc), Vector3(0.32 * Sc, 0.28 * Sc, 0.42 * Sc), 0.01 * Sc)
-	h.camo("#738252", 2)
+	h.color("#738252", Geo.CONCRETE)
 	h.cbox(Vector3(-0.35 * Sc, 2.62 * Sc, 3.35 * Sc), Vector3(0.55 * Sc, 0.22 * Sc, 0.48 * Sc), 0.012 * Sc)
 	h.color("#2a2c28", Geo.DARK)
 	h.tube(Vector3(0.95 * Sc, 2.15 * Sc, 1.70 * Sc), Vector3(1.15 * Sc, 2.55 * Sc, 1.45 * Sc), 0.04 * Sc, 6)
 	h.tube(Vector3(1.15 * Sc, 2.55 * Sc, 1.45 * Sc), Vector3(1.15 * Sc, 2.55 * Sc, 1.15 * Sc), 0.035 * Sc, 6)
 	# Fuel tank one side, battery box the other, in the span between axle 2 and axle 3.
-	h.camo("#5e6848", 2)
+	h.color("#5e6848", Geo.CONCRETE)
 	h.cbox(Vector3(-1.22 * Sc, 1.08 * Sc, -1.15 * Sc), Vector3(0.38 * Sc, 0.42 * Sc, 1.15 * Sc), 0.012 * Sc)
 	h.cbox(Vector3(1.18 * Sc, 1.02 * Sc, -1.55 * Sc), Vector3(0.32 * Sc, 0.32 * Sc, 0.55 * Sc), 0.01 * Sc)
 	h.color("#3a3d38", Geo.STEEL)
