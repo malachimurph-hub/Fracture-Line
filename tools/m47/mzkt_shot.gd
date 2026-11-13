@@ -5,9 +5,12 @@ extends Node
 
 var out_dir := "/tmp/mzkt"
 
+var only := ""
+
 func _ready() -> void:
 	var args := OS.get_cmdline_user_args()
 	out_dir = args[0] if args.size() > 0 else "/tmp/mzkt"
+	only = args[1] if args.size() > 1 else ""
 	DirAccess.make_dir_recursive_absolute(out_dir)
 	await get_tree().process_frame
 	await _views()
@@ -51,6 +54,9 @@ func _views() -> void:
 	cam.projection = Camera3D.PROJECTION_ORTHOGONAL
 	add_child(cam)
 	cam.current = true
+	if only == "missile":
+		await _missile(cam, sun, truck)
+		return
 	# Side. Camera on +X. size is the vertical world span. Nose is +Z.
 	var eye := Vector3(0, 0.7, 0)
 	cam.size = 1.85
@@ -286,8 +292,130 @@ func _missile(cam: Camera3D, sun: DirectionalLight3D, base: Node3D) -> void:
 	await frames(3)
 	await shot("missile_join")
 	print("CAM missile join size ", cam.size, " at ", join)
+	await _missile_setup(cam, sun, rig, mod, mount, sc)
 	rig.queue_free()
 	base.visible = true
+
+## Stowed and deployed poses, two close views, and six frames of deploy.
+## The scene rest pose is stowed. The AnimationPlayer is not wired to gameplay.
+func _missile_setup(cam: Camera3D, sun: DirectionalLight3D, rig: Node3D, mod: Node3D, mount: Node3D, sc: float) -> void:
+	var ap := mod.find_child("AnimationPlayer", true, false) as AnimationPlayer
+	print("ANIMS ", ap.get_animation_list())
+	await _pose(ap, 0.0)
+	_report_motion(mod, sc, 0.0)
+	var aspect := get_viewport().get_visible_rect().size.x / get_viewport().get_visible_rect().size.y
+	await _pose_views(cam, sun, rig, "missile_stowed", aspect)
+	await _pose(ap, 8.0)
+	_report_motion(mod, sc, 8.0)
+	var deployed_size := await _pose_views(cam, sun, rig, "missile_deployed", aspect)
+	var pad := mod.find_child("OutriggerFR", true, false).find_child("Sole", true, false) as Node3D
+	cam.projection = Camera3D.PROJECTION_PERSPECTIVE
+	cam.fov = 28.0
+	sun.rotation_degrees = Vector3(-28, 50, 0)
+	var at := pad.global_position + Vector3(0, 0.18, 0)
+	cam.global_position = at + Vector3(0.70, 0.02, 0.45)
+	cam.look_at(at, Vector3.UP)
+	await frames(3)
+	await shot("missile_zoom_pad")
+	print("CAM pad zoom fov ", cam.fov, " at ", at)
+	var tip := mod.get_node("RamR/Rod/Tip") as Node3D
+	var eye := mod.get_node("LauncherPivot/EyeR") as Node3D
+	var ram_at := (tip.global_position + eye.global_position) * 0.5
+	cam.projection = Camera3D.PROJECTION_ORTHOGONAL
+	cam.size = 0.36
+	sun.rotation_degrees = Vector3(-24, 70, 0)
+	cam.global_position = Vector3(ram_at.x + 3.2, ram_at.y, ram_at.z)
+	cam.look_at(ram_at, Vector3.UP)
+	await frames(3)
+	await shot("missile_zoom_rams")
+	print("CAM ram zoom size ", cam.size, " at ", ram_at, " gap m ", tip.global_position.distance_to(eye.global_position) / sc)
+	# One three-quarter camera for the whole strip, framed on the planted truck.
+	var whole := _aabb(rig)
+	var center := whole.get_center()
+	cam.projection = Camera3D.PROJECTION_PERSPECTIVE
+	cam.fov = 30.0
+	var focus := center + Vector3(0, 0.05, 0)
+	cam.global_position = focus + Vector3(6.4, 3.2, 5.2)
+	cam.look_at(focus, Vector3.UP)
+	sun.rotation_degrees = Vector3(-36, 32, 0)
+	print("STRIP focus ", focus)
+	for i in 6:
+		var t := 8.0 * float(i) / 5.0
+		await _pose(ap, t)
+		_report_motion(mod, sc, t)
+		await frames(2)
+		await shot("missile_deploy_%d" % i)
+	print("DEPLOYED side size was ", deployed_size)
+	for t in [0.4, 2.0, 3.0, 4.4, 5.05, 6.48, 7.15]:
+		await _pose(ap, t)
+		_report_motion(mod, sc, t)
+	ap.play(&"pack")
+	ap.seek(0.0, true)
+	ap.pause()
+	await get_tree().process_frame
+	_report_motion(mod, sc, 0.0)
+	print("PACK t0 is the deployed pose")
+	ap.seek(8.0, true)
+	await get_tree().process_frame
+	_report_motion(mod, sc, 8.0)
+	print("PACK t8 is the stowed pose")
+
+func _pose_views(cam: Camera3D, sun: DirectionalLight3D, rig: Node3D, prefix: String, aspect: float) -> float:
+	var whole := _aabb(rig)
+	var center := whole.get_center()
+	cam.projection = Camera3D.PROJECTION_ORTHOGONAL
+	var side_size := maxf(whole.size.y * 1.12, whole.size.z * 1.08 / aspect)
+	cam.size = side_size
+	sun.rotation_degrees = Vector3(-28, 70, 0)
+	cam.global_position = Vector3(14, center.y, center.z)
+	cam.look_at(center, Vector3.UP)
+	await frames(3)
+	await shot(prefix + "_side")
+	cam.projection = Camera3D.PROJECTION_PERSPECTIVE
+	cam.fov = 28.0
+	var focus := center + Vector3(0, 0.05, 0.05)
+	cam.global_position = focus + Vector3(5.6, 2.6, 4.6)
+	cam.look_at(focus, Vector3.UP)
+	sun.rotation_degrees = Vector3(-36, 32, 0)
+	await frames(3)
+	await shot(prefix + "_three_quarter")
+	cam.projection = Camera3D.PROJECTION_ORTHOGONAL
+	cam.size = maxf(whole.size.y * 1.2, whole.size.x * 1.15 / aspect)
+	var front_at := Vector3(center.x, center.y, whole.position.z + whole.size.z * 0.62)
+	cam.global_position = Vector3(front_at.x, front_at.y, whole.position.z + whole.size.z + 6.0)
+	cam.look_at(front_at, Vector3.UP)
+	sun.rotation_degrees = Vector3(-22, 180, 0)
+	await frames(3)
+	await shot(prefix + "_front")
+	return side_size
+
+func _pose(ap: AnimationPlayer, t: float) -> void:
+	ap.play(&"deploy")
+	ap.seek(t, true)
+	ap.pause()
+	await get_tree().process_frame
+
+func _report_motion(mod: Node3D, sc: float, t: float) -> void:
+	var worst := 0.0
+	var worst_name := ""
+	for pair in [["RamR", "EyeR"], ["RamL", "EyeL"]]:
+		var tip := mod.get_node(String(pair[0]) + "/Rod/Tip") as Node3D
+		var eye := mod.get_node("LauncherPivot/" + String(pair[1])) as Node3D
+		var d := tip.global_position.distance_to(eye.global_position) / sc
+		if d > worst:
+			worst = d
+			worst_name = String(pair[0])
+	var low := 100.0
+	var high := -100.0
+	var wide := 0.0
+	for sole in mod.find_children("Sole", "Marker3D", true, false):
+		var y: float = (sole as Node3D).global_position.y
+		low = minf(low, y)
+		high = maxf(high, y)
+		wide = maxf(wide, absf((sole as Node3D).global_position.x))
+	var ab := _aabb(mod)
+	var half_x := maxf(absf(ab.position.x), absf(ab.position.x + ab.size.x))
+	print("MOTION t %.2f  ram gap %s %.4f m  sole y %.4f..%.4f  sole |x| %.3f m  module |x| %.3f m" % [t, worst_name, worst, low, high, wide / sc, half_x / sc])
 
 func _aabb(n: Node3D) -> AABB:
 	var out := AABB()

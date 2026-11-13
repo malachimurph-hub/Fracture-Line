@@ -2203,12 +2203,6 @@ static func mzkt_missile(mat: Material) -> void:
 		h.color("#1a1c1a", Geo.STEEL)
 		h.box(Vector3(hx * Sc, 0.70 * Sc, 1.18 * Sc), Vector3(0.03 * Sc, 0.03 * Sc, 0.016 * Sc))
 		h.color("#2c302c", Geo.STEEL)
-	# Ram cylinders on the pedestal. Rods are on the cradle.
-	h.color("#2a2e2c", Geo.STEEL)
-	for s in [-1.0, 1.0]:
-		h.box(Vector3(s * 0.55 * Sc, 0.42 * Sc, 0.35 * Sc), Vector3(0.12 * Sc, 0.12 * Sc, 0.10 * Sc))
-		h.tube(Vector3(s * 0.48 * Sc, 0.42 * Sc, 0.35 * Sc), Vector3(s * 0.62 * Sc, 0.42 * Sc, 0.35 * Sc), 0.03 * Sc, 6)
-		h.tube(Vector3(s * 0.55 * Sc, 0.42 * Sc, 0.35 * Sc), Vector3(s * 0.55 * Sc, 1.32 * Sc, 0.15 * Sc), 0.045 * Sc, 6)
 	# Equipment box toward the cab, on the deck.
 	h.color("#96A468", Geo.CONCRETE)
 	h.cbox(Vector3(0, 0.58 * Sc, 2.35 * Sc), Vector3(1.55 * Sc, 1.20 * Sc, 1.35 * Sc), 0.016 * Sc)
@@ -2226,18 +2220,26 @@ static func mzkt_missile(mat: Material) -> void:
 	h.color("#141614", Geo.RUBBER)
 	h.tube(Vector3(0.7 * Sc, 0.35 * Sc, 1.55 * Sc), Vector3(0.55 * Sc, 0.48 * Sc, 0.7 * Sc), 0.014 * Sc, 4)
 	h.tube(Vector3(-0.55 * Sc, 0.30 * Sc, 1.70 * Sc), Vector3(-0.4 * Sc, 0.42 * Sc, 0.85 * Sc), 0.012 * Sc, 4)
-	# Deck stowage, seated, inside the bed width.
+	# Ram plinths on the rear of the pedestal. The pins are the aft face, so the rams leave clear of the block.
+	for sx in [-0.55, 0.55]:
+		h.color("#96A468", Geo.CONCRETE)
+		h.box(Vector3(sx * Sc, 0.66 * Sc, 0.42 * Sc), Vector3(0.24 * Sc, 0.12 * Sc, 0.20 * Sc))
+		h.color("#2c302c", Geo.STEEL)
+		h.box(Vector3((sx - 0.07) * Sc, 0.78 * Sc, 0.30 * Sc), Vector3(0.035 * Sc, 0.14 * Sc, 0.14 * Sc))
+		h.box(Vector3((sx + 0.07) * Sc, 0.78 * Sc, 0.30 * Sc), Vector3(0.035 * Sc, 0.14 * Sc, 0.14 * Sc))
+		h.color("#1a1c1a", Geo.STEEL)
+		h.box(Vector3(sx * Sc, 0.72 * Sc, 0.30 * Sc), Vector3(0.16 * Sc, 0.03 * Sc, 0.03 * Sc))
+	# Deck stowage, inboard of the outrigger lane (|x| stays under 1.30 m).
 	h.color("#6b4e32", Geo.WOOD)
-	h.box(Vector3(-1.15 * Sc, 0.18 * Sc, 2.55 * Sc), Vector3(0.42 * Sc, 0.36 * Sc, 0.38 * Sc))
+	h.box(Vector3(-0.90 * Sc, 0.18 * Sc, 2.85 * Sc), Vector3(0.42 * Sc, 0.36 * Sc, 0.38 * Sc))
 	h.color("#5c6844", Geo.CANVAS)
-	h.box(Vector3(1.15 * Sc, 0.12 * Sc, 1.35 * Sc), Vector3(0.36 * Sc, 0.24 * Sc, 0.28 * Sc))
+	h.box(Vector3(0.90 * Sc, 0.12 * Sc, 0.55 * Sc), Vector3(0.36 * Sc, 0.24 * Sc, 0.28 * Sc))
 	h.color("#6a6e66", Geo.STEEL)
-	h.tube(Vector3(-1.15 * Sc, 0.16 * Sc, 1.55 * Sc), Vector3(-1.15 * Sc, 0.16 * Sc, 1.95 * Sc), 0.16 * Sc, 8)
+	h.tube(Vector3(-0.85 * Sc, 0.16 * Sc, 0.05 * Sc), Vector3(-0.85 * Sc, 0.16 * Sc, 0.45 * Sc), 0.16 * Sc, 8)
 	h.color("#4a4e46", Geo.STEEL)
-	h.box(Vector3(1.20 * Sc, 0.10 * Sc, 3.15 * Sc), Vector3(0.32 * Sc, 0.20 * Sc, 0.24 * Sc))
+	h.box(Vector3(0.88 * Sc, 0.10 * Sc, 3.15 * Sc), Vector3(0.32 * Sc, 0.20 * Sc, 0.24 * Sc))
 	VK._mi(root, root, "Hull", h.commit(mat))
 	var piv := VK._n3(root, root, "LauncherPivot", Vector3(0, 0.58 * Sc, 1.05 * Sc))
-	piv.rotation_degrees = Vector3(38, 0, 0)
 	var c = K.new()
 	c.plain = true
 	# Four long canisters, two wide and two high, running back from the hinge.
@@ -2260,21 +2262,262 @@ static func mzkt_missile(mat: Material) -> void:
 		c.box(Vector3(side * 0.96 * Sc, 0.80 * Sc, -0.38 * Sc), Vector3(0.05 * Sc, 1.40 * Sc, 0.05 * Sc))
 	c.box(Vector3(0, 1.48 * Sc, -4.72 * Sc), Vector3(1.90 * Sc, 0.05 * Sc, 0.05 * Sc))
 	c.box(Vector3(0, 0.78 * Sc, -4.72 * Sc), Vector3(1.90 * Sc, 0.05 * Sc, 0.05 * Sc))
-	# Hinge barrel and the ram rods, in cradle space.
+	# Hinge barrel. Upper ram eyes stay on the cradle. The rams are sibling nodes of the pivot.
 	c.tube(Vector3(-1.05 * Sc, 0, 0), Vector3(1.05 * Sc, 0, 0), 0.05 * Sc, 8)
 	for s in [-1.0, 1.0]:
 		c.color("#2a2e2c", Geo.STEEL)
-		c.box(Vector3(s * 0.55 * Sc, 0.22 * Sc, -1.40 * Sc), Vector3(0.12 * Sc, 0.10 * Sc, 0.12 * Sc))
-		c.tube(Vector3(s * 0.48 * Sc, 0.22 * Sc, -1.40 * Sc), Vector3(s * 0.62 * Sc, 0.22 * Sc, -1.40 * Sc), 0.028 * Sc, 6)
-		c.color("#f2f4f6", Geo.STEEL)
-		c.tube(Vector3(s * 0.55 * Sc, 0.22 * Sc, -1.40 * Sc), Vector3(s * 0.55 * Sc, -0.23 * Sc, -0.85 * Sc), 0.024 * Sc, 5)
+		c.box(Vector3(s * 0.55 * Sc, 0.22 * Sc, -1.40 * Sc), Vector3(0.08 * Sc, 0.10 * Sc, 0.12 * Sc))
+		c.tube(Vector3(s * 0.46 * Sc, 0.22 * Sc, -1.40 * Sc), Vector3(s * 0.64 * Sc, 0.22 * Sc, -1.40 * Sc), 0.026 * Sc, 6)
+	for s2 in [-1.0, 1.0]:
+		var eye := Marker3D.new()
+		eye.name = "EyeR" if s2 > 0.0 else "EyeL"
+		eye.position = Vector3(s2 * 0.55 * Sc, 0.22 * Sc, -1.40 * Sc)
+		piv.add_child(eye)
+		eye.owner = root
 	VK._mi(piv, root, "Cradle", c.commit(mat))
 	var tris: int = h.tris + c.tris
+	tris += _missile_rams(root, mat, Sc)
+	tris += _missile_outriggers(root, mat, Sc)
+	_missile_anims(root)
 	print("  mzkt_missile_module.tscn: %d tris" % tris)
 	var ps := PackedScene.new()
 	ps.pack(root)
 	ResourceSaver.save(ps, "res://view/units/ecc/mzkt_missile_module.tscn")
 	root.free()
+
+## Upper eye, module metres. Positive X rotation lifts the rear of the cradle.
+static func _missile_eye_m(alpha: float, side: float) -> Vector3:
+	return Vector3(0, 0.58, 1.05) + Basis(Vector3.RIGHT, alpha) * Vector3(side * 0.55, 0.22, -1.40)
+
+static func _missile_clevis_m(side: float) -> Vector3:
+	return Vector3(side * 0.55, 0.72, 0.30)
+
+## Local +Z points along dir. Local +X stays level.
+static func _aim_z(dir: Vector3) -> Basis:
+	var z := dir.normalized()
+	var x := Vector3.UP.cross(z)
+	if x.length() < 1e-4:
+		x = Vector3.RIGHT
+	x = x.normalized()
+	return Basis(x, z.cross(x).normalized(), z)
+
+## Two cradle rams. Cylinder and rod share a pivot, and the rod slides along it,
+## so the pair stays one piece from the stowed pin to the raised pin.
+static func _missile_rams(root: Node3D, mat: Material, Sc: float) -> int:
+	var tris := 0
+	var raise := deg_to_rad(38.0)
+	for side in [-1.0, 1.0]:
+		var s: float = side
+		var clevis := _missile_clevis_m(s)
+		var d0 := _missile_eye_m(0.0, s).distance_to(clevis)
+		var d1 := _missile_eye_m(raise, s).distance_to(clevis)
+		var rod_len := d0 - 0.05
+		var cyl_end := d0 - 0.12
+		var deploy_pos := d1 - rod_len
+		var overlap := cyl_end - deploy_pos
+		print("  ram side %.0f  stow %.3f m  deploy %.3f m  overlap %.3f m" % [s, d0, d1, overlap])
+		var ram := VK._n3(root, root, "RamR" if s > 0.0 else "RamL", clevis * Sc)
+		ram.basis = _aim_z(_missile_eye_m(0.0, s) - clevis)
+		ram.set_meta("rod_len_m", rod_len)
+		var g = K.new()
+		g.plain = true
+		g.color("#2a2e2c", Geo.STEEL)
+		g.tube(Vector3(-0.045 * Sc, 0, 0), Vector3(0.045 * Sc, 0, 0), 0.032 * Sc, 8)
+		g.box(Vector3(0, 0, 0.045 * Sc), Vector3(0.08 * Sc, 0.07 * Sc, 0.06 * Sc))
+		g.color("#3a3d38", Geo.STEEL)
+		g.tube(Vector3(0, 0, 0.09 * Sc), Vector3(0, 0, cyl_end * Sc), 0.052 * Sc, 10)
+		g.tube(Vector3(0, 0, (cyl_end - 0.04) * Sc), Vector3(0, 0, (cyl_end + 0.012) * Sc), 0.064 * Sc, 10)
+		VK._mi(ram, root, "Cylinder", g.commit(mat))
+		tris += g.tris
+		var rod := VK._n3(ram, root, "Rod", Vector3(0, 0, 0.05 * Sc))
+		rod.set_meta("stow_z", 0.05 * Sc)
+		rod.set_meta("deploy_z", deploy_pos * Sc)
+		var r = K.new()
+		r.plain = true
+		r.color("#d8dcd8", Geo.STEEL)
+		r.tube(Vector3(0, 0, 0), Vector3(0, 0, (rod_len - 0.07) * Sc), 0.028 * Sc, 8)
+		r.color("#f2f4f6", Geo.STEEL)
+		r.tube(Vector3(0, 0, (rod_len - 0.16) * Sc), Vector3(0, 0, (rod_len - 0.07) * Sc), 0.034 * Sc, 8)
+		r.color("#2a2e2c", Geo.STEEL)
+		r.box(Vector3(-0.062 * Sc, 0, (rod_len - 0.045) * Sc), Vector3(0.022 * Sc, 0.09 * Sc, 0.06 * Sc))
+		r.box(Vector3(0.062 * Sc, 0, (rod_len - 0.045) * Sc), Vector3(0.022 * Sc, 0.09 * Sc, 0.06 * Sc))
+		VK._mi(rod, root, "RodMesh", r.commit(mat))
+		tris += r.tris
+		var tip := Marker3D.new()
+		tip.name = "Tip"
+		tip.position = Vector3(0, 0, rod_len * Sc)
+		rod.add_child(tip)
+		tip.owner = root
+	return tris
+
+## Four swing-out jacks on the chassis JackFL/FR/RL/RR points (module frame).
+## Stowed, the arm lies along the bed and the leg folds back along it, inside 3.15 m.
+## Deployed, the arm is straight out and the pad sole is on the ground (module y = -1.62).
+static func _missile_outriggers(root: Node3D, mat: Material, Sc: float) -> int:
+	var tris := 0
+	var arm_len := 1.28
+	var arm_y := 0.40
+	var hinge_drop := 0.22
+	var rod_len := 1.05
+	var cyl_end := 0.90
+	var hinge_y := arm_y - hinge_drop
+	var deploy_tip := (hinge_y - (-1.62)) - 0.025
+	var deploy_pos := deploy_tip - rod_len
+	var stow_pos := 0.08
+	print("  jack rod overlap %.3f m, deploy tip %.3f m, stow outer x %.3f m" % [cyl_end - deploy_pos, deploy_tip, 1.42 + 0.12])
+	# Not named Outriggers: VehicleView claims that node and lifts it for the anti-air plant.
+	var group := VK._n3(root, root, "Jacks")
+	for spec in [["OutriggerFR", 1.0, 1.0], ["OutriggerFL", -1.0, 1.0], ["OutriggerRR", 1.0, -1.0], ["OutriggerRL", -1.0, -1.0]]:
+		var s: float = float(spec[1])
+		var front: float = float(spec[2])
+		var z: float = 2.40 if front > 0.0 else -3.50
+		var mount := VK._n3(group, root, String(spec[0]), Vector3(s * 1.42 * Sc, 0, z * Sc))
+		var housing = K.new()
+		housing.plain = true
+		housing.color("#5e6848", Geo.CONCRETE)
+		housing.cbox(Vector3(0, 0.18 * Sc, 0), Vector3(0.22 * Sc, 0.36 * Sc, 0.26 * Sc), 0.012 * Sc)
+		housing.color("#2c302c", Geo.STEEL)
+		housing.tube(Vector3(0, 0.36 * Sc, 0), Vector3(0, arm_y * Sc, 0), 0.07 * Sc, 8)
+		VK._mi(mount, root, "Housing", housing.commit(mat))
+		tris += housing.tris
+		var stow_yaw := s * (90.0 if front > 0.0 else -90.0)
+		var swing := VK._n3(mount, root, "Swing", Vector3(0, arm_y * Sc, 0))
+		swing.rotation_degrees = Vector3(0, stow_yaw, 0)
+		swing.set_meta("stow_yaw", stow_yaw)
+		var arm = K.new()
+		arm.plain = true
+		arm.color("#2c302c", Geo.STEEL)
+		arm.box(Vector3(s * arm_len * 0.5 * Sc, 0, 0), Vector3(arm_len * Sc, 0.08 * Sc, 0.14 * Sc))
+		arm.color("#3a3d38", Geo.STEEL)
+		arm.box(Vector3(s * 0.10 * Sc, 0.02 * Sc, 0), Vector3(0.16 * Sc, 0.10 * Sc, 0.16 * Sc))
+		arm.tube(Vector3(s * (arm_len - 0.02) * Sc, 0, 0), Vector3(s * arm_len * Sc, -hinge_drop * Sc, 0), 0.04 * Sc, 6)
+		VK._mi(swing, root, "Arm", arm.commit(mat))
+		tris += arm.tris
+		var hinge := VK._n3(swing, root, "LegHinge", Vector3(s * arm_len * Sc, -hinge_drop * Sc, 0))
+		hinge.rotation_degrees = Vector3(0, 0, -90.0 * s)
+		hinge.set_meta("stow_roll", -90.0 * s)
+		var leg = K.new()
+		leg.plain = true
+		leg.color("#2a2e2c", Geo.STEEL)
+		leg.box(Vector3(0, -0.03 * Sc, 0), Vector3(0.10 * Sc, 0.08 * Sc, 0.10 * Sc))
+		leg.tube(Vector3(0, -0.05 * Sc, 0), Vector3(0, -cyl_end * Sc, 0), 0.048 * Sc, 10)
+		leg.tube(Vector3(0, -(cyl_end - 0.035) * Sc, 0), Vector3(0, -(cyl_end + 0.012) * Sc, 0), 0.060 * Sc, 10)
+		VK._mi(hinge, root, "Leg", leg.commit(mat))
+		tris += leg.tris
+		var rod := VK._n3(hinge, root, "Rod", Vector3(0, -stow_pos * Sc, 0))
+		rod.set_meta("stow_y", -stow_pos * Sc)
+		rod.set_meta("deploy_y", -deploy_pos * Sc)
+		var rm = K.new()
+		rm.plain = true
+		rm.color("#d8dcd8", Geo.STEEL)
+		rm.tube(Vector3(0, 0, 0), Vector3(0, -(rod_len - 0.04) * Sc, 0), 0.026 * Sc, 8)
+		rm.color("#f2f4f6", Geo.STEEL)
+		rm.tube(Vector3(0, -(rod_len - 0.12) * Sc, 0), Vector3(0, -rod_len * Sc, 0), 0.032 * Sc, 8)
+		rm.color("#3a3d38", Geo.STEEL)
+		rm.box(Vector3(0, -rod_len * Sc, 0), Vector3(0.32 * Sc, 0.05 * Sc, 0.24 * Sc))
+		rm.color("#2c302c", Geo.STEEL)
+		rm.box(Vector3(0, -(rod_len - 0.02) * Sc, 0), Vector3(0.18 * Sc, 0.03 * Sc, 0.10 * Sc))
+		for bx in [-0.10, 0.10]:
+			for bz in [-0.07, 0.07]:
+				rm.color("#1a1c1a", Geo.STEEL)
+				rm.tube(Vector3(bx * Sc, -(rod_len - 0.04) * Sc, bz * Sc), Vector3(bx * Sc, -(rod_len - 0.012) * Sc, bz * Sc), 0.012 * Sc, 6)
+		VK._mi(rod, root, "RodMesh", rm.commit(mat))
+		tris += rm.tris
+		var sole := Marker3D.new()
+		sole.name = "Sole"
+		sole.position = Vector3(0, -(rod_len + 0.025) * Sc, 0)
+		rod.add_child(sole)
+		sole.owner = root
+	return tris
+
+## Authored only. deploy: arms, then legs, then pads, then the cradle. pack is the reverse.
+## 8 s, the same duration as the anti-air plant.
+static func _missile_anims(root: Node3D) -> void:
+	var deploy := Animation.new()
+	deploy.length = 8.0
+	deploy.loop_mode = Animation.LOOP_NONE
+	var pack := Animation.new()
+	pack.length = 8.0
+	pack.loop_mode = Animation.LOOP_NONE
+	for name in ["OutriggerFR", "OutriggerFL", "OutriggerRR", "OutriggerRL"]:
+		var mount := root.find_child(String(name), true, false) as Node3D
+		var swing := mount.get_node("Swing") as Node3D
+		var hinge := swing.get_node("LegHinge") as Node3D
+		var rod := hinge.get_node("Rod") as Node3D
+		var yaw: float = swing.get_meta("stow_yaw")
+		var roll: float = hinge.get_meta("stow_roll")
+		_missile_rot(deploy, pack, root, swing, 0.0, yaw)
+		_missile_rot(deploy, pack, root, swing, 2.4, 0.0)
+		_missile_rot(deploy, pack, root, hinge, 0.0, roll, false)
+		_missile_rot(deploy, pack, root, hinge, 2.4, roll, false)
+		_missile_rot(deploy, pack, root, hinge, 4.0, 0.0, false)
+		var stow_y: float = rod.get_meta("stow_y")
+		var deploy_y: float = rod.get_meta("deploy_y")
+		_missile_pos(deploy, pack, root, rod, 0.0, Vector3(0, stow_y, 0))
+		_missile_pos(deploy, pack, root, rod, 4.0, Vector3(0, stow_y, 0))
+		_missile_pos(deploy, pack, root, rod, 4.8, Vector3(0, deploy_y, 0))
+	var piv := root.get_node("LauncherPivot") as Node3D
+	var sc: float = (root.get_node("RamR") as Node3D).position.x / 0.55
+	var raise := deg_to_rad(38.0)
+	_missile_quat(deploy, pack, root, piv, 0.0, Quaternion.IDENTITY)
+	for i in 21:
+		var t := 4.8 + 3.2 * float(i) / 20.0
+		var alpha := raise * float(i) / 20.0
+		_missile_quat(deploy, pack, root, piv, t, Quaternion(Basis(Vector3.RIGHT, alpha)))
+		for side in [-1.0, 1.0]:
+			var s: float = side
+			var ram := root.get_node("RamR" if s > 0.0 else "RamL") as Node3D
+			var rod2 := ram.get_node("Rod") as Node3D
+			var clevis := _missile_clevis_m(s)
+			var dist := _missile_eye_m(alpha, s).distance_to(clevis)
+			var rod_len: float = ram.get_meta("rod_len_m")
+			var basis := _aim_z(_missile_eye_m(alpha, s) - clevis)
+			_missile_quat(deploy, pack, root, ram, t, Quaternion(basis))
+			_missile_pos(deploy, pack, root, rod2, t, Vector3(0, 0, (dist - rod_len) * sc))
+	for side2 in [-1.0, 1.0]:
+		var s2: float = side2
+		var ram0 := root.get_node("RamR" if s2 > 0.0 else "RamL") as Node3D
+		var rod0 := ram0.get_node("Rod") as Node3D
+		var clevis0 := _missile_clevis_m(s2)
+		var basis0 := _aim_z(_missile_eye_m(0.0, s2) - clevis0)
+		_missile_quat(deploy, pack, root, ram0, 0.0, Quaternion(basis0))
+		_missile_pos(deploy, pack, root, rod0, 0.0, Vector3(0, 0, 0.05 * sc))
+	var player := AnimationPlayer.new()
+	player.name = "AnimationPlayer"
+	root.add_child(player)
+	player.owner = root
+	player.root_node = NodePath("..")
+	var lib := AnimationLibrary.new()
+	lib.add_animation(&"deploy", deploy)
+	lib.add_animation(&"pack", pack)
+	player.add_animation_library(&"", lib)
+
+static func _missile_rot(deploy: Animation, pack: Animation, root: Node, node: Node, t: float, deg: float, yaw: bool = true) -> void:
+	var euler := Vector3(0, deg_to_rad(deg), 0) if yaw else Vector3(0, 0, deg_to_rad(deg))
+	_missile_quat(deploy, pack, root, node, t, Quaternion(Basis.from_euler(euler)))
+
+static func _missile_quat(deploy: Animation, pack: Animation, root: Node, node: Node, t: float, q: Quaternion) -> void:
+	var path := root.get_path_to(node)
+	var a := _missile_track(deploy, path, Animation.TYPE_ROTATION_3D)
+	var b := _missile_track(pack, path, Animation.TYPE_ROTATION_3D)
+	deploy.rotation_track_insert_key(a, t, q)
+	pack.rotation_track_insert_key(b, 8.0 - t, q)
+
+static func _missile_pos(deploy: Animation, pack: Animation, root: Node, node: Node, t: float, p: Vector3) -> void:
+	var path := root.get_path_to(node)
+	var a := _missile_track(deploy, path, Animation.TYPE_POSITION_3D)
+	var b := _missile_track(pack, path, Animation.TYPE_POSITION_3D)
+	deploy.position_track_insert_key(a, t, p)
+	pack.position_track_insert_key(b, 8.0 - t, p)
+
+static func _missile_track(anim: Animation, path: NodePath, kind: Animation.TrackType) -> int:
+	for i in anim.get_track_count():
+		if anim.track_get_path(i) == path and anim.track_get_type(i) == kind:
+			return i
+	var idx := anim.add_track(kind)
+	anim.track_set_path(idx, path)
+	anim.track_set_interpolation_type(idx, Animation.INTERPOLATION_LINEAR)
+	return idx
 
 static func _skirts(h, x: float, z0: float, z1: float, y0: float, y1: float, _notch: bool) -> void:
 	var n := 4
