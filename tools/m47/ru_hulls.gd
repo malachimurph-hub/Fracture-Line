@@ -1918,6 +1918,158 @@ static func mzkt_base(mat: Material) -> void:
 		mk.owner = root
 	_save(root, model, h, mat, "res://view/units/ecc/mzkt_base.tscn", 1.22, [])
 
+## Module B, the radar. Unwired. Origin is ModuleRoot, which sits on the chassis
+## ModuleMount (deck centre, 1.62 m). +Z points at the cab. The bed in this frame
+## runs from z = -4.03 m to z = 3.53 m and x = ±1.575 m. Nothing crosses x = ±1.575.
+static func mzkt_radar(mat: Material) -> void:
+	var Sc := 0.311
+	var root := Node3D.new()
+	root.name = "ModuleRoot"
+	var h = K.new()
+	h.plain = true
+	# Cabin on the rear half of the bed. The floor overlaps the deck by 30 mm.
+	var zc := -1.725
+	h.color("#96A468", Geo.CONCRETE)
+	h.cbox(Vector3(0, 1.05 * Sc, zc * Sc), Vector3(2.96 * Sc, 2.16 * Sc, 3.95 * Sc), 0.018 * Sc)
+	h.color("#738252", Geo.CONCRETE)
+	h.box(Vector3(1.485 * Sc, 1.15 * Sc, zc * Sc), Vector3(0.012 * Sc, 0.018 * Sc, 3.55 * Sc))
+	h.box(Vector3(1.485 * Sc, 0.42 * Sc, zc * Sc), Vector3(0.012 * Sc, 0.018 * Sc, 3.55 * Sc))
+	h.box(Vector3(-1.485 * Sc, 1.15 * Sc, zc * Sc), Vector3(0.012 * Sc, 0.018 * Sc, 3.55 * Sc))
+	# Door, near side, with a recess, hinge straps and a latch.
+	h.color("#1c1e1c", Geo.DARK)
+	h.box(Vector3(1.492 * Sc, 1.08 * Sc, -1.05 * Sc), Vector3(0.028 * Sc, 1.32 * Sc, 0.72 * Sc))
+	h.color("#8a9668", Geo.CONCRETE)
+	h.box(Vector3(1.508 * Sc, 1.08 * Sc, -1.05 * Sc), Vector3(0.016 * Sc, 1.18 * Sc, 0.60 * Sc))
+	h.color("#3a3d38", Geo.STEEL)
+	h.box(Vector3(1.522 * Sc, 1.52 * Sc, -1.36 * Sc), Vector3(0.016 * Sc, 0.10 * Sc, 0.05 * Sc))
+	h.box(Vector3(1.522 * Sc, 0.68 * Sc, -1.36 * Sc), Vector3(0.016 * Sc, 0.10 * Sc, 0.05 * Sc))
+	h.box(Vector3(1.522 * Sc, 1.08 * Sc, -0.78 * Sc), Vector3(0.016 * Sc, 0.18 * Sc, 0.035 * Sc))
+	# Vent grille behind the door.
+	h.color("#1c1e1c", Geo.DARK)
+	h.box(Vector3(1.492 * Sc, 1.55 * Sc, -2.45 * Sc), Vector3(0.022 * Sc, 0.40 * Sc, 0.66 * Sc))
+	for i in 5:
+		h.color("#3a3d38", Geo.STEEL)
+		h.box(Vector3(1.510 * Sc, (1.70 - float(i) * 0.075) * Sc, -2.45 * Sc), Vector3(0.012 * Sc, 0.018 * Sc, 0.56 * Sc))
+	# Rear access panel.
+	h.color("#1c1e1c", Geo.DARK)
+	h.box(Vector3(0.35 * Sc, 1.12 * Sc, -3.715 * Sc), Vector3(0.52 * Sc, 0.92 * Sc, 0.02 * Sc))
+	h.color("#8a9668", Geo.CONCRETE)
+	h.box(Vector3(0.35 * Sc, 1.12 * Sc, -3.732 * Sc), Vector3(0.42 * Sc, 0.78 * Sc, 0.014 * Sc))
+	h.color("#3a3d38", Geo.STEEL)
+	h.box(Vector3(0.56 * Sc, 1.12 * Sc, -3.742 * Sc), Vector3(0.03 * Sc, 0.14 * Sc, 0.012 * Sc))
+	# Two roof conditioners.
+	for s in [-0.62, 0.55]:
+		h.color("#738252", Geo.CONCRETE)
+		h.box(Vector3(s * Sc, 2.26 * Sc, -2.35 * Sc), Vector3(0.52 * Sc, 0.26 * Sc, 0.62 * Sc))
+		h.color("#1c1e1c", Geo.DARK)
+		h.box(Vector3(s * Sc, 2.40 * Sc, -2.35 * Sc), Vector3(0.38 * Sc, 0.018 * Sc, 0.46 * Sc))
+		for k in 4:
+			h.color("#3a3d38", Geo.STEEL)
+			h.box(Vector3(s * Sc, 2.415 * Sc, (-2.52 + float(k) * 0.11) * Sc), Vector3(0.34 * Sc, 0.012 * Sc, 0.028 * Sc))
+	# Stowage along the far side.
+	h.color("#5e6848", Geo.CONCRETE)
+	h.cbox(Vector3(-1.38 * Sc, 0.28 * Sc, -2.15 * Sc), Vector3(0.22 * Sc, 0.32 * Sc, 0.55 * Sc), 0.008 * Sc)
+	h.cbox(Vector3(-1.36 * Sc, 0.24 * Sc, -0.35 * Sc), Vector3(0.18 * Sc, 0.26 * Sc, 0.38 * Sc), 0.008 * Sc)
+	# Roof rail and posts, inside the 3.15 m body.
+	h.color("#3a3d38", Geo.STEEL)
+	h.box(Vector3(1.40 * Sc, 2.30 * Sc, -1.65 * Sc), Vector3(0.022 * Sc, 0.022 * Sc, 3.30 * Sc))
+	for i in 5:
+		h.box(Vector3(1.40 * Sc, 2.20 * Sc, (0.0 - float(i) * 0.80) * Sc), Vector3(0.018 * Sc, 0.18 * Sc, 0.018 * Sc))
+	h.box(Vector3(0.2 * Sc, 2.30 * Sc, -3.55 * Sc), Vector3(2.2 * Sc, 0.022 * Sc, 0.022 * Sc))
+	_mzkt_ladder(h, 1.18 * Sc, 0.02 * Sc, -3.48 * Sc, 2.02 * Sc)
+	# Cable run along the skirt, then up toward the pedestal.
+	h.color("#2a2c28", Geo.DARK)
+	h.tube(Vector3(1.38 * Sc, 0.48 * Sc, 0.05 * Sc), Vector3(1.38 * Sc, 0.48 * Sc, -3.45 * Sc), 0.016 * Sc, 5)
+	h.tube(Vector3(1.38 * Sc, 0.48 * Sc, -0.15 * Sc), Vector3(0.70 * Sc, 0.82 * Sc, 0.55 * Sc), 0.014 * Sc, 5)
+	# Pedestal and turntable between the cabin and the array. Cheeks reach the hinge.
+	h.color("#5e6848", Geo.CONCRETE)
+	h.tube(Vector3(0, 0.02 * Sc, 0.90 * Sc), Vector3(0, 0.09 * Sc, 0.90 * Sc), 0.70 * Sc, 10)
+	h.color("#738252", Geo.CONCRETE)
+	h.cbox(Vector3(0, 0.46 * Sc, 0.88 * Sc), Vector3(1.10 * Sc, 0.98 * Sc, 1.45 * Sc), 0.014 * Sc)
+	h.color("#4e5840", Geo.CONCRETE)
+	for s in [-1.0, 1.0]:
+		h.box(Vector3(s * 0.46 * Sc, 0.78 * Sc, 1.28 * Sc), Vector3(0.07 * Sc, 0.42 * Sc, 0.22 * Sc))
+	# Mast plinth on the open deck ahead of the array, near side of the bed.
+	h.color("#738252", Geo.CONCRETE)
+	h.cbox(Vector3(-1.12 * Sc, 0.20 * Sc, 2.05 * Sc), Vector3(0.42 * Sc, 0.46 * Sc, 0.42 * Sc), 0.01 * Sc)
+	VK._mi(root, root, "Hull", h.commit(mat))
+	# Hinge. The -25 degree pitch is the raised pose; a later animation drives this node.
+	var pivot := VK._n3(root, root, "ArrayPivot", Vector3(0, 0.92 * Sc, 1.28 * Sc))
+	pivot.rotation_degrees = Vector3(-25, 0, 0)
+	var p = K.new()
+	p.plain = true
+	p.color("#738252", Geo.CONCRETE)
+	p.box(Vector3(0, 2.22 * Sc, 0.08 * Sc), Vector3(2.52 * Sc, 4.28 * Sc, 0.14 * Sc))
+	p.color("#4e5840", Geo.CONCRETE)
+	p.box(Vector3(0, 4.30 * Sc, 0.17 * Sc), Vector3(2.70 * Sc, 0.10 * Sc, 0.045 * Sc))
+	p.box(Vector3(0, 0.10 * Sc, 0.17 * Sc), Vector3(2.70 * Sc, 0.12 * Sc, 0.045 * Sc))
+	p.box(Vector3(-1.30 * Sc, 2.20 * Sc, 0.17 * Sc), Vector3(0.10 * Sc, 4.20 * Sc, 0.045 * Sc))
+	p.box(Vector3(1.30 * Sc, 2.20 * Sc, 0.17 * Sc), Vector3(0.10 * Sc, 4.20 * Sc, 0.045 * Sc))
+	# Shallow tiles. 8 by 10, inset from the frame.
+	p.color("#8ea06a", Geo.CONCRETE)
+	var cols := 8
+	var rows := 10
+	var gx0 := -1.16
+	var gx1 := 1.16
+	var gy0 := 0.24
+	var gy1 := 4.16
+	var cw := (gx1 - gx0) / float(cols)
+	var rh := (gy1 - gy0) / float(rows)
+	for r in rows:
+		for c in cols:
+			var cx := gx0 + cw * (float(c) + 0.5)
+			var cy := gy0 + rh * (float(r) + 0.5)
+			p.box(Vector3(cx * Sc, cy * Sc, 0.165 * Sc), Vector3(cw * 0.84 * Sc, rh * 0.80 * Sc, 0.012 * Sc))
+	# Back stays, the hinge pin, a junction box and a cable down to the pin.
+	p.color("#5e6848", Geo.CONCRETE)
+	for bx in [-0.75, 0.0, 0.75]:
+		p.box(Vector3(bx * Sc, 2.30 * Sc, -0.005 * Sc), Vector3(0.05 * Sc, 3.50 * Sc, 0.03 * Sc))
+	p.color("#3a3d38", Geo.STEEL)
+	p.tube(Vector3(-0.52 * Sc, 0, 0), Vector3(0.52 * Sc, 0, 0), 0.05 * Sc, 6)
+	p.box(Vector3(-0.40 * Sc, 0.48 * Sc, -0.02 * Sc), Vector3(0.05 * Sc, 0.90 * Sc, 0.07 * Sc))
+	p.box(Vector3(0.40 * Sc, 0.48 * Sc, -0.02 * Sc), Vector3(0.05 * Sc, 0.90 * Sc, 0.07 * Sc))
+	p.tube(Vector3(0, 1.55 * Sc, -0.02 * Sc), Vector3(0, 0.12 * Sc, -0.08 * Sc), 0.035 * Sc, 5)
+	p.color("#5e6848", Geo.CONCRETE)
+	p.box(Vector3(0.72 * Sc, 1.25 * Sc, -0.02 * Sc), Vector3(0.26 * Sc, 0.20 * Sc, 0.10 * Sc))
+	p.color("#2a2c28", Geo.DARK)
+	p.tube(Vector3(0.72 * Sc, 1.12 * Sc, -0.02 * Sc), Vector3(0.20 * Sc, 0.08 * Sc, 0.0), 0.012 * Sc, 4)
+	VK._mi(pivot, root, "Panel", p.commit(mat))
+	var mast := VK._n3(root, root, "MastPivot", Vector3(-1.12 * Sc, 0.42 * Sc, 2.05 * Sc))
+	var g = K.new()
+	g.plain = true
+	g.color("#5e6848", Geo.CONCRETE)
+	g.box(Vector3(0, 0.015 * Sc, 0), Vector3(0.28 * Sc, 0.05 * Sc, 0.28 * Sc))
+	g.color("#3a3d38", Geo.STEEL)
+	g.tube(Vector3.ZERO, Vector3(0, 1.50 * Sc, 0), 0.050 * Sc, 6)
+	g.tube(Vector3(0, 1.32 * Sc, 0), Vector3(0, 2.70 * Sc, 0), 0.036 * Sc, 6)
+	g.tube(Vector3(0, 2.52 * Sc, 0), Vector3(0, 3.80 * Sc, 0), 0.024 * Sc, 6)
+	g.color("#738252", Geo.CONCRETE)
+	g.tube(Vector3(0, 1.36 * Sc, 0), Vector3(0, 1.48 * Sc, 0), 0.062 * Sc, 6)
+	g.tube(Vector3(0, 2.56 * Sc, 0), Vector3(0, 2.68 * Sc, 0), 0.046 * Sc, 6)
+	g.color("#3a3d38", Geo.STEEL)
+	for ang in [20.0, 140.0, 260.0]:
+		var a := deg_to_rad(ang)
+		var dir := Vector3(cos(a), 0, sin(a))
+		g.box(dir * 0.07 * Sc + Vector3(0, 0.32 * Sc, 0), Vector3(0.035 * Sc, 0.035 * Sc, 0.035 * Sc))
+		g.tube(dir * 0.06 * Sc + Vector3(0, 0.32 * Sc, 0), dir * 0.22 * Sc, 0.007 * Sc, 4)
+	# Sensor head: a short boom, six elements, a box and a whip.
+	g.tube(Vector3(0, 3.88 * Sc, -0.22 * Sc), Vector3(0, 3.88 * Sc, 0.36 * Sc), 0.010 * Sc, 4)
+	for i in 6:
+		var ez := -0.16 + float(i) * 0.09
+		var span := 0.10 + float(i) * 0.018
+		g.tube(Vector3(-span * Sc, 3.88 * Sc, ez * Sc), Vector3(span * Sc, 3.88 * Sc, ez * Sc), 0.005 * Sc, 4)
+	g.color("#738252", Geo.CONCRETE)
+	g.box(Vector3(0, 4.00 * Sc, 0.02 * Sc), Vector3(0.14 * Sc, 0.10 * Sc, 0.16 * Sc))
+	g.color("#3a3d38", Geo.STEEL)
+	g.tube(Vector3(0, 3.85 * Sc, 0), Vector3(0, 4.30 * Sc, 0), 0.007 * Sc, 4)
+	VK._mi(mast, root, "Mast", g.commit(mat))
+	var tris: int = h.tris + p.tris + g.tris
+	print("  mzkt_radar_module.tscn: %d tris" % tris)
+	var ps := PackedScene.new()
+	ps.pack(root)
+	ResourceSaver.save(ps, "res://view/units/ecc/mzkt_radar_module.tscn")
+	root.free()
+
 static func _skirts(h, x: float, z0: float, z1: float, y0: float, y1: float, _notch: bool) -> void:
 	var n := 4
 	var seg := (z1 - z0) / float(n)
