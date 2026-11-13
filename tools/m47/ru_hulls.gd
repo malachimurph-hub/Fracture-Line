@@ -1296,31 +1296,39 @@ static func mi8_v2(mat: Material) -> void:
 	var roof := 3.38
 	var cabin_h := roof - belly
 	var bow := 0.72 * Sc
+	# Cabin stays the approved box. The solid nose stops at the cockpit bulkhead;
+	# the greenhouse in front of it is a rounded glass bulb, not a flat cap.
 	h.xloft([
-		[8.95 * Sc, _mi8_ring(0.62 * Sc, 1.40 * Sc, 2.45 * Sc, 0.40 * Sc)],
-		[8.25 * Sc, _mi8_ring(1.05 * Sc, 0.85 * Sc, 3.05 * Sc, bow)],
-		[7.40 * Sc, _mi8_ring(1.22 * Sc, 0.58 * Sc, 3.28 * Sc, bow)],
+		[7.55 * Sc, _mi8_ring(1.15 * Sc, 0.72 * Sc, 3.18 * Sc, 0.50 * Sc)],
 		[6.40 * Sc, _mi8_ring(cabin_w * 0.5 * Sc, belly * Sc, roof * Sc, bow)],
 		[-1.15 * Sc, _mi8_ring(cabin_w * 0.5 * Sc, belly * Sc, roof * Sc, bow)],
 		[-1.85 * Sc, _mi8_ring(0.72 * Sc, 1.15 * Sc, 2.55 * Sc, 0.36 * Sc)],
 		[-2.35 * Sc, _mi8_ring(0.42 * Sc, 1.45 * Sc, 2.15 * Sc, 0.24 * Sc)],
 	])
-	# Framed greenhouse on the blunt nose. Two pilot windscreens, eyebrow panes,
-	# chin glazing, a fixed side pane and the bulged sliding side window.
-	_mi8_win(h, _mi8_quad(Sc, Vector3(-0.06, 1.72, 8.99), Vector3(-0.52, 1.58, 8.86), Vector3(-0.92, 2.68, 8.48)), Vector3(-0.2, 0.3, 1))
-	_mi8_win(h, _mi8_quad(Sc, Vector3(0.06, 1.72, 8.99), Vector3(0.52, 1.58, 8.86), Vector3(0.92, 2.68, 8.48)), Vector3(0.2, 0.3, 1))
+	# Rounded greenhouse: a glass bulb, with dark mullions sitting on the outside.
+	h.color("#24323a", Geo.GLASS)
+	h.xloft([
+		[9.02 * Sc, _mi8_ring(0.12 * Sc, 1.95 * Sc, 2.22 * Sc, 0.10 * Sc)],
+		[8.72 * Sc, _mi8_ring(0.42 * Sc, 1.55 * Sc, 2.55 * Sc, 0.28 * Sc)],
+		[8.35 * Sc, _mi8_ring(0.78 * Sc, 1.15 * Sc, 2.88 * Sc, 0.40 * Sc)],
+		[7.95 * Sc, _mi8_ring(1.02 * Sc, 0.88 * Sc, 3.08 * Sc, 0.46 * Sc)],
+		[7.55 * Sc, _mi8_ring(1.15 * Sc, 0.72 * Sc, 3.18 * Sc, 0.50 * Sc)],
+	])
+	var fr := 0.016
 	h.color("#161a1e", Geo.DARK)
-	h.tube(Vector3(0, 1.72 * Sc, 8.99 * Sc), Vector3(0, 2.72 * Sc, 8.52 * Sc), 0.016, 5)
-	for ei in 4:
-		var x0: float = -0.72 + float(ei) * 0.36
-		var x1: float = x0 + 0.36
-		_mi8_win(h, _mi8_quad(Sc, Vector3(x0 + 0.03, 3.08, 8.15), Vector3(x1 - 0.03, 3.08, 8.15), Vector3(x1 - 0.03, 3.22, 7.62)), Vector3(0, 1, 0.15), 15 if ei == 0 else 7)
-	_mi8_win(h, _mi8_quad(Sc, Vector3(-0.05, 1.32, 8.96), Vector3(-0.48, 1.08, 8.72), Vector3(-0.48, 0.88, 8.50)), Vector3(0, -0.7, 1))
-	_mi8_win(h, _mi8_quad(Sc, Vector3(0.05, 1.32, 8.96), Vector3(0.48, 1.08, 8.72), Vector3(0.48, 0.88, 8.50)), Vector3(0, -0.7, 1))
+	h.tube(Vector3(0, 1.35 * Sc, 8.82 * Sc), Vector3(0, 2.08 * Sc, 9.08 * Sc), fr, 4)
+	h.tube(Vector3(0, 2.08 * Sc, 9.08 * Sc), Vector3(0, 2.78 * Sc, 8.48 * Sc), fr, 4)
+	h.tube(Vector3(-0.52 * Sc, 1.62 * Sc, 8.58 * Sc), Vector3(0, 1.78 * Sc, 9.05 * Sc), fr, 4)
+	h.tube(Vector3(0, 1.78 * Sc, 9.05 * Sc), Vector3(0.52 * Sc, 1.62 * Sc, 8.58 * Sc), fr, 4)
+	h.tube(Vector3(-0.42 * Sc, 2.48 * Sc, 8.55 * Sc), Vector3(0, 2.55 * Sc, 8.95 * Sc), fr, 4)
+	h.tube(Vector3(0, 2.55 * Sc, 8.95 * Sc), Vector3(0.42 * Sc, 2.48 * Sc, 8.55 * Sc), fr, 4)
+	h.tube(Vector3(-0.36 * Sc, 1.18 * Sc, 8.55 * Sc), Vector3(0.36 * Sc, 1.18 * Sc, 8.55 * Sc), fr, 4)
+	h.tube(Vector3(-0.42 * Sc, 1.25 * Sc, 8.62 * Sc), Vector3(-0.42 * Sc, 2.45 * Sc, 8.68 * Sc), fr, 4)
+	h.tube(Vector3(0.42 * Sc, 1.25 * Sc, 8.62 * Sc), Vector3(0.42 * Sc, 2.45 * Sc, 8.68 * Sc), fr, 4)
 	for sw in [-1.0, 1.0]:
 		var ss: float = sw
-		_mi8_win(h, _mi8_quad(Sc, Vector3(ss * 1.20, 2.12, 8.42), Vector3(ss * 1.20, 2.12, 7.95), Vector3(ss * 1.20, 2.78, 7.95)), Vector3(ss, 0.15, 0.3))
-		_mi8_win(h, _mi8_quad(Sc, Vector3(ss * 1.18, 1.22, 8.46), Vector3(ss * 1.18, 1.22, 7.98), Vector3(ss * 1.18, 2.02, 7.98)), Vector3(ss, -0.1, 0.25))
+		_mi8_win(h, _mi8_quad(Sc, Vector3(ss * 1.18, 2.15, 8.35), Vector3(ss * 1.18, 2.15, 7.90), Vector3(ss * 1.18, 2.78, 7.90)), Vector3(ss, 0.15, 0.35))
+		_mi8_win(h, _mi8_quad(Sc, Vector3(ss * 1.16, 1.25, 8.38), Vector3(ss * 1.16, 1.25, 7.92), Vector3(ss * 1.16, 2.05, 7.92)), Vector3(ss, -0.1, 0.3))
 		_mi8_blister(h, ss, Sc)
 	# Round cabin windows. The port row stops for the sliding door.
 	for pz in [4.70, 3.75, 1.30, 0.25]:
@@ -1456,11 +1464,11 @@ static func mi8_v2(mat: Material) -> void:
 	# Five main blades. Hub is the Rotor pivot.
 	var rotor := VK._n3(model, root, "Rotor", hub)
 	rotor.set_meta("rotor_axis", "y")
-	parts.append(_mi8_rotor(rotor, root, mat, 10.645 * Sc, 5, false))
+	parts.append(_mi8_rotor(rotor, root, mat, 10.645 * Sc, 5, false, 0.10 * Tw, 0.03 * Tw, 0.03))
 	# Three tail blades. Starboard of the fin (+X).
 	var tail := VK._n3(model, root, "TailRotor", tail_at)
 	tail.set_meta("rotor_axis", "x")
-	parts.append(_mi8_rotor(tail, root, mat, 1.955 * Sc, 3, true))
+	parts.append(_mi8_rotor(tail, root, mat, 1.955 * Sc, 3, true, 0.08 * Tw, 0.025 * Tw, 0.0))
 	print("  mi8_v2 pods ", pods, " hub m ", hub / Sc)
 	_save(root, model, h, mat, "res://view/units/ecc/mi8_v2.tscn", 1.82 * Tw, parts)
 
@@ -1611,22 +1619,41 @@ static func _mi8_plate(model: Node, root: Node, mat: Material, name: String, c: 
 	VK._mi(model, root, name, g.commit(mat))
 	return g
 
-static func _mi8_rotor(pivot: Node, root: Node, mat: Material, radius: float, n: int, on_x: bool):
+## Straight blades, evenly spaced. droop is the tip drop as a fraction of radius.
+static func _mi8_rotor(pivot: Node, root: Node, mat: Material, radius: float, n: int, on_x: bool, chord: float, thick: float, droop: float):
 	var g = K.new()
 	g.plain = true
 	g.color("#2a2c28", Geo.STEEL)
 	if on_x:
-		g.tube(Vector3(-0.04, 0, 0), Vector3(0.06, 0, 0), 0.08, 6)
+		g.tube(Vector3(-0.03, 0, 0), Vector3(0.045, 0, 0), 0.055, 6)
 		for i in n:
-			var a := TAU * float(i) / float(n)
-			g.box(Vector3(0, 0, radius * 0.5), Vector3(0.025, 0.08, radius), Transform3D(Basis(Vector3.RIGHT, -a), Vector3.ZERO))
+			_mi8_blade(g, TAU * float(i) / float(n), radius, chord, thick, 0.0, true)
 	else:
-		g.tube(Vector3(0, -0.02, 0), Vector3(0, 0.08, 0), 0.12, 6)
+		g.tube(Vector3(0, -0.015, 0), Vector3(0, 0.05, 0), 0.07, 8)
 		for i in n:
-			var a2 := TAU * float(i) / float(n)
-			g.box(Vector3(radius * 0.5, 0.04, 0), Vector3(radius, 0.03, 0.10), Transform3D(Basis(Vector3.UP, -a2), Vector3.ZERO))
+			_mi8_blade(g, TAU * float(i) / float(n), radius, chord, thick, droop, false)
 	VK._mi(pivot, root, "RotorMesh", g.commit(mat))
 	return g
+
+static func _mi8_blade(g, ang: float, radius: float, chord: float, thick: float, droop: float, on_x: bool) -> void:
+	var dir: Vector3
+	var side: Vector3
+	if on_x:
+		dir = Vector3(0, cos(ang), sin(ang))
+		side = Vector3(0, -sin(ang), cos(ang))
+	else:
+		dir = Vector3(cos(ang), -absf(droop), sin(ang)).normalized()
+		side = Vector3(-sin(ang), 0, cos(ang))
+	var up := side.cross(dir).normalized()
+	var root_p := dir * 0.05
+	var tip_p := dir * radius
+	var c0 := chord * 0.5
+	var c1 := chord * 0.32
+	var t0 := thick * 0.5
+	var t1 := thick * 0.4
+	var a: Array = [root_p + side * c0 + up * t0, root_p + side * c0 - up * t0, root_p - side * c0 - up * t0, root_p - side * c0 + up * t0]
+	var b: Array = [tip_p + side * c1 + up * t1, tip_p + side * c1 - up * t1, tip_p - side * c1 - up * t1, tip_p - side * c1 + up * t1]
+	g.loft(a, b, Transform3D.IDENTITY, true, true)
 
 static func shilka(mat: Material) -> void:
 	var root := VK._root({"selection_radius": 0.85, "bar_height": 1.45, "recoil": 0.04, "wreck_s": 7.5})

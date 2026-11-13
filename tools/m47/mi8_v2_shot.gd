@@ -84,6 +84,12 @@ func _views() -> void:
 	cam.look_at(Vector3(0.2, 1.15, 0.6), Vector3.UP)
 	await frames(3)
 	await shot("photo34")
+	# Nose, close enough to read the greenhouse frames.
+	cam.fov = 26.0
+	cam.global_position = Vector3(1.15, 0.72, 3.15)
+	cam.look_at(Vector3(0.0, 0.48, 1.75), Vector3.UP)
+	await frames(3)
+	await shot("nose")
 	model.position = Vector3(0, 4.0, 0)
 	var t90 := (load("res://view/units/ecc/t90.tscn") as PackedScene).instantiate() as Node3D
 	t90.position = Vector3(6.5, 0, 1.5)

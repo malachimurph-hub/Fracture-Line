@@ -97,12 +97,15 @@ func team_shape_index(team: int) -> int:
 ## parked = on the pad), spinning Rotor/TailRotor nodes, bank in turns and a ground shadow.
 const JET_ALT := 6.0
 const HELI_ALT := 4.0
+## The Mi-8 is larger than the other helicopters, so it cruises lower. Everyone else stays at 4.0.
+const HELI_ALT_OF := {&"ecc_mi8": 3.0}
 var air_alt := {}
 var air_shadows := {}
 
 func _air_view(id: int, e: SimEntity, ud: UnitDef, v: Node3D, p: Vector3, delta: float) -> Vector3:
 	var jet := ud.tags.has("jet")
-	var want := 0.0 if e.air_state == AirSys.PARKED or e.air_state == AirSys.TAXI_OUT else (JET_ALT if jet else HELI_ALT)
+	var cruise := JET_ALT if jet else float(HELI_ALT_OF.get(e.def_id, HELI_ALT))
+	var want := 0.0 if e.air_state == AirSys.PARKED or e.air_state == AirSys.TAXI_OUT else cruise
 	if e.air_state == AirSys.LANDING and not jet:
 		want = 0.0   # touch down before anyone boards or steps out
 	if e.air_state == AirSys.LANDING and jet:
