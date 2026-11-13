@@ -305,9 +305,17 @@ func _missile_setup(cam: Camera3D, sun: DirectionalLight3D, rig: Node3D, mod: No
 	_report_motion(mod, sc, 0.0)
 	var aspect := get_viewport().get_visible_rect().size.x / get_viewport().get_visible_rect().size.y
 	await _pose_views(cam, sun, rig, "missile_stowed", aspect)
+	var side_size := maxf(_aabb(rig).size.y * 1.12, _aabb(rig).size.z * 1.08 / aspect)
+	var piv := mod.get_node("LauncherYaw/LauncherPivot") as Node3D
+	var stack := piv.to_global(Vector3(0, 0.82 * sc, -2.55 * sc))
+	await _zoom_side(cam, sun, stack, side_size * 0.5, "missile_zoom_stack")
+	print("ZOOM stack size ", side_size * 0.5, " at ", stack, " stowed |x| m ", _half_x(mod) / sc)
 	await _pose(ap, 8.0)
 	_report_motion(mod, sc, 8.0)
 	var deployed_size := await _pose_views(cam, sun, rig, "missile_deployed", aspect)
+	var deck := mod.to_global(Vector3(0, 0.25 * sc, -2.40 * sc))
+	await _zoom_side(cam, sun, deck, side_size * 0.5, "missile_zoom_deck")
+	print("ZOOM deck size ", side_size * 0.5, " at ", deck)
 	var pad := mod.find_child("OutriggerFR", true, false).find_child("Sole", true, false) as Node3D
 	cam.projection = Camera3D.PROJECTION_PERSPECTIVE
 	cam.fov = 28.0
@@ -398,7 +406,7 @@ func _pose_views(cam: Camera3D, sun: DirectionalLight3D, rig: Node3D, prefix: St
 
 ## Deployed cradle at three bearings. Top has the cab toward the top of the frame.
 func _missile_yaw(cam: Camera3D, sun: DirectionalLight3D, rig: Node3D, mod: Node3D, sc: float, aspect: float) -> void:
-	for deg in [0, 90, 135]:
+	for deg in [0, 90, 135, 180]:
 		mod.target_yaw_deg = float(deg)
 		await get_tree().process_frame
 		_report_motion(mod, sc, 8.0)
@@ -422,6 +430,19 @@ func _missile_yaw(cam: Camera3D, sun: DirectionalLight3D, rig: Node3D, mod: Node
 		await frames(3)
 		await shot("missile_yaw_%d_three_quarter" % deg)
 	mod.target_yaw_deg = 0.0
+
+func _zoom_side(cam: Camera3D, sun: DirectionalLight3D, at: Vector3, size: float, name: String) -> void:
+	cam.projection = Camera3D.PROJECTION_ORTHOGONAL
+	cam.size = size
+	sun.rotation_degrees = Vector3(-28, 70, 0)
+	cam.global_position = Vector3(14.0, at.y, at.z)
+	cam.look_at(at, Vector3.UP)
+	await frames(3)
+	await shot(name)
+
+func _half_x(mod: Node3D) -> float:
+	var ab := _aabb(mod)
+	return maxf(absf(ab.position.x), absf(ab.position.x + ab.size.x))
 
 func _pose(ap: AnimationPlayer, t: float) -> void:
 	ap.play(&"deploy")

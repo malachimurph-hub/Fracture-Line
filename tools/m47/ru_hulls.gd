@@ -2226,6 +2226,55 @@ static func mzkt_missile(mat: Material) -> void:
 	h.tube(Vector3(-1.18 * Sc, 0.16 * Sc, -0.35 * Sc), Vector3(-1.18 * Sc, 0.16 * Sc, 0.05 * Sc), 0.16 * Sc, 8)
 	h.color("#4a4e46", Geo.STEEL)
 	h.box(Vector3(1.22 * Sc, 0.10 * Sc, 3.35 * Sc), Vector3(0.26 * Sc, 0.20 * Sc, 0.22 * Sc))
+	# Rear deck, aft of the bearing. Tops stay under the stowed canister rails (y = 0.68).
+	# Everything is outside a 1.25 m circle about the turntable, so a full yaw misses it.
+	h.color("#6b4e32", Geo.WOOD)
+	h.box(Vector3(-0.40 * Sc, 0.20 * Sc, -2.45 * Sc), Vector3(0.62 * Sc, 0.40 * Sc, 0.78 * Sc))
+	h.box(Vector3(0.38 * Sc, 0.18 * Sc, -2.55 * Sc), Vector3(0.58 * Sc, 0.36 * Sc, 0.70 * Sc))
+	h.color("#5a4630", Geo.WOOD)
+	h.box(Vector3(-0.40 * Sc, 0.42 * Sc, -2.45 * Sc), Vector3(0.64 * Sc, 0.04 * Sc, 0.80 * Sc))
+	h.box(Vector3(0.38 * Sc, 0.38 * Sc, -2.55 * Sc), Vector3(0.60 * Sc, 0.04 * Sc, 0.72 * Sc))
+	h.color("#4a4e46", Geo.STEEL)
+	h.box(Vector3(0, 0.16 * Sc, -3.45 * Sc), Vector3(0.55 * Sc, 0.32 * Sc, 0.42 * Sc))
+	h.box(Vector3(-0.85 * Sc, 0.12 * Sc, -3.55 * Sc), Vector3(0.36 * Sc, 0.24 * Sc, 0.28 * Sc))
+	# Spare cradle: two low rails and three saddles, feet on the deck.
+	h.color("#2c302c", Geo.STEEL)
+	h.box(Vector3(-0.32 * Sc, 0.06 * Sc, -3.15 * Sc), Vector3(0.05 * Sc, 0.12 * Sc, 0.85 * Sc))
+	h.box(Vector3(0.32 * Sc, 0.06 * Sc, -3.15 * Sc), Vector3(0.05 * Sc, 0.12 * Sc, 0.85 * Sc))
+	for sz in [-3.45, -3.15, -2.85]:
+		h.box(Vector3(0, 0.08 * Sc, sz * Sc), Vector3(0.70 * Sc, 0.05 * Sc, 0.06 * Sc))
+	# Generator, left of the stack, skid on the deck.
+	h.color("#5e6848", Geo.CONCRETE)
+	h.cbox(Vector3(-0.95 * Sc, 0.22 * Sc, -1.85 * Sc), Vector3(0.48 * Sc, 0.44 * Sc, 0.62 * Sc), 0.012 * Sc)
+	h.color("#1c1e1c", Geo.DARK)
+	h.box(Vector3(-1.185 * Sc, 0.28 * Sc, -1.85 * Sc), Vector3(0.03 * Sc, 0.22 * Sc, 0.40 * Sc))
+	for gi in 4:
+		h.box(Vector3(-1.198 * Sc, (0.36 - float(gi) * 0.05) * Sc, -1.85 * Sc), Vector3(0.012 * Sc, 0.016 * Sc, 0.32 * Sc))
+	h.color("#3a3d38", Geo.STEEL)
+	h.tube(Vector3(-0.95 * Sc, 0.40 * Sc, -1.58 * Sc), Vector3(-0.95 * Sc, 0.54 * Sc, -1.58 * Sc), 0.04 * Sc, 6)
+	# Cable drum and a toolbox on the right, between the stowed outrigger arms.
+	h.color("#6a6e66", Geo.STEEL)
+	h.tube(Vector3(0.95 * Sc, 0.22 * Sc, -1.55 * Sc), Vector3(1.25 * Sc, 0.22 * Sc, -1.55 * Sc), 0.20 * Sc, 8)
+	h.color("#2c302c", Geo.STEEL)
+	h.tube(Vector3(0.92 * Sc, 0.22 * Sc, -1.55 * Sc), Vector3(1.28 * Sc, 0.22 * Sc, -1.55 * Sc), 0.05 * Sc, 6)
+	h.color("#4a4e46", Geo.STEEL)
+	h.cbox(Vector3(1.15 * Sc, 0.11 * Sc, -1.05 * Sc), Vector3(0.28 * Sc, 0.22 * Sc, 0.34 * Sc), 0.008 * Sc)
+	h.box(Vector3(1.15 * Sc, 0.23 * Sc, -1.05 * Sc), Vector3(0.30 * Sc, 0.03 * Sc, 0.36 * Sc))
+	# Hatch plate and four tie-downs.
+	h.color("#3a3d38", Geo.STEEL)
+	h.box(Vector3(0, 0.015 * Sc, -1.70 * Sc), Vector3(0.50 * Sc, 0.03 * Sc, 0.36 * Sc))
+	h.color("#1a1c1a", Geo.STEEL)
+	h.box(Vector3(0, 0.035 * Sc, -1.70 * Sc), Vector3(0.08 * Sc, 0.012 * Sc, 0.08 * Sc))
+	for td in [[-0.55, -3.75], [0.55, -3.75], [-0.70, -1.35], [0.70, -1.35]]:
+		h.tube(Vector3(td[0] * Sc, 0.0, td[1] * Sc), Vector3(td[0] * Sc, 0.045 * Sc, td[1] * Sc), 0.018 * Sc, 5)
+	# Rear lip rail, and a short side rail clear of both stowed arms.
+	h.color("#2c302c", Geo.STEEL)
+	h.tube(Vector3(-0.70 * Sc, 0.22 * Sc, -3.88 * Sc), Vector3(0.70 * Sc, 0.22 * Sc, -3.88 * Sc), 0.016 * Sc, 5)
+	for rx in [-0.70, 0.0, 0.70]:
+		h.tube(Vector3(rx * Sc, 0.0, -3.88 * Sc), Vector3(rx * Sc, 0.22 * Sc, -3.88 * Sc), 0.014 * Sc, 5)
+	h.tube(Vector3(-1.28 * Sc, 0.20 * Sc, -1.70 * Sc), Vector3(-1.28 * Sc, 0.20 * Sc, -1.15 * Sc), 0.014 * Sc, 5)
+	h.tube(Vector3(-1.28 * Sc, 0.0, -1.70 * Sc), Vector3(-1.28 * Sc, 0.20 * Sc, -1.70 * Sc), 0.012 * Sc, 5)
+	h.tube(Vector3(-1.28 * Sc, 0.0, -1.15 * Sc), Vector3(-1.28 * Sc, 0.20 * Sc, -1.15 * Sc), 0.012 * Sc, 5)
 	VK._mi(root, root, "Hull", h.commit(mat))
 	var yaw := VK._n3(root, root, "LauncherYaw", Vector3(0, 0.06 * Sc, 0.90 * Sc))
 	var slew_tris := _missile_slew(yaw, root, mat, Sc)
@@ -2240,11 +2289,19 @@ static func mzkt_missile(mat: Material) -> void:
 			c.color("#4e5840", Geo.CONCRETE)
 			c.box(Vector3(sx * Sc, sy * Sc, -2.55 * Sc), Vector3(0.80 * Sc, 0.03 * Sc, 4.30 * Sc))
 			c.color("#738252", Geo.CONCRETE)
-	# Cradle rails and end lattice.
+	# The two rows meet through a spacer. Straps bite both skins so the side view has no daylight.
+	c.color("#5e6848", Geo.CONCRETE)
+	for sx2 in [-0.46, 0.46]:
+		c.box(Vector3(sx2 * Sc, 0.82 * Sc, -2.55 * Sc), Vector3(0.70 * Sc, 0.18 * Sc, 4.42 * Sc))
+	c.color("#2c302c", Geo.STEEL)
+	for szs in [-0.55, -1.70, -2.85, -4.00]:
+		c.box(Vector3(0, 0.82 * Sc, szs * Sc), Vector3(1.72 * Sc, 0.22 * Sc, 0.05 * Sc))
+		c.box(Vector3(-0.84 * Sc, 0.82 * Sc, szs * Sc), Vector3(0.05 * Sc, 0.26 * Sc, 0.07 * Sc))
+		c.box(Vector3(0.84 * Sc, 0.82 * Sc, szs * Sc), Vector3(0.05 * Sc, 0.26 * Sc, 0.07 * Sc))
+	# Cradle rails and end lattice. No short crossbar over the middle of the stack.
 	c.color("#2c302c", Geo.STEEL)
 	c.box(Vector3(-1.00 * Sc, 0.10 * Sc, -2.45 * Sc), Vector3(0.08 * Sc, 0.14 * Sc, 4.70 * Sc))
 	c.box(Vector3(1.00 * Sc, 0.10 * Sc, -2.45 * Sc), Vector3(0.08 * Sc, 0.14 * Sc, 4.70 * Sc))
-	c.box(Vector3(0, 1.52 * Sc, -2.45 * Sc), Vector3(2.08 * Sc, 0.06 * Sc, 0.06 * Sc))
 	for ez in [-0.40, -2.50, -4.70]:
 		c.box(Vector3(0, 0.10 * Sc, ez * Sc), Vector3(2.00 * Sc, 0.08 * Sc, 0.06 * Sc))
 	for side in [-1.0, 1.0]:
