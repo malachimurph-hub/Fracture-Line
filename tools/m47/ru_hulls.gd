@@ -2183,63 +2183,53 @@ static func mzkt_radar(mat: Material) -> void:
 
 ## Module C, cruise-missile launcher. Unwired. ModuleRoot sits on ModuleMount.
 ## +Z points at the cab. The bed runs z = -4.03 to 3.53 m and x = ±1.575 m.
-## LauncherPivot is the raised pose, 38 degrees, hinge toward the cab.
+## LauncherYaw is the bearing. Yaw 0 points the canisters aft. LauncherPivot
+## raises them 38 degrees and is parented under the bearing.
 static func mzkt_missile(mat: Material) -> void:
 	var Sc := 0.311
 	var root := Node3D.new()
 	root.name = "ModuleRoot"
 	var h = K.new()
 	h.plain = true
-	# Pedestal under the hinge, biting the deck.
+	# Fixed ring on the deck. The bearing above it is LauncherYaw, so this puck does not turn.
+	h.color("#2a2e2c", Geo.STEEL)
+	h.tube(Vector3(0, 0.005 * Sc, 0.90 * Sc), Vector3(0, 0.065 * Sc, 0.90 * Sc), 0.86 * Sc, 16)
+	h.color("#1a1c1a", Geo.STEEL)
+	h.tube(Vector3(0, 0.055 * Sc, 0.90 * Sc), Vector3(0, 0.075 * Sc, 0.90 * Sc), 0.70 * Sc, 16)
+	for i in 8:
+		var a := TAU * float(i) / 8.0
+		h.tube(Vector3(cos(a) * 0.78 * Sc, 0.02 * Sc, 0.90 * Sc + sin(a) * 0.78 * Sc), Vector3(cos(a) * 0.78 * Sc, 0.085 * Sc, 0.90 * Sc + sin(a) * 0.78 * Sc), 0.016 * Sc, 5)
+	# Equipment cabinet forward of the turntable, clear of the cradle's sweep.
 	h.color("#96A468", Geo.CONCRETE)
-	h.cbox(Vector3(0, 0.32 * Sc, 0.85 * Sc), Vector3(1.35 * Sc, 0.68 * Sc, 1.15 * Sc), 0.014 * Sc)
-	h.color("#3a3d38", Geo.STEEL)
-	h.tube(Vector3(0, 0.02 * Sc, 0.85 * Sc), Vector3(0, 0.08 * Sc, 0.85 * Sc), 0.55 * Sc, 8)
-	# Hinge beam and clevis plates. The barrel lives on the cradle.
-	h.color("#2c302c", Geo.STEEL)
-	h.cbox(Vector3(0, 0.50 * Sc, 1.05 * Sc), Vector3(2.15 * Sc, 0.16 * Sc, 0.32 * Sc), 0.01 * Sc)
-	for hx in [-0.90, -0.32, 0.32, 0.90]:
-		h.cbox(Vector3(hx * Sc, 0.60 * Sc, 1.05 * Sc), Vector3(0.07 * Sc, 0.24 * Sc, 0.28 * Sc), 0.008 * Sc)
-		h.color("#1a1c1a", Geo.STEEL)
-		h.box(Vector3(hx * Sc, 0.70 * Sc, 1.18 * Sc), Vector3(0.03 * Sc, 0.03 * Sc, 0.016 * Sc))
-		h.color("#2c302c", Geo.STEEL)
-	# Equipment box toward the cab, on the deck.
-	h.color("#96A468", Geo.CONCRETE)
-	h.cbox(Vector3(0, 0.58 * Sc, 2.35 * Sc), Vector3(1.55 * Sc, 1.20 * Sc, 1.35 * Sc), 0.016 * Sc)
+	h.cbox(Vector3(0, 0.52 * Sc, 2.90 * Sc), Vector3(1.40 * Sc, 1.04 * Sc, 1.20 * Sc), 0.016 * Sc)
 	h.color("#1c1e1c", Geo.DARK)
-	h.box(Vector3(0.79 * Sc, 0.62 * Sc, 2.35 * Sc), Vector3(0.03 * Sc, 0.72 * Sc, 0.48 * Sc))
+	h.box(Vector3(0.72 * Sc, 0.55 * Sc, 2.90 * Sc), Vector3(0.03 * Sc, 0.64 * Sc, 0.42 * Sc))
 	h.color("#738252", Geo.CONCRETE)
-	h.box(Vector3(0.805 * Sc, 0.62 * Sc, 2.35 * Sc), Vector3(0.016 * Sc, 0.60 * Sc, 0.38 * Sc))
+	h.box(Vector3(0.735 * Sc, 0.55 * Sc, 2.90 * Sc), Vector3(0.016 * Sc, 0.52 * Sc, 0.32 * Sc))
 	h.color("#3a3d38", Geo.STEEL)
-	h.box(Vector3(0.82 * Sc, 0.88 * Sc, 2.55 * Sc), Vector3(0.016 * Sc, 0.08 * Sc, 0.04 * Sc))
-	h.box(Vector3(0.82 * Sc, 0.62 * Sc, 2.12 * Sc), Vector3(0.02 * Sc, 0.06 * Sc, 0.08 * Sc))
+	h.box(Vector3(0.75 * Sc, 0.78 * Sc, 3.08 * Sc), Vector3(0.016 * Sc, 0.07 * Sc, 0.04 * Sc))
+	h.box(Vector3(0.75 * Sc, 0.42 * Sc, 2.68 * Sc), Vector3(0.02 * Sc, 0.06 * Sc, 0.08 * Sc))
 	h.color("#1c1e1c", Geo.DARK)
-	h.box(Vector3(0.79 * Sc, 0.95 * Sc, 2.85 * Sc), Vector3(0.02 * Sc, 0.22 * Sc, 0.28 * Sc))
+	h.box(Vector3(0.72 * Sc, 0.82 * Sc, 3.35 * Sc), Vector3(0.02 * Sc, 0.18 * Sc, 0.22 * Sc))
 	for i in 3:
-		h.box(Vector3(0.805 * Sc, (1.02 - float(i) * 0.06) * Sc, 2.85 * Sc), Vector3(0.012 * Sc, 0.016 * Sc, 0.22 * Sc))
+		h.box(Vector3(0.735 * Sc, (0.88 - float(i) * 0.05) * Sc, 3.35 * Sc), Vector3(0.012 * Sc, 0.014 * Sc, 0.16 * Sc))
+	# Cables stop at the fixed ring. They do not cross onto the bearing.
 	h.color("#141614", Geo.RUBBER)
-	h.tube(Vector3(0.7 * Sc, 0.35 * Sc, 1.55 * Sc), Vector3(0.55 * Sc, 0.48 * Sc, 0.7 * Sc), 0.014 * Sc, 4)
-	h.tube(Vector3(-0.55 * Sc, 0.30 * Sc, 1.70 * Sc), Vector3(-0.4 * Sc, 0.42 * Sc, 0.85 * Sc), 0.012 * Sc, 4)
-	# Ram plinths on the rear of the pedestal. The pins are the aft face, so the rams leave clear of the block.
-	for sx in [-0.55, 0.55]:
-		h.color("#96A468", Geo.CONCRETE)
-		h.box(Vector3(sx * Sc, 0.66 * Sc, 0.42 * Sc), Vector3(0.24 * Sc, 0.12 * Sc, 0.20 * Sc))
-		h.color("#2c302c", Geo.STEEL)
-		h.box(Vector3((sx - 0.07) * Sc, 0.78 * Sc, 0.30 * Sc), Vector3(0.035 * Sc, 0.14 * Sc, 0.14 * Sc))
-		h.box(Vector3((sx + 0.07) * Sc, 0.78 * Sc, 0.30 * Sc), Vector3(0.035 * Sc, 0.14 * Sc, 0.14 * Sc))
-		h.color("#1a1c1a", Geo.STEEL)
-		h.box(Vector3(sx * Sc, 0.72 * Sc, 0.30 * Sc), Vector3(0.16 * Sc, 0.03 * Sc, 0.03 * Sc))
-	# Deck stowage, inboard of the outrigger lane (|x| stays under 1.30 m).
+	h.tube(Vector3(0.55 * Sc, 0.22 * Sc, 2.30 * Sc), Vector3(0.62 * Sc, 0.10 * Sc, 1.78 * Sc), 0.014 * Sc, 4)
+	h.tube(Vector3(-0.55 * Sc, 0.20 * Sc, 2.30 * Sc), Vector3(-0.62 * Sc, 0.10 * Sc, 1.78 * Sc), 0.012 * Sc, 4)
+	# Deck stowage outside the bearing and outside the outrigger lane.
 	h.color("#6b4e32", Geo.WOOD)
-	h.box(Vector3(-0.90 * Sc, 0.18 * Sc, 2.85 * Sc), Vector3(0.42 * Sc, 0.36 * Sc, 0.38 * Sc))
+	h.box(Vector3(-1.22 * Sc, 0.16 * Sc, 3.20 * Sc), Vector3(0.32 * Sc, 0.32 * Sc, 0.32 * Sc))
 	h.color("#5c6844", Geo.CANVAS)
-	h.box(Vector3(0.90 * Sc, 0.12 * Sc, 0.55 * Sc), Vector3(0.36 * Sc, 0.24 * Sc, 0.28 * Sc))
+	h.box(Vector3(1.22 * Sc, 0.11 * Sc, 2.45 * Sc), Vector3(0.28 * Sc, 0.22 * Sc, 0.26 * Sc))
 	h.color("#6a6e66", Geo.STEEL)
-	h.tube(Vector3(-0.85 * Sc, 0.16 * Sc, 0.05 * Sc), Vector3(-0.85 * Sc, 0.16 * Sc, 0.45 * Sc), 0.16 * Sc, 8)
+	h.tube(Vector3(-1.18 * Sc, 0.16 * Sc, -0.35 * Sc), Vector3(-1.18 * Sc, 0.16 * Sc, 0.05 * Sc), 0.16 * Sc, 8)
 	h.color("#4a4e46", Geo.STEEL)
-	h.box(Vector3(0.88 * Sc, 0.10 * Sc, 3.15 * Sc), Vector3(0.32 * Sc, 0.20 * Sc, 0.24 * Sc))
+	h.box(Vector3(1.22 * Sc, 0.10 * Sc, 3.35 * Sc), Vector3(0.26 * Sc, 0.20 * Sc, 0.22 * Sc))
 	VK._mi(root, root, "Hull", h.commit(mat))
-	var piv := VK._n3(root, root, "LauncherPivot", Vector3(0, 0.58 * Sc, 1.05 * Sc))
+	var yaw := VK._n3(root, root, "LauncherYaw", Vector3(0, 0.06 * Sc, 0.90 * Sc))
+	var slew_tris := _missile_slew(yaw, root, mat, Sc)
+	var piv := VK._n3(yaw, root, "LauncherPivot", Vector3(0, 0.52 * Sc, 0.15 * Sc))
 	var c = K.new()
 	c.plain = true
 	# Four long canisters, two wide and two high, running back from the hinge.
@@ -2275,10 +2265,11 @@ static func mzkt_missile(mat: Material) -> void:
 		piv.add_child(eye)
 		eye.owner = root
 	VK._mi(piv, root, "Cradle", c.commit(mat))
-	var tris: int = h.tris + c.tris
-	tris += _missile_rams(root, mat, Sc)
+	var tris: int = h.tris + c.tris + slew_tris
+	tris += _missile_rams(yaw, root, mat, Sc)
 	tris += _missile_outriggers(root, mat, Sc)
 	_missile_anims(root)
+	root.set_script(load("res://view/units/ecc/mzkt_missile_module.gd"))
 	print("  mzkt_missile_module.tscn: %d tris" % tris)
 	var ps := PackedScene.new()
 	ps.pack(root)
@@ -2303,7 +2294,40 @@ static func _aim_z(dir: Vector3) -> Basis:
 
 ## Two cradle rams. Cylinder and rod share a pivot, and the rod slides along it,
 ## so the pair stays one piece from the stowed pin to the raised pin.
-static func _missile_rams(root: Node3D, mat: Material, Sc: float) -> int:
+## Bearing, platform, pedestal and hinge, in LauncherYaw local metres.
+## The yaw origin is module (0, 0.06, 0.90), so module y/z minus that is local.
+static func _missile_slew(yaw: Node3D, root: Node3D, mat: Material, Sc: float) -> int:
+	var g = K.new()
+	g.plain = true
+	g.color("#3a3d38", Geo.STEEL)
+	g.tube(Vector3(0, 0, 0), Vector3(0, 0.045 * Sc, 0), 0.60 * Sc, 16)
+	g.color("#96A468", Geo.CONCRETE)
+	g.tube(Vector3(0, 0.035 * Sc, 0), Vector3(0, 0.09 * Sc, 0), 0.74 * Sc, 16)
+	g.color("#2c302c", Geo.STEEL)
+	for i in 6:
+		var a := TAU * (float(i) + 0.5) / 6.0
+		g.box(Vector3(cos(a) * 0.66 * Sc, 0.10 * Sc, sin(a) * 0.66 * Sc), Vector3(0.07 * Sc, 0.018 * Sc, 0.045 * Sc))
+	g.color("#96A468", Geo.CONCRETE)
+	g.cbox(Vector3(0, 0.26 * Sc, -0.05 * Sc), Vector3(1.35 * Sc, 0.68 * Sc, 1.15 * Sc), 0.014 * Sc)
+	g.color("#2c302c", Geo.STEEL)
+	g.cbox(Vector3(0, 0.44 * Sc, 0.15 * Sc), Vector3(2.15 * Sc, 0.16 * Sc, 0.32 * Sc), 0.01 * Sc)
+	for hx in [-0.90, -0.32, 0.32, 0.90]:
+		g.cbox(Vector3(hx * Sc, 0.54 * Sc, 0.15 * Sc), Vector3(0.07 * Sc, 0.24 * Sc, 0.28 * Sc), 0.008 * Sc)
+		g.color("#1a1c1a", Geo.STEEL)
+		g.box(Vector3(hx * Sc, 0.64 * Sc, 0.28 * Sc), Vector3(0.03 * Sc, 0.03 * Sc, 0.016 * Sc))
+		g.color("#2c302c", Geo.STEEL)
+	for sx in [-0.55, 0.55]:
+		g.color("#96A468", Geo.CONCRETE)
+		g.box(Vector3(sx * Sc, 0.60 * Sc, -0.48 * Sc), Vector3(0.24 * Sc, 0.12 * Sc, 0.20 * Sc))
+		g.color("#2c302c", Geo.STEEL)
+		g.box(Vector3((sx - 0.07) * Sc, 0.72 * Sc, -0.60 * Sc), Vector3(0.035 * Sc, 0.14 * Sc, 0.14 * Sc))
+		g.box(Vector3((sx + 0.07) * Sc, 0.72 * Sc, -0.60 * Sc), Vector3(0.035 * Sc, 0.14 * Sc, 0.14 * Sc))
+		g.color("#1a1c1a", Geo.STEEL)
+		g.box(Vector3(sx * Sc, 0.66 * Sc, -0.60 * Sc), Vector3(0.16 * Sc, 0.03 * Sc, 0.03 * Sc))
+	VK._mi(yaw, root, "Slew", g.commit(mat))
+	return g.tris
+
+static func _missile_rams(parent: Node3D, root: Node3D, mat: Material, Sc: float) -> int:
 	var tris := 0
 	var raise := deg_to_rad(38.0)
 	for side in [-1.0, 1.0]:
@@ -2316,7 +2340,8 @@ static func _missile_rams(root: Node3D, mat: Material, Sc: float) -> int:
 		var deploy_pos := d1 - rod_len
 		var overlap := cyl_end - deploy_pos
 		print("  ram side %.0f  stow %.3f m  deploy %.3f m  overlap %.3f m" % [s, d0, d1, overlap])
-		var ram := VK._n3(root, root, "RamR" if s > 0.0 else "RamL", clevis * Sc)
+		# Parent is LauncherYaw, whose origin is module (0, 0.06, 0.90).
+		var ram := VK._n3(parent, root, "RamR" if s > 0.0 else "RamL", (clevis - Vector3(0, 0.06, 0.90)) * Sc)
 		ram.basis = _aim_z(_missile_eye_m(0.0, s) - clevis)
 		ram.set_meta("rod_len_m", rod_len)
 		var g = K.new()
@@ -2456,8 +2481,8 @@ static func _missile_anims(root: Node3D) -> void:
 		_missile_pos(deploy, pack, root, rod, 0.0, Vector3(0, stow_y, 0))
 		_missile_pos(deploy, pack, root, rod, 4.0, Vector3(0, stow_y, 0))
 		_missile_pos(deploy, pack, root, rod, 4.8, Vector3(0, deploy_y, 0))
-	var piv := root.get_node("LauncherPivot") as Node3D
-	var sc: float = (root.get_node("RamR") as Node3D).position.x / 0.55
+	var piv := root.find_child("LauncherPivot", true, false) as Node3D
+	var sc: float = (root.find_child("RamR", true, false) as Node3D).position.x / 0.55
 	var raise := deg_to_rad(38.0)
 	_missile_quat(deploy, pack, root, piv, 0.0, Quaternion.IDENTITY)
 	for i in 21:
@@ -2466,7 +2491,7 @@ static func _missile_anims(root: Node3D) -> void:
 		_missile_quat(deploy, pack, root, piv, t, Quaternion(Basis(Vector3.RIGHT, alpha)))
 		for side in [-1.0, 1.0]:
 			var s: float = side
-			var ram := root.get_node("RamR" if s > 0.0 else "RamL") as Node3D
+			var ram := root.find_child("RamR" if s > 0.0 else "RamL", true, false) as Node3D
 			var rod2 := ram.get_node("Rod") as Node3D
 			var clevis := _missile_clevis_m(s)
 			var dist := _missile_eye_m(alpha, s).distance_to(clevis)
@@ -2476,7 +2501,7 @@ static func _missile_anims(root: Node3D) -> void:
 			_missile_pos(deploy, pack, root, rod2, t, Vector3(0, 0, (dist - rod_len) * sc))
 	for side2 in [-1.0, 1.0]:
 		var s2: float = side2
-		var ram0 := root.get_node("RamR" if s2 > 0.0 else "RamL") as Node3D
+		var ram0 := root.find_child("RamR" if s2 > 0.0 else "RamL", true, false) as Node3D
 		var rod0 := ram0.get_node("Rod") as Node3D
 		var clevis0 := _missile_clevis_m(s2)
 		var basis0 := _aim_z(_missile_eye_m(0.0, s2) - clevis0)

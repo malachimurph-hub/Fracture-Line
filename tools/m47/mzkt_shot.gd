@@ -318,8 +318,8 @@ func _missile_setup(cam: Camera3D, sun: DirectionalLight3D, rig: Node3D, mod: No
 	await frames(3)
 	await shot("missile_zoom_pad")
 	print("CAM pad zoom fov ", cam.fov, " at ", at)
-	var tip := mod.get_node("RamR/Rod/Tip") as Node3D
-	var eye := mod.get_node("LauncherPivot/EyeR") as Node3D
+	var tip := mod.get_node("LauncherYaw/RamR/Rod/Tip") as Node3D
+	var eye := mod.get_node("LauncherYaw/LauncherPivot/EyeR") as Node3D
 	var ram_at := (tip.global_position + eye.global_position) * 0.5
 	cam.projection = Camera3D.PROJECTION_ORTHOGONAL
 	cam.size = 0.36
@@ -359,6 +359,13 @@ func _missile_setup(cam: Camera3D, sun: DirectionalLight3D, rig: Node3D, mod: No
 	await get_tree().process_frame
 	_report_motion(mod, sc, 8.0)
 	print("PACK t8 is the stowed pose")
+	await _pose(ap, 8.0)
+	var yaw_node := mod.get_node("LauncherYaw") as Node3D
+	mod.aim_at(yaw_node.global_position + Vector3(20.0, 0.0, 0.0))
+	print("AIM right deg ", rad_to_deg(yaw_node.rotation.y))
+	mod.aim_at(yaw_node.global_position + Vector3(0.0, 0.0, -20.0))
+	print("AIM aft deg ", rad_to_deg(yaw_node.rotation.y))
+	await _missile_yaw(cam, sun, rig, mod, sc, aspect)
 
 func _pose_views(cam: Camera3D, sun: DirectionalLight3D, rig: Node3D, prefix: String, aspect: float) -> float:
 	var whole := _aabb(rig)
@@ -389,6 +396,33 @@ func _pose_views(cam: Camera3D, sun: DirectionalLight3D, rig: Node3D, prefix: St
 	await shot(prefix + "_front")
 	return side_size
 
+## Deployed cradle at three bearings. Top has the cab toward the top of the frame.
+func _missile_yaw(cam: Camera3D, sun: DirectionalLight3D, rig: Node3D, mod: Node3D, sc: float, aspect: float) -> void:
+	for deg in [0, 90, 135]:
+		mod.target_yaw_deg = float(deg)
+		await get_tree().process_frame
+		_report_motion(mod, sc, 8.0)
+		var held: float = rad_to_deg((mod.get_node("LauncherYaw") as Node3D).rotation.y)
+		print("YAW set ", deg, " held ", held)
+		var whole := _aabb(rig)
+		var center := whole.get_center()
+		cam.projection = Camera3D.PROJECTION_ORTHOGONAL
+		cam.size = maxf(whole.size.x * 1.2, whole.size.z * 1.12 / aspect)
+		cam.global_position = Vector3(center.x, center.y + 16.0, center.z)
+		cam.look_at(Vector3(center.x, 0.0, center.z), Vector3(0, 0, 1))
+		sun.rotation_degrees = Vector3(-70, 25, 0)
+		await frames(3)
+		await shot("missile_yaw_%d_top" % deg)
+		cam.projection = Camera3D.PROJECTION_PERSPECTIVE
+		cam.fov = 28.0
+		var focus := center + Vector3(0, 0.1, 0)
+		cam.global_position = focus + Vector3(6.4, 3.6, 5.2)
+		cam.look_at(focus, Vector3.UP)
+		sun.rotation_degrees = Vector3(-36, 32, 0)
+		await frames(3)
+		await shot("missile_yaw_%d_three_quarter" % deg)
+	mod.target_yaw_deg = 0.0
+
 func _pose(ap: AnimationPlayer, t: float) -> void:
 	ap.play(&"deploy")
 	ap.seek(t, true)
@@ -399,8 +433,8 @@ func _report_motion(mod: Node3D, sc: float, t: float) -> void:
 	var worst := 0.0
 	var worst_name := ""
 	for pair in [["RamR", "EyeR"], ["RamL", "EyeL"]]:
-		var tip := mod.get_node(String(pair[0]) + "/Rod/Tip") as Node3D
-		var eye := mod.get_node("LauncherPivot/" + String(pair[1])) as Node3D
+		var tip := mod.get_node("LauncherYaw/" + String(pair[0]) + "/Rod/Tip") as Node3D
+		var eye := mod.get_node("LauncherYaw/LauncherPivot/" + String(pair[1])) as Node3D
 		var d := tip.global_position.distance_to(eye.global_position) / sc
 		if d > worst:
 			worst = d
