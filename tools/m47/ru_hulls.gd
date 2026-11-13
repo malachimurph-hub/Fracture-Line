@@ -1302,80 +1302,141 @@ static func mi8_v2(mat: Material) -> void:
 		[-1.85 * Sc, _mi8_ring(0.72 * Sc, 1.15 * Sc, 2.55 * Sc, 0.36 * Sc)],
 		[-2.35 * Sc, _mi8_ring(0.42 * Sc, 1.45 * Sc, 2.15 * Sc, 0.24 * Sc)],
 	])
-	# Greenhouse: front wrap, upper nose, and the lower chin, sitting on the blunt nose.
-	h.color("#3e4850", Geo.GLASS)
-	h.pane([Vector3(-0.55 * Sc, 1.45 * Sc, 8.85 * Sc), Vector3(0.55 * Sc, 1.45 * Sc, 8.85 * Sc), Vector3(0.70 * Sc, 2.15 * Sc, 8.35 * Sc), Vector3(-0.70 * Sc, 2.15 * Sc, 8.35 * Sc)], Vector3(0, 0.2, 1))
-	h.pane([Vector3(-0.85 * Sc, 2.05 * Sc, 8.45 * Sc), Vector3(0.85 * Sc, 2.05 * Sc, 8.45 * Sc), Vector3(0.95 * Sc, 2.70 * Sc, 7.55 * Sc), Vector3(-0.95 * Sc, 2.70 * Sc, 7.55 * Sc)], Vector3(0, 0.6, 1))
-	h.pane([Vector3(-0.70 * Sc, 2.55 * Sc, 7.70 * Sc), Vector3(0.70 * Sc, 2.55 * Sc, 7.70 * Sc), Vector3(0.85 * Sc, 3.15 * Sc, 6.60 * Sc), Vector3(-0.85 * Sc, 3.15 * Sc, 6.60 * Sc)], Vector3(0, 1, 0.3))
-	h.pane([Vector3(-0.55 * Sc, 1.15 * Sc, 8.55 * Sc), Vector3(0.55 * Sc, 1.15 * Sc, 8.55 * Sc), Vector3(0.85 * Sc, 0.78 * Sc, 7.55 * Sc), Vector3(-0.85 * Sc, 0.78 * Sc, 7.55 * Sc)], Vector3(0, -0.4, 1))
-	h.pane([Vector3(-1.05 * Sc, 1.15 * Sc, 8.15 * Sc), Vector3(-0.70 * Sc, 1.05 * Sc, 8.70 * Sc), Vector3(-0.55 * Sc, 2.35 * Sc, 8.55 * Sc), Vector3(-1.15 * Sc, 2.45 * Sc, 7.70 * Sc)], Vector3(-1, 0, 0.5))
-	h.pane([Vector3(1.05 * Sc, 1.15 * Sc, 8.15 * Sc), Vector3(0.70 * Sc, 1.05 * Sc, 8.70 * Sc), Vector3(0.55 * Sc, 2.35 * Sc, 8.55 * Sc), Vector3(1.15 * Sc, 2.45 * Sc, 7.70 * Sc)], Vector3(1, 0, 0.5))
-	# Round cabin portholes along the full-width side.
-	for s in [-1.0, 1.0]:
-		for i in 5:
-			var zz: float = (4.8 - float(i) * 1.15) * Sc
-			h.pane([
-				Vector3(s * 1.27 * Sc, 1.45 * Sc, zz - 0.18 * Sc), Vector3(s * 1.27 * Sc, 1.45 * Sc, zz + 0.18 * Sc),
-				Vector3(s * 1.27 * Sc, 1.95 * Sc, zz + 0.18 * Sc), Vector3(s * 1.27 * Sc, 1.95 * Sc, zz - 0.18 * Sc)],
-				Vector3(s, 0, 0))
-	# Engine hump on the flat cabin roof. Intakes face forward. No Mi-17 side filters.
-	h.color("#7c7e79", Geo.PAINT)
+	# Framed greenhouse on the blunt nose. Two pilot windscreens, eyebrow panes,
+	# chin glazing, a fixed side pane and the bulged sliding side window.
+	_mi8_win(h, _mi8_quad(Sc, Vector3(-0.07, 1.70, 9.06), Vector3(-0.60, 1.56, 8.90), Vector3(-1.10, 2.74, 8.40)), Vector3(-0.2, 0.3, 1))
+	_mi8_win(h, _mi8_quad(Sc, Vector3(0.07, 1.70, 9.06), Vector3(0.60, 1.56, 8.90), Vector3(1.10, 2.74, 8.40)), Vector3(0.2, 0.3, 1))
+	h.color("#161a1e", Geo.DARK)
+	h.tube(Vector3(0, 1.70 * Sc, 9.06 * Sc), Vector3(0, 2.80 * Sc, 8.48 * Sc), 0.026, 5)
+	for ei in 4:
+		var x0: float = -0.84 + float(ei) * 0.42
+		var x1: float = x0 + 0.42
+		_mi8_win(h, _mi8_quad(Sc, Vector3(x0 + 0.04, 3.28, 8.28), Vector3(x1 - 0.04, 3.28, 8.28), Vector3(x1 - 0.04, 3.55, 7.62)), Vector3(0, 1, 0.2), 15 if ei == 0 else 7)
+	_mi8_win(h, _mi8_quad(Sc, Vector3(-0.06, 1.28, 9.04), Vector3(-0.55, 1.05, 8.78), Vector3(-0.55, 0.82, 8.48)), Vector3(0, -0.7, 1))
+	_mi8_win(h, _mi8_quad(Sc, Vector3(0.06, 1.28, 9.04), Vector3(0.55, 1.05, 8.78), Vector3(0.55, 0.82, 8.48)), Vector3(0, -0.7, 1))
+	for sw in [-1.0, 1.0]:
+		var ss: float = sw
+		# Side greenhouse, stacked so the frame reads in profile, then the bulged slider.
+		_mi8_win(h, _mi8_quad(Sc, Vector3(ss * 1.30, 2.15, 8.55), Vector3(ss * 1.30, 2.15, 8.02), Vector3(ss * 1.30, 2.95, 8.02)), Vector3(ss, 0.2, 0.4))
+		_mi8_win(h, _mi8_quad(Sc, Vector3(ss * 1.28, 1.15, 8.58), Vector3(ss * 1.28, 1.15, 8.05), Vector3(ss * 1.28, 2.05, 8.05)), Vector3(ss, -0.1, 0.3))
+		_mi8_blister(h, ss, Sc)
+	# Round cabin windows. The port row stops for the sliding door.
+	for pz in [4.70, 3.75, 1.30, 0.25]:
+		_mi8_port(h, Vector3(-1.30 * Sc, 1.85 * Sc, float(pz) * Sc), -1.0)
+	for i2 in 5:
+		_mi8_port(h, Vector3(1.30 * Sc, 1.85 * Sc, (4.65 - float(i2) * 1.05) * Sc), 1.0)
+	# Engine and gearbox fairing, about half the cabin length, intakes forward.
+	h.color("#9b9d96", Geo.PAINT)
+	var fair_a := 5.35
+	var fair_b := 1.05
+	h.xloft([
+		[fair_a * Sc, _mi8_ring(0.88 * Sc, 3.48 * Sc, 4.02 * Sc, 0.20 * Sc)],
+		[5.00 * Sc, _mi8_ring(1.12 * Sc, 3.36 * Sc, 4.22 * Sc, 0.28 * Sc)],
+		[3.15 * Sc, _mi8_ring(1.14 * Sc, 3.36 * Sc, 4.36 * Sc, 0.30 * Sc)],
+		[1.85 * Sc, _mi8_ring(1.06 * Sc, 3.36 * Sc, 4.28 * Sc, 0.26 * Sc)],
+		[fair_b * Sc, _mi8_ring(0.50 * Sc, 3.48 * Sc, 3.92 * Sc, 0.16 * Sc)],
+	])
+	h.xloft([
+		[2.15 * Sc, _mi8_ring(0.32 * Sc, 4.20 * Sc, 4.36 * Sc, 0.10 * Sc)],
+		[1.60 * Sc, _mi8_ring(0.44 * Sc, 4.16 * Sc, 4.52 * Sc, 0.14 * Sc)],
+		[1.20 * Sc, _mi8_ring(0.26 * Sc, 4.18 * Sc, 4.34 * Sc, 0.08 * Sc)],
+	])
 	for s2 in [-1.0, 1.0]:
-		h.tube(Vector3(s2 * 0.55 * Sc, 3.82 * Sc, 3.6 * Sc), Vector3(s2 * 0.55 * Sc, 3.82 * Sc, 0.4 * Sc), 0.40 * Sc, 8, 0.34 * Sc)
-		h.color("#2c3034", Geo.DARK)
-		h.tube(Vector3(s2 * 0.55 * Sc, 3.82 * Sc, 3.62 * Sc), Vector3(s2 * 0.55 * Sc, 3.82 * Sc, 3.78 * Sc), 0.28 * Sc, 8)
-		h.color("#7c7e79", Geo.PAINT)
-	# Mast over the hump. Hub stays at 4.75 m.
+		var es: float = s2
+		var mouth := Vector3(es * 0.42 * Sc, 3.66 * Sc, fair_a * Sc)
+		h.color("#6a6c68", Geo.STEEL)
+		h.tube(mouth, mouth + Vector3(0, 0, 0.22 * Sc), 0.30 * Sc, 10)
+		h.color("#14181c", Geo.DARK)
+		h.tube(mouth + Vector3(0, 0, 0.04 * Sc), mouth + Vector3(0, 0, 0.20 * Sc), 0.19 * Sc, 8)
+		h.color("#5c5e5a", Geo.STEEL)
+		var exh0 := Vector3(es * 0.90 * Sc, 3.72 * Sc, 1.35 * Sc)
+		var exh1 := Vector3(es * 1.58 * Sc, 3.18 * Sc, 0.48 * Sc)
+		h.tube(exh0, exh1, 0.18 * Sc, 8, 0.24 * Sc)
+		h.color("#14181c", Geo.DARK)
+		h.tube(exh1 - (exh1 - exh0).normalized() * 0.10 * Sc, exh1, 0.15 * Sc, 8)
+	# Mast and hub housing. Hub stays at 4.75 m over the gearbox.
 	h.color("#6e706c", Geo.STEEL)
-	var hub := Vector3(0, 4.75 * Sc, 1.6 * Sc)
-	h.tube(Vector3(0, 4.15 * Sc, hub.z), hub, 0.18 * Sc, 8)
-	# Boom starts after the step behind the clamshells.
+	var hub := Vector3(0, 4.75 * Sc, 1.60 * Sc)
+	h.tube(Vector3(0, 4.46 * Sc, hub.z), Vector3(0, 4.62 * Sc, hub.z), 0.16 * Sc, 8)
+	h.tube(Vector3(0, 4.56 * Sc, hub.z), Vector3(0, 4.70 * Sc, hub.z), 0.28 * Sc, 10)
+	# Boom into the fin. The fuselage loft itself is unchanged.
 	h.color("#8d8f8a", Geo.PAINT)
-	h.tube(Vector3(0, 1.80 * Sc, -2.35 * Sc), Vector3(0, 1.90 * Sc, -8.3 * Sc), 0.40 * Sc, 8, 0.16 * Sc)
+	h.tube(Vector3(0, 1.80 * Sc, -2.35 * Sc), Vector3(0, 1.90 * Sc, -8.90 * Sc), 0.40 * Sc, 8, 0.16 * Sc)
 	print("  mi8 cabin %.2f m wide, belly-to-roof %.2f m, ratio to 18.22 m length %.3f" % [cabin_w, cabin_h, cabin_h / 18.22])
-	h.plate(Vector3(0, 2.55 * Sc, -8.70 * Sc), Vector3(0.08 * Sc, 1.35 * Sc, 0.82 * Sc), Vector3(0, 0, 0))
-	h.plate(Vector3(0, 1.95 * Sc, -7.70 * Sc), Vector3(1.15 * Sc, 0.06 * Sc, 0.42 * Sc), Vector3(0, 0, 0))
-	# Tricycle gear. Main wheels outboard of the fuselage, track about 4.5 m.
-	h.color("#5c5e5a", Geo.STEEL)
-	h.tube(Vector3(0, 1.15 * Sc, 6.6 * Sc), Vector3(0, 0.18 * Sc, 6.9 * Sc), 0.06 * Sc, 5)
-	h.tyre(Vector3(-0.12 * Sc, 0.16 * Sc, 6.95 * Sc), 0.16 * Sc, 0.10 * Sc, true, "#3a3d40", 8)
-	h.tyre(Vector3(0.12 * Sc, 0.16 * Sc, 6.95 * Sc), 0.16 * Sc, 0.10 * Sc, true, "#3a3d40", 8)
+	print("  mi8 fairing %.2f m to %.2f m (%.2f m, cabin %.2f m)" % [fair_a, fair_b, fair_a - fair_b, 6.40 - (-1.15)])
+	# Swept fin. The tail rotor sits on its starboard face. Stab on the boom ahead of it.
+	var fin: Array = []
+	for fp in [Vector2(-7.40, 1.80), Vector2(-9.25, 1.55), Vector2(-9.35, 3.80), Vector2(-8.15, 4.00)]:
+		fin.append(Vector2(fp.x * Sc, fp.y * Sc))
+	h.prism_x(fin, -0.04 * Sc, 0.12 * Sc)
+	h.color("#7c7e78", Geo.PAINT)
+	h.box(Vector3(0, 1.98 * Sc, -6.55 * Sc), Vector3(3.60 * Sc, 0.16 * Sc, 1.05 * Sc))
+	h.color("#8d8f8a", Geo.PAINT)
+	h.color("#5a5c58", Geo.STEEL)
+	var tail_at := Vector3(0.24 * Sc, 2.80 * Sc, -8.60 * Sc)
+	h.tube(Vector3(0.10 * Sc, tail_at.y, tail_at.z), tail_at, 0.11 * Sc, 8)
+	# Fixed tricycle gear. Track 4.50 m. Main tyre 865x280, nose 595x185 twin.
+	# Wheelbase 4.28 m, the published Mi-8 figure; the drawing has no scale bar.
+	var nose_z := 7.05
+	var main_z := nose_z - 4.28
+	var main_r := 0.432
+	var nose_r := 0.298
+	h.color("#4e524e", Geo.STEEL)
+	h.tube(Vector3(0, 0.62 * Sc, (nose_z + 0.15) * Sc), Vector3(0, nose_r * Sc, nose_z * Sc), 0.055 * Sc, 6)
+	h.tube(Vector3(0, 0.55 * Sc, (nose_z - 0.85) * Sc), Vector3(0, nose_r * Sc, nose_z * Sc), 0.035 * Sc, 5)
+	h.tube(Vector3(-0.22 * Sc, nose_r * Sc, nose_z * Sc), Vector3(0.22 * Sc, nose_r * Sc, nose_z * Sc), 0.035 * Sc, 5)
+	h.tyre(Vector3(-0.20 * Sc, nose_r * Sc, nose_z * Sc), nose_r * Sc, 0.16 * Sc, true, "#3a3d40", 8)
+	h.tyre(Vector3(0.20 * Sc, nose_r * Sc, nose_z * Sc), nose_r * Sc, 0.16 * Sc, true, "#3a3d40", 8)
 	for sg in [-1.0, 1.0]:
-		var gx: float = sg * 2.25 * Sc
-		h.tube(Vector3(sg * 0.9 * Sc, 0.55 * Sc, 1.7 * Sc), Vector3(gx, 0.22 * Sc, 1.9 * Sc), 0.07 * Sc, 5)
-		h.tyre(Vector3(gx, 0.28 * Sc, 1.95 * Sc), 0.28 * Sc, 0.16 * Sc, false, "#3a3d40", 8)
-	# Six rocket pods, three a side, on a spar. Published Mi-8T load. The drawing shows the row
-	# but not a countable number.
-	h.color("#4a4c48", Geo.STEEL)
-	for side in [-1.0, 1.0]:
-		h.tube(Vector3(side * 1.15 * Sc, 1.05 * Sc, 4.6 * Sc), Vector3(side * 1.55 * Sc, 0.45 * Sc, -0.4 * Sc), 0.05 * Sc, 5)
-		h.tube(Vector3(side * 1.2 * Sc, 1.5 * Sc, 3.2 * Sc), Vector3(side * 1.5 * Sc, 1.05 * Sc, 2.2 * Sc), 0.04 * Sc, 4)
+		var gs: float = sg
+		var axle := Vector3(gs * 2.25 * Sc, main_r * Sc, main_z * Sc)
+		h.color("#4a4e4a", Geo.STEEL)
+		h.tube(Vector3(gs * 1.15 * Sc, 1.05 * Sc, (main_z + 0.45) * Sc), axle + Vector3(gs * -0.08 * Sc, 0.06 * Sc, 0.08 * Sc), 0.09 * Sc, 7)
+		h.tube(axle + Vector3(gs * -0.15 * Sc, 0.04 * Sc, 0), Vector3(gs * 1.05 * Sc, 0.62 * Sc, (main_z + 1.35) * Sc), 0.04 * Sc, 5)
+		h.tube(axle + Vector3(gs * -0.15 * Sc, 0.04 * Sc, 0), Vector3(gs * 1.05 * Sc, 0.62 * Sc, (main_z - 1.15) * Sc), 0.04 * Sc, 5)
+		h.tube(axle + Vector3(gs * -0.18 * Sc, 0, 0), axle + Vector3(gs * 0.16 * Sc, 0, 0), 0.045 * Sc, 5)
+		h.tyre(axle, main_r * Sc, 0.26 * Sc, false, "#3a3d40", 10)
+	print("  mi8 gear track 4.50 m, wheelbase %.2f m, main dia %.3f m, nose dia %.3f m" % [nose_z - main_z, main_r * 2.0, nose_r * 2.0])
+	# Stub weapon beam each side, three struts, three rocket pods. The drawing shows the
+	# row and not a count; six is the published Mi-8T load.
 	var pods: Array = []
-	for side2 in [-1.0, 1.0]:
-		var tag := "R" if side2 > 0.0 else "L"
+	for side in [-1.0, 1.0]:
+		var sd: float = side
+		h.color("#5c5e58", Geo.PAINT)
+		h.cbox(Vector3(sd * 1.68 * Sc, 1.42 * Sc, 2.70 * Sc), Vector3(0.92 * Sc, 0.28 * Sc, 4.50 * Sc), 0.05 * Sc)
+		h.color("#4a4c48", Geo.STEEL)
+		h.tube(Vector3(sd * 1.22 * Sc, 2.35 * Sc, 4.15 * Sc), Vector3(sd * 1.95 * Sc, 1.52 * Sc, 3.85 * Sc), 0.05 * Sc, 5)
+		h.tube(Vector3(sd * 1.22 * Sc, 2.35 * Sc, 2.55 * Sc), Vector3(sd * 2.00 * Sc, 1.52 * Sc, 2.55 * Sc), 0.05 * Sc, 5)
+		h.tube(Vector3(sd * 1.22 * Sc, 2.25 * Sc, 1.05 * Sc), Vector3(sd * 1.95 * Sc, 1.52 * Sc, 1.35 * Sc), 0.05 * Sc, 5)
+		var tag := "R" if sd > 0.0 else "L"
 		for i in 3:
-			var pz: float = (4.3 - float(i) * 1.7) * Sc
-			var px: float = side2 * 1.55 * Sc
-			var py: float = 0.32 * Sc
-			h.color("#3c3e3a", Geo.DARK)
-			h.tube(Vector3(px, py, pz - 0.85 * Sc), Vector3(px, py, pz + 0.85 * Sc), 0.16 * Sc, 8)
+			var pz: float = (4.45 - float(i) * 1.70) * Sc
+			var px: float = sd * 1.72 * Sc
+			var py: float = 0.86 * Sc
+			h.color("#3a3c38", Geo.STEEL)
+			h.tube(Vector3(px, 1.28 * Sc, pz), Vector3(px, py + 0.20 * Sc, pz), 0.045 * Sc, 5)
+			h.color("#4e524c", Geo.DARK)
+			h.tube(Vector3(px, py, pz - 0.82 * Sc), Vector3(px, py, pz + 0.62 * Sc), 0.20 * Sc, 8)
+			h.tube(Vector3(px, py, pz + 0.62 * Sc), Vector3(px, py, pz + 0.98 * Sc), 0.20 * Sc, 8, 0.05 * Sc)
 			var mk := Marker3D.new()
 			mk.name = "PodMuzzle%s%d" % [tag, i + 1]
-			mk.position = Vector3(px, py, pz + 0.90 * Sc)
+			mk.position = Vector3(px, py, pz + 1.02 * Sc)
 			model.add_child(mk)
 			mk.owner = root
 			pods.append(mk.name)
-	# Port cabin door and the two rear clamshells, shut, each its own mesh.
+	# Door rail on the hull. The door and clamshells stay separate shut meshes.
+	h.color("#2c3034", Geo.DARK)
+	h.tube(Vector3(-1.32 * Sc, 2.72 * Sc, 1.85 * Sc), Vector3(-1.32 * Sc, 2.72 * Sc, 3.40 * Sc), 0.025, 5)
+	h.tube(Vector3(-1.32 * Sc, 0.95 * Sc, 1.90 * Sc), Vector3(-1.32 * Sc, 0.95 * Sc, 3.30 * Sc), 0.018, 4)
 	var parts: Array = []
-	parts.append(_mi8_plate(model, root, mat, "DoorPort", Vector3(-1.30 * Sc, 1.85 * Sc, 2.6 * Sc), Vector3(0.05 * Sc, 2.15 * Sc, 1.35 * Sc)))
-	parts.append(_mi8_plate(model, root, mat, "ClamshellL", Vector3(-0.62 * Sc, 1.93 * Sc, -1.18 * Sc), Vector3(1.15 * Sc, 2.55 * Sc, 0.07 * Sc)))
-	parts.append(_mi8_plate(model, root, mat, "ClamshellR", Vector3(0.62 * Sc, 1.93 * Sc, -1.18 * Sc), Vector3(1.15 * Sc, 2.55 * Sc, 0.07 * Sc)))
+	parts.append(_mi8_door(model, root, mat, Vector3(-1.34 * Sc, 1.82 * Sc, 2.60 * Sc), Vector3(0.05 * Sc, 1.70 * Sc, 1.15 * Sc)))
+	parts.append(_mi8_clamshell(model, root, mat, "ClamshellL", Vector3(-0.62 * Sc, 1.93 * Sc, -1.18 * Sc), Vector3(1.12 * Sc, 2.50 * Sc, 0.07 * Sc), -1.0))
+	parts.append(_mi8_clamshell(model, root, mat, "ClamshellR", Vector3(0.62 * Sc, 1.93 * Sc, -1.18 * Sc), Vector3(1.12 * Sc, 2.50 * Sc, 0.07 * Sc), 1.0))
 	# Five main blades. Hub is the Rotor pivot.
 	var rotor := VK._n3(model, root, "Rotor", hub)
 	rotor.set_meta("rotor_axis", "y")
 	parts.append(_mi8_rotor(rotor, root, mat, 10.645 * Sc, 5, false))
 	# Three tail blades. Starboard of the fin (+X).
-	var tail_at := Vector3(0.22 * Sc, 2.55 * Sc, -8.70 * Sc)
 	var tail := VK._n3(model, root, "TailRotor", tail_at)
 	tail.set_meta("rotor_axis", "x")
 	parts.append(_mi8_rotor(tail, root, mat, 1.955 * Sc, 3, true))
@@ -1400,6 +1461,83 @@ static func _mi8_ring(hw: float, y0: float, y1: float, rad: float) -> Array:
 			var ang: float = float(c[2]) + (float(c[3]) - float(c[2])) * t
 			pts.append(Vector2(float(c[0]) + cos(ang) * rx, float(c[1]) + sin(ang) * ry))
 	return pts
+
+## Three corners of a parallelogram, in metres, returned in model units.
+static func _mi8_quad(sc: float, a: Vector3, b: Vector3, c: Vector3) -> Array:
+	return [a * sc, b * sc, c * sc, (a + c - b) * sc]
+
+## Glass pane plus a dark frame. mask bit i draws the edge from i to i+1.
+static func _mi8_win(h, q: Array, out: Vector3, mask: int = 15) -> void:
+	h.color("#24323a", Geo.GLASS)
+	h.pane(q, out, 0.008, 0.012)
+	h.color("#161a1e", Geo.DARK)
+	for i in 4:
+		if (mask & (1 << i)) == 0:
+			continue
+		var a: Vector3 = q[i]
+		var b: Vector3 = q[(i + 1) % 4]
+		h.tube(a, b, 0.026, 5)
+
+## Bulged sliding cockpit window. s is +1 starboard, -1 port.
+static func _mi8_blister(h, s: float, sc: float) -> void:
+	var cy := 2.20
+	var cz := 7.40
+	var n := 10
+	var rings: Array = []
+	var depths: Array = [0.0, 0.12, 0.22]
+	var rys: Array = [0.38, 0.32, 0.12]
+	var rzs: Array = [0.34, 0.28, 0.10]
+	for d in 3:
+		var ring: Array = []
+		var di: int = d
+		for i in n:
+			var ang := TAU * float(i) / float(n)
+			ring.append(Vector3(s * (1.42 + float(depths[di])) * sc, (cy + sin(ang) * float(rys[di])) * sc, (cz + cos(ang) * float(rzs[di])) * sc))
+		rings.append(ring)
+	h.color("#24323a", Geo.GLASS)
+	h.loft(rings[0], rings[1], Transform3D.IDENTITY, false, false)
+	h.loft(rings[1], rings[2], Transform3D.IDENTITY, false, true)
+	h.color("#161a1e", Geo.DARK)
+	var base: Array = rings[0]
+	for i2 in n:
+		h.tube(base[i2], base[(i2 + 1) % n], 0.018, 4)
+
+static func _mi8_port(h, c: Vector3, s: float) -> void:
+	h.color("#161a1e", Geo.DARK)
+	h.tube(c, c + Vector3(s * 0.016, 0, 0), 0.078, 10)
+	h.color("#24323a", Geo.GLASS)
+	var r := 0.050
+	h.pane([
+		c + Vector3(s * 0.018, -r, -r), c + Vector3(s * 0.018, -r, r),
+		c + Vector3(s * 0.018, r, r), c + Vector3(s * 0.018, r, -r)], Vector3(s, 0, 0), 0.006, 0.004)
+
+static func _mi8_door(model: Node, root: Node, mat: Material, c: Vector3, s: Vector3):
+	var g = K.new()
+	g.plain = true
+	g.color("#b4b6ae", Geo.PAINT)
+	g.box(c, s)
+	_mi8_port(g, c + Vector3(-0.03, 0.12, 0), -1.0)
+	g.color("#2c3034", Geo.DARK)
+	var hy := s.y * 0.5
+	var hz := s.z * 0.5
+	g.tube(c + Vector3(-0.03, hy, -hz), c + Vector3(-0.03, hy, hz), 0.016, 4)
+	g.tube(c + Vector3(-0.03, -hy, -hz), c + Vector3(-0.03, -hy, hz), 0.016, 4)
+	g.tube(c + Vector3(-0.03, -hy, -hz), c + Vector3(-0.03, hy, -hz), 0.016, 4)
+	g.tube(c + Vector3(-0.03, -hy, hz), c + Vector3(-0.03, hy, hz), 0.016, 4)
+	VK._mi(model, root, "DoorPort", g.commit(mat))
+	return g
+
+static func _mi8_clamshell(model: Node, root: Node, mat: Material, name: String, c: Vector3, s: Vector3, side: float):
+	var g = K.new()
+	g.plain = true
+	g.color("#9a9c96", Geo.PAINT)
+	g.box(c, s)
+	g.color("#2c3034", Geo.DARK)
+	g.box(Vector3(c.x - side * s.x * 0.48, c.y, c.z), Vector3(0.02, s.y * 0.94, s.z * 1.3))
+	var edge_x: float = c.x + side * s.x * 0.5
+	g.tube(Vector3(edge_x, c.y - s.y * 0.42, c.z), Vector3(edge_x, c.y + s.y * 0.42, c.z), 0.016, 5)
+	VK._mi(model, root, name, g.commit(mat))
+	return g
 
 static func _mi8_plate(model: Node, root: Node, mat: Material, name: String, c: Vector3, s: Vector3):
 	var g = K.new()
