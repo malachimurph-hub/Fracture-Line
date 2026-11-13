@@ -1787,22 +1787,33 @@ static func mzkt_base(mat: Material) -> void:
 	h.color("#738252", Geo.CONCRETE)
 	for ssk in [-1.0, 1.0]:
 		h.box(Vector3(ssk * 1.50 * Sc, 1.22 * Sc, -1.15 * Sc), Vector3(0.04 * Sc, 0.42 * Sc, 1.7 * Sc))
-	# Bumper carries the extra 225 mm. Rear cap stops at the 1,000 mm overhang.
-	h.color("#5e6848", Geo.CONCRETE)
-	h.cbox(Vector3(0, 1.05 * Sc, 6.08 * Sc), Vector3(2.40 * Sc, 0.95 * Sc, 0.52 * Sc), 0.016 * Sc)
-	h.cbox(Vector3(0, 0.95 * Sc, -6.18 * Sc), Vector3(2.15 * Sc, 0.70 * Sc, 0.28 * Sc), 0.014 * Sc)
-	h.color("#1c1e1c", Geo.DARK)
-	h.box(Vector3(0, 0.98 * Sc, 6.30 * Sc), Vector3(0.72 * Sc, 0.32 * Sc, 0.04 * Sc))
-	h.color("#3a3d38", Geo.STEEL)
-	for gi in 5:
-		h.box(Vector3((-0.28 + float(gi) * 0.14) * Sc, 0.98 * Sc, 6.32 * Sc), Vector3(0.03 * Sc, 0.26 * Sc, 0.012 * Sc))
-	for hk in [-0.55, 0.55]:
-		h.tube(Vector3(hk * Sc, 0.62 * Sc, 6.22 * Sc), Vector3(hk * Sc, 0.62 * Sc, 6.34 * Sc), 0.018 * Sc, 5)
-		h.tube(Vector3((hk - 0.06) * Sc, 0.62 * Sc, 6.30 * Sc), Vector3((hk + 0.06) * Sc, 0.62 * Sc, 6.30 * Sc), 0.016 * Sc, 5)
+	# Rear cap keeps the 1,000 mm overhang. The front beam is only the last 0.22 m of the 12,670 mm length.
 	h.color("#96A468", Geo.CONCRETE)
-	for lp in [-0.95, 0.95]:
-		h.box(Vector3(lp * Sc, 0.88 * Sc, 6.28 * Sc), Vector3(0.22 * Sc, 0.12 * Sc, 0.06 * Sc))
-	V4._lamps(h, 0.95 * Sc, 0.88 * Sc, 6.32 * Sc)
+	h.cbox(Vector3(0, 0.95 * Sc, -6.18 * Sc), Vector3(2.15 * Sc, 0.70 * Sc, 0.28 * Sc), 0.014 * Sc)
+	# Slim cab-coloured bumper, tucked under the chin. Front face stays at 6.335 m.
+	h.cbox(Vector3(0, 0.96 * Sc, 6.225 * Sc), Vector3(2.20 * Sc, 0.32 * Sc, 0.22 * Sc), 0.01 * Sc)
+	h.cbox(Vector3(0, 1.20 * Sc, 6.02 * Sc), Vector3(2.00 * Sc, 0.08 * Sc, 0.26 * Sc), 0.008 * Sc)
+	h.color("#1c1e1c", Geo.DARK)
+	for gi in 6:
+		h.box(Vector3((-0.40 + float(gi) * 0.16) * Sc, 0.98 * Sc, 6.34 * Sc), Vector3(0.04 * Sc, 0.14 * Sc, 0.016 * Sc))
+	for lp in [-0.86, 0.86]:
+		h.box(Vector3(lp * Sc, 0.98 * Sc, 6.30 * Sc), Vector3(0.24 * Sc, 0.13 * Sc, 0.05 * Sc))
+	h.color("#96A468", Geo.CONCRETE)
+	for lp2 in [-0.86, 0.86]:
+		h.box(Vector3(lp2 * Sc, 1.06 * Sc, 6.345 * Sc), Vector3(0.28 * Sc, 0.018 * Sc, 0.012 * Sc))
+		h.box(Vector3(lp2 * Sc, 0.90 * Sc, 6.345 * Sc), Vector3(0.28 * Sc, 0.018 * Sc, 0.012 * Sc))
+		h.box(Vector3((lp2 - 0.12) * Sc, 0.98 * Sc, 6.345 * Sc), Vector3(0.018 * Sc, 0.16 * Sc, 0.012 * Sc))
+		h.box(Vector3((lp2 + 0.12) * Sc, 0.98 * Sc, 6.345 * Sc), Vector3(0.018 * Sc, 0.16 * Sc, 0.012 * Sc))
+	V4._lamps(h, 0.86 * Sc, 0.98 * Sc, 6.31 * Sc)
+	h.color("#3a3d38", Geo.STEEL)
+	for hk in [-0.42, 0.42]:
+		h.tube(Vector3(hk * Sc, 0.78 * Sc, 6.16 * Sc), Vector3(hk * Sc, 0.62 * Sc, 6.16 * Sc), 0.016 * Sc, 5)
+		h.tube(Vector3((hk - 0.05) * Sc, 0.64 * Sc, 6.16 * Sc), Vector3((hk + 0.05) * Sc, 0.64 * Sc, 6.16 * Sc), 0.014 * Sc, 5)
+	h.color("#96A468", Geo.CONCRETE)
+	h.box(Vector3(0, 1.16 * Sc, 6.16 * Sc), Vector3(0.46 * Sc, 0.035 * Sc, 0.14 * Sc))
+	h.color("#3a3d38", Geo.STEEL)
+	for st in 3:
+		h.box(Vector3(0, 1.185 * Sc, (6.11 + float(st) * 0.035) * Sc), Vector3(0.40 * Sc, 0.01 * Sc, 0.012 * Sc))
 	# The rake ends at full cab height on the door face, then sinks into the box so the join has no notch.
 	# Cab paint uses the plain class. Camo and paint classes pick up the shared stencil sheet (numbers, chevrons).
 	h.color("#96A468", Geo.CONCRETE)
