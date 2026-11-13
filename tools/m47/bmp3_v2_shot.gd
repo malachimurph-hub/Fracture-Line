@@ -122,7 +122,7 @@ func _views() -> void:
 	await shot("gameplay")
 
 func _measure(model: Node3D) -> void:
-	var sc := 0.405
+	var sc := 0.311
 	var hull := model.find_child("Hull", true, false) as MeshInstance3D
 	var ab: AABB = hull.mesh.get_aabb()
 	print("HULL_AABB u ", ab.position, " size ", ab.size)

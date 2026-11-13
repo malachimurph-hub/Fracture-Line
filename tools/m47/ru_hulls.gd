@@ -14,7 +14,7 @@ const GLASS_C := "#2a3a46"
 const S := 0.30
 
 ## Track belt for one side. path is a closed loop of Vector2(z, y). x0 is the inner edge, x1 the outer.
-static func _run_belt(h, x0: float, x1: float, path: Array) -> void:
+static func _run_belt(h, x0: float, x1: float, path: Array, th: float = 0.08) -> void:
 	h.color("#2c2b28", Geo.TRACK)
 	var ctr := Vector3.ZERO
 	for p in path:
@@ -22,7 +22,6 @@ static func _run_belt(h, x0: float, x1: float, path: Array) -> void:
 	ctr /= float(path.size())
 	var s := 0.0
 	var n := path.size()
-	var th := 0.08
 	for i in n:
 		var a: Vector2 = path[i]
 		var b: Vector2 = path[(i + 1) % n]
@@ -264,8 +263,9 @@ static func bmp3(mat: Material) -> void:
 ## four-view shows. One m3 material; paint, steel, track and glass are vertex classes.
 ## Does not replace bmp3() or ecc_bmp3.
 static func bmp3_v2(mat: Material) -> void:
-	var Sc := 0.405
-	var root := VK._root({"selection_radius": 1.5, "bar_height": 1.12, "recoil": 0.1, "wreck_s": 7.5})
+	# 0.311 u/m is about 77% of the old 0.405, so the hull matches the live T-90's length.
+	var Sc := 0.311
+	var root := VK._root({"selection_radius": 1.15, "bar_height": 0.86, "recoil": 0.1, "wreck_s": 7.5})
 	var model := VK._n3(root, root, "Model")
 	var h = K.new()
 	h.plain = true
@@ -397,8 +397,8 @@ static func bmp3_v2(mat: Material) -> void:
 		var a2 := deg_to_rad(75.0 - 185.0 * float(i) / 8.0)
 		belt.append(Vector2(2.575 + cos(a2) * 0.30, 0.52 + sin(a2) * 0.30) * Sc)
 	h.color("#4a4a4e", Geo.TRACK)
-	_run_belt(h, x_in, x_out, belt)
-	_run_belt(h, -x_out, -x_in, belt)
+	_run_belt(h, x_in, x_out, belt, 0.08 * Sc / 0.405)
+	_run_belt(h, -x_out, -x_in, belt, 0.08 * Sc / 0.405)
 	var stations: Array = [1.00, 1.72, 2.48, 3.22, 4.40, 5.18]
 	for stn in stations:
 		var zc: float = (-3.525 + float(stn)) * Sc
@@ -530,7 +530,7 @@ static func bmp3_v2(mat: Material) -> void:
 	m30.owner = root
 	_bmp3_v2_fittings(h, Sc)
 	print("  bmp3_v2 m: roof %.3f-2.00 edge 0.36 pivot z %.3f y %.3f gun y 2.15 muzzle from rear 7.15" % [1.85, piv_z, piv_y])
-	_save(root, model, h, mat, "res://view/units/ecc/bmp3_v2.tscn", 1.12, [t, b])
+	_save(root, model, h, mat, "res://view/units/ecc/bmp3_v2.tscn", 0.86, [t, b])
 
 ## Hatches, rear plate, lights and the stowage drawn on the hull. Sits on the approved surfaces.
 static func _bmp3_v2_fittings(h, Sc: float) -> void:
